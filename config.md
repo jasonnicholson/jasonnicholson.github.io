@@ -2,7 +2,7 @@
 Add here global page variables to use throughout your website.
 -->
 +++
-author = "Septimia Zenobia"
+author = "Jason H. Nicholson"
 mintoclevel = 2
 
 # uncomment and adjust the following line if the expected base URL of your website is something like [www.thebase.com/yourproject/]
@@ -13,13 +13,13 @@ mintoclevel = 2
 # these files might be copied and, if markdown, processed by Franklin which
 # you might not want. Indicate directories by ending the name with a `/`.
 # Base files such as LICENSE.md and README.md are ignored by default.
-ignore = ["node_modules/"]
+ignore = ["node_modules/", "notes.md"]
 
 # RSS (the website_{title, descr, url} must be defined to get RSS)
 generate_rss = true
-website_title = "Franklin Template"
-website_descr = "Example website using Franklin"
-website_url   = "https://tlienart.github.io/FranklinTemplates.jl/"
+website_title = "Jason Nicholson Engineering and Life"
+website_descr = "A place to share what I have learned"
+website_url   = "https://www.jasonhnicholson.com/"
 +++
 
 <!--
