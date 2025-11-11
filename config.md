@@ -13,7 +13,7 @@ mintoclevel = 2
 # these files might be copied and, if markdown, processed by Franklin which
 # you might not want. Indicate directories by ending the name with a `/`.
 # Base files such as LICENSE.md and README.md are ignored by default.
-ignore = ["node_modules/", "notes.md"]
+ignore = ["node_modules/", "notes.md","TODO.md"]
 
 # RSS (the website_{title, descr, url} must be defined to get RSS)
 generate_rss = true
@@ -27,3 +27,21 @@ Add here global latex commands to use throughout your pages.
 -->
 \newcommand{\R}{\mathbb R}
 \newcommand{\scal}[1]{\langle #1 \rangle}
+
+<!-- 
+\figureHelper{the caption}{/assets/rndimg.jpg}{width:50%;border: 1px solid red;}
+
+(1) the image caption 
+(2) the image source path and 
+(3) specific CSS styling for the image.
+
+Modified from here: https://franklinjl.org/syntax/markdown/index.html#inserting_a_figure
+-->
+\newcommand{\figureHelper}[3]{
+~~~
+<figure style="text-align:center;">
+<img src="!#2" style="padding:0;#3" alt="#1"/>
+<figcaption>#1</figcaption>
+</figure>
+~~~
+}
