@@ -20,48 +20,63 @@ end
 
 Plug in the list of blog posts contained in the `/blog/` folder.
 
-Taken from the the julialang.org site. 
+Taken from the the julialang.org site and modified.
 https://github.com/JuliaLang/www.julialang.org/blob/90de0f3bf314796db210b6faeea55ed360721836/utils.jl#L43-L85
 """
 function hfun_blogposts()
     curyear = year(Dates.today())
     io = IOBuffer()
-    for year in curyear:-1:2012
+    for year in curyear:-1:2015
         ys = "$year"
         year < curyear && write(io, "\n**$year**\n")
         for month in 12:-1:1
-            ms = "0"^(month < 10) * "$month"
+            ms = lpad(string(month), 2, '0')
             base = joinpath("blog", ys, ms)
             isdir(base) || continue
             posts = filter!(p -> endswith(p, ".md"), readdir(base))
-            days  = zeros(Int, length(posts))
-            lines = Vector{String}(undef, length(posts))
+            nposts = length(posts)
+            dates = Vector{Date}(undef, nposts)
+            lines = Vector{String}(undef, nposts)
             for (i, post) in enumerate(posts)
                 ps  = splitext(post)[1]
                 url = "/blog/$ys/$ms/$ps/"
                 surl = strip(url, '/')
                 title = pagevar(surl, :title)
-				title === nothing && (title = "Untitled")
+                title === nothing && (title = "Untitled")
                 pubdate = pagevar(surl, :published)
+                # parse published date defensively; fall back to first of month
                 if isnothing(pubdate)
-                    date    = "$ys-$ms-01"
-                    days[i] = 1
+                    date = Date(year, month, 1)
                 else
-                    date    = Date(pubdate, dateformat"d U Y")
-                    days[i] = day(date)
+                    try
+                        # try original format (e.g. "1 January 2019")
+                        date = Date(pubdate, Dates.DateFormat("d U Y"))
+                    catch err1
+                        try
+                            # try generic ISO-ish parsing
+                            date = Date(pubdate)
+                        catch err2
+                            @warn "Failed to parse published date; falling back to first of month" surl=surl pubdate=pubdate error=err2
+                            date = Date(year, month, 1)
+                        end
+                    end
                 end
-                lines[i] = "\n[$title]($url) $date \n"
+                dates[i] = date
+                y = Dates.year(date)
+                mm = lpad(string(Dates.month(date)), 2, '0')
+                dd = lpad(string(Dates.day(date)), 2, '0')
+                lines[i] = "\n[$title]($url) $y-$mm-$dd \n"
             end
-            # sort by day
-            foreach(line -> write(io, line), lines[sortperm(days, rev=true)])
+            # sort by full Date (descending) so posts are antichronological
+            order = sortperm(dates, rev=true)
+            foreach(idx -> write(io, lines[idx]), order)
         end
     end
     # markdown conversion adds `<p>` beginning and end but
-    # we want to  avoid this to avoid an empty separator
+    # we want to avoid this to avoid an empty separator
     r = Franklin.fd2html(String(take!(io)), internal=true)
     return r
 end
-
 """
     {{recentblogposts}}
 
@@ -86,9 +101,9 @@ function hfun_recentblogposts()
                 ps       = splitext(post)[1]
                 surl     = "blog/$year/$ms/$ps"
                 surls[i] = surl
-                pubdate  = pagevar(surl, :published)
+                pubdate  = pagevar(surl, :date)
                 days[i]  = isnothing(pubdate) ?
-                                1 : day(Date(pubdate, dateformat"d U Y"))
+                                1 : day(Date(pubdate, Dates.DateFormat("d U Y")))
             end
             # go over month post in antichronological orders
             sp = sortperm(days, rev=true)
