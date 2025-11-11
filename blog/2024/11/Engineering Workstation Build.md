@@ -1,6 +1,7 @@
 +++
 title = "Engineering Workstation Build"
 date = Date(2024,11,12)
+rss_description = "Engineering Workstation Build for CAE applications."
 +++
 # Engineering Workstation Build
 ## Purpose
