@@ -1,0 +1,22 @@
++++
+title = "Engineering Workstation Build"
+date = Date(2024,11,12)
++++
+# Engineering Workstation Build
+## Purpose
+The main goal of this build is to make a custom engineering workstation that is appropriate for Scientific Computing (MATLAB), CAD (SolidWorks, OnShape, AutoDesk products, etc), FEA (Code_Aster, Calculix, LISA, etc), CFD (OpenFoam, Code_Saturne, Code_Syrthes), video encoding (AV1, h.265, h.266), and computer vision. It will dual boot Windows and Linux. 
+
+The rest of what follows is my design rationale for my choices.
+
+## Notes
+I am using [PCPartPicker.com](https://pcpartpicker.com/) to configure the build: [Engineering Build 2025](https://pcpartpicker.com/user/jasonhnicholson/saved/4hH97P).
+
+I am using [passmark.com](https://www.passmark.com/) to compare different parts.
+
+I benchmarked my [10 year old desktop](https://www.passmark.com/baselines/V11/display.php?id=224311404344) and my [linux laptop](https://www.passmark.com/baselines/V11/display.php?id=507820731417). Both are outdated compared to what is available.
+
+## CPU
+[Single CPU XY Scatter Graph](https://www.cpubenchmark.net/cpu_value_available.html#xy_scatter_graph) and [Single Thread XY Scatter Graph](https://www.cpubenchmark.net/cpu_value_available.html#thread_xy_scatter_graph) to identify processor that balance price and speed. The graphs are shown below for convenience. 
+ 
+![Single CPU XY Scatter Graph](/blog/2024/11/single-cpu-xy-scatter-graph.png)
+![Single Thread XY Scatter Graph](/blog/2024/11/single-thread-xy-scatter-graph.png)

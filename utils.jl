@@ -1,18 +1,18 @@
 function hfun_bar(vname)
-  val = Meta.parse(vname[1])
-  return round(sqrt(val), digits=2)
+    val = Meta.parse(vname[1])
+    return round(sqrt(val), digits=2)
 end
 
 function hfun_m1fill(vname)
-  var = vname[1]
-  return pagevar("index", var)
+    var = vname[1]
+    return pagevar("index", var)
 end
 
 function lx_baz(com, _)
-  # keep this first line
-  brace_content = Franklin.content(com.braces[1]) # input string
-  # do whatever you want here
-  return uppercase(brace_content)
+    # keep this first line
+    brace_content = Franklin.content(com.braces[1]) # input string
+    # do whatever you want here
+    return uppercase(brace_content)
 end
 
 """
@@ -38,7 +38,7 @@ function hfun_blogposts()
             dates = Vector{Date}(undef, nposts)
             lines = Vector{String}(undef, nposts)
             for (i, post) in enumerate(posts)
-                ps  = splitext(post)[1]
+                ps = splitext(post)[1]
                 url = "/blog/$ys/$ms/$ps/"
                 surl = strip(url, '/')
                 title = pagevar(surl, :title)
@@ -56,7 +56,7 @@ function hfun_blogposts()
                             # try generic ISO-ish parsing
                             date = Date(pubdate)
                         catch err2
-                            @warn "Failed to parse published date; falling back to first of month" surl=surl pubdate=pubdate error=err2
+                            @warn "Failed to parse published date; falling back to first of month" surl = surl pubdate = pubdate error = err2
                             date = Date(year, month, 1)
                         end
                     end
@@ -87,28 +87,28 @@ https://github.com/JuliaLang/www.julialang.org/blob/90de0f3bf314796db210b6faeea5
 function hfun_recentblogposts()
     curyear = Dates.Year(Dates.today()).value
     ntofind = 3
-    nfound  = 0
-    recent  = Vector{Pair{String,Date}}(undef, ntofind)
+    nfound = 0
+    recent = Vector{Pair{String,Date}}(undef, ntofind)
     for year in curyear:-1:2019
         for month in 12:-1:1
-            ms = "0"^(1-div(month, 10)) * "$month"
+            ms = "0"^(1 - div(month, 10)) * "$month"
             base = joinpath("blog", "$year", "$ms")
             isdir(base) || continue
             posts = filter!(p -> endswith(p, ".md"), readdir(base))
-            days  = zeros(Int, length(posts))
+            days = zeros(Int, length(posts))
             surls = Vector{String}(undef, length(posts))
             for (i, post) in enumerate(posts)
-                ps       = splitext(post)[1]
-                surl     = "blog/$year/$ms/$ps"
+                ps = splitext(post)[1]
+                surl = "blog/$year/$ms/$ps"
                 surls[i] = surl
-                pubdate  = pagevar(surl, :date)
-                days[i]  = isnothing(pubdate) ?
-                                1 : day(Date(pubdate, Dates.DateFormat("d U Y")))
+                pubdate = pagevar(surl, :date)
+                days[i] = isnothing(pubdate) ?
+                          1 : day(Date(pubdate, Dates.DateFormat("d U Y")))
             end
             # go over month post in antichronological orders
             sp = sortperm(days, rev=true)
             for (i, surl) in enumerate(surls[sp])
-                recent[nfound + 1] = (surl => Date(year, month, days[sp[i]]))
+                recent[nfound+1] = (surl => Date(year, month, days[sp[i]]))
                 nfound += 1
                 nfound == ntofind && break
             end
@@ -119,18 +119,21 @@ function hfun_recentblogposts()
     #
     io = IOBuffer()
     for (surl, date) in recent
-        url   = "/$surl/"
+        url = "/$surl/"
         title = pagevar(surl, :title)
-		title === nothing && (title = "Untitled")
+        title === nothing && (title = "Untitled")
         sdate = "$(day(date)) $(monthname(date)) $(year(date))"
         blurb = pagevar(surl, :rss)
-        write(io, """
-            <div class="col-lg-4 col-md-12 blog">
-              <h3><a href="$url" class="title" data-proofer-ignore>$title</a>
-              </h3><span class="article-date">$date</span>
-              <p>$blurb</p>
-            </div>
-            """)
+        write(
+            io,
+            """
+      <div class="col-lg-4 col-md-12 blog">
+        <h3><a href="$url" class="title" data-proofer-ignore>$title</a>
+        </h3><span class="article-date">$date</span>
+        <p>$blurb</p>
+      </div>
+      """
+        )
     end
     return String(take!(io))
 end
