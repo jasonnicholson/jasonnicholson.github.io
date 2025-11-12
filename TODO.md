@@ -1,1 +1,2 @@
+- PDF isn't rendering.
 - rewrite the history with git lfs.
