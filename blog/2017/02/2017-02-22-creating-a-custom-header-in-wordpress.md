@@ -1,0 +1,23 @@
++++
+title = "Creating a Custom Header in Wordpress"
+date = Date(2017, 02, 22)
+categories = ["code"]
++++
+
+I used an image for header that I wanted to cite the photographer with a link to his website. There isn't a clear way to do this in Wordpress tools. Therefore, I searched and found that I could edit the header.php file for the theme I was using to customize the header.  The header.php file is located at ./wp-content/themes/_myThemeName_ where _myThemeName_ was twentytwelve. i.e.  ./wp-content/themes/twentytwelve/header.php.
+
+I added this piece of code to header.php before the ending </header> tag:
+
+Image by <a href="http://15belowphoto.com/">Nick Wooley</a>
+
+Like this: 
+
+![](/blog/2017/02/images/Screenshot-from-2017-02-22-06-22-50.png)
+
+This piece of code has the effect that the header for my Wordpress website has a link to the photographer's website like below.
+
+![](/blog/2017/02/images/Screenshot-from-2017-02-22-06-26-00.png)
+
+The downside to modifying header.php is that it gets overwritten when updates to the theme are made. Ugh! Make sure to document the modifications to header.php. Backing it up is undesirable because security updates may change the header.php code and thus restoring an older version may introduce security issues.
+
+~~See the results of modifying header.php here: [http://www.teamvardo.com/](http://www.teamvardo.com/)~~
