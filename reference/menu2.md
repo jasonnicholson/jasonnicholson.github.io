@@ -95,7 +95,7 @@ Let's have another toy example:
 ```julia
 function hfun_m1fill(vname)
   var = vname[1]
-  return pagevar("menu1", var)
+  return pagevar("/reference/menu1", var)
 end
 ```
 

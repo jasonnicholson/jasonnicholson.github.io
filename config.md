@@ -13,11 +13,11 @@ mintoclevel = 2
 # these files might be copied and, if markdown, processed by Franklin which
 # you might not want. Indicate directories by ending the name with a `/`.
 # Base files such as LICENSE.md and README.md are ignored by default.
-ignore = ["node_modules/", "notes.md","TODO.md",".vscode/"]
+ignore = ["node_modules/", "notes.md","TODO.md",".vscode/","reference/"]
 
 # RSS (the website_{title, descr, url} must be defined to get RSS)
 generate_rss = true
-website_title = "Jason Nicholson Engineering and Life"
+website_title = "Jason H. Nicholson Home"
 website_descr = "A place to share what I have learned"
 website_url   = "https://www.jasonhnicholson.com/"
 +++
