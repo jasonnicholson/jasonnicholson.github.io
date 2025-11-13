@@ -1,0 +1,160 @@
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/highlight/styles/github.min.css"> <link href="/css/franklin.css" rel=stylesheet > <link href="/css/vela.css" rel=stylesheet > <script src="/libs/vela/jquery.min.js"></script> <link rel=icon  href="/assets/favicon.png"> <title>Jason H. Nicholson</title> <div class="main-nav slideout-menu slideout-menu-left" id=menu > <div class=flex-container > <span class=sidebar-brand > </span> </div> <nav class=sidebar-nav > <ul class=metismenu  id=metismenu > <li><a href="/index.html" class=has-arrow >Home</a> <li><a href="/blog/">Blog</a> <li><a href="/about/">About</a> </ul> </nav> </div> <main id=panel  class="slidout-panel slideout-panel-left"> <div class="toggle-button hamburger hamburger--spin"> <div class=hamburger-box > <div class=hamburger-inner ></div> </div> </div> <h1 class="page title">Setting Up a Franklin.jl Blog</h1> <hr> <div class=franklin-content > <ol> <li><p>Setup a new Franklin site.</p> </ol> <pre><code class="Julia hljs"><span class=hljs-keyword >using</span> Franklin
+newsite(<span class=hljs-string >&quot;mySite&quot;</span>, template=<span class=hljs-string >&quot;pure-sm&quot;</span>)</code></pre> <ol start=2 > <li><p>Add the following code to your utils.jl file. The <code>newsite&#40;&#41;</code> call created the <code>utils.jl</code> file.</p> </ol> <pre><code class="Julia hljs"><span class=hljs-string >&quot;&quot;&quot;
+    {{blogposts}}
+
+Plug in the list of blog posts contained in the `/blog/` folder.
+
+Taken from the the julialang.org site and modified.
+https://github.com/JuliaLang/www.julialang.org/blob/90de0f3bf314796db210b6faeea55ed360721836/utils.jl#L43-L85
+&quot;&quot;&quot;</span>
+<span class=hljs-keyword >function</span> hfun_blogposts()
+  curyear = year(Dates.today())
+  io = <span class=hljs-built_in >IOBuffer</span>()
+  <span class=hljs-keyword >for</span> year <span class=hljs-keyword >in</span> curyear:-<span class=hljs-number >1</span>:<span class=hljs-number >2015</span>
+    ys = <span class=hljs-string >&quot;<span class=hljs-variable >$year</span>&quot;</span>
+    year &lt; curyear &amp;&amp; write(io, <span class=hljs-string >&quot;\n**<span class=hljs-variable >$year</span>**\n&quot;</span>)
+    <span class=hljs-keyword >for</span> month <span class=hljs-keyword >in</span> <span class=hljs-number >12</span>:-<span class=hljs-number >1</span>:<span class=hljs-number >1</span>
+      ms = lpad(string(month), <span class=hljs-number >2</span>, <span class=hljs-string >&#x27;0&#x27;</span>)
+      base = joinpath(<span class=hljs-string >&quot;blog&quot;</span>, ys, ms)
+      isdir(base) || <span class=hljs-keyword >continue</span>
+      posts = filter!(p -&gt; endswith(p, <span class=hljs-string >&quot;.md&quot;</span>), readdir(base))
+      nposts = length(posts)
+      dates = <span class=hljs-built_in >Vector</span>{Date}(<span class=hljs-literal >undef</span>, nposts)
+      lines = <span class=hljs-built_in >Vector</span>{<span class=hljs-built_in >String</span>}(<span class=hljs-literal >undef</span>, nposts)
+      <span class=hljs-keyword >for</span> (i, post) <span class=hljs-keyword >in</span> enumerate(posts)
+        ps = splitext(post)[<span class=hljs-number >1</span>]
+        url = <span class=hljs-string >&quot;/blog/<span class=hljs-variable >$ys</span>/<span class=hljs-variable >$ms</span>/<span class=hljs-variable >$ps</span>/&quot;</span>
+        surl = strip(url, <span class=hljs-string >&#x27;/&#x27;</span>)
+        title = pagevar(surl, :title)
+        title === <span class=hljs-literal >nothing</span> &amp;&amp; (title = <span class=hljs-string >&quot;Untitled&quot;</span>)
+        date = pagevar(surl, :date)
+        <span class=hljs-comment ># parse published date defensively; fall back to first of month</span>
+        <span class=hljs-keyword >if</span> isnothing(date)
+          date = Date(year, month, <span class=hljs-number >1</span>)
+        <span class=hljs-keyword >else</span>
+          <span class=hljs-keyword >try</span>
+            <span class=hljs-comment ># expect ISO format: yyyy-mm-dd</span>
+            date = Date(date, Dates.DateFormat(<span class=hljs-string >&quot;yyyy-mm-dd&quot;</span>))
+          <span class=hljs-keyword >catch</span> err1
+            <span class=hljs-keyword >try</span>
+              <span class=hljs-comment ># try generic parsing as a fallback</span>
+              date = Date(date)
+            <span class=hljs-keyword >catch</span> err2
+              <span class=hljs-meta >@warn</span> <span class=hljs-string >&quot;Failed to parse published date; falling back to first of month&quot;</span> surl = surl pubdate = date error = err2
+              date = Date(year, month, <span class=hljs-number >1</span>)
+            <span class=hljs-keyword >end</span>
+          <span class=hljs-keyword >end</span>
+        <span class=hljs-keyword >end</span>
+        dates[i] = date
+        <span class=hljs-comment ># format date as ISO yyyy-mm-dd for output</span>
+        lines[i] = <span class=hljs-string >&quot;\n<span class=hljs-variable >$date</span> - [<span class=hljs-variable >$title</span>](<span class=hljs-variable >$url</span>)\n&quot;</span>
+      <span class=hljs-keyword >end</span>
+      <span class=hljs-comment ># sort by full Date (descending) so posts are antichronological</span>
+      order = sortperm(dates, rev=<span class=hljs-literal >true</span>)
+      foreach(idx -&gt; write(io, lines[idx]), order)
+    <span class=hljs-keyword >end</span>
+  <span class=hljs-keyword >end</span>
+  <span class=hljs-comment ># markdown conversion adds `&lt;p&gt;` beginning and end but</span>
+  <span class=hljs-comment ># we want to avoid this to avoid an empty separator</span>
+  r = Franklin.fd2html(<span class=hljs-built_in >String</span>(take!(io)), internal=<span class=hljs-literal >true</span>)
+  <span class=hljs-keyword >return</span> r
+<span class=hljs-keyword >end</span>
+
+<span class=hljs-string >&quot;&quot;&quot;
+    {{recentblogposts}}
+
+Input the 3 latest blog posts.
+Taken from the the julialang.org site and modified.
+https://github.com/JuliaLang/www.julialang.org/blob/90de0f3bf314796db210b6faeea55ed360721836/utils.jl#L43-L85
+&quot;&quot;&quot;</span>
+<span class=hljs-keyword >function</span> hfun_recentblogposts()
+  curyear = Dates.Year(Dates.today()).value
+  ntofind = <span class=hljs-number >3</span>
+  <span class=hljs-comment ># collect recent posts dynamically; push! as we find them</span>
+  recent = <span class=hljs-built_in >Vector</span>{<span class=hljs-built_in >Pair</span>{<span class=hljs-built_in >String</span>,Date}}()
+  <span class=hljs-keyword >for</span> year <span class=hljs-keyword >in</span> curyear:-<span class=hljs-number >1</span>:<span class=hljs-number >2019</span>
+    <span class=hljs-keyword >for</span> month <span class=hljs-keyword >in</span> <span class=hljs-number >12</span>:-<span class=hljs-number >1</span>:<span class=hljs-number >1</span>
+      ms = lpad(string(month), <span class=hljs-number >2</span>, <span class=hljs-string >&#x27;0&#x27;</span>)
+      base = joinpath(<span class=hljs-string >&quot;blog&quot;</span>, <span class=hljs-string >&quot;<span class=hljs-variable >$year</span>&quot;</span>, <span class=hljs-string >&quot;<span class=hljs-variable >$ms</span>&quot;</span>)
+      isdir(base) || <span class=hljs-keyword >continue</span>
+      posts = filter!(p -&gt; endswith(p, <span class=hljs-string >&quot;.md&quot;</span>), readdir(base))
+      np = length(posts)
+      dates = <span class=hljs-built_in >Vector</span>{Date}(<span class=hljs-literal >undef</span>, np)
+      surls = <span class=hljs-built_in >Vector</span>{<span class=hljs-built_in >String</span>}(<span class=hljs-literal >undef</span>, np)
+      <span class=hljs-keyword >for</span> (i, post) <span class=hljs-keyword >in</span> enumerate(posts)
+        ps = splitext(post)[<span class=hljs-number >1</span>]
+        surl = <span class=hljs-string >&quot;blog/<span class=hljs-variable >$year</span>/<span class=hljs-variable >$ms</span>/<span class=hljs-variable >$ps</span>&quot;</span>
+        surls[i] = surl
+        <span class=hljs-comment ># check :date front-matter only</span>
+        date = pagevar(surl, :date)
+        <span class=hljs-comment ># normalize into a Date; fall back to first of month</span>
+        <span class=hljs-keyword >if</span> isnothing(date)
+          d = Date(year, month, <span class=hljs-number >1</span>)
+        <span class=hljs-keyword >elseif</span> <span class=hljs-keyword >isa</span>(date, Dates.Date)
+          d = date
+        <span class=hljs-keyword >else</span>
+          parsed = <span class=hljs-literal >nothing</span>
+          <span class=hljs-keyword >try</span>
+            <span class=hljs-comment ># expect ISO format yyyy-mm-dd</span>
+            parsed = Date(date, Dates.DateFormat(<span class=hljs-string >&quot;yyyy-mm-dd&quot;</span>))
+          <span class=hljs-keyword >catch</span> err1
+            <span class=hljs-keyword >try</span>
+              parsed = Date(date)
+            <span class=hljs-keyword >catch</span> err2
+              <span class=hljs-meta >@warn</span> <span class=hljs-string >&quot;Failed to parse recent post date; falling back to first of month&quot;</span> surl = surl pubdate = date error = err2
+            <span class=hljs-keyword >end</span>
+          <span class=hljs-keyword >end</span>
+          isnothing(parsed) &amp;&amp; (d = Date(year, month, <span class=hljs-number >1</span>)) || (d = parsed)
+        <span class=hljs-keyword >end</span>
+        dates[i] = d
+      <span class=hljs-keyword >end</span>
+      <span class=hljs-comment ># go over month posts in antichronological order by full Date</span>
+      sp = sortperm(dates, rev=<span class=hljs-literal >true</span>)
+      <span class=hljs-keyword >for</span> idx <span class=hljs-keyword >in</span> sp
+        surl = surls[idx]
+        push!(recent, surl =&gt; dates[idx])
+        length(recent) == ntofind &amp;&amp; <span class=hljs-keyword >break</span>
+      <span class=hljs-keyword >end</span>
+      length(recent) == ntofind &amp;&amp; <span class=hljs-keyword >break</span>
+    <span class=hljs-keyword >end</span>
+    length(recent) == ntofind &amp;&amp; <span class=hljs-keyword >break</span>
+  <span class=hljs-keyword >end</span>
+  <span class=hljs-comment >#</span>
+  io = <span class=hljs-built_in >IOBuffer</span>()
+  <span class=hljs-keyword >for</span> (surl, date) <span class=hljs-keyword >in</span> recent
+    url = <span class=hljs-string >&quot;/<span class=hljs-variable >$surl</span>/&quot;</span>
+    title = pagevar(surl, :title)
+    title === <span class=hljs-literal >nothing</span> &amp;&amp; (title = <span class=hljs-string >&quot;Untitled&quot;</span>)
+    <span class=hljs-comment ># Check for rss_description first,</span>
+    <span class=hljs-comment ># then fall back to rss.</span>
+    rss_description = pagevar(surl, :rss_description)
+    <span class=hljs-keyword >if</span> isnothing(rss_description)
+      <span class=hljs-comment ># some pages may still define `rss` explicitly (edge cases)</span>
+      rss_description = pagevar(surl, :rss)
+      <span class=hljs-keyword >if</span> isnothing(rss_description)
+        rss_description = <span class=hljs-string >&quot;&quot;</span>
+      <span class=hljs-keyword >end</span>
+    <span class=hljs-keyword >end</span>
+
+    write(
+      io,
+      <span class=hljs-string >&quot;&quot;&quot;
+&lt;div class=&quot;col-lg-4 col-md-12 blog&quot;&gt;
+  &lt;a href=&quot;<span class=hljs-variable >$url</span>&quot;&gt;<span class=hljs-variable >$date</span> - <span class=hljs-variable >$title</span>&lt;/a&gt;
+  &lt;p&gt;<span class=hljs-variable >$rss_description</span>&lt;/p&gt;
+&lt;/div&gt;
+&quot;&quot;&quot;</span>
+    )
+  <span class=hljs-keyword >end</span>
+  <span class=hljs-keyword >return</span> <span class=hljs-built_in >String</span>(take!(io))
+<span class=hljs-keyword >end</span></code></pre> <ol start=2 > <li><p>Create <code>blog</code> folder in the root of the new site.</p> <li><p>Put an <code>index.md</code> &#40;example below&#41; in the <code>blog</code> folder. The <code>&#123;&#123;blogposts&#125;&#125;</code> and <code>&#123;&#123;recentblogposts&#125;&#125;</code> correspond to the <code>hfun_recentblogposts&#40;&#41;</code> and <code>hfun_blogposts&#40;&#41;</code> functions in <code>util.jl</code>.</p> </ol> <pre><code class="md hljs"><span class=hljs-section ># Recent posts</span>
+
+{{recentblogposts}}
+
+<span class=hljs-section ># Blog posts</span>
+
+{{blogposts}}</code></pre> <ol start=4 > <li><p>Create <code>yyyy/mm</code> folders in a <code>blog</code> folders. If you don&#39;t follow this format exact, the provided <code>hfun_recentblogposts&#40;&#41;</code> and <code>hfun_blogposts&#40;&#41;</code> won&#39;t find your posts.</p> <li><p>Place your posts in the <code>yyyy/mm</code> folder. Names don&#39;t matter.</p> <li><p>Make sure to define a Front Matters section for each post. The Front Matters must contain a <code>title</code> and <code>date</code> for the post to get parsed correctly by the <code>hfun_blogposts&#40;&#41;</code> function. The <code>hfun_recentblogposts&#40;&#41;</code> function has one extra requirement of <code>rss_description</code>. An example is shown below.</p> </ol> <pre><code class="text hljs">+++
+title = &quot;Setting Up a Franklin.jl Blog&quot;
+date = Date(2025,11,11)
+rss_description = &quot;Setting Up a Franklin.jl Blog&quot;
++++</code></pre> <p>The blog post you are reading now was created from the above instructions.</p> <div class=page-foot > <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> Jason H. Nicholson. Last modified: November 13, 2025. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>. </div> </div> </main> <script src="/libs/vela/metisMenu.min.js"></script> <script src="/libs/vela/slideout.min.js"></script> <script src="/libs/highlight/highlight.min.js"></script> <script>hljs.highlightAll();hljs.configure({tabReplace: ' '});</script>
