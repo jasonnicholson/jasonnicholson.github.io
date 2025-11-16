@@ -16,6 +16,16 @@ title = "Blog"
 
 - [2024-11-12 Engineering Workstation Build](2024/11/2024-11-12-Engineering-Workstation-Build)
 
+### 2020
+
+- [2020-12-13 SSH, Windows, Web Servers, Linux, and Visual Studio Code](2020/12/2020-12-31-ssh-windows-web-servers-linux-and-visual-studio-code)
+- [2020-11-15 Object-Oriented Programming Decline - The Rise of other Paradigms](2020/11/2020-11-15-object-oriented-programming-decline-the-rise-of-other-paradigms)
+- [2020-11-14 Time and Quality Work](2020/11/2020-11-14-time-and-quality-work)
+- [2020-03-05 Reverse Engineering a Graph](2020/03/2020-03-05-reverse-engineering-a-graph)
+- [2020-02-15 Using the Shortname](2020/02/2020-02-15-using-the-shortname)
+- [2020-01-22 Short and Long Name VBA Functions](2020/01/2020-01-22-short-and-long-name-vba-functions)
+- [2020-01-22 FFmpeg, The -crf Option, iPhone Videos, and Corporate Networks](2020/01/2020-01-22-ffmpeg-the-crf-option-iphone-videos-and-corporate-networks)
+
 ### 2019
 
 - [20219-12-06 How to Export Your VBA Macros for Storage in a GIT/SVN Repository](2019/12/2019-12-06-how-to-export-your-vba-macros-for-storage-in-a-git-svn-repository)
