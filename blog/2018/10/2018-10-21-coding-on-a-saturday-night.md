@@ -1,7 +1,7 @@
 +++
 title = "Coding on a Saturday Night"
 date = Date(2018,10,21)
-categories = ["code"]
+rss_description = "Coding on a Saturday Night"
 tags= ["c", "clion", "julia", "rust"]
 +++
 

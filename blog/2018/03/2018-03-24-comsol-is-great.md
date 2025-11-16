@@ -1,7 +1,8 @@
 +++
 title = "Comsol is Great"
 date = Date(2018, 03, 24)
-categories= ["cfd", "multiphysics"]
+rss_description = "Working with Comsol"
+tags= ["cfd", "multiphysics"]
 +++
 
 Definitely one of my favorite CAE programs is Comsol. I will tell you why. But first, some background. I have used a lot of CAE software, to make a short list:

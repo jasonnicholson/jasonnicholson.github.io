@@ -1,7 +1,7 @@
 +++
 title = "A Comparison Between Differential Equation Solver Suites"
 date = Date(2018,10,16)
-categories = ["ode", "dae"]
+rss_description = "A Comparison Between Differential Equation Solver Suites"
 tags = ["dae", "julia", "ode"]
 +++
 

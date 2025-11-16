@@ -2,6 +2,7 @@
 title = "Setting Up a Franklin.jl Blog"
 date = Date(2025,11,11)
 rss_description = "Setting Up a Franklin.jl Blog"
+tags = [""]
 +++
 
 1. Setup a new Franklin site.

@@ -1,7 +1,7 @@
 +++
 title= "My Introduction to Computational Fluid Dynamics (CFD)"
 date= Date(2016,05,07)
-categories=["cfd"]
+tags=["cfd"]
 +++
 
 I have been doing a lot of CFD lately. I have quickly learned that the information one can gain from CFD is far more insightful to the physicals then 0D, lumped parameter equations.

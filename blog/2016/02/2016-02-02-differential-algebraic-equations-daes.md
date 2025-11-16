@@ -1,7 +1,7 @@
 +++
 title = "Differential Algebraic Equations  (DAE's)"
 date = Date(2016,02,02)
-categories = ["ode","dae"]
+tags = ["ode","dae"]
 +++
 
 Often Ordinary Differential Equations (ODE's) are studied in engineering, especially system dynamics and control theory. However, there are many cases where the system is described by Differential Algebraic Equations (DAE's) rather than an ODE system.

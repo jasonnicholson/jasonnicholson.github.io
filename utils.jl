@@ -42,8 +42,8 @@ function hfun_blogposts()
         url = "/blog/$ys/$ms/$ps/"
         surl = strip(url, '/')
         title = pagevar(surl, :title)
-        title === nothing && (title = "Untitled")
         date = pagevar(surl, :date)
+        title === nothing && (title = "Untitled")
         # parse published date defensively; fall back to first of month
         if isnothing(date)
           date = Date(year, month, 1)
@@ -61,6 +61,7 @@ function hfun_blogposts()
             end
           end
         end
+        @info "processing post" url=(url === nothing ? "(nothing)" : url) surl=(surl === nothing ? "(nothing)" : surl) post=post title=(title === nothing ? "(nothing)" : title) date=(isnothing(date) ? "(nothing)" : string(date))
         dates[i] = date
         # format date as ISO yyyy-mm-dd for output
         lines[i] = "\n$date - [$title]($url)\n"
@@ -151,6 +152,8 @@ function hfun_recentblogposts()
         rss_description = ""
       end
     end
+
+    @info "recent post" surl=surl title=(title === nothing ? "(nothing)" : title) date=string(date) rss=(isempty(string(rss_description)) ? "(none)" : string(rss_description))
 
     write(
       io,

@@ -1,7 +1,7 @@
 +++
 title = "Simerics Pumplinx Hex Mesh Tutorial"
-date = Date(2018,02,16)
-categories = ["cfd"]
+date = Date(2018, 02, 16)
+rss_description = "Simerics Pumplinx Hex Mesh Tutorial"
 tags = ["cfd", "pumplinx", "simerics"]
 +++
 
