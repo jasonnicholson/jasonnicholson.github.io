@@ -1,0 +1,69 @@
++++
+title = "Short and Long Name VBA Functions"
+date = Date(2020, 01, 22)
+tags = ["code", "vba", "windows"]
++++
+
+From time to time I write VBA. One of the things I have needed is what is called the short path. If you ever worked at the command line, it looks like what is shown below. "PROGRA~1" is the short name for "Program Files".
+
+```bat
+C:\>dir /x *
+
+ Directory of C:\
+
+01/20/2020  04:09 PM    <DIR>          PROGRA~1     Program Files
+01/22/2020  02:05 AM    <DIR>          PROGRA~2     Program Files (x86)
+11/24/2019  12:07 AM    <DIR>          SOLIDW~1     SOLIDWORKS Data
+11/23/2019  10:26 PM    <DIR>                       Users
+01/10/2020  07:41 AM    <DIR>                       Windows
+               0 File(s)              0 bytes
+              10 Dir(s)  347,556,667,392 bytes free
+```
+
+Short names can be useful when processing file names that are hard to parse. For instance, dumping a file list to a Comma Separated Values file. If one of the paths has a comma, that path will get separated into separate values. One way to deal with this is to just put the path in quotes like this `C:\my path\ with a, comma\folder` The other way to deal with this just store the short path/name. Usually, when I have used the short name, I have needed it in Excel. Therefore, I have a couple of functions written VBA that I use. They are shown below. One of them returns the short name and the other returns the long name.
+
+```vba
+Option Explicit
+
+' Max length of a long path
+Private Const MAX_PATH = 32768
+
+' Declarations hooking into Windows API
+Private Declare Function GetLongPathNameW Lib "kernel32" (ByVal lpszShortPath As Long, ByVal lpszLongPath As Any, ByVal cchBuffer As Long) As Long
+Private Declare Function GetShortPathNameW Lib "kernel32" (ByVal lpszLongPath As Long, ByVal lpszShortPath As Any, ByVal cchBuffer As Long) As Long
+
+Public Function GetLongPathName(strShortPath As String) As String
+    Dim strLongPath As String * MAX_PATH
+    Dim lLongPathLength As Long
+    
+    ' Call WIndows API for long path in Unicode
+    lLongPathLength = GetLongPathNameW(StrPtr(strShortPath), strLongPath, MAX_PATH)
+    
+    ' Handle Any errors before returning
+    If lLongPathLength = 0 Then
+            GetLongPathName = CVErr(xlErrValue)
+    Else
+        'Convert string and discard extra characters
+        GetLongPathName = Left$(StrConv(strLongPath, vbFromUnicode), lLongPathLength)
+    End If
+End Function
+
+Public Function GetShortName(ByVal strLongPath As String) As String
+    Dim strShortPath As String * MAX_PATH
+    Dim lShortPathLength As Long
+    
+    ' Call Windows API for short path in Unicode
+    ' \\?\ must be prepended because this will allow for paths longer than 260 characters
+    lShortPathLength = GetShortPathNameW(StrPtr("\\?\" & strLongPath), strShortPath, MAX_PATH)
+    
+    ' Handle Any errors before returning
+    If lShortPathLength = 0 Then
+        GetShortName = CVErr(xlErrValue)
+    Else
+        'Convert string and discard extra characters
+        GetShortName = Mid$(StrConv(strShortPath, vbFromUnicode), 5, lShortPathLength - 4)
+    End If
+End Function
+    
+
+```
