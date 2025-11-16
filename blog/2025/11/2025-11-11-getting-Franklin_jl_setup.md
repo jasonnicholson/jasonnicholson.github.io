@@ -5,6 +5,8 @@ rss_description = "Setting Up a Franklin.jl Blog"
 tags = [""]
 +++
 
+Note, that this method is brittle. After I put this into practice and had multiple failures and spent hours and days troubleshooting, I opted for a static blog page that contains static links. I don't auto generate the page using the code below. I will come back to this after I understand some of the details better. For now, I am not using the method below.
+
 1. Setup a new Franklin site.
 
 ```Julia
@@ -191,4 +193,4 @@ rss_description = "Setting Up a Franklin.jl Blog"
 +++
 ```
 
-The blog post you are reading now was created from the above instructions.
+~~The blog post you are reading now was created from the above instructions.~~

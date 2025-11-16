@@ -1,6 +1,6 @@
 +++
 title= "Transmission Line Method"
-date = Date(2017, 02, 23)
+date = Date(2017, 02, 22)
 tags = ["ode", "dae", "system-modeling"]
 +++
 
