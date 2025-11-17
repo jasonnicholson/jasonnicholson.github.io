@@ -16,9 +16,10 @@ I volunteer on an ISO, International Organization for Standardization, committee
 
 The first thing I had to decide was what programming language and toolset I would use to develop my web app. I know MATLAB really well. I would love to use MATLAB. To quote MATLAB help related to web apps:
 
-> \[MATLAB\] web apps are designed to run only within a trusted intranet environment, not in the open Internet. For more information, see [Potential Risks](https://www.mathworks.com/help/compiler/webapps/potential-risks.html).
-> 
-> https://www.mathworks.com/help/compiler/web-apps.html
+
+  > MATLAB web apps are designed to run only within a trusted intranet environment, not in the open Internet. For more information, see [Potential Risks](https://www.mathworks.com/help/compiler/webapps/potential-risks.html).
+  > 
+  > https://www.mathworks.com/help/compiler/web-apps.html
 
 So this looked like a nonstarter using MATLAB. Besides, was I going to pay for using MATLAB plus several toolboxes? Maybe. MATLAB is about $2000, with each toolbox costing another $2000. That isn't too bad if all I had to pay was $4000-5000 plus a few days; this would be time-efficient. However, it isn't a real option.
 
@@ -26,7 +27,7 @@ I started exploring other web apps such as Google Colab, [Streamlit](https://www
 
 Hosting was the next thing to consider. My website, jasonhnicholson.com, is hosted on [Bluehost](https://www.bluehost.com/) shared hosting. I learned that shared hosting is extremely locked down. I cannot use Julia or Python on the shared hosting platform in flexible enough ways. I had to compile python from scratch, which would have been fine if it worked, but it didn't. It failed to compile correctly, which left me with a broken Python. I also tried Julia but received errors related to shared libraries (shown below), which told me that compiling was just a waste of time. I spent a whole weekend trying to solve the "Is shared hosting a good solution" question. I think shared hosting is not a good solution for running Julia or Python for my expertise level. It costs too much time.
 
-```
+```bash
 user1@jasonhnicholson.com [~]# julia
 julia: error while loading shared libraries: libjulia.so.1: cannot open shared object file: No such file or directory
 user1@jasonhnicholson.com [~]#
@@ -43,19 +44,7 @@ Next was SSH. SSH keys and SSH on windows don't play well together. This where I
 [Visual Studio Code](https://code.visualstudio.com/) (VSCode) was next. Technically, it was mixed into SSH, but we don't have to get into that. Visual Studio Code is a great tool, but it is another thing to learn. It has a lot of working parts. It is a good editor with lots of functionality, including a Julia IDE with Remote SSH extension ( screenshot below). VSCode has around 120 keyboard shortcuts to learn. If you are going to use an IDE a lot, learn the shortcut keys. I decided to learn VSCode by learning the shortcut keys, so I made a Quizlet of all the shortcut keys here: [Visual Studio Code Keyboard Shortcuts Quizlet](https://quizlet.com/_987xud?x=1jqt&i=3egxh1).
 
 
-<!-- \figureHelper{"Visual Studio Code SSH session to my server and Julia"}{../../image/unnamed.png} -->
-<figure>
-
-[![](images/unnamed.png)](https://www.jasonhnicholson.com/wp-content/uploads/2022/09/unnamed.png)
-
-<figcaption>
-
-Visual Studio Code SSH session to my server and Julia
-
-</figcaption>
-
-</figure>
+\figureHelper{"Visual Studio Code SSH session to my server and Julia"}{../unnamed.png}{width: 100%}
 
 The Julia language, [Genie.jl](https://github.com/GenieFramework/Genie.jl) package, and the [Stipple.jl](https://github.com/GenieFramework/Stipple.jl) package was next. Julia is an up-and-coming scientific computing language. All around, it seems that it is a good computer science language. I have been using [Julia Documentation](https://docs.julialang.org/en/v1/), [Julia|Exercism](https://exercism.io/tracks/julia), [Julia REPL Shortcut Keys, Key bindings Quizlet](https://quizlet.com/_98g8qm?x=1jqt&i=3egxh1) (I created this), [Julia Visual Studio Code Shortcut Keys](https://quizlet.com/_987w2e?x=1jqt&i=3egxh1), and the [Julia Discourse](https://discourse.julialang.org/). Exercism.com teaches through code by problem/challenge, which works well for me. Exercism allows me to look at other people's solutions once I have submitted a solution. This is working for learning the Julia language. I am enjoying it. Quizlet is a great tool for memorizing lists. Julia Discourse is a great place to ask for help.
 
-I will hire someone in the Julia community to mentor me and help with general direction concerning my web app. I need help and am willing to give up the money to save time. Web development isn't my forte, but I can learn. I prefer to stay focused as much as I can.

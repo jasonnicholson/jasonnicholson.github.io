@@ -8,7 +8,7 @@ The Shortname is a Windows way of dealing with non-ASCII characters and long fil
 
 First, let’s create some filenames with bad character inside bad folder names. We will use the character map to generate some commonly used Unicode, non-ASCII characters. We will even use some Arabic characters. See Table 1. Note, that the files with long names longer than 260 characters require special care to generate and is not something a user can do easily. Figure 2 shows the error message windows give you when you try to create a file/path name that is too long.
 
-\figureHelper{Figure 1: Windows Character map showing what character sets windows supports.}{../../images/image.png}{}
+\figureHelper{Figure 1: Windows Character map showing what character sets windows supports.}{../image2.png}{}
 
 
 **Table 1 — Files with non‑ASCII characters and their short (8.3) names**
