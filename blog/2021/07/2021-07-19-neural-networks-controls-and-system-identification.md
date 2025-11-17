@@ -1,13 +1,7 @@
 +++
 title = "Neural Networks. Controls, and System Identification"
-date = Date(2021, 07-19
-categories: 
-  - "controls"
-  - "system-identification"
-  - "system-modeling"
-tags: 
-  - "neural-networks"
-  - "system-identification"
+date = Date(2021, 07, 19)
+tags = ["neural-networks", "system-identification", "controls", "system-identification", "system-modeling"]
 +++
 
 The current engineer atmosphere is buzzing about Neural Networks. The downside is that Neural Networks do not have a structure that is easily understandable and interpretable. When we can understand the physic mechanisms, Neural Networks should not be your first choice, in my opinion.

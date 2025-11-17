@@ -1,12 +1,7 @@
 +++
 title = "System Identification Resources"
-date = Date(2021, 07-19
-categories: 
-  - "controls"
-  - "system-identification"
-  - "system-modeling"
-tags: 
-  - "system-identification"
+date = Date(2021, 07, 19)
+tags = ["controls", "system-identification", "system-modeling"]
 +++
 
 What is System Identification? [System Identification Wikipedia](https://en.wikipedia.org/wiki/System_identification)
