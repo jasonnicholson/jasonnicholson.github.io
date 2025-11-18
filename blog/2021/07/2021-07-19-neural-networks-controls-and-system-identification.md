@@ -6,7 +6,7 @@ tags = ["neural-networks", "system-identification", "controls", "system-identifi
 
 The current engineer atmosphere is buzzing about Neural Networks. The downside is that Neural Networks do not have a structure that is easily understandable and interpretable. When we can understand the physic mechanisms, Neural Networks should not be your first choice, in my opinion.
 
-The links below take you directly to the start of the pertinent question(s). Among the two controls authors, they agree we can do the same or better than Neural Networks. Gene Morelli is from NASA. Stephen Boyd is from Standford.
+The links below take you directly to the start of the pertinent question(s). Among the two controls authors, they agree we can do the same or better than Neural Networks. Gene Morelli is from NASA. Stephen Boyd is from Stanford.
 
 [Gene Morelli from NASA responds about Neural Networks](https://youtu.be/78KzrXE-Ng8?t=4783). The video jumps to the start of this question at 1:19:43, and the question is finished at 1:21:30. The total question time is 1:47.
 

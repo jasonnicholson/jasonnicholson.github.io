@@ -6,20 +6,15 @@ tags= ["code", "math", "dogleg", "fsolve", "matlab", "powells-dogleg", "trust-re
 
 A Newton-Raphson iteration produces a fractal pattern in the complex plane and a Trust-Region-Dogleg method produces a smoother pattern in the complex which is desirable for a nonlinear equation solver. The context of this statement is finding the roots of a polynomial in a complex plan from different starting points. The inspiration for this post was the video from [3Blue1Brown, Newton's Fractal (which Newton knew nothing about)](https://www.youtube.com/watch?v=-RdOwhmqP5s&feature=youtu.be).
 
-```
-    clc;clear; close all;
-
-```
-
 Given the polynomial
 
-[![](images/image.png)](https://www.jasonhnicholson.com/wp-content/uploads/2021/10/image.png)
+$$P(z) = z^5 + z^2 - Z + 1 = 0$$
 
 find a root starting from anywhere in the interval of -2 to 2 and -2i to 2i.
 
-common code
-
-```
+**Common code:**
+```matlab
+ clc;clear; close all;
 % setup polynomial function
 coefficients = [1 0 0 1 -1 1];
 polynomialFunction = @(z) polyval(coefficients, z);
@@ -58,7 +53,7 @@ divideByZeroTolerance = 1000; % 1000*eps(p)
 
 Using Newton's method starting anywhere in the interval -2 to 2 and -2i to 2i produces the following pattern.
 
-```
+```matlab
 % setup for iteration
 isConverged = false(nStartingPointReal, nStartingPointImaginary);
 isDivideByZero = false(nStartingPointReal, nStartingPointImaginary);
@@ -128,27 +123,17 @@ title("Newton-Raphson Convergence for z^5+z^2-z+1")
 
 ```
 
-<figure>
-
-[![](images/image-1.png)](https://www.jasonhnicholson.com/wp-content/uploads/2021/10/image-1.png)
-
-<figcaption>
-
-Red is unconverged. The other colors correspond to a root. The o's are the roots.
-
-</figcaption>
-
-</figure>
+\figureHelper{Red is unconverged. The other colors correspond to a root. The o's are the roots.}{../image-1.png}{width:100%;}
 
 ## Trust-Region-Dogleg Iteration
 
 The MATLAB fsolve() function uses the Trust-Region-Dogleg method to find a root of a nonlinear equation. What's interesting is how much smoother the boundaries are for the Trust-Region-Dogleg method.
 
 More information on Trust-Region-Dogleg method  
-[Powell's dog leg method - Wikipedia](https://en.wikipedia.org/wiki/Powell%27s_dog_leg_method)  
-[Trust-Region-Dogleg Algorithm - MathWorks](https://www.mathworks.com/help/releases/R2020a/optim/ug/equation-solving-algorithms.html#f51887)
+- [Powell's dog leg method - Wikipedia](https://en.wikipedia.org/wiki/Powell%27s_dog_leg_method)  
+- [Trust-Region-Dogleg Algorithm - MathWorks](https://www.mathworks.com/help/releases/R2020a/optim/ug/equation-solving-algorithms.html#f51887)
 
-```
+```matlab
 options = optimoptions('fsolve','Display',"none","SpecifyObjectiveGradient",true, ...
     'FunctionTolerance',functionTolerance, 'StepTolerance',max(rootErrors(isRoot)),...
     "Algorithm","trust-region-dogleg");
@@ -160,11 +145,9 @@ tic;
 [z2,~,exitflag2] = arrayfun(@(z0) fsolve({polynomialFunction,polynomialDerivativeFunction},z0,options),startingPoint);
 toc;
 
-```
 
-`Elapsed time is 406.891834 seconds.`
+Elapsed time is 406.891834 seconds.
 
-```
 % successful roots
 isRoot2 = exitflag2 == 1;
 
@@ -191,14 +174,4 @@ title("Trust-Region-Dogleg Convergence for z^5+z^2-z+1")
 
 ```
 
-<figure>
-
-[![](images/image-2.png)](https://www.jasonhnicholson.com/wp-content/uploads/2021/10/image-2.png)
-
-<figcaption>
-
-Red is unconverged. The other colors correspond to a root. The o's are the roots.
-
-</figcaption>
-
-</figure>
+\figureHelper{Red is unconverged. The other colors correspond to a root. The o's are the roots.}{../image-2.png}{width:100%;}
