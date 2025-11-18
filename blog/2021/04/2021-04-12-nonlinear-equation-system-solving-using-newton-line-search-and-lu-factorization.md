@@ -67,22 +67,19 @@ effective.
 
 The parallels between Newton iteration with line search in optimization
 and nonlinear equation solving are:
-
 ~~~
-<script>
-// Local KaTeX auto-render config for this page only
-window.FRANKLIN_MATH_CONFIG = {
-  delimiters: [
-    {left: "$$", right: "$$", display: true},
-    {left: "\\[", right: "\\]", display: true},
-    {left: "\\(", right: "\\)", display: false},
-    {left: "$",  right: "$",  display: false}
+<script id="franklin-math-config" type="application/json">
+{
+  "delimiters": [
+    {"left": "$$", "right": "$$", "display": true},
+    {"left": "\\[", "right": "\\]", "display": true},
+    {"left": "\\(", "right": "\\)", "display": false},
+    {"left": "$", "right": "$", "display": false}
   ],
-  ignoredTags: ["script","noscript","style","textarea","pre","code"],
-  ignoredClasses: ["no-math"]
-};
+  "ignoredTags": ["script","noscript","style","textarea","pre","code"],
+  "ignoredClasses": ["no-math"]
+}
 </script>
-
 <style>
 #opt-vs-nleq-table tr.odd  { background-color: #fafafa; }
 #opt-vs-nleq-table tr.even { background-color: #ffffff; }
