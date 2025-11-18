@@ -16,6 +16,14 @@ title = "Blog"
 
 - [2024-11-12 Engineering Workstation Build](2024/11/2024-11-12-Engineering-Workstation-Build)
 
+### 2021
+
+- [2022-10-24 Trust-Region-Dogleg and Newton-Raphson - A Quick Comparison on a 5th order polynomial](2021/10/2021-10-24-trust-region-dogleg-and-newton-raphson-a-quick-story)
+- [2022-07-19 System Identification Resources](2021/07/2021-07-19-system-identification-resources)
+- [2022-07-19 Neural Networks. Controls, and System Identification](2021/07/2021-07-19-neural-networks-controls-and-system-identification)
+- [2022-04-12 Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization](2021/04/2021-04-12-nonlinear-equation-system-solving-using-newton-line-search-and-lu-factorization)
+
+
 ### 2020
 
 - [2020-12-13 SSH, Windows, Web Servers, Linux, and Visual Studio Code](2020/12/2020-12-31-ssh-windows-web-servers-linux-and-visual-studio-code)

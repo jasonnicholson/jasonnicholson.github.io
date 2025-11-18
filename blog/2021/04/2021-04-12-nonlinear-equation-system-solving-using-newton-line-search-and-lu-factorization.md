@@ -2,6 +2,8 @@
 title = "Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization"
 date = Date(2021, 04, 12)
 tags = ["math", "line-search", "lu", "lu-factorization", "madsen-reid", "newton", "newton-method", "nonlinear-equation-system-solving"]
+rss_description = "Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization"
+hasmath = true
 +++
 
 # Summary
@@ -66,10 +68,33 @@ effective.
 The parallels between Newton iteration with line search in optimization
 and nonlinear equation solving are:
 
-<table>
+~~~
+<script>
+// Local KaTeX auto-render config for this page only
+window.FRANKLIN_MATH_CONFIG = {
+  delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "\\[", right: "\\]", display: true},
+    {left: "\\(", right: "\\)", display: false},
+    {left: "$",  right: "$",  display: false}
+  ],
+  ignoredTags: ["script","noscript","style","textarea","pre","code"],
+  ignoredClasses: ["no-math"]
+};
+</script>
+
+<style>
+#opt-vs-nleq-table tr.odd  { background-color: #fafafa; }
+#opt-vs-nleq-table tr.even { background-color: #ffffff; }
+#opt-vs-nleq-table thead th { background-color: #f2f2f2; font-weight: 600; }
+#opt-vs-nleq-table th, #opt-vs-nleq-table td { padding: 0.5rem 0.75rem; }
+</style>
+
+<div id="opt-vs-nleq-table">
+<table style="border: solid;border-width: thin;"  >
 <colgroup>
-<col style="width: 50%" />
-<col style="width: 49%" />
+<col style="width: 50%;border: solid;border-width: thin;" />
+<col style="width: 49%;border: solid;border-width: thin;" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -88,8 +113,7 @@ function.</p></li>
 <li><p><span class="math inline"><em>F</em></span> is a scalar function
 of <span class="math inline"><em>x</em></span>. <span
 class="math inline"><em>F</em></span> is at least twice differentiable
-or some similar fancy math requirement using advanced ideas such as
-Lipschitz continuity. The point is <span
+or Lipschitz continuous. The point is <span
 class="math inline"><em>F</em></span> needs to be twice differentiable
 in some sense.</p></li>
 </ul></td>
@@ -101,7 +125,7 @@ class="math display"><em>C</em><em>o</em><em>s</em><em>t</em>= ||<em>F</em>(<em
 <li><p><span class="math inline">||  ||<sub>1</sub></span> is one norm
 (absolute value of the elements of the vector summed).</p></li>
 <li><p>However, this isn't necessary. The above equation helps make the
-analog to optimization only, in my opinion.</p></li>
+analog to optimization only.</p></li>
 </ul></td>
 </tr>
 <tr class="even">
@@ -206,6 +230,8 @@ singular. This what we want to explore in the below sections.</td>
 </tr>
 </tbody>
 </table>
+</div>
+~~~
 
 # LU factorization musings related to newton iteration
 
@@ -220,39 +246,43 @@ to solve this linear system of equations. In MATLAB,
 $D = J\backslash - F$ does the $LU$ factorization with partial pivoting
 underneath the hood similar to this:
 
-\[L,U,p\] = lu(J,'vector');  
-y = L\\-F(p,:));  
+```matlab
+[L,U,p] = lu(J,'vector');  
+y = L\-F(p,:);  
 D = U\y;
+```
 
 If instead of using a backslash, we do the $LU$ factorization with
 partial pivoting ourselves, we can discover when the Jacobian is
 ill-conditioned by looking at the diagonal of the upper triangular
 matrix $U$. Let's look at this in an example before going further.
 
-A = gallery('chebspec',3,0) % this will produce an ill-conditioned A. It
-has rank of 2.  
-\[L,U,P\] = lu(A)
+```matlab
+% this will produce an ill-conditioned A. It has rank of 2.
+A = gallery('chebspec',3,0)
+A =
+          1.5           -2          0.5
+          0.5            0         -0.5
+         -0.5            2         -1.5
 
-A =  
-1.5 -2 0.5  
-0.5 0 -0.5  
--0.5 2 -1.5  
-L =  
-1 0 0  
--0.33333 1 0  
-0.33333 0.5 1  
-U =  
-1.5 -2 0.5  
-0 1.3333 -1.3333  
-0 0 <span class="mark">-1.1102e-16</span>  
-P =  
-1 0 0  
-0 0 1  
-0 1 0
-
+[L,U,P] = lu(A)
+L =
+            1            0            0
+     -0.33333            1            0
+      0.33333          0.5            1
+U =
+          1.5           -2          0.5
+            0       1.3333      -1.3333
+            0            0  -1.1102e-16
+P =
+     1     0     0
+     0     0     1
+     0     1     0
+```
+ 
 The U(3,3) is very small. It is close to 0, which implies that $A$ is
 singular within double floating-point precision. U(3,3) very small leads
-me to my point: ***Can we use this?*** Can we eliminate columns and rows
+me to my point: _Can we use this?_ Can we eliminate columns and rows
 from the Jacobian holding constant the value of corresponding value in
 $x$ at the current iteration to find a valid search direction?
 
@@ -275,6 +305,7 @@ $$\frac{\partial F}{\partial x} = J = \begin{bmatrix}
 1 & 2x_{2}
 \end{bmatrix}$$
 
+
 This $F$ was chosen so there was a saddle point at $x_{1} = 0$ and
 $x_{2} = 0$. Note that this $F$ has other problems, such as horizontal
 asymptotes in arctan that cause the newton iteration to have problems.
@@ -292,6 +323,7 @@ There are several cases to analyze:
 3.  We are close to $x = \left\lbrack \epsilon,x_{2} \right\rbrack^{T}$
     where $\epsilon$ is a small number making the Jacobian
     ill-conditioned but not singular according to MATLAB.
+
 
 ## Case 1, $x = \lbrack 0,0\rbrack^{T}$ 
 
@@ -400,9 +432,7 @@ Now we have a direction. The question is, does it take us in a direction
 that makes any sense? If we look at the line search, we get the graph
 below. The $\alpha = 1$ seems to be the best choice.
 
-<img
-src="./blog/2021/04/Newton-Method-Musings_pandoc_media/media/image1.emf"
-style="width:5.82639in;height:4.36806in" />
+\figureHelper{Graph of line search}{../image1.png}{width:100%;}
 
 The next guess is
 
@@ -450,10 +480,11 @@ $$P_{k + 1} = \begin{bmatrix}
 
 The diagonals of $U$ are not zero, so the Jacobian is not singular.
 
-The initial finding here is we **CAN** use the $LU$ decomposition to
+The initial finding here is we _CAN_ use the $LU$ decomposition to
 find a search direction even when we are on a saddle point. This is good
 news! More work is needed with a bigger system of equations to see if we
 can always do this.
+
 
 ## Case 2, $x = \left\lbrack 0,x_{2} \neq 0 \right\rbrack^{T}\ $ 
 
@@ -471,8 +502,8 @@ $$J = \begin{bmatrix}
 
 If we explicitly write out the equations for $D$ we get:
 
-$${0*D_{1} + 0\ \ \ \ *D_{2} = 2
-}{1*D_{1} + 2x_{2}*D_{2} = x_{2}^{2} + 5}$$
+$$0*D_{1} + 0*D_{2} = 2$$
+$$1*D_{1} + 2x_{2}*D_{2} = x_{2}^{2} + 5$$
 
 The $LU$ with partial pivoting is
 
@@ -544,21 +575,14 @@ below. Note, several different views are displayed because of the 3d
 nature of the graph. The answer is we can always take a direction that
 makes sense based on the direction found.
 
-<img
-src="./blog/2021/04/Newton-Method-Musings_pandoc_media/media/image2.png"
-style="width:6.5in;height:5.10625in"
-alt="Chart, surface chart Description automatically generated" />
+\figureHelper{Line search surface (view 1)}{../image2.png}{width:100%;}
 
-<img
-src="./blog/2021/04/Newton-Method-Musings_pandoc_media/media/image3.png"
-style="width:5.89937in;height:4.63441in"
-alt="Chart, surface chart Description automatically generated" />
+\figureHelper{Line search surface (view 2)}{../image3.png}{width:100%;}
 
 If we plot $x_{2}$ vs. $\alpha$ we get:
 
-<img
-src="./blog/2021/04/Newton-Method-Musings_pandoc_media/media/image4.emf"
-style="width:5.88889in;height:3.47222in" />
+\figureHelper{Plot of $x_{2}$ vs $\alpha$}{../image4.png}{width:100%;}
+
 
 If we expand out the graph above for large values of $x_{2}$ we see that
 $\alpha$ is heading towards 0 (shown below). In the limit $x_{2}$ goes
@@ -567,13 +591,11 @@ where the ill-conditioning of finding a new $x_{k + 1}$. When $\alpha D$
 is near working precision of $x_{k}$, then $x_{k + 1} = x_{k}$ to
 working precision. This would cause the Newton iteration to quit near a
 saddle point rather than near a solution of the nonlinear system of
-equations. We may have to detect this case by noting the singularity of
+equations. We may have to detect this case by finding the singularity of
 the Jacobian from the LU factorization. We will need to search an
 arbitrary direction to get us off this ill-conditioned point.
 
-<img
-src="./blog/2021/04/Newton-Method-Musings_pandoc_media/media/image5.emf"
-style="width:6.5in;height:3.32153in" />
+\figureHelper{$x_2$ versus $\alpha$}{../image5.png}{width:100%;}
 
 With our direction $D$, the $x_{k + 1\ }$ is
 
