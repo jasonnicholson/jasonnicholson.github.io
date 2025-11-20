@@ -115,8 +115,8 @@ analog to optimization only.</p></li>
 </tr>
 <tr class="even">
 <td><p>The gradient is 0 at minimum</p>
-<p><span class="math display">$$\frac{\partial F}{\partial x} =
-0$$</span></p>
+<p><span class="math display">\[\frac{\partial F}{\partial x} =
+0\]</span></p>
 <p>Where</p>
 <p>\(\frac{\partial F}{\partial x}\) is a
 vector value function of the <span class="math inline"><em>x</em></span>
@@ -135,9 +135,9 @@ use advanced ideas to say what this means.</p></li>
 <td><p>The Newton iteration with line search is</p>
 <p><span
 class="math display"><em>x</em><sub><em>k</em> + 1</sub> = <em>x</em><sub><em>k</em></sub> + <em>α</em><em>D</em></span></p>
-<p><span class="math display">$$D = \left( \frac{\partial^{2}F}{\partial
+<p><span class="math display">\[D = \left( \frac{\partial^{2}F}{\partial
 x^{2}} \right)^{- 1}\left( - \frac{\partial F}{\partial x}
-\right)$$</span></p>
+\right)\]</span></p>
 <p>where</p>
 <ul>
 <li><p>\(\frac{\partial^{2}F}{\partial x^{2}}\) is the Hessian matrix. If <span
@@ -164,8 +164,8 @@ an inexact line search.</p></li>
 <td><p>The Newton iteration with line search is</p>
 <p><span
 class="math display"><em>x</em><sub><em>k</em> + 1</sub> = <em>x</em><sub><em>k</em></sub> + <em>α</em><em>D</em></span></p>
-<p><span class="math display">$$D = \left( \frac{\partial\ F}{\partial
-x} \right)^{- 1}( - F)$$</span></p>
+<p><span class="math display">\[D = \left( \frac{\partial\ F}{\partial
+x} \right)^{- 1}( - F)\]</span></p>
 <p>Where</p>
 <ul>
 <li><p><span class="math inline">\(\frac{\partial\ F}{\partial x}\)</span>
