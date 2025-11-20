@@ -9,7 +9,7 @@ This shows a quick workflow I use to handle VBA Macros so that they are diffed p
 
 [Here is the example workbook.](../Example%20FIles%20-%20How%20to%20Export%20Your%20VBA%20Macros%20for%20Storage%20in%20a%20GIT,%20SVN%20Repository.zip)
 
-```
+```vba
 Option Explicit
  Sub SaveCodeModules()
  'This code Exports all VBA modules
