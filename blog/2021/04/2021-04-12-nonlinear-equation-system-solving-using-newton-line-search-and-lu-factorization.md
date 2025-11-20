@@ -565,7 +565,12 @@ makes sense based on the direction found.
 
 If we plot $x_{2}$ vs. $\alpha$ we get:
 
-\figureHelper{Plot of \(x_{2}\) vs \(\alpha\)}{../image4.png}{width:100%;}
+~~~
+<figure style="text-align:center;">
+<img src="../image4.png" style="padding:0;width:100%;" alt="x_2 versus alpha"/>
+<figcaption>Plot of \(x_{2}\) vs \(\alpha\)</figcaption>
+</figure>
+~~~
 
 
 If we expand out the graph above for large values of $x_{2}$ we see that
@@ -579,7 +584,12 @@ equations. We may have to detect this case by finding the singularity of
 the Jacobian from the LU factorization. We will need to search an
 arbitrary direction to get us off this ill-conditioned point.
 
-\figureHelper{\(x_2\) versus \(\alpha\)}{../image5.png}{width:100%;}
+~~~
+<figure style="text-align:center;">
+<img src="../image5.png" style="padding:0;width:100%;" alt="x_2 versus alpha"/>
+<figcaption>\(x_2\) versus \(\alpha\)</figcaption>
+</figure>
+~~~
 
 With our direction $D$, the $x_{k + 1\ }$ is
 
