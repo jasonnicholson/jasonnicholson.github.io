@@ -1,7 +1,7 @@
 +++
 title = "Converting a docx to md - Math, tables, and html"
-Date = Date(2025, 11, 19)
-++++
+date = Date(2025, 11, 19)
++++
 
 I used pandoc to convert a word file to .md. 
 
@@ -30,7 +30,7 @@ The problem was that the inline TeX inside an html did not get rendered correct 
 $\frac{\partial F}{\partial x}$
 ```
 
-The solution was to convert the $ to `\(...\)`. 
+The solution was to convert the `$...$` to `\(...\)`. 
 
 ```plaintext
 \(\frac{\partial F}{\partial x}\)
