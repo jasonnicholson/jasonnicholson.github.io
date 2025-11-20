@@ -10,6 +10,7 @@ title = "Blog"
 
 <!-- {{blogposts}} -->
 
+- [2025-11-19 Converting a docx to md - Math, tables, and html](2025/11/2025-11-19-converting-docx-to-md)
 - [2025-11-11 Setting Up a Franklin.jl Blog](2025/11/2025-11-11-getting-Franklin_jl_setup)
 
 ### 2024
