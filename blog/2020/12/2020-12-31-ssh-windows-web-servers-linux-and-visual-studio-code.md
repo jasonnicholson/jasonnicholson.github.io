@@ -21,7 +21,7 @@ The first thing I had to decide was what programming language and toolset I woul
   > 
   > https://www.mathworks.com/help/compiler/web-apps.html
 
-So this looked like a nonstarter using MATLAB. Besides, was I going to pay for using MATLAB plus several toolboxes? Maybe. MATLAB is about $2000, with each toolbox costing another $2000. That isn't too bad if all I had to pay was $4000-5000 plus a few days; this would be time-efficient. However, it isn't a real option.
+So this looked like a nonstarter using MATLAB. Besides, was I going to pay for using MATLAB plus several toolboxes? Maybe. MATLAB is about \$2000, with each toolbox costing another \$2000. That isn't too bad if all I had to pay was \$4000-5000 plus a few days; this would be time-efficient. However, it isn't a real option.
 
 I started exploring other web apps such as Google Colab, [Streamlit](https://www.streamlit.io/) (Python), [Genie](https://genieframework.github.io/Genie.jl/dev/) (Julia), and [Blockpad](https://blockpad.net/). Google Colab isn't right because it requires sign-in and knowledge to use a Jupyter notebook with Python for my users. Blockpad is interesting but too basic for what I need; i.e., I need linear algebra and scientific computing. The Julia language was built for scientific computing. Genie was built to create web apps and looks good. Streamlit looks really good too. I want to learn Julia more than I want to learn Python because I tend to write scientific computing programs. As I have explored Genie and Julia, I am more sold that it is a good general direction.
 
@@ -33,7 +33,7 @@ julia: error while loading shared libraries: libjulia.so.1: cannot open shared o
 user1@jasonhnicholson.com [~]#
 ```
 
-Next up was I tried Virtual Private Server (VPS) for Bluehost, a step up compared to shared hosting. It gave access to a CentOS server with a package manager for around $30 a month; it could be cheaper, but I am paying monthly, so I don't get it cheaper for a yearly subscription. Other services are cheaper, but I have used Bluehost for a while. Time is worth more than learning another hosting platform. Long term, I may do something different.
+Next up was I tried Virtual Private Server (VPS) for Bluehost, a step up compared to shared hosting. It gave access to a CentOS server with a package manager for around \$30 a month; it could be cheaper, but I am paying monthly, so I don't get it cheaper for a yearly subscription. Other services are cheaper, but I have used Bluehost for a while. Time is worth more than learning another hosting platform. Long term, I may do something different.
 
 VPS was easier to work with than shared hosting. The downside was that it took a whole four days to get things working correctly between SSH, CPanel, WHM, Julia, yum, rpm, CentOS, Julia, bash, and more. If some of these things are not familiar to you, it should explain the vast difficulty of trying to work cross-disciplinary on the web. It isn't easy. I am comfortable enough with Linux that bash doesn't scare me. I google things just like everyone else. I can learn but be more focused when I can help it.
 
