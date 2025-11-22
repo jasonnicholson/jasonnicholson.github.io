@@ -1,5 +1,21 @@
-# Note, the worktree method is helpful because LFS items are committed
-# as actual files and not pointers. 
+# This script deploys to the gh-pages branch using a git worktree. It can
+# be used locally or in CI environments.
+#
+# The worktree method is helpful because LFS items are committed
+# as actual files and not pointers, which then works for GitHub Pages.
+
+
+# Clean up local gh-pages branch and worktree if they exist if not running in CI
+if !haskey(ENV, "CI")
+  @info "CI not detected; checking for existing gh-pages worktree and branch to clean up"
+  try
+    run(`git worktree remove __site --force`)
+    run(`git branch -D gh-pages`)
+  catch e
+    # Do nothing if they don't exist
+  end
+end
+
 
 # Creates a local gh-pages branch with no files
 # This must be done before building the site
@@ -23,14 +39,28 @@ Pkg.instantiate();
 using NodeJS;
 run(`$(npm_cmd()) install`);
 
-# No fail is set because of vba is language code blocks. The site highlights vba correctly 
-# but there is no clear way to the prerender step how to use the vba language for code blocks.
 using Franklin;
-optimize(no_fail_prerender=true); 
+optimize(prerender=false);
 
 # Deploy the site
 cd("__site") do
-    run(`git add .`);
-    run(`git commit -m "Deploy to gh-pages $current_hash"`);
-    run(`git push --force origin gh-pages`);
+  run(`git add --all .`)
+  run(`git commit -m "Deploy to gh-pages $current_hash"`)
+  run(`git push --force origin gh-pages`)
 end
+
+# If not running in CI, remove the temporary worktree and delete the
+# local `gh-pages` branch. When `CI` is defined we assume the action
+# runner or environment will manage cleanup and we skip these steps.
+if !haskey(ENV, "CI")
+  @info "CI not detected; cleaning up __site worktree and gh-pages branch"
+  try
+    run(`git worktree remove __site --force`)
+    run(`git branch -D gh-pages`)
+  catch e
+    @warn "Failed to remove worktree __site and/or gh-pages branch: $e"
+  end
+else
+  @info "CI detected; skipping worktree cleanup"
+end
+
