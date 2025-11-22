@@ -21,9 +21,12 @@ using Pkg;
 Pkg.activate(".");
 Pkg.instantiate();
 using NodeJS;
-run(`$(npm_cmd()) install highlight.js`);
+run(`$(npm_cmd()) install`);
+
+# No fail is set because of vba is language code blocks. The site highlights vba correctly 
+# but there is no clear way to the prerender step how to use the vba language for code blocks.
 using Franklin;
-optimize();
+optimize(no_fail_prerender=true); 
 
 # Deploy the site
 cd("__site") do
