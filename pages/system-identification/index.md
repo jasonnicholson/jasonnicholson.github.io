@@ -34,7 +34,7 @@ I have created a list of system identification books via WorldCat. WorldCat allo
 
 [System Identification at Linköping University](https://www.control.isy.liu.se/en/student/graduate/idkurs/schedule.html). Not an online course but gives a recommended schedule of lectures and readings. To preserve this information for the future, a screenshot is below of the schedule.
 
-\figureHelper{}{../image.png}{width:140%;}
+\figureHelper{}{image.png}{width:140%;}
 
 [Lecture notes and recordings for ECE5560: System Identification](http://mocha-java.uccs.edu/ECE5560/index.html). Uses Lennart Ljung's book.
 

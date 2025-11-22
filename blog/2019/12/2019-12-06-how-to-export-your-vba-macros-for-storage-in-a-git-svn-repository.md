@@ -7,7 +7,7 @@ tags = [""]
 
 This shows a quick workflow I use to handle VBA Macros so that they are diffed properly in a GIT/SVN repository.
 
-[Here is the example workbook.](../Example%20FIles%20-%20How%20to%20Export%20Your%20VBA%20Macros%20for%20Storage%20in%20a%20GIT,%20SVN%20Repository.zip)
+[Here is the example workbook.](../Example_Files___How_to_Export_Your_VBA_Macros_for_Storage_in_a_GIT,_SVN_Repository.zip)
 
 ```vba
 Option Explicit
