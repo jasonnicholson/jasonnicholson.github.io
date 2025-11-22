@@ -13,7 +13,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        persist-credentials: false
+        # Allow the workflow to push back to the repository using the
+        # automatically provided GITHUB_TOKEN. This enables `deploy.jl`
+        # to push to `gh-pages` (or other branches) without extra secrets.
+        persist-credentials: true
     # # NOTE: Python is necessary for the pre-rendering (minification) step
     # - name: Install python
     #   uses: actions/setup-python@v2
@@ -26,4 +29,12 @@ jobs:
       uses: julia-actions/setup-julia@v1
       with:
         version: '1' # Latest stable Julia release.
-    - run: julia .github/workflows/deploy.jl
+    - name: Configure git for actions
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Run deploy script
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: julia .github/workflows/deploy.jl
