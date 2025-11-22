@@ -1,0 +1,240 @@
++++
+title = "Taylor Series"
+date = Date(2021, 05, 01)
++++
+
+\toc
+
+## Summary
+
+Taylor Series is an infinite sum of monomial terms. Taylor series acts like a polynomial with infinite terms. Therefore, it has similar properties to polynomials, such as not having horizontal or vertical asymptotes. This is helpful for understanding when the Taylor series converges or doesn't converge. For functions that are infinitely differentiable but have asymptotes ($arctan(x)$, rational functions, $tanh(x)$), the Taylor series will converge locally but not globally. For functions that do not behave like polynomials but are infinitely differentiable, the Taylor series can converge locally but not globally ($log(x)$). The Taylor series will converge globally for functions that behave like polynomials ($exp(x)$).
+
+Taylor series is often used in numerical methods to describe "the order of accuracy" or "order of convergence" of a particular numerical method. For instance, in numerical integration, a method is second-order accurate if it accurately estimates the Taylor series' constant, linear, and quadratic terms. A strong understanding of the Taylor series helps understand many numerical methods.
+
+Other infinite series exist, such as the Laurent or the Power series. Padé approximant is very similar to a truncated Taylor series but is instead a ratio of two polynomials. Laurent, Power, and Padé approximant may be discussed on other Numerical Methods pages.
+
+## Resources
+No math is shown here because excellent documentation is easily found in other places, such as Wikipedia and Mathworld.
+
+- [Taylor Series at Wolfram Mathworld](https://mathworld.wolfram.com/TaylorSeries.html)
+
+- [Taylor Series Wikipedia](https://en.wikipedia.org/wiki/Taylor_series)
+
+## Animations
+
+### $exp(x)$ about 0 and 1
+
+The Taylor series of $exp(x)$ about 0 has an infinite radius of convergence. Higher and higher-order Taylor series truncations converge more and more to $exp(x)$. $exp(x)$ about 1 is similar to $exp(x)$ about 0, except that the expansion point is 1.
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/hYLjC8gmXw0?si=DUFpW92jHjn-6sBQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/27Ew6aE95YA?si=rj3TlEaEyetJg5bj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $sin(x)$ about 0 and 0.5
+
+Sine behaves similarly to a polynomial locally, so the Taylor series converges. The radius of convergence is infinite.
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/JM6h67hYZVU?si=rJfF8rm9iPh6IRSQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/ZQeUI9CG_AU?si=IlQxkN1IDDVCgXA_" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $tanh(x)$ about 0 and 0.5
+
+Tanh has two horizontal asymptotes. The Taylor series has a limited radius of convergence.
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/Xup7ESoOM68?si=7WwbJCWmM2QBm2gf" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/ryRv-xhdQLs?si=qpfC4NvbhTbMvkWT" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $arctan(x)$ about 0 and 0.5
+
+arctan has two horizontal asymptotes similar to tanh. The radius of convergence is limited.
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/Xup7ESoOM68?si=A63P-lywwUj-KSbw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/H4zeDK8bf7M?si=ud3rd3_QQ1v8U7ZS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $1/x$ about 0.5 and $1/(x-1)$ about 0.75
+
+The Taylor series does not converge across a vertical asymptote.
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/2GPi45LTiFU?si=Fn_GNEf_Bj0t61sJ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/fNKgR_sQwHM?si=6xe7H4mfj2Ob4Nj3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $sqrt(abs(x))*sign(x)$ about 0.5
+
+This function contains two discontinuous functions, abs and sign. This function often is used by engineers to simulate lump parameter fluid flow. This function is a poor choice because of the infinite derivative at x=0 of the sqrt function and the discontinuities of sign and abs. The Taylor series cannot convert across x=0.
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/3EJLus4Y_JY?si=XoqOby2mjnws1sTS" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+# Code to Create Animations
+
+MATLAB 2020a was used to write and execute the code below.
+
+```matlab
+clc; clear; close all;
+
+%% exp(x) about 0
+titleName = "exp(x) about 0";
+func = @(x) exp(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 20;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% exp(x) about 1
+titleName = "exp(x) about 1";
+func = @(x) exp(x);
+expansionPoint = 1;
+domain = [-5 5];
+maxOrder = 21;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% tanh(x) about 0
+titleName = "tanh(x) about 0";
+func = @(x) tanh(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 50;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% tanh(x) about 0.5
+titleName = "tanh(x) about 0.5";
+func = @(x) tanh(x);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% arctan(x) about 0
+titleName = "arctan(x) about 0";
+func = @(x) atan(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% arctan(x) about 0.5
+titleName = "arctan(x) about 0.5";
+func = @(x) atan(x);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% 1/x about 0.5
+titleName = "1/x about 0.5";
+func = @(x) 1./x;
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% 1/(x-1) about 0.75
+titleName = "1/(x-1) about 0.75";
+func = @(x) 1./(x-1);
+expansionPoint = 0.75;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% sin(x) about 0
+titleName = "sin(x) about 0";
+func = @(x) sin(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% sin(x) about 0.5
+titleName = "sin(x) about 0.5";
+func = @(x) sin(x);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% sqrt(abs(x))*sign(x) about 0.5
+titleName = "sqrt(abs(x))*sign(x) about 0.5";
+func = @(x) sqrt(abs(x)).*sign(x);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 40;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%%
+function createVideo(titleName,func,expansionPoint,domain,maxOrder)
+
+% setup figure
+figureObject = figure("Position",[10 10 1920 1080]);
+
+% setup video file
+videoName = regexprep(titleName,"/","_") + ".avi";
+video = VideoWriter(videoName,"Motion JPEG AVI");
+video.FrameRate = 2;
+
+try
+    video.open();
+
+    % setup function to approximate
+    fplot(func,domain,"linewidth",3,"DisplayName",func2str(func))
+    hold all;
+    xlabel("x"); ylabel("y")
+    title(titleName)
+    ylim(ylim);
+
+    syms x real;
+    taylor = func(expansionPoint);
+    fplotObject = fplot(taylor,"--","LineWidth",3,"DisplayName",sprintf("Taylor Series, Order = %3d",0));
+    legend("location","best");
+    video.writeVideo(getframe(figureObject));
+    
+    % loop
+    deriv = diff(func(x),x);
+    factorial = sym('1');
+    for i=1:maxOrder
+        % add next term to taylor series
+        derivativeAtExpansionPoint = subs(deriv,x,expansionPoint);
+        factorial = factorial*i;
+        taylor = taylor + derivativeAtExpansionPoint./factorial*(x-expansionPoint).^i;
+        
+        % plot
+        fplotObject.Function = taylor;
+        fplotObject.DisplayName = sprintf("Taylor Series, Order = %3d",i);
+        
+        % write frame
+        video.writeVideo(getframe(figureObject));
+        
+        % setup for next loop
+        deriv = diff(deriv,x);
+    end
+
+    video.close();
+catch e
+    video.close();
+    if exist(videoName,"file")
+        delete(videoName);
+    end
+    rethrow(e);
+end
+
+end
+```

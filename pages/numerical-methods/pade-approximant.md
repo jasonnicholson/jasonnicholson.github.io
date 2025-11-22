@@ -1,0 +1,302 @@
++++
+title= "Padé approximant"
+date= Date(2022,09,13)
++++
+
+\toc
+
+## Summary
+Padé approximant is a rationale function approximation expanded from a function value and the derivative function values similar to Taylor Series. Often, Padé approximant's can converge when Taylor Series does not even though both use the same information at a point. The key is Taylor Series is a polynomial while Padé approximant is a rationale function. Rationale functions can have singularities/vertical-asymptotes and horizontal asymptotes. Polynomials do not have asymptotes or singularities.
+
+High-order Padé Approximants can be hard to compute because of how fast the coefficients grow. Total orders (denominator plus numerator order) of less than 20 fail at times for MATLAB's symbolic `pade` function in the code below. `padeapprox` from chebfun also struggles. It takes a lot of effort to compute a high-order Padé approximate.
+
+The most useful way to understand Padé approximant is to watch the animations below. For details on the construction, see the resources section below.
+
+## Resources
+
+[Wikipedia Padé approximate](https://en.wikipedia.org/wiki/Pad%C3%A9_approximant) - A good overview of Pade's approximate.
+
+[Matlab Symbolic Pade Approximant Page](https://www.mathworks.com/help/releases/R2025b/symbolic/sym.pade.html)
+
+[Chebfun](http://www.chebfun.org/) has a function called `padeapprox` that calculates a Padé approximant numerically. `padeapprox` is based on this paper, [Robust Padé Approximation via SVD](https://epubs.siam.org/doi/abs/10.1137/110853236).
+
+## Animations
+
+### $exp(x)$ about 0 and 1
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/vlRRJmD7ufQ?si=5P3vtR66eJkH2cUP" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/eQfzLC0TkQ4?si=P0pSOEo1tDizJHxj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $tanh(x)$ about 0 and 0.5
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/F3b-5Hg2I-U?si=ddGRKKQSN-Lpl-Bn" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/fQyP7lAOMnM?si=-H7gZ8sPe82RO3F3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $arctan(x)$ about 0 and 0.5
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/1OnF6VQ0d5s?si=9K8cJ1mVW2ZP3Ynw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/3dpM6ps9ynU?si=KODnYT23NSf6mpH4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $1/x$ about 0.5
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/ECNKOTKXfkY?si=TjaKchAB3khPJvWr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $1/(x-1)$ about 0.75
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/Rf94ECJEPpc?si=NhXy0TGzobunnK5q" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $sin(x)$ about 0 and 0.5
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/146vjwp0WJc?si=rozpDNEs7ADm-5KL" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/uXWFVxsBJsk?si=qMUPJGODVczpI8rZ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### $x/(x^2 + 0.01^2)^\frac{1}{4}$ about 0.5
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/0udOsZtcXOo?si=UCtO-Ev3Vd30opR8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+### Runge function, $1/(1+25x^2)$ about 0 and 0.5
+
+~~~
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/WdNOvvoV8nc?si=9hUoidIbTElrgtOx" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<br />
+<br />
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/3fCY4PKgFlM?si=eTd85ne8YRG15JEU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+~~~
+
+# Code to Create Animations
+
+MATLAB 2020a was used to write and execute the code below.
+
+```
+clc; clear; close all;
+
+%% exp(x) about 0
+titleName = "exp(x) about 0";
+func = @(x) exp(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 20;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% exp(x) about 1
+titleName = "exp(x) about 1";
+func = @(x) exp(x);
+expansionPoint = 1;
+domain = [-5 5];
+maxOrder = 20;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% tanh(x) about 0
+titleName = "tanh(x) about 0";
+func = @(x) tanh(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 25;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% tanh(x) about 0.5
+titleName = "tanh(x) about 0.5";
+func = @(x) tanh(x);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% arctan(x) about 0
+titleName = "arctan(x) about 0";
+func = @(x) atan(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% arctan(x) about 0.5
+titleName = "arctan(x) about 0.5";
+func = @(x) atan(x);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% 1/x about 0.5
+titleName = "1/x about 0.5";
+func = @(x) 1./x;
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% 1/(x-1) about 0.75
+titleName = "1/(x-1) about 0.75";
+func = @(x) 1./(x-1);
+expansionPoint = 0.75;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% sin(x) about 0
+titleName = "sin(x) about 0";
+func = @(x) sin(x);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% sin(x) about 0.5
+titleName = "sin(x) about 0.5";
+func = @(x) sin(x);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% x/(x^2 + 0.01^2)^(1/4)
+titleName = "x/(x^2 + 0.01^2)^(1/4) about 0.5";
+func = @(x) x./(x.^2 + 0.01^2).^(1/4);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 30;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% Runge function
+titleName = "Runge function, 1/(1+25*x^2) about 0";
+func = @(x) 1./(1+25*x.^2);
+expansionPoint = 0;
+domain = [-5 5];
+maxOrder = 20;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%% Runge function
+titleName = "Runge function, 1/(1+25*x^2) about 0.5";
+func = @(x) 1./(1+25*x.^2);
+expansionPoint = 0.5;
+domain = [-5 5];
+maxOrder = 20;
+createVideo(titleName, func, expansionPoint, domain, maxOrder);
+
+%%
+function createVideo(titleName,func,expansionPoint,domain,maxOrder,approach)
+
+    arguments
+        titleName (1,1) string;
+        func (1,1) function_handle;
+        expansionPoint (1,1) double;
+        domain (1,2) double;
+        maxOrder (1,1);
+        approach (1,1) string {mustBeMember(approach,["chebfun","sym"])} = "sym";
+    end
+    
+    
+% setup figure
+width = 1920;
+height = 1080;
+figureObject = figure("Position",[10 10 width height]);
+
+% setup video file
+videoName = regexprep(titleName,["/","\*"],"_") + ".mp4";
+video = VideoWriter(videoName,"MPEG-4");
+video.FrameRate = 2;
+
+try
+    video.open();
+
+    % setup function to approximate
+    fplot(func,domain,"linewidth",3,"DisplayName",func2str(func))
+    hold all;
+    xlabel("x"); ylabel("y")
+    title(titleName)
+    ylim(ylim);
+    xlim(xlim);
+    
+    % find the permutations of the numerator and denominator
+    [numeratorOrder, denominatorOrder] = ndgrid(0:maxOrder,0:maxOrder);
+    totalOrder = numeratorOrder + denominatorOrder;
+    isOrderToHigh = totalOrder > maxOrder;
+    numeratorOrder(isOrderToHigh) = [];
+    denominatorOrder(isOrderToHigh) = [];
+    [~,sortedIndex] = sortrows([denominatorOrder(:)+numeratorOrder(:), numeratorOrder(:), denominatorOrder(:)]);
+    numeratorOrder = numeratorOrder(sortedIndex);
+    denominatorOrder = denominatorOrder(sortedIndex);
+    
+    
+    % loop
+    for i=1:length(numeratorOrder)
+        % calculate next pade approximant
+        order = [numeratorOrder(i), denominatorOrder(i)];
+        switch approach
+            case "chebfun"
+                
+                % padeapprox is used from  the Chebfun toolbox by Trefethen and others. The advatnage is computation is
+                % faster then symbolic computation. The disadvatage is has numerical issues at total order
+                % (numeratorOrder + denominatorOrder) of 16 or so.
+                %
+                % http://www.chebfun.org/
+                % P. Gonnet, S. Guettel, and L. N. Trefethen, "Robust Pade approximation  via SVD", SIAM Rev., 55:101-117, 2013.
+                %
+                % Commentary: numerical issues are more of a statement of ill-conditioning of monomial basis combined
+                % with constructing a pade approximate. Finding a pade approximate may be possible via an orthogonal
+                % polynomial basis but I am not aware of any software that does this.
+                % 
+                padeApproximant = padeapprox(@(x) func(x+expansionPoint), order(1),order(2));
+                padeApproximant = @(x) padeApproximant(x-expansionPoint);
+            case "sym"
+                % The symbolic approach is accurate but slow. For high enough total order (numeratorOrder +
+                % denominatorOrder), large integer errors occur stopping further computation. To avoid this as much as
+                % possible, we try to tell the symbolic engine that we want variable precision arithmetic, vpa().
+                if i==1
+                    syms x real
+                    digits(20);
+                    func = vpa(func(vpa(1.0)*x));
+                end
+                padeApproximant = pade(func, x, expansionPoint, 'order', order);
+        end
+        
+        
+        label = sprintf("Padé approximant, Pade Order = [%3d,%3d],Total Order = %3d",order,sum(order));
+        if i ==1
+            % setup plot
+            fplotObject = fplot(padeApproximant,"--","LineWidth",3,"DisplayName",label);
+            legend("location","best");
+        else
+            % plot
+            fplotObject.Function = padeApproximant;
+            fplotObject.DisplayName = label;
+        end
+        % write frame
+        video.writeVideo(getframe(figureObject));
+    end
+
+    video.close();
+catch e  %#ok
+    video.close();
+    fprintf("%s around %g failed at pade order = [%d, %d]\n",string(func),expansionPoint,order(1),order(2));
+%     if exist(videoName,"file")
+%         delete(videoName);
+%     end
+     rethrow(e);
+end
+
+end
+```
