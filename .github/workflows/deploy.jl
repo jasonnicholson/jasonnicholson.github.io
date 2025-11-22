@@ -9,6 +9,7 @@
 if !haskey(ENV, "CI")
   @info "CI not detected; checking for existing gh-pages worktree and branch to clean up"
   try
+    rm("__site"; force=true, recursive=true)
     run(`git worktree remove __site --force`)
     run(`git branch -D gh-pages`)
   catch e
