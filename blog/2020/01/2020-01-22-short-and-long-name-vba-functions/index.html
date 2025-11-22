@@ -1,0 +1,51 @@
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/highlight/styles/github.min.css"> <link href="/css/franklin.css" rel=stylesheet > <link href="/css/vela.css" rel=stylesheet > <script src="/libs/vela/jquery.min.js"></script> <link rel=icon  href="/assets/favicon.png"> <title>Jason H. Nicholson</title> <div class="main-nav slideout-menu slideout-menu-left" id=menu > <div class=flex-container > <span class=sidebar-brand > </span> </div> <nav class=sidebar-nav > <ul class=metismenu  id=metismenu > <li><a href="/index.html">Home</a> <li><a href="/blog/">Blog</a> <li><a href="" class=has-arrow >Pages</a> <ul> <li><a href="/pages/numerical-methods/">Numerical Methods</a> <li><a href="/pages/system-identification/">System Identification</a> </ul> <li><a href="/about/">About</a> </ul> </nav> </div> <main id=panel  class="slidout-panel slideout-panel-left"> <div class="toggle-button hamburger hamburger--spin"> <div class=hamburger-box > <div class=hamburger-inner ></div> </div> </div> <h1 class="page title">Short and Long Name VBA Functions</h1> <hr> <div class=franklin-content > <p>From time to time I write VBA. One of the things I have needed is what is called the short path. If you ever worked at the command line, it looks like what is shown below. &quot;PROGRA~1&quot; is the short name for &quot;Program Files&quot;.</p> <pre><code class=language-bat >C:\&gt;dir /x *
+
+ Directory of C:\
+
+01/20/2020  04:09 PM    &lt;DIR&gt;          PROGRA~1     Program Files
+01/22/2020  02:05 AM    &lt;DIR&gt;          PROGRA~2     Program Files &#40;x86&#41;
+11/24/2019  12:07 AM    &lt;DIR&gt;          SOLIDW~1     SOLIDWORKS Data
+11/23/2019  10:26 PM    &lt;DIR&gt;                       Users
+01/10/2020  07:41 AM    &lt;DIR&gt;                       Windows
+               0 File&#40;s&#41;              0 bytes
+              10 Dir&#40;s&#41;  347,556,667,392 bytes free</code></pre> <p>Short names can be useful when processing file names that are hard to parse. For instance, dumping a file list to a Comma Separated Values file. If one of the paths has a comma, that path will get separated into separate values. One way to deal with this is to just put the path in quotes like this <code>C:\my path\ with a, comma\folder</code> The other way to deal with this just store the short path/name. Usually, when I have used the short name, I have needed it in Excel. Therefore, I have a couple of functions written VBA that I use. They are shown below. One of them returns the short name and the other returns the long name.</p> <pre><code class=language-vba >Option Explicit
+
+&#39; Max length of a long path
+Private Const MAX_PATH &#61; 32768
+
+&#39; Declarations hooking into Windows API
+Private Declare Function GetLongPathNameW Lib &quot;kernel32&quot; &#40;ByVal lpszShortPath As Long, ByVal lpszLongPath As Any, ByVal cchBuffer As Long&#41; As Long
+Private Declare Function GetShortPathNameW Lib &quot;kernel32&quot; &#40;ByVal lpszLongPath As Long, ByVal lpszShortPath As Any, ByVal cchBuffer As Long&#41; As Long
+
+Public Function GetLongPathName&#40;strShortPath As String&#41; As String
+    Dim strLongPath As String * MAX_PATH
+    Dim lLongPathLength As Long
+    
+    &#39; Call WIndows API for long path in Unicode
+    lLongPathLength &#61; GetLongPathNameW&#40;StrPtr&#40;strShortPath&#41;, strLongPath, MAX_PATH&#41;
+    
+    &#39; Handle Any errors before returning
+    If lLongPathLength &#61; 0 Then
+            GetLongPathName &#61; CVErr&#40;xlErrValue&#41;
+    Else
+        &#39;Convert string and discard extra characters
+        GetLongPathName &#61; Left&#36;&#40;StrConv&#40;strLongPath, vbFromUnicode&#41;, lLongPathLength&#41;
+    End If
+End Function
+
+Public Function GetShortName&#40;ByVal strLongPath As String&#41; As String
+    Dim strShortPath As String * MAX_PATH
+    Dim lShortPathLength As Long
+    
+    &#39; Call Windows API for short path in Unicode
+    &#39; \\?\ must be prepended because this will allow for paths longer than 260 characters
+    lShortPathLength &#61; GetShortPathNameW&#40;StrPtr&#40;&quot;\\?\&quot; &amp; strLongPath&#41;, strShortPath, MAX_PATH&#41;
+    
+    &#39; Handle Any errors before returning
+    If lShortPathLength &#61; 0 Then
+        GetShortName &#61; CVErr&#40;xlErrValue&#41;
+    Else
+        &#39;Convert string and discard extra characters
+        GetShortName &#61; Mid&#36;&#40;StrConv&#40;strShortPath, vbFromUnicode&#41;, 5, lShortPathLength - 4&#41;
+    End If
+End Function</code></pre> <div class=page-foot > <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> Jason H. Nicholson. Last modified: November 18, 2025. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>. </div> </div> </main> <script src="/libs/vela/metisMenu.min.js"></script> <script src="/libs/vela/slideout.min.js"></script> <script src="/libs/highlight/highlight.min.js"></script> <script src="/libs/highlight/vba.min.js"></script> <script>hljs.highlightAll();hljs.configure({tabReplace: ' '}); </script>

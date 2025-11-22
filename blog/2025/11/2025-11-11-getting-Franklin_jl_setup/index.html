@@ -1,0 +1,160 @@
+<!doctype html> <html lang=en > <meta charset=UTF-8 > <meta name=viewport  content="width=device-width, initial-scale=1"> <link rel=stylesheet  href="/libs/highlight/styles/github.min.css"> <link href="/css/franklin.css" rel=stylesheet > <link href="/css/vela.css" rel=stylesheet > <script src="/libs/vela/jquery.min.js"></script> <link rel=icon  href="/assets/favicon.png"> <title>Jason H. Nicholson</title> <div class="main-nav slideout-menu slideout-menu-left" id=menu > <div class=flex-container > <span class=sidebar-brand > </span> </div> <nav class=sidebar-nav > <ul class=metismenu  id=metismenu > <li><a href="/index.html">Home</a> <li><a href="/blog/">Blog</a> <li><a href="" class=has-arrow >Pages</a> <ul> <li><a href="/pages/numerical-methods/">Numerical Methods</a> <li><a href="/pages/system-identification/">System Identification</a> </ul> <li><a href="/about/">About</a> </ul> </nav> </div> <main id=panel  class="slidout-panel slideout-panel-left"> <div class="toggle-button hamburger hamburger--spin"> <div class=hamburger-box > <div class=hamburger-inner ></div> </div> </div> <h1 class="page title">Setting Up a Franklin.jl Blog</h1> <hr> <div class=franklin-content > <p>Note, that this method is brittle. After I put this into practice and had multiple failures and spent hours and days troubleshooting, I opted for a static blog page that contains static links. I don&#39;t auto generate the page using the code below. I will come back to this after I understand some of the details better. For now, I am not using the method below.</p> <ol> <li><p>Setup a new Franklin site.</p> </ol> <pre><code class=language-Julia >using Franklin
+newsite&#40;&quot;mySite&quot;, template&#61;&quot;pure-sm&quot;&#41;</code></pre> <ol start=2 > <li><p>Add the following code to your utils.jl file. The <code>newsite&#40;&#41;</code> call created the <code>utils.jl</code> file.</p> </ol> <pre><code class=language-Julia >&quot;&quot;&quot;
+    &#123;&#123;blogposts&#125;&#125;
+
+Plug in the list of blog posts contained in the &#96;/blog/&#96; folder.
+
+Taken from the the julialang.org site and modified.
+https://github.com/JuliaLang/www.julialang.org/blob/90de0f3bf314796db210b6faeea55ed360721836/utils.jl#L43-L85
+&quot;&quot;&quot;
+function hfun_blogposts&#40;&#41;
+  curyear &#61; year&#40;Dates.today&#40;&#41;&#41;
+  io &#61; IOBuffer&#40;&#41;
+  for year in curyear:-1:2015
+    ys &#61; &quot;&#36;year&quot;
+    year &lt; curyear &amp;&amp; write&#40;io, &quot;\n**&#36;year**\n&quot;&#41;
+    for month in 12:-1:1
+      ms &#61; lpad&#40;string&#40;month&#41;, 2, &#39;0&#39;&#41;
+      base &#61; joinpath&#40;&quot;blog&quot;, ys, ms&#41;
+      isdir&#40;base&#41; || continue
+      posts &#61; filter&#33;&#40;p -&gt; endswith&#40;p, &quot;.md&quot;&#41;, readdir&#40;base&#41;&#41;
+      nposts &#61; length&#40;posts&#41;
+      dates &#61; Vector&#123;Date&#125;&#40;undef, nposts&#41;
+      lines &#61; Vector&#123;String&#125;&#40;undef, nposts&#41;
+      for &#40;i, post&#41; in enumerate&#40;posts&#41;
+        ps &#61; splitext&#40;post&#41;&#91;1&#93;
+        url &#61; &quot;/blog/&#36;ys/&#36;ms/&#36;ps/&quot;
+        surl &#61; strip&#40;url, &#39;/&#39;&#41;
+        title &#61; pagevar&#40;surl, :title&#41;
+        title &#61;&#61;&#61; nothing &amp;&amp; &#40;title &#61; &quot;Untitled&quot;&#41;
+        date &#61; pagevar&#40;surl, :date&#41;
+        # parse published date defensively; fall back to first of month
+        if isnothing&#40;date&#41;
+          date &#61; Date&#40;year, month, 1&#41;
+        else
+          try
+            # expect ISO format: yyyy-mm-dd
+            date &#61; Date&#40;date, Dates.DateFormat&#40;&quot;yyyy-mm-dd&quot;&#41;&#41;
+          catch err1
+            try
+              # try generic parsing as a fallback
+              date &#61; Date&#40;date&#41;
+            catch err2
+              @warn &quot;Failed to parse published date; falling back to first of month&quot; surl &#61; surl pubdate &#61; date error &#61; err2
+              date &#61; Date&#40;year, month, 1&#41;
+            end
+          end
+        end
+        dates&#91;i&#93; &#61; date
+        # format date as ISO yyyy-mm-dd for output
+        lines&#91;i&#93; &#61; &quot;\n&#36;date - &#91;&#36;title&#93;&#40;&#36;url&#41;\n&quot;
+      end
+      # sort by full Date &#40;descending&#41; so posts are antichronological
+      order &#61; sortperm&#40;dates, rev&#61;true&#41;
+      foreach&#40;idx -&gt; write&#40;io, lines&#91;idx&#93;&#41;, order&#41;
+    end
+  end
+  # markdown conversion adds &#96;&lt;p&gt;&#96; beginning and end but
+  # we want to avoid this to avoid an empty separator
+  r &#61; Franklin.fd2html&#40;String&#40;take&#33;&#40;io&#41;&#41;, internal&#61;true&#41;
+  return r
+end
+
+&quot;&quot;&quot;
+    &#123;&#123;recentblogposts&#125;&#125;
+
+Input the 3 latest blog posts.
+Taken from the the julialang.org site and modified.
+https://github.com/JuliaLang/www.julialang.org/blob/90de0f3bf314796db210b6faeea55ed360721836/utils.jl#L43-L85
+&quot;&quot;&quot;
+function hfun_recentblogposts&#40;&#41;
+  curyear &#61; Dates.Year&#40;Dates.today&#40;&#41;&#41;.value
+  ntofind &#61; 3
+  # collect recent posts dynamically; push&#33; as we find them
+  recent &#61; Vector&#123;Pair&#123;String,Date&#125;&#125;&#40;&#41;
+  for year in curyear:-1:2019
+    for month in 12:-1:1
+      ms &#61; lpad&#40;string&#40;month&#41;, 2, &#39;0&#39;&#41;
+      base &#61; joinpath&#40;&quot;blog&quot;, &quot;&#36;year&quot;, &quot;&#36;ms&quot;&#41;
+      isdir&#40;base&#41; || continue
+      posts &#61; filter&#33;&#40;p -&gt; endswith&#40;p, &quot;.md&quot;&#41;, readdir&#40;base&#41;&#41;
+      np &#61; length&#40;posts&#41;
+      dates &#61; Vector&#123;Date&#125;&#40;undef, np&#41;
+      surls &#61; Vector&#123;String&#125;&#40;undef, np&#41;
+      for &#40;i, post&#41; in enumerate&#40;posts&#41;
+        ps &#61; splitext&#40;post&#41;&#91;1&#93;
+        surl &#61; &quot;blog/&#36;year/&#36;ms/&#36;ps&quot;
+        surls&#91;i&#93; &#61; surl
+        # check :date front-matter only
+        date &#61; pagevar&#40;surl, :date&#41;
+        # normalize into a Date; fall back to first of month
+        if isnothing&#40;date&#41;
+          d &#61; Date&#40;year, month, 1&#41;
+        elseif isa&#40;date, Dates.Date&#41;
+          d &#61; date
+        else
+          parsed &#61; nothing
+          try
+            # expect ISO format yyyy-mm-dd
+            parsed &#61; Date&#40;date, Dates.DateFormat&#40;&quot;yyyy-mm-dd&quot;&#41;&#41;
+          catch err1
+            try
+              parsed &#61; Date&#40;date&#41;
+            catch err2
+              @warn &quot;Failed to parse recent post date; falling back to first of month&quot; surl &#61; surl pubdate &#61; date error &#61; err2
+            end
+          end
+          isnothing&#40;parsed&#41; &amp;&amp; &#40;d &#61; Date&#40;year, month, 1&#41;&#41; || &#40;d &#61; parsed&#41;
+        end
+        dates&#91;i&#93; &#61; d
+      end
+      # go over month posts in antichronological order by full Date
+      sp &#61; sortperm&#40;dates, rev&#61;true&#41;
+      for idx in sp
+        surl &#61; surls&#91;idx&#93;
+        push&#33;&#40;recent, surl &#61;&gt; dates&#91;idx&#93;&#41;
+        length&#40;recent&#41; &#61;&#61; ntofind &amp;&amp; break
+      end
+      length&#40;recent&#41; &#61;&#61; ntofind &amp;&amp; break
+    end
+    length&#40;recent&#41; &#61;&#61; ntofind &amp;&amp; break
+  end
+  #
+  io &#61; IOBuffer&#40;&#41;
+  for &#40;surl, date&#41; in recent
+    url &#61; &quot;/&#36;surl/&quot;
+    title &#61; pagevar&#40;surl, :title&#41;
+    title &#61;&#61;&#61; nothing &amp;&amp; &#40;title &#61; &quot;Untitled&quot;&#41;
+    # Check for rss_description first,
+    # then fall back to rss.
+    rss_description &#61; pagevar&#40;surl, :rss_description&#41;
+    if isnothing&#40;rss_description&#41;
+      # some pages may still define &#96;rss&#96; explicitly &#40;edge cases&#41;
+      rss_description &#61; pagevar&#40;surl, :rss&#41;
+      if isnothing&#40;rss_description&#41;
+        rss_description &#61; &quot;&quot;
+      end
+    end
+
+    write&#40;
+      io,
+      &quot;&quot;&quot;
+&lt;div class&#61;&quot;col-lg-4 col-md-12 blog&quot;&gt;
+  &lt;a href&#61;&quot;&#36;url&quot;&gt;&#36;date - &#36;title&lt;/a&gt;
+  &lt;p&gt;&#36;rss_description&lt;/p&gt;
+&lt;/div&gt;
+&quot;&quot;&quot;
+    &#41;
+  end
+  return String&#40;take&#33;&#40;io&#41;&#41;
+end</code></pre> <ol start=2 > <li><p>Create <code>blog</code> folder in the root of the new site.</p> <li><p>Put an <code>index.md</code> &#40;example below&#41; in the <code>blog</code> folder. The <code>&#123;&#123;blogposts&#125;&#125;</code> and <code>&#123;&#123;recentblogposts&#125;&#125;</code> correspond to the <code>hfun_recentblogposts&#40;&#41;</code> and <code>hfun_blogposts&#40;&#41;</code> functions in <code>util.jl</code>.</p> </ol> <pre><code class=language-md ># Recent posts
+
+&#123;&#123;recentblogposts&#125;&#125;
+
+# Blog posts
+
+&#123;&#123;blogposts&#125;&#125;</code></pre> <ol start=4 > <li><p>Create <code>yyyy/mm</code> folders in a <code>blog</code> folders. If you don&#39;t follow this format exact, the provided <code>hfun_recentblogposts&#40;&#41;</code> and <code>hfun_blogposts&#40;&#41;</code> won&#39;t find your posts.</p> <li><p>Place your posts in the <code>yyyy/mm</code> folder. Names don&#39;t matter.</p> <li><p>Make sure to define a Front Matters section for each post. The Front Matters must contain a <code>title</code> and <code>date</code> for the post to get parsed correctly by the <code>hfun_blogposts&#40;&#41;</code> function. The <code>hfun_recentblogposts&#40;&#41;</code> function has one extra requirement of <code>rss_description</code>. An example is shown below.</p> </ol> <pre><code class=language-text >&#43;&#43;&#43;
+title &#61; &quot;Setting Up a Franklin.jl Blog&quot;
+date &#61; Date&#40;2025,11,11&#41;
+rss_description &#61; &quot;Setting Up a Franklin.jl Blog&quot;
+&#43;&#43;&#43;</code></pre> <p>~~The blog post you are reading now was created from the above instructions.~~</p> <div class=page-foot > <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> Jason H. Nicholson. Last modified: November 16, 2025. Website built with <a href="https://github.com/tlienart/Franklin.jl">Franklin.jl</a> and the <a href="https://julialang.org">Julia programming language</a>. </div> </div> </main> <script src="/libs/vela/metisMenu.min.js"></script> <script src="/libs/vela/slideout.min.js"></script> <script src="/libs/highlight/highlight.min.js"></script> <script src="/libs/highlight/vba.min.js"></script> <script>hljs.highlightAll();hljs.configure({tabReplace: ' '}); </script>
