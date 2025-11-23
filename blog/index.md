@@ -10,6 +10,7 @@ title = "Blog"
 
 <!-- {{blogposts}} -->
 
+- [2025-11-22 Detecting a QR factorization has gone bad for Newton iteration](2025/11/2025-11-22-detecting-a-qr-factorization-has-gone-bad-for-newton-iteration)
 - [2025-11-19 Converting a docx to md - Math, tables, and html](2025/11/2025-11-19-converting-docx-to-md)
 - [2025-11-11 Setting Up a Franklin.jl Blog](2025/11/2025-11-11-getting-Franklin_jl_setup)
 
@@ -22,6 +23,7 @@ title = "Blog"
 - [2022-10-24 Trust-Region-Dogleg and Newton-Raphson - A Quick Comparison on a 5th order polynomial](2021/10/2021-10-24-trust-region-dogleg-and-newton-raphson-a-quick-story)
 - [2022-07-19 System Identification Resources](2021/07/2021-07-19-system-identification-resources)
 - [2022-07-19 Neural Networks. Controls, and System Identification](2021/07/2021-07-19-neural-networks-controls-and-system-identification)
+- [2021-05-09 Linux HTML Documentation Index](2021/05/2021-05-09-linux-html-documentation-index)
 - [2022-04-12 Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization](2021/04/2021-04-12-nonlinear-equation-system-solving-using-newton-line-search-and-lu-factorization)
 
 
