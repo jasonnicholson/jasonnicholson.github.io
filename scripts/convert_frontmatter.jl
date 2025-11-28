@@ -49,12 +49,44 @@ function convert_file(path::String)
     text = read(path, String)
     # match TOML front matter at the start: +++ ... +++
     m = match(r"^\s*\+\+\+[\s\S]*?\+\+\+", text)
-    if m === nothing
+    if m !== nothing
+        block = m.match
+        inner = replace(block, r"^\s*\+\+\+" => "")
+        inner = replace(inner, r"\+\+\+\s*$" => "")
+        # Convert Julia `Date(YYYY, MM, DD)` expressions to ISO date strings
+        # Replace occurrences like Date(2021, 05, 01) with "2021-05-01"
+        pat = r"Date\(\s*(\d{4})\s*,\s*(\d{1,2})\s*,\s*(\d{1,2})\s*\)"
+        inner2 = inner
+        for m2 in eachmatch(pat, inner)
+            y = m2.captures[1]; mo = m2.captures[2]; d = m2.captures[3]
+            rep = "\"$(y)-$(lpad(mo,2,'0'))-$(lpad(d,2,'0'))\""
+            inner2 = replace(inner2, m2.match => rep)
+        end
+        inner = inner2
+        toml_table = TOML.parse(inner)
+    else
+        # No TOML front matter; check for YAML front matter and sanitize numeric title
+        y = match(r"^\s*---[\s\S]*?---", text)
+        if y === nothing
+            return false
+        end
+        block = y.match
+        # Replace `title: 404` (numeric) with quoted string `title: "404"`
+        pat_title = r"(?m)^\s*(title:\s*)(\d+)\s*$"
+        inner_block = block
+        for m3 in eachmatch(pat_title, block)
+            prefix = m3.captures[1]; num = m3.captures[2]
+            rep = "$(prefix)\"$(num)\"\n"
+            inner_block = replace(inner_block, m3.match => rep)
+        end
+        newblock = inner_block
+        if newblock != block
+            out = newblock * "\n" * lstrip(replace(text, block=>""), '\n')
+            write(path, out)
+            return true
+        end
         return false
     end
-    block = m.match
-    inner = replace(block, r"^\s*\+\+\+" => "")
-    inner = replace(inner, r"\+\+\+\s*$" => "")
     # Convert Julia `Date(YYYY, MM, DD)` expressions to ISO date strings
     # Replace occurrences like Date(2021, 05, 01) with "2021-05-01"
     pat = r"Date\(\s*(\d{4})\s*,\s*(\d{1,2})\s*,\s*(\d{1,2})\s*\)"
@@ -71,7 +103,12 @@ function convert_file(path::String)
     yaml_lines = String[]
     push!(yaml_lines, "---")
     for (k,v) in toml_table
-        val = to_yaml_value(v, 0)
+        # Ensure title is always a YAML string (some pages use numeric titles like 404)
+        if k == "title"
+            val = "\"" * replace(string(v), '"' => "\\\"") * "\""
+        else
+            val = to_yaml_value(v, 0)
+        end
         if startswith(val, "\n")
             push!(yaml_lines, "$(k):$(val)")
         else
