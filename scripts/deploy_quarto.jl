@@ -1,6 +1,4 @@
 #!/usr/bin/env julia
-using Pkg
-using Dates
 
 SITE_DIR = abspath(joinpath(@__DIR__, "..","_site"))
 
