@@ -193,4 +193,6 @@ rss_description = "Setting Up a Franklin.jl Blog"
 +++
 ```
 
-~~The blog post you are reading now was created from the above instructions.~~
+~~~
+<p><del>The blog post you are reading now was created from the above instructions.</del></p>
+~~~
