@@ -1,8 +1,7 @@
-+++
-title = "About me"
-hascode = false
-+++
-
+---
+hascode: false
+title: About me
+---
 I am a mechanical engineer looking for the next innovation. This means gathering knowledge and using it to create something new.
 
 Image taken in 2020.

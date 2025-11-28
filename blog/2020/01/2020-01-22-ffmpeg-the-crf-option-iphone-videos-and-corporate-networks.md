@@ -1,9 +1,9 @@
-+++
-title = "FFmpeg, The -crf Option, iPhone Videos, and Corporate Networks"
-date = Date(2020,01,22)
-tags = ["code"]
-+++
-
+---
+title: FFmpeg, The -crf Option, iPhone Videos, and Corporate Networks
+date: 2020-01-22
+tags:
+- code
+---
 I use [FFmpeg](https://ffmpeg.org/) on a regular basis for video, audio, and image-related editing. It is a command-line tool that goes from very simple to very complicated. I intend to stick with simple today. The point here is you can save 80-90% of the space used by iPhone, GoPro, or Android Video by re-encoding the video with FFmpeg and the -crf option. Keep reading to learn more.
 
 To use FFmpeg, use something like the following.

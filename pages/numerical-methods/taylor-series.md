@@ -1,8 +1,7 @@
-+++
-title = "Taylor Series"
-date = Date(2021, 05, 01)
-+++
-
+---
+title: Taylor Series
+date: 2021-05-01
+---
 \toc
 
 ## Summary

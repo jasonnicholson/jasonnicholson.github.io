@@ -1,8 +1,7 @@
-+++
-title= "CFD, FEA, and Multiphysics Simulation"
-date= Date(2019, 05, 29)
-+++
-
+---
+title: CFD, FEA, and Multiphysics Simulation
+date: 2019-05-29
+---
 I have been working on learning the [Deal.ii](https://dealii.org/) library. Why? Because it is one of the most advanced finite element libraries I have come across. It can handle adaptive mesh refinement, multiphysics, hex-dominant, and open source. This level of detail in an open source library is amazing. If you want to buy commercial software equivalent, then you are looking at \$50-100k. 
 
 \figureHelper{Adaptive Mesh Refinement}{../image.png}{}

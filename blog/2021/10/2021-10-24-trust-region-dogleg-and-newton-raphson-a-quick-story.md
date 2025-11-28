@@ -1,9 +1,16 @@
-+++
-title = "Trust-Region-Dogleg and Newton-Raphson - A Quick Comparison on a 5th order polynomial"
-date = Date(2021, 10, 24)
-tags= ["code", "math", "dogleg", "fsolve", "matlab", "powells-dogleg", "trust-region", "trust-region-dogleg"]
-+++
-
+---
+title: Trust-Region-Dogleg and Newton-Raphson - A Quick Comparison on a 5th order polynomial
+date: 2021-10-24
+tags:
+- code
+- math
+- dogleg
+- fsolve
+- matlab
+- powells-dogleg
+- trust-region
+- trust-region-dogleg
+---
 A Newton-Raphson iteration produces a fractal pattern in the complex plane and a Trust-Region-Dogleg method produces a smoother pattern in the complex which is desirable for a nonlinear equation solver. The context of this statement is finding the roots of a polynomial in a complex plan from different starting points. The inspiration for this post was the video from [3Blue1Brown, Newton's Fractal (which Newton knew nothing about)](https://www.youtube.com/watch?v=-RdOwhmqP5s&feature=youtu.be).
 
 Given the polynomial

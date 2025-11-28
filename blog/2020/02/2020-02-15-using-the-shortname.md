@@ -1,9 +1,9 @@
-+++
-title = "Using the Shortname"
-date = Date(2020, 02, 15)
-tags = ["code"]
-+++
-
+---
+title: Using the Shortname
+date: 2020-02-15
+tags:
+- code
+---
 The Shortname is a Windows way of dealing with non-ASCII characters and long file names and paths.
 
 First, let’s create some filenames with bad character inside bad folder names. We will use the character map to generate some commonly used Unicode, non-ASCII characters. We will even use some Arabic characters. See Table 1. Note, that the files with long names longer than 260 characters require special care to generate and is not something a user can do easily. Figure 2 shows the error message windows give you when you try to create a file/path name that is too long.

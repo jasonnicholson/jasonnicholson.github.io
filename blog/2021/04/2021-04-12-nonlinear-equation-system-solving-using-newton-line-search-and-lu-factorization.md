@@ -1,11 +1,18 @@
-+++
-title = "Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization"
-date = Date(2021, 04, 12)
-tags = ["math", "line-search", "lu", "lu-factorization", "madsen-reid", "newton", "newton-method", "nonlinear-equation-system-solving"]
-rss_description = "Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization"
-hasmath = true
-+++
-
+---
+hasmath: true
+rss_description: Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization
+title: Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization
+date: 2021-04-12
+tags:
+- math
+- line-search
+- lu
+- lu-factorization
+- madsen-reid
+- newton
+- newton-method
+- nonlinear-equation-system-solving
+---
 # Summary
 
 A couple of weeks ago, I was inspired to revisit Newton's method for

@@ -1,8 +1,7 @@
-+++
-title = "Piston Rings Multiphysics Simulation"
-date = Date(2019, 05, 29)
-+++
-
+---
+title: Piston Rings Multiphysics Simulation
+date: 2019-05-29
+---
 ## Goal
 
 My main goal is to define the pressure-flow (PQ curve) past piston rings for a known oil and temperature. This is a Fluid-Structure Interaction problem (FSI).

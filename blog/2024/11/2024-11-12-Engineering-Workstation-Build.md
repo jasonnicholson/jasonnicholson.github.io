@@ -1,9 +1,10 @@
-+++
-title = "Engineering Workstation Build"
-date = Date(2024,11,12)
-rss_description = "Engineering Workstation Build for CAE applications."
-tags = [""]
-+++
+---
+rss_description: Engineering Workstation Build for CAE applications.
+title: Engineering Workstation Build
+date: 2024-11-12
+tags:
+- ""
+---
 # Engineering Workstation Build
 ## Purpose
 The main goal of this build is to make a custom engineering workstation that is appropriate for Scientific Computing (MATLAB), CAD (SolidWorks, OnShape, AutoDesk products, etc), FEA (Code_Aster, Calculix, LISA, etc), CFD (OpenFoam, Code_Saturne, Code_Syrthes), video encoding (AV1, h.265, h.266), and computer vision. It will dual boot Windows and Linux. 

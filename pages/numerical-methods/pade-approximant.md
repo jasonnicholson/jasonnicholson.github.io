@@ -1,8 +1,7 @@
-+++
-title= "Padé approximant"
-date= Date(2022,09,13)
-+++
-
+---
+title: Padé approximant
+date: 2022-09-13
+---
 \toc
 
 ## Summary

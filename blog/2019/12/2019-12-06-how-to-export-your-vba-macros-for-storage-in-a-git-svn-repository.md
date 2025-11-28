@@ -1,10 +1,10 @@
-+++
-title = "How to Export Your VBA Macros for Storage in a GIT/SVN Repository"
-date = Date(2019,12,06)
-rss_description = "How to Export Your VBA Macros for Storage in a GIT/SVN Repository"
-tags = [""]
-+++
-
+---
+rss_description: How to Export Your VBA Macros for Storage in a GIT/SVN Repository
+title: How to Export Your VBA Macros for Storage in a GIT/SVN Repository
+date: 2019-12-06
+tags:
+- ""
+---
 This shows a quick workflow I use to handle VBA Macros so that they are diffed properly in a GIT/SVN repository.
 
 [Here is the example workbook.](../Example_Files___How_to_Export_Your_VBA_Macros_for_Storage_in_a_GIT,_SVN_Repository.zip)

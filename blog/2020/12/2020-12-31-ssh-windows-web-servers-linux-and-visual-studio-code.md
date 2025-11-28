@@ -1,9 +1,11 @@
-+++
-title = "SSH, Windows, Web Servers, Linux, and Visual Studio Code"
-date = Date(2020, 12, 31)
-tags = ["code", "commentary", "misc"]
-+++
-
+---
+title: SSH, Windows, Web Servers, Linux, and Visual Studio Code
+date: 2020-12-31
+tags:
+- code
+- commentary
+- misc
+---
 ## Introduction
 
 The hardest thing about trying to do something new with computers these days is that it is hard to focus on the one new thing I am trying to learn. I want to start working on setting up a web server to implement engineering calculations at openhydrualics.com because I want them to be open and easy for anyone to use. This post is the saga I have been through to get to where I am today, a working web server that I can access to create the website I want.

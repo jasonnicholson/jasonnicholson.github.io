@@ -1,9 +1,9 @@
-+++
-title= "My Introduction to Computational Fluid Dynamics (CFD)"
-date= Date(2016,05,07)
-tags=["cfd"]
-+++
-
+---
+title: My Introduction to Computational Fluid Dynamics (CFD)
+date: 2016-05-07
+tags:
+- cfd
+---
 I have been doing a lot of CFD lately. I have quickly learned that the information one can gain from CFD is far more insightful to the physicals then 0D, lumped parameter equations.
 
 One tool I have been using is [Agros2d](http://www.agros2d.org/). It can do 2d axis symmetric and planar PDE problems. Agros2d can handle incompressible steady and unsteady CFD.

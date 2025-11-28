@@ -1,9 +1,13 @@
-+++
-title = "Neural Networks. Controls, and System Identification"
-date = Date(2021, 07, 19)
-tags = ["neural-networks", "system-identification", "controls", "system-identification", "system-modeling"]
-+++
-
+---
+title: Neural Networks. Controls, and System Identification
+date: 2021-07-19
+tags:
+- neural-networks
+- system-identification
+- controls
+- system-identification
+- system-modeling
+---
 The current engineer atmosphere is buzzing about Neural Networks. The downside is that Neural Networks do not have a structure that is easily understandable and interpretable. When we can understand the physic mechanisms, Neural Networks should not be your first choice, in my opinion.
 
 The links below take you directly to the start of the pertinent question(s). Among the two controls authors, they agree we can do the same or better than Neural Networks. Gene Morelli is from NASA. Stephen Boyd is from Stanford.

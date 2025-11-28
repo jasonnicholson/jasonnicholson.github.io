@@ -1,9 +1,9 @@
-+++
-title = "Object-Oriented Programming Decline - The Rise of other Paradigms"
-date = Date(2020, 11, 15)
-tags = ["code"]
-+++
-
+---
+title: Object-Oriented Programming Decline - The Rise of other Paradigms
+date: 2020-11-15
+tags:
+- code
+---
 I listen to a lot of computer science-related talks and podcasts. Recently, I have seen a trend away from the object-oriented paradigm. The premise is fusing your data and functions together is hard to maintain at scale. I agree. A better approach is only loosely to tie your data to the functions. I see this in the Julia language, for instance.
 
 I watched several videos that led me to gather a little information on the issues. The first one was [Why Isn't Functional Programming the Norm? – Richard Feldman](https://youtu.be/QyJZzq0v7Z4). He talks about why object-oriented programming came to be the norm in the '90s and 2000s. The main reason he describes is Java. There is more to, but there isn't a strong reason why the industry embraced object-oriented programming.

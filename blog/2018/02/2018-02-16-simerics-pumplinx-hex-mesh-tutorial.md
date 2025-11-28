@@ -1,10 +1,12 @@
-+++
-title = "Simerics Pumplinx Hex Mesh Tutorial"
-date = Date(2018, 02, 16)
-rss_description = "Simerics Pumplinx Hex Mesh Tutorial"
-tags = ["cfd", "pumplinx", "simerics"]
-+++
-
+---
+rss_description: Simerics Pumplinx Hex Mesh Tutorial
+title: Simerics Pumplinx Hex Mesh Tutorial
+date: 2018-02-16
+tags:
+- cfd
+- pumplinx
+- simerics
+---
 Simerics Pumplinx sometimes doesn't do a a good job in the help describing certain task such as Hex template meshing.  Here is some graphics that may help.
 
  

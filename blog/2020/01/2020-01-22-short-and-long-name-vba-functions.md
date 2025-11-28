@@ -1,9 +1,11 @@
-+++
-title = "Short and Long Name VBA Functions"
-date = Date(2020, 01, 22)
-tags = ["code", "vba", "windows"]
-+++
-
+---
+title: Short and Long Name VBA Functions
+date: 2020-01-22
+tags:
+- code
+- vba
+- windows
+---
 From time to time I write VBA. One of the things I have needed is what is called the short path. If you ever worked at the command line, it looks like what is shown below. "PROGRA~1" is the short name for "Program Files".
 
 ```bat

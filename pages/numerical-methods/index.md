@@ -1,7 +1,6 @@
-+++
-title = "Numerical Methods"
-+++
-
+---
+title: Numerical Methods
+---
 I plan to put together short explanations and animations on various numerical methods and math-related topics here. It will take me a long time to put this together totally. So, please be patient.
 
 ## Function Approximation

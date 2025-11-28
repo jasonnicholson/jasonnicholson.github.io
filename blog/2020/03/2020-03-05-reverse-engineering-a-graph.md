@@ -1,9 +1,14 @@
-+++
-title = "Reverse Engineering a Graph"
-date = Date(2020, 03, 05)
-tags = ["misc", "data", "data-extraction", "graphs", "reverse-engineering", "webplotdigitizer"]
-+++
-
+---
+title: Reverse Engineering a Graph
+date: 2020-03-05
+tags:
+- misc
+- data
+- data-extraction
+- graphs
+- reverse-engineering
+- webplotdigitizer
+---
 Sometimes you need data from a graph. WebPlotDigitizer is one way you can extract the data in an automated way. Check out the video below.
 
 [WebPlotDigitizer](https://apps.automeris.io/wpd/)

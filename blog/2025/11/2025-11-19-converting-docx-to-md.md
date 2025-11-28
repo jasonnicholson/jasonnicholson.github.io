@@ -1,8 +1,7 @@
-+++
-title = "Converting a docx to md - Math, tables, and html"
-date = Date(2025, 11, 19)
-+++
-
+---
+title: Converting a docx to md - Math, tables, and html
+date: 2025-11-19
+---
 I used pandoc to convert a word file to .md. 
 
 ```bash

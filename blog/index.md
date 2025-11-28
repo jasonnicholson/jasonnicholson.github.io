@@ -1,7 +1,6 @@
-+++
-title = "Blog"
-+++
-
+---
+title: Blog
+---
 <!-- # Recent posts
 
 {{recentblogposts}} -->

@@ -1,10 +1,12 @@
-+++
-title = "A Comparison Between Differential Equation Solver Suites"
-date = Date(2018,10,16)
-rss_description = "A Comparison Between Differential Equation Solver Suites"
-tags = ["dae", "julia", "ode"]
-+++
-
+---
+rss_description: A Comparison Between Differential Equation Solver Suites
+title: A Comparison Between Differential Equation Solver Suites
+date: 2018-10-16
+tags:
+- dae
+- julia
+- ode
+---
 Wow! The below article is must read if you solve differential equations on a regular basis. 
 
 [A Comparison Between Differential Equation Solver Suites In MATLAB, R, Julia, Python, C, Mathematica, Maple, and Fortran](http://www.stochasticlifestyle.com/comparison-differential-equation-solver-suites-matlab-r-julia-python-c-fortran/)

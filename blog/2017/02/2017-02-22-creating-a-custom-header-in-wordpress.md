@@ -1,9 +1,9 @@
-+++
-title = "Creating a Custom Header in Wordpress"
-date = Date(2017, 02, 22)
-tags =["stuff"]
-+++
-
+---
+title: Creating a Custom Header in Wordpress
+date: 2017-02-22
+tags:
+- stuff
+---
 I used an image for header that I wanted to cite the photographer with a link to his website. There isn't a clear way to do this in Wordpress tools. Therefore, I searched and found that I could edit the header.php file for the theme I was using to customize the header.  The header.php file is located at ./wp-content/themes/_myThemeName_ where _myThemeName_ was twentytwelve. i.e.  ./wp-content/themes/twentytwelve/header.php.
 
 I added this piece of code to header.php before the ending </header> tag:

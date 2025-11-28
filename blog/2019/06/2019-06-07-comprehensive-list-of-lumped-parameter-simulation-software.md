@@ -1,7 +1,7 @@
-+++
-title= "Comprehensive List of Lumped Parameter Simulation Software"
-date = Date(2019,06,07)
-+++
+---
+title: Comprehensive List of Lumped Parameter Simulation Software
+date: 2019-06-07
+---
 Comprehensive List of Lumped Parameter Simulation Software
 
 The Functional Mockup Interface (FMI) website has an outstanding list of simulation software.

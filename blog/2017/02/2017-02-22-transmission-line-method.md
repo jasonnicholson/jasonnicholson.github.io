@@ -1,9 +1,11 @@
-+++
-title= "Transmission Line Method"
-date = Date(2017, 02, 22)
-tags = ["ode", "dae", "system-modeling"]
-+++
-
+---
+title: Transmission Line Method
+date: 2017-02-22
+tags:
+- ode
+- dae
+- system-modeling
+---
 Transmission Line Method (TLM) or Transmission Line Matrix method is an elegant technique used to solve lossless or lossy wave equations. Here I am gathering together resources on the topic since I have found it is not well studied in the US.
 
 ## Books

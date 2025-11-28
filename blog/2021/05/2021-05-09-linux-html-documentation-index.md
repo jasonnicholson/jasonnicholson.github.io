@@ -1,8 +1,7 @@
-+++
-title = "Linux HTML Documentation Index"
-date = Date(2021,05,09)
-+++
-
+---
+title: Linux HTML Documentation Index
+date: 2021-05-09
+---
 On Ubuntu Linux, there is a package called "dhelp". dhelp allows viewing the man and info pages through a web browser. I find this very useful. man2html and info2www are required for dhelp. dhelp may work on other Linux systems but I cannot confirm this.
 
 ```bash

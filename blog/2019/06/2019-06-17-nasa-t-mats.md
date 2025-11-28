@@ -1,8 +1,7 @@
-+++
-title = "NASA T-MATS"
-date = Date(2019, 06, 17)
-+++
-
+---
+title: NASA T-MATS
+date: 2019-06-17
+---
  An open source thermodynamic modeling package completed on behalf of NASA. The Toolbox for the Modeling and Analysis of Thermodynamic Systems (T-MATS) package offers a MATLAB/Simulink toolbox that gives a developer the ability to create simulations of such thermodynamic systems as turbomachinery and gas turbines. Keywords: TMATS, Control System,… 
 
  <https://github.com/nasa/T-MATS>
