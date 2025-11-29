@@ -1,0 +1,122 @@
+---
+title: "Setting up a website and email - DNS, GitHub, Markdown"
+date: 2025-11-28
+---
+
+I recently migrated away from BlueHost and WordPress to a static site generator using GitHub Pages and Quarto. I moved my email from Bluehost to [purelymail.com](https://purelymail.com/).The process involved several steps, including setting up DNS records, configuring GitHub, and converting my content to Markdown format. Here's a brief analysis.
+
+## Cost Comparison
+Bluehost was my previous hosting provider, where I had both my website and email services. Bluehost's business model initial is inexpensive at around $5/month ($180 per 3 year term), but after a few years, it becomes 3x the cost. i.e. It costs me around $540 for hosting for a 3 year term to host a basic website with email. I need a basic site and email so Bluehost was more than I needed. As well, WordPress is a huge time suck. I wanted something simpler. Domains are around $15/year + $15/year for privacy protection from Bluehost. NameCheap charges around $12/year domain and privacy protection. Purelymail.com charges $10 a year for email hosting. GitHub Pages is free for public repositories. Quarto is free for open source projects. Overall, my new setup costs around $22/year. This is a significant cost saving compared to Bluehost.
+
+## Registrar migration and DNS setup for Github Pages
+I moved my domain registration from Bluehost to NameCheap. This was a straightforward. Follow the prompts on the screen.
+
+The following have to be set up in DNS on NameCheap so that it points to GitHub Pages.
+
+|Host|Type|Value|
+|-|-|-|-|-|
+|@ | A | 185.199.108.153|
+|@ | A | 185.199.109.153|
+|@ | A | 185.199.110.153|
+|@ | A | 185.199.111.153|
+|@ | AAAA | 2606:50c0:8000::153|
+|@ | AAAA | 2606:50c0:8001::153|
+|@ | AAAA | 2606:50c0:8002::153|
+|@ | AAAA | 2606:50c0:8003::153|
+|www | CNAME | your-github-username.github.io|
+|_GITHUB-PAGES-CHALLENGE-username|TXT|`token-provided-by-github`|
+
+<br>
+For purelymail.com email hosting, I added the following DNS records:
+
+|Host|Type|Value|
+|-|-|-|-|-|
+| @ | MX | MAILSERVER.PURELYMAIL.COM|
+|PURELYMAIL1._DOMAINKEY| CNAME|  KEY1.DKIMROOT.PURELYMAIL.COM|
+|PURELYMAIL2._DOMAINKEY| CNAME|  KEY2.DKIMROOT.PURELYMAIL.COM|
+|PURELYMAIL3._DOMAINKEY| CNAME|  KEY3.DKIMROOT.PURELYMAIL.COM|
+|_DMARC|CNAME|  DMARCROOT.PURELYMAIL.COM|
+| @ | TXT| purelymail_ownership_proof=`token-provided-by-purelymail.com`|
+| @ | TXT| v=spf1 include:_spf.purelymail.com ~all|
+
+## GithHub Pages setup
+I created a new public repository on GitHub named `your-github-username.github.io`. This is required for GitHub Pages to work with a custom domain.
+
+I validated my domain ownership by adding the TXT record mentioned above in the DNS setup section.
+
+I configured the repository settings to enable GitHub Pages, selecting the gh-pages branch as the source.
+
+I used a `git worktree` workflow to deploy the site to the `gh-pages` branch while keeping the main branch for content development. This has the advantage of allowing you to use Git LFS for large files in the main branch while not use LFS in the gh-pages branch. The deploy script is shown below:
+
+```julia
+#!/usr/bin/env julia
+
+SITE_DIR = abspath(joinpath(@__DIR__, "..","_site"))
+
+@info "SITE_DIR: $SITE_DIR"
+
+# Minimal deploy script for Quarto sites.
+# Uses `quarto render` to build the site.
+
+function run_cmd(cmd::Cmd)
+    println("$cmd")
+    run(cmd)
+end
+
+# If not running in CI, try to clean up any existing worktree so the
+# script can start from a clean state.
+if !haskey(ENV, "CI")
+  try
+    run_cmd(`git clean -xfd`)
+    rm(SITE_DIR, force=true, recursive=true)
+    run_cmd(`git worktree remove $SITE_DIR --force`)
+    run_cmd(`git branch -D gh-pages`)
+  catch e
+    # ignore if they don't exist
+  end
+end
+
+# Create a gh-pages worktree
+run_cmd(`git worktree add --orphan -B gh-pages $SITE_DIR`)
+
+# Back up the SITE_DIR/.git file (Quarto may wipe it out)
+dot_git_file = joinpath(SITE_DIR, ".git")
+dot_git_contents = nothing
+dot_git_contents = read(dot_git_file, String)
+@info "Backed up $dot_git_file"
+
+# Render the Quarto site
+run_cmd(`quarto render`)
+
+# Restore backed-up .git file
+open(dot_git_file, "w") do io
+  write(io, dot_git_contents)
+end
+@info "Restored $dot_git_file"
+
+# Get current commit hash
+current_hash = readchomp(`git rev-parse --short HEAD`)
+
+cd(SITE_DIR) do
+  @info "Current directory: $(pwd())"
+  try
+    run_cmd(`git add --all .`)
+    run_cmd(`git commit -m "Deploy Quarto site to gh-pages $current_hash"`)
+    run_cmd(`git push --force origin gh-pages`)
+  catch e
+    # if there are no changes to commit, continue
+  end  
+end
+
+if !haskey(ENV, "CI")
+  @info "CI not detected; cleaning up worktree and gh-pages branch"
+  try
+    run_cmd(`git worktree remove $SITE_DIR --force`)
+    run_cmd(`git branch -D gh-pages`)
+  catch e
+    @warn "Failed to clean up: $e"
+  end
+else
+  @info "CI detected; skipping worktree cleanup"
+end
+```
