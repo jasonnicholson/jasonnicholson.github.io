@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2021-04-12">
+
+<title>Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization – Jason H. Nicholson</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-b2820ec6bfda03a924896dfff64bda6f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">April 12, 2021</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#the-madsen-reid-algorithm" id="toc-the-madsen-reid-algorithm" class="nav-link" data-scroll-target="#the-madsen-reid-algorithm">The Madsen-Reid Algorithm</a></li>
+  <li><a href="#nonlinear-equation-systems-convex-optimization" id="toc-nonlinear-equation-systems-convex-optimization" class="nav-link" data-scroll-target="#nonlinear-equation-systems-convex-optimization">Nonlinear Equation Systems, Convex Optimization</a></li>
+  <li><a href="#lu-factorization-musings-related-to-newton-iteration" id="toc-lu-factorization-musings-related-to-newton-iteration" class="nav-link" data-scroll-target="#lu-factorization-musings-related-to-newton-iteration">LU factorization musings related to newton iteration</a>
+  <ul class="collapse">
+  <li><a href="#case-1-x-lbrack-00rbrackt" id="toc-case-1-x-lbrack-00rbrackt" class="nav-link" data-scroll-target="#case-1-x-lbrack-00rbrackt">Case 1, <span class="math inline">\(x = \lbrack 0,0\rbrack^{T}\)</span></a></li>
+  <li><a href="#case-2-x-leftlbrack-0x_2-neq-0-rightrbrackt" id="toc-case-2-x-leftlbrack-0x_2-neq-0-rightrbrackt" class="nav-link" data-scroll-target="#case-2-x-leftlbrack-0x_2-neq-0-rightrbrackt">Case 2, <span class="math inline">\(x = \left\lbrack 0,x_{2} \neq 0 \right\rbrack^{T}\ \)</span></a></li>
+  <li><a href="#case-3-x-leftlbrack-epsilonx_2-rightrbrackt" id="toc-case-3-x-leftlbrack-epsilonx_2-rightrbrackt" class="nav-link" data-scroll-target="#case-3-x-leftlbrack-epsilonx_2-rightrbrackt">Case 3, <span class="math inline">\(x = \left\lbrack \epsilon,x_{2} \right\rbrack^{T}\)</span></a></li>
+  </ul></li>
+  <li><a href="#whats-next" id="toc-whats-next" class="nav-link" data-scroll-target="#whats-next">What’s Next?</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="summary" class="level1">
+<h1>Summary</h1>
+<p>A couple of weeks ago, I was inspired to revisit Newton’s method for solving nonlinear equations. I was reminded of my undergrad days when I read a paper by Madsen and Reid about finding the roots of a polynomial. What struck me at that time is Madsen-Reid’s application of Newton’s method with a line search was faster than any other algorithm. The Madsen-Reid papers were written in 1973 and 1975. Ever since then, when another paper benchmarked various algorithms to find roots of polynomials, Madsen-Reid would win; to my knowledge, if root-finding of polynomials is benchmarked in literature and the Fortran Madsen-Reid algorithm (PA16 and/or PA17) is used, the Madsen-Reid algorithm is the fastest and nearly the most accurate. What made the algorithm so successful? How can this generalize to solving a set of nonlinear equations? In this post, I plan to discuss these ideas.</p>
+<p>Note that I have a little math syntax but not as much as you would find in a math article or paper. This means my language is a little more inexact and high level without explaining all the detail.</p>
+</section>
+<section id="the-madsen-reid-algorithm" class="level1">
+<h1>The Madsen-Reid Algorithm</h1>
+<p>The Madsen-Reid algorithm can be summarized as follows:</p>
+<ol type="1">
+<li>Calculate a newton direction <span class="math inline">\(d = - {f'}^{- 1}f\)</span>. Do a line search along the <span class="math inline">\(d\)</span> direction to find where <span class="math inline">\(|f|\)</span> is the smallest. However, don’t find the minimum perfectly. Instead, quit after <span class="math inline">\(|f|\)</span> isn’t decreasing in a sequence of new guesses along <span class="math inline">\(d\)</span>. This is called “stage 1.”</li>
+<li>Switch to pure newton iteration based on checking an inequality that ensures convergence. This is called “stage 2” pure Newton iteration. If the inequality fails, go back to stage 1.</li>
+</ol>
+<p>The beauty of the Madsen-Reid algorithm is that it is</p>
+<ul>
+<li>Fast</li>
+<li>Simple</li>
+<li>Guaranteed quadratic convergence even to roots with multiplicities greater than 1 because of stage 1 line search. Guaranteed quadratic convergence is rare.</li>
+</ul>
+<p>Link to a paper describing the Madsen-Reid algorithm: <a href="https://apps.dtic.mil/sti/pdfs/ADA278422.pdf" class="uri">https://apps.dtic.mil/sti/pdfs/ADA278422.pdf</a></p>
+<p>C++ implementation of Madsen-Reid algorithm: <a href="http://www.hvks.com/Numerical/ports.html" class="uri">http://www.hvks.com/Numerical/ports.html</a></p>
+<p>Fortran code PA16 and PA17 can be found at <a href="https://www.hsl.rl.ac.uk/catalogue/" class="uri">https://www.hsl.rl.ac.uk/catalogue/</a></p>
+</section>
+<section id="nonlinear-equation-systems-convex-optimization" class="level1">
+<h1>Nonlinear Equation Systems, Convex Optimization</h1>
+<p>Newton iteration with a line search has shown up a lot since Madsen-Reid in optimization and root finding of nonlinear equation systems. It isn’t necessarily because of Madsen-Reid that Newton’s method with line search is broadly used. The reason, in my opinion, is different researchers or practitioners have found that Newton’s method with line search is highly effective.</p>
+<p>The parallels between Newton iteration with line search in optimization and nonlinear equation solving are:</p>
+<style>
+#opt-vs-nleq-table tr.odd  { background-color: #fafafa; }
+#opt-vs-nleq-table tr.even { background-color: #ffffff; }
+#opt-vs-nleq-table thead th { background-color: #f2f2f2; font-weight: 600; }
+#opt-vs-nleq-table th, #opt-vs-nleq-table td { padding: 0.5rem 0.75rem; }
+</style>
+<div id="opt-vs-nleq-table">
+<table class="table">
+<colgroup>
+<col style="width: 50%;border: solid;border-width: thin;">
+<col style="width: 49%;border: solid;border-width: thin;">
+</colgroup>
+<thead>
+<tr class="header">
+<th>
+Unconstrained convex optimization (minimization)
+</th>
+<th>
+Nonlinear equation system
+</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>
+<p>
+<span class="math display"><em>C</em><em>o</em><em>s</em><em>t</em> = <em>F</em>(<em>x</em>)</span>
+</p>
+<p>
+Where
+</p>
+<ul>
+<li>
+<p>
+<span class="math inline"><em>x</em></span> is a vector value function.
+</p>
+</li>
+<li>
+<p>
+<span class="math inline"><em>F</em></span> is a scalar function of <span class="math inline"><em>x</em></span>. <span class="math inline"><em>F</em></span> is at least twice differentiable or Lipschitz continuous. The point is <span class="math inline"><em>F</em></span> needs to be twice differentiable in some sense.
+</p>
+</li>
+</ul>
+</td>
+<td>
+<p>
+You can think of the cost as
+</p>
+<p>
+<span class="math display"><em>C</em><em>o</em><em>s</em><em>t</em>=&nbsp;||<em>F</em>(<em>x</em>)||<sub>1</sub></span>
+</p>
+<p>
+Where
+</p>
+<ul>
+<li>
+<p>
+<span class="math inline">||&nbsp;&nbsp;||<sub>1</sub></span> is one norm (absolute value of the elements of the vector summed).
+</p>
+</li>
+<li>
+<p>
+However, this isn’t necessary. The above equation helps make the analog to optimization only.
+</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="even">
+<td>
+<p>
+The gradient is 0 at minimum
+</p>
+<p>
+<span class="math display"><span class="math inline">\(\frac{\partial F}{\partial x} =
+0\)</span></span>
+</p>
+<p>
+Where
+</p>
+<p>
+<span class="math inline">\(\frac{\partial F}{\partial x}\)</span> is a vector value function of the <span class="math inline"><em>x</em></span> vector.
+</p>
+</td>
+<td>
+<p>
+<span class="math display"><em>F</em>(<em>x</em>) = 0</span>
+</p>
+<p>
+Where
+</p>
+<ul>
+<li>
+<p>
+<span class="math inline"><em>F</em>(<em>x</em>)</span> is a vector value function of vector x.
+</p>
+</li>
+<li>
+<p>
+<span class="math inline"><em>F</em></span> must be twice differentiable in some sense, at least locally. More advanced math will use advanced ideas to say what this means.
+</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="odd">
+<td>
+<p>
+The Newton iteration with line search is
+</p>
+<p>
+<span class="math display"><em>x</em><sub><em>k</em> + 1</sub> = <em>x</em><sub><em>k</em></sub> + <em>α</em><em>D</em></span>
+</p>
+<p>
+<span class="math display">\[D = \left( \frac{\partial^{2}F}{\partial
+x^{2}} \right)^{- 1}\left( - \frac{\partial F}{\partial x}
+\right)\]</span>
+</p>
+<p>
+where
+</p>
+<ul>
+<li>
+<p>
+<span class="math inline">\(\frac{\partial^{2}F}{\partial x^{2}}\)</span> is the Hessian matrix. If <span class="math inline"><em>F</em></span> was twice differentiable, then <span class="math inline"><span class="math inline">\(\frac{\partial^{2}F}{\partial x^{2}}\)</span> is always symmetric. It should not be singular if you are going to invert it.
+</span></p>
+</li>
+<li>
+<p>
+<span class="math inline"><em>D</em></span> is the direction of the line search.
+</p>
+</li>
+<li>
+<p>
+<span class="math inline"><em>α</em></span> is the size of the step found via a line search along <span class="math inline"><em>D</em></span>. There are many inexact and exact ways to do the line search. Quadratic approximation, Inexact Line Search, etc. The point is to find an <span class="math inline"><em>α</em></span> that decreases <span class="math inline"><em>F</em></span>.<br> See <a href="https://youtu.be/MKmIvtq83LY">https://youtu.be/MKmIvtq83LY</a> for Quadratic Approximation.<br> See <a href="https://youtu.be/MzmqM0tuO1Q">https://youtu.be/MzmqM0tuO1Q</a> for an inexact line search.
+</p>
+</li>
+</ul>
+</td>
+<td>
+<p>
+The Newton iteration with line search is
+</p>
+<p>
+<span class="math display"><em>x</em><sub><em>k</em> + 1</sub> = <em>x</em><sub><em>k</em></sub> + <em>α</em><em>D</em></span>
+</p>
+<p>
+<span class="math display"><span class="math display">\[D = \left( \frac{\partial\ F}{\partial
+x} \right)^{- 1}( - F)\]</span></span>
+</p>
+<p>
+Where
+</p>
+<ul>
+<li>
+<p>
+<span class="math inline">\(\frac{\partial\ F}{\partial x}\)</span> is the Jacobian matrix. It is not symmetric like in optimization. It can’t be singular if you are going to invert it.
+</p>
+</li>
+<li>
+<p>
+<span class="math inline"><em>D</em></span> is the direction of the line search.
+</p>
+</li>
+<li>
+<p>
+<span class="math inline"><em>α</em></span> is the size of the step found via a line search along <span class="math inline"><em>D</em></span>. There are many inexact and exact ways to do the line search. Quadratic approximation, Inexact Line Search, etc. The point is to find an <span class="math inline"><em>α</em></span> that decreases the one norm of <span class="math inline"><em>F</em></span>, <span class="math inline">||<em>F</em>(<em>x</em><sub><em>k</em></sub>+<em>α</em><em>D</em>)||<sub>1</sub></span>.<br> See <a href="https://youtu.be/MKmIvtq83LY">https://youtu.be/MKmIvtq83LY</a> for Quadratic Approximation.<br> See <a href="https://youtu.be/MzmqM0tuO1Q">https://youtu.be/MzmqM0tuO1Q</a> for an inexact line search.
+</p>
+</li>
+</ul>
+</td>
+</tr>
+<tr class="even">
+<td>
+<p>
+The guarantee of convergence of the newton iteration with line search is
+</p>
+<ul>
+<li>
+<p>
+<span class="math inline">\(\frac{\partial^{2}F}{\partial
+x^{2}}\)</span> is positive definite. Said another way, <span class="math inline"><em>F</em></span> is convex (looks like a parabola).
+</p>
+</li>
+<li>
+<p>
+If it is not positive definite, then we need to find a replacement direction to search. That direction can come up in many ways but boils down to a change in the direction moving away from a saddle point. See:<br> <a href="https://youtu.be/x1wMciVA6Xc?t=180">https://youtu.be/x1wMciVA6Xc?t=180</a>
+</p>
+</li>
+</ul>
+</td>
+<td>
+I am not sure what the guarantee of convergence is for Newton iteration in the nonlinear system case. As far as I know, <span class="math inline">\(\frac{\partial\ F}{\partial x}\)</span> needs to be invertible, thus nonsingular. I think that is the only requirement. However, we would like to find a way for it to still work if <span class="math inline">\(\frac{\partial\ F}{\partial x}\)</span> is sometimes singular. This what we want to explore in the below sections.
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="lu-factorization-musings-related-to-newton-iteration" class="level1">
+<h1>LU factorization musings related to newton iteration</h1>
+<p>When solving for the direction, <span class="math inline">\(D\)</span>,</p>
+<p><span class="math display">\[J = \frac{\partial F}{\partial x}\]</span></p>
+<p><span class="math display">\[JD = - F\]</span></p>
+<p>The <span class="math inline">\(LU\)</span> factorization with partial pivoting of <span class="math inline">\(J\)</span> is the best approach to solve this linear system of equations. In MATLAB, <span class="math inline">\(D = J\backslash - F\)</span> does the <span class="math inline">\(LU\)</span> factorization with partial pivoting underneath the hood similar to this:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>[<span class="va">L</span><span class="op">,</span><span class="va">U</span><span class="op">,</span><span class="va">p</span>] <span class="op">=</span> <span class="va">lu</span>(<span class="va">J</span><span class="op">,</span><span class="ss">'vector'</span>)<span class="op">;</span>  </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">y</span> <span class="op">=</span> <span class="va">L</span><span class="op">\-</span><span class="va">F</span>(<span class="va">p</span><span class="op">,:</span>)<span class="op">;</span>  </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="va">D</span> <span class="op">=</span> <span class="va">U</span><span class="op">\</span><span class="va">y</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If instead of using a backslash, we do the <span class="math inline">\(LU\)</span> factorization with partial pivoting ourselves, we can discover when the Jacobian is ill-conditioned by looking at the diagonal of the upper triangular matrix <span class="math inline">\(U\)</span>. Let’s look at this in an example before going further.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">% this will produce an ill-conditioned A. It has rank of 2.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">A</span> <span class="op">=</span> <span class="va">gallery</span>(<span class="ss">'chebspec'</span><span class="op">,</span><span class="fl">3</span><span class="op">,</span><span class="fl">0</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="va">A</span> <span class="op">=</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>          <span class="fl">1.5</span>           <span class="op">-</span><span class="fl">2</span>          <span class="fl">0.5</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>          <span class="fl">0.5</span>            <span class="fl">0</span>         <span class="op">-</span><span class="fl">0.5</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>         <span class="op">-</span><span class="fl">0.5</span>            <span class="fl">2</span>         <span class="op">-</span><span class="fl">1.5</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>[<span class="va">L</span><span class="op">,</span><span class="va">U</span><span class="op">,</span><span class="va">P</span>] <span class="op">=</span> <span class="va">lu</span>(<span class="va">A</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">L</span> <span class="op">=</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            <span class="fl">1</span>            <span class="fl">0</span>            <span class="fl">0</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>     <span class="op">-</span><span class="fl">0.33333</span>            <span class="fl">1</span>            <span class="fl">0</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      <span class="fl">0.33333</span>          <span class="fl">0.5</span>            <span class="fl">1</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="va">U</span> <span class="op">=</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>          <span class="fl">1.5</span>           <span class="op">-</span><span class="fl">2</span>          <span class="fl">0.5</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>            <span class="fl">0</span>       <span class="fl">1.3333</span>      <span class="op">-</span><span class="fl">1.3333</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>            <span class="fl">0</span>            <span class="fl">0</span>  <span class="op">-</span><span class="fl">1.1102e-16</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="va">P</span> <span class="op">=</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>     <span class="fl">1</span>     <span class="fl">0</span>     <span class="fl">0</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>     <span class="fl">0</span>     <span class="fl">0</span>     <span class="fl">1</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>     <span class="fl">0</span>     <span class="fl">1</span>     <span class="fl">0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The U(3,3) is very small. It is close to 0, which implies that <span class="math inline">\(A\)</span> is singular within double floating-point precision. U(3,3) very small leads me to my point: <em>Can we use this?</em> Can we eliminate columns and rows from the Jacobian holding constant the value of corresponding value in <span class="math inline">\(x\)</span> at the current iteration to find a valid search direction?</p>
+<p>Let’s explore this. We need a toy problem to work with. Here is one:</p>
+<p><span class="math display">\[F(x) = \begin{bmatrix}
+x_{1}^{3}\arctan\left( x_{2} \right) - 2 \\
+x_{1} + x_{2}^{2} - 5
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[x = \begin{bmatrix}
+x_{1} \\
+x_{2}
+\end{bmatrix}\]</span></p>
+<p>The Jacobian is then:</p>
+<p><span class="math display">\[\frac{\partial F}{\partial x} = J = \begin{bmatrix}
+3x_{1}^{2}\arctan\left( x_{2} \right) &amp; \frac{x_{1}^{3}}{x_{2}^{2}\  + \ 1} \\
+1 &amp; 2x_{2}
+\end{bmatrix}\]</span></p>
+<p>This <span class="math inline">\(F\)</span> was chosen so there was a saddle point at <span class="math inline">\(x_{1} = 0\)</span> and <span class="math inline">\(x_{2} = 0\)</span>. Note that this <span class="math inline">\(F\)</span> has other problems, such as horizontal asymptotes in arctan that cause the newton iteration to have problems. This is on purpose, and the line search should take care of problems created by arctan.</p>
+<p>There are several cases to analyze:</p>
+<ol type="1">
+<li><p>What do we do if we started from or land on <span class="math inline">\(x\  = \ \lbrack 0,0\rbrack^{T}\)</span>?</p></li>
+<li><p>We start or land on <span class="math inline">\(x = \left\lbrack 0,x_{2} \neq 0 \right\rbrack^{T}\)</span>.</p></li>
+<li><p>We are close to <span class="math inline">\(x = \left\lbrack \epsilon,x_{2} \right\rbrack^{T}\)</span> where <span class="math inline">\(\epsilon\)</span> is a small number making the Jacobian ill-conditioned but not singular according to MATLAB.</p></li>
+</ol>
+<section id="case-1-x-lbrack-00rbrackt" class="level2">
+<h2 class="anchored" data-anchor-id="case-1-x-lbrack-00rbrackt">Case 1, <span class="math inline">\(x = \lbrack 0,0\rbrack^{T}\)</span></h2>
+<p><span class="math inline">\(F\)</span> and J are</p>
+<p><span class="math display">\[F = \left\lbrack \begin{matrix}
+- 2 \\
+- 5
+\end{matrix}\  \right\rbrack\]</span></p>
+<p><span class="math display">\[J = \begin{bmatrix}
+0 &amp; 0 \\
+1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p>If we explicitly write out the equations for <span class="math inline">\(D\)</span> we get:</p>
+<p><span class="math display">\[{0*D_{1} + 0*D_{2} = 2
+}{1*D_{1} + 0*D_{2} = 5}\]</span></p>
+<p>The <span class="math inline">\(LU\)</span> with partial pivoting is</p>
+<p><span class="math display">\[L = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[U = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 0
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[P = \begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p>Since <span class="math inline">\(U(2,2)\)</span> is 0, the Jacobian is singular. The last column of <span class="math inline">\(P\)</span> tells us what equation we can eliminate. In this case, we can eliminate the first equation. I think that the <span class="math inline">\(P(1,2)\)</span> implies that the second column can be eliminated; this is more easily seen in explicitly writing out the equations for <span class="math inline">\(D\)</span> above. Thus, we have</p>
+<p><span class="math display">\[1*D_{1} = 5
+\]</span>and we replace the column that we lost with</p>
+<p><span class="math display">\[D_{2} = 0\]</span></p>
+<p>We can see what our direction should be is</p>
+<p><span class="math display">\[D = \begin{bmatrix}
+5 \\
+0
+\end{bmatrix}\]</span></p>
+<p>However, we need to work this out from the <span class="math inline">\(LU\)</span> factorization so we can use it more generally later. We replace the second column of U with 1 on the diagonal. The new <span class="math inline">\(U\)</span> is</p>
+<p><span class="math display">\[U = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\]</span></p>
+<p>We need to replace the last row of <span class="math inline">\(L\)</span> with one on the diagonal. The new <span class="math inline">\(L\)</span> is</p>
+<p><span class="math display">\[L = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\]</span></p>
+<p><span class="math inline">\(P\)</span> does not change. However, the second row of <span class="math inline">\(PF\)</span> changes to 0. The new <span class="math inline">\(P( - F)\)</span> is</p>
+<p><span class="math display">\[P( - F) = \begin{bmatrix}
+5 \\
+0
+\end{bmatrix}\]</span></p>
+<p>At this point, we carry out the equations to solve the linear system.</p>
+<p><span class="math display">\[y = L^{- 1}P( - F) = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\begin{bmatrix}
+5 \\
+0
+\end{bmatrix} = \begin{bmatrix}
+5 \\
+0
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[D = U^{- 1}y = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\begin{bmatrix}
+5 \\
+0
+\end{bmatrix} = \begin{bmatrix}
+5 \\
+0
+\end{bmatrix}\]</span></p>
+<p>Now we have a direction. The question is, does it take us in a direction that makes any sense? If we look at the line search, we get the graph below. The <span class="math inline">\(\alpha = 1\)</span> seems to be the best choice.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image1.png" class="img-fluid figure-img"></p>
+<figcaption>Graph of line search</figcaption>
+</figure>
+</div>
+<p>The next guess is</p>
+<p><span class="math display">\[x_{k + 1} = \begin{bmatrix}
+0 \\
+0
+\end{bmatrix} + 1\begin{bmatrix}
+5 \\
+0
+\end{bmatrix} = \begin{bmatrix}
+5 \\
+0
+\end{bmatrix}\]</span></p>
+<p>And the corresponding <span class="math inline">\(F\)</span> is</p>
+<p><span class="math display">\[F_{k + 1} = \begin{bmatrix}
+- 2 \\
+0
+\end{bmatrix}\]</span></p>
+<p>The Jacobian is</p>
+<p><span class="math display">\[J_{k + 1} = \begin{bmatrix}
+0 &amp; 125 \\
+1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p><span class="math inline">\(LU\)</span> factorization with partial pivoting is</p>
+<p><span class="math display">\[L_{k + 1} = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[U_{k + 1} = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 125
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[P_{k + 1} = \begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p>The diagonals of <span class="math inline">\(U\)</span> are not zero, so the Jacobian is not singular.</p>
+<p>The initial finding here is we <em>CAN</em> use the <span class="math inline">\(LU\)</span> decomposition to find a search direction even when we are on a saddle point. This is good news! More work is needed with a bigger system of equations to see if we can always do this.</p>
+</section>
+<section id="case-2-x-leftlbrack-0x_2-neq-0-rightrbrackt" class="level2">
+<h2 class="anchored" data-anchor-id="case-2-x-leftlbrack-0x_2-neq-0-rightrbrackt">Case 2, <span class="math inline">\(x = \left\lbrack 0,x_{2} \neq 0 \right\rbrack^{T}\ \)</span></h2>
+<p><span class="math inline">\(F\)</span> and <span class="math inline">\(J\)</span> are</p>
+<p><span class="math display">\[F = \left\lbrack \begin{matrix}
+- 2 \\
+- x_{2}^{2} - 5
+\end{matrix}\  \right\rbrack\]</span></p>
+<p><span class="math display">\[J = \begin{bmatrix}
+0 &amp; 0 \\
+1 &amp; 2x_{2}
+\end{bmatrix}\]</span></p>
+<p>If we explicitly write out the equations for <span class="math inline">\(D\)</span> we get:</p>
+<p><span class="math display">\[0*D_{1} + 0*D_{2} = 2\]</span> <span class="math display">\[1*D_{1} + 2x_{2}*D_{2} = x_{2}^{2} + 5\]</span></p>
+<p>The <span class="math inline">\(LU\)</span> with partial pivoting is</p>
+<p><span class="math display">\[L = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[U = \begin{bmatrix}
+1 &amp; 2x_{2} \\
+0 &amp; 0
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[P = \begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p>At this point, we eliminate the first equation and second column. The new <span class="math inline">\(L\)</span>, <span class="math inline">\(U\)</span>, <span class="math inline">\(P\)</span>, and <span class="math inline">\(P( - F)\)</span> are</p>
+<p><span class="math display">\[L = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[U = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[P = \begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[P( - F) = \begin{bmatrix}
+x_{2}^{2} + 5 \\
+0
+\end{bmatrix}\]</span></p>
+<p>At this point, we carry out the equations to solve the linear system.</p>
+<p><span class="math display">\[y = L^{- 1}PF = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\begin{bmatrix}
+x_{2}^{2} + 5 \\
+0
+\end{bmatrix} = \begin{bmatrix}
+x_{2}^{2} + 5 \\
+0
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[D = U^{- 1}y = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}\begin{bmatrix}
+x_{2}^{2} + 5 \\
+0
+\end{bmatrix} = \begin{bmatrix}
+x_{2}^{2} + 5 \\
+0
+\end{bmatrix}\]</span></p>
+<p>Now we have a direction. The question is, does it take us in a direction that makes any sense? If we look at the line search, we get the graph below. Note, several different views are displayed because of the 3d nature of the graph. The answer is we can always take a direction that makes sense based on the direction found.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image2.png" class="img-fluid figure-img"></p>
+<figcaption>Line search surface (view 1)</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image3.png" class="img-fluid figure-img"></p>
+<figcaption>Line search surface (view 2)</figcaption>
+</figure>
+</div>
+<p>If we plot <span class="math inline">\(x_{2}\)</span> vs.&nbsp;<span class="math inline">\(\alpha\)</span> we get:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image4.png" class="img-fluid figure-img"></p>
+<figcaption>Plot of <span class="math inline">\(x_{2}\)</span> vs <span class="math inline">\(\alpha\)</span></figcaption>
+</figure>
+</div>
+<p>If we expand out the graph above for large values of <span class="math inline">\(x_{2}\)</span> we see that <span class="math inline">\(\alpha\)</span> is heading towards 0 (shown below). In the limit <span class="math inline">\(x_{2}\)</span> goes to infinity, <span class="math inline">\(\alpha\)</span> will go to 0. This tends to point to situations where the ill-conditioning of finding a new <span class="math inline">\(x_{k + 1}\)</span>. When <span class="math inline">\(\alpha D\)</span> is near working precision of <span class="math inline">\(x_{k}\)</span>, then <span class="math inline">\(x_{k + 1} = x_{k}\)</span> to working precision. This would cause the Newton iteration to quit near a saddle point rather than near a solution of the nonlinear system of equations. We may have to detect this case by finding the singularity of the Jacobian from the LU factorization. We will need to search an arbitrary direction to get us off this ill-conditioned point.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image5.png" class="img-fluid figure-img"></p>
+<figcaption><span class="math inline">\(x_2\)</span> versus <span class="math inline">\(\alpha\)</span></figcaption>
+</figure>
+</div>
+<p>With our direction <span class="math inline">\(D\)</span>, the <span class="math inline">\(x_{k + 1\ }\)</span> is</p>
+<p><span class="math display">\[x_{k + 1} = \begin{bmatrix}
+0 \\
+x_{2}
+\end{bmatrix} + \alpha\begin{bmatrix}
+x_{2}^{2} + 5 \\
+0
+\end{bmatrix} = \begin{bmatrix}
+\alpha\left( x_{2}^{2} + 5 \right) \\
+x_{2}
+\end{bmatrix}\]</span></p>
+<p>The machine double precision of <span class="math inline">\(x_{1} = 0\)</span> is</p>
+<p><span class="math display">\[eps(0) = 4.9407*10^{- 324}\]</span></p>
+<p>This means that <span class="math inline">\(\alpha\left( x_{2}^{2} + 5 \right)\)</span> would have to be near <span class="math inline">\(eps(0)\)</span> for us to not find a new point, <span class="math inline">\(x_{k + 1}\)</span>. <span class="math inline">\(\alpha\)</span> can be very small and it will still have an impact in this case. For instance, when <span class="math inline">\(\alpha = 10^{- 16}\)</span>, <span class="math inline">\(x_{2} = 2.236082770647552*10^{8}\)</span>, <span class="math inline">\(x_{k + 1} = \lbrack 5.000066157186832,\ 2.236082770647552*10^{8}\rbrack\)</span> which is still better than what we had before. More investigation is still warranted, but I am less concerned after looking at an example.</p>
+<p>Similar to case 1, we CAN take a step in a direction that makes sense. We may need to refine this at some point because of floating-point precision. For now, though, floating-point precision is not a problem for this case.</p>
+</section>
+<section id="case-3-x-leftlbrack-epsilonx_2-rightrbrackt" class="level2">
+<h2 class="anchored" data-anchor-id="case-3-x-leftlbrack-epsilonx_2-rightrbrackt">Case 3, <span class="math inline">\(x = \left\lbrack \epsilon,x_{2} \right\rbrack^{T}\)</span></h2>
+<p><span class="math inline">\(F\)</span> and <span class="math inline">\(J\)</span> are</p>
+<p><span class="math display">\[F(x) = \begin{bmatrix}
+\epsilon^{3}\arctan\left( x_{2} \right) - 2 \\
+\epsilon + x_{2}^{2} - 5
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[J = \begin{bmatrix}
+3\epsilon^{2}\arctan\left( x_{2} \right) &amp; \frac{\epsilon^{3}}{x_{2}^{2}\  + \ 1} \\
+1 &amp; 2x_{2}
+\end{bmatrix}\]</span></p>
+<p>If we explicitly write out the equations for <span class="math inline">\(D\)</span> we get:</p>
+<p><span class="math display">\[{3\epsilon^{2}\arctan\left( x_{2} \right)*D_{1} + \frac{\epsilon^{3}}{x_{2}^{2}\  + \ 1}*D_{2} = - \epsilon^{3}\arctan\left( x_{2} \right) + 2
+}{1*D_{1} + 2x_{2}*D_{2} = - \epsilon + x_{2}^{2} + 5}\]</span></p>
+<p>Through a bit of experiment with <span class="math inline">\(x_{2} = 1\)</span> and trying to find when <span class="math inline">\(J\)</span> becomes rank 1 according to MATLAB, <span class="math inline">\(\epsilon = 2*10^{- 8}\)</span> is rank 2 while <span class="math inline">\(\epsilon = 1*10^{- 8}\)</span> is rank 1.</p>
+<p>For the case that <span class="math inline">\(\epsilon = 2*10^{- 8}\)</span> and <span class="math inline">\(x_{2} = 1\)</span>, the <span class="math inline">\(LU\)</span> factorization yields:</p>
+<p><span class="math display">\[L = \begin{bmatrix}
+1 &amp; 0 \\
+9.42477796076938*10^{- 16} &amp; 1
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[U = \begin{bmatrix}
+1 &amp; 2 \\
+0 &amp; - 1.88495558815388*10^{- 15}
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[P = \begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p>If we missed this as a singular case, we would get a direction of</p>
+<p><span class="math display">\[y = L^{- 1}P( - F) = \begin{bmatrix}
+1 &amp; 0 \\
+- 9.42477796076938*10^{- 16} &amp; 1
+\end{bmatrix}\begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix}\begin{bmatrix}
+- 2 \\
+- 3.999999980000000
+\end{bmatrix} = \begin{bmatrix}
+3.99999998 \\
+1.999999999999996
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[{D = U^{- 1}y = \begin{bmatrix}
+1 &amp; 1.061032956197551*10^{15} \\
+0 &amp; - 5.305164780987754*10^{14}
+\end{bmatrix}\begin{bmatrix}
+3.99999998 \\
+1.999999999999996
+\end{bmatrix}
+}{= \begin{bmatrix}
+2.122065912395102*10^{15} \\
+- 1.061032956197549*10^{15}
+\end{bmatrix}}\]</span></p>
+<p>This direction is enormous in magnitude. It seems like it could cause problems. However, the line search keeps this from getting worse. For the above <span class="math inline">\(D\)</span>, <span class="math inline">\(\alpha = 7.82707232360737*10^{- 16}\)</span>. The line search saves the day. This is what makes the Newton iteration with line search so robust. Even with a huge Newton direction, we can take an appropriate step because of the line search.</p>
+<p><span class="math display">\[{x_{k + 1} = x_{k} + \alpha D = \begin{bmatrix}
+2*10^{- 8} \\
+1
+\end{bmatrix} + 7.82707232360737*10^{- 16}\begin{bmatrix}
+2.122065912395102*10^{15} \\
+- 1.061032956197549*10^{15}
+\end{bmatrix}
+}{= \begin{bmatrix}
+1.660956357177832 \\
+0.169521831411085
+\end{bmatrix}}\]</span></p>
+<p><span class="math display">\[F\left( x_{k + 1} \right) = \begin{bmatrix}
+- 1.230531207840158 \\
+- 3.310305991497200
+\end{bmatrix}\]</span></p>
+<p><span class="math display">\[\left| \left| F\left( x_{k + 1} \right) \right| \right|_{1} = 4.54083719933736\]</span></p>
+<p>While</p>
+<p><span class="math display">\[\left| \left| F\left( x_{k} \right) \right| \right|_{1} = 5.999999980000000\]</span></p>
+<p>In case 3, we CAN take a step that makes sense. The line search is the star of the show. It prevents us from taking too big of a step.</p>
+</section>
+</section>
+<section id="whats-next" class="level1">
+<h1>What’s Next?</h1>
+<p>I need to</p>
+<ul>
+<li><p>Write a MATLAB function for Newton iteration with line search and LU factorization to recognize singularity.</p></li>
+<li><p>Implement a line search using a quadratic interpolation to find the step size, <span class="math inline">\(\alpha\)</span>. This will be key. Madsen-Reid’s line search would also work.</p></li>
+<li><p>I need to add inequality constraints. This will most likely add some Lagrange multipliers or something similar. This will be needed especially for functions like log where crossing a vertical asymptote is a terrible idea. This will be needed when we want one particular solution and don’t want to cross into the basin of attraction to another solution.</p></li>
+<li><p>Write this in Simulink so that it can be compiled to code and even work on fixed-point types.</p>
+<ul>
+<li>This will require using some custom LU code. See the examples of the Fixed-point types for MATLAB functions.</li>
+</ul></li>
+</ul>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>Newton iteration with a line search with <span class="math inline">\(LU\)</span> factorization to find the singular case looks to be a very robust nonlinear equation solver.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
