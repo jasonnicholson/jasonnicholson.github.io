@@ -1,0 +1,34 @@
+---
+title: "Encoding many videos with ffmpeg, handbrake, and nvencc"
+date: 2025-11-28
+---
+
+I was working figure out the best combination of settings for [ffmpeg](https://ffmpeg.org/), [handbrake](https://handbrake.fr/), and [nvencc](https://github.com/rigaya/NVEnc) to encode a large number of videos. I wanted to compare the quality and file size of each encoding method. The `Just Video.mkv` below is the video uncompressed. What I found was that `nvencc` was the fastest and could be controlled to have similar quality to `ffmpeg` and `handbrake` at a fraction of the time.
+
+```{python}
+#| tbl-cap: "Comparison of encodings"
+#| label: tbl-encoding-comparison
+#| code-fold: true
+import pandas as pd
+
+df = pd.read_csv("comparison-of-encodings.csv")
+df
+```
+
+
+Ultimately, this is the command I used to encode many videos with `nvencc`:
+
+```cmd
+NVEncC64.exe -i "inputfile" --video-metadata copy  --metadata copy --video-metadata \
+title="title" --chapter-copy -c hevc --cqp 28 --bref-mode disabled --preset quality \
+--tier high --lookahead 32 --aq --aq-strength 0 --level auto --colormatrix auto \
+--transfer auto --colorprim auto --output-depth 8 --multipass None --mv-precision Auto \
+--chromaloc auto --colorrange auto --avsync cfr  --audio-metadata 1?language=eng \
+--audio-stream 1?:stereo --audio-codec 1?ac3 --audio-bitrate 1?160  --audio-metadata 1?clear \
+--audio-metadata 1?title="Stereo" --audio-metadata 1?handler="Stereo" --sub-copy 1 \
+--sub-disposition 1?default --sub-metadata  1?language='eng' -m default_mode:infer_no_subs 
+-o "outputfile"
+```
+
+The main thing that drives `nvencc` quality is the `--cqp` parameter. Lower values give better quality but larger file sizes. Higher values give lower quality but smaller file sizes. I found that `--cqp 28` gave a good balance of quality and file size. The video looks very similar to the original uncompressed video, but the file size is much smaller. Other configuration corresponds to subtitles, audio tracks, and color settings.
+
