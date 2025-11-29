@@ -16,7 +16,6 @@ end
 # script can start from a clean state.
 if !haskey(ENV, "CI")
   try
-    run_cmd(`git clean -xfd`)
     rm(SITE_DIR, force=true, recursive=true)
     run_cmd(`git worktree remove $SITE_DIR --force`)
     run_cmd(`git branch -D gh-pages`)
