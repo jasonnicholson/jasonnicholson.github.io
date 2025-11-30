@@ -1,0 +1,50 @@
+---
+title: "Re-encoding a Google photo/video album"
+date: 2025-11-30
+---
+
+One common issue is running out of space on your smartphone or in the cloud because of photos and videos. Google provides "storage saver" settings that help, but they don't completely solve the problem. The main issue is that the default video bitrate is around 20 Mbps, which is quite high for most use cases. Re-encoding videos to around 3,000 kbps can drastically reduce their size while maintaining good quality. The same is true for photos, where reducing the resolution and quality can help reduce their size. The space saved by re-encoding is usually around 5–9×, depending on the content. An album that was consuming 20GB will likely come down to around 2–4GB after re-encoding. If you're starting from "storage saver" quality, the savings will be smaller but still significant at around 2–3×. I use the following workflow to re-encode my Google photo/video albums:
+
+![Folder setup](Screenshot from 2025-11-30 13-05-57.png)
+
+1. Clear my trash in Google Photos. This will help later.
+2. Download the album from Google Photos. Put it into the Large folder.
+3. Run the script below to re-encode the photos and videos into the Small folder.
+4. Send all the videos and photos in the Google Photos album to the trash. Clearing your trash earlier helps recover if you screwed up something. I am telling you from experience.
+5. Use the "Upload from computer" option in the Google Photos album to upload the contents of the Small folder back to the album. Because the metadata is preserved, the photos and videos will appear in the correct order with the correct timestamps.
+
+
+The script below is a Windows batch script that uses `ffmpeg` and `exiftool` to re-encode the photos and videos. Make sure you have both tools installed and available in your system PATH. Files are assumed to be .heic or .jpg for pictures and .mp4 for videos. This script can easily be adapted for Bash or other shells as needed. Metadata is maintained for both photos and videos. `exiftool` is used to copy metadata for photos while removing the Orientation tag to avoid auto-rotation issues. The `hevc_nvenc` encoder is used for videos to leverage NVIDIA GPU acceleration, if available, for H.265 encoding. If you don't have an NVIDIA GPU, you can replace `hevc_nvenc` with `libx265` for CPU encoding.
+
+```bat
+@echo off
+setlocal enabledelayedexpansion
+
+set input_dir=Large
+set output_dir=Small
+
+if not exist "%output_dir%" mkdir "%output_dir%"
+
+echo Handling Pictures
+for %%f in ("%input_dir%\*.jpg" "%input_dir%\*.heic") do (
+    set input_file=%%f
+    set filename=%%~nf
+
+     ffmpeg -hide_banner -i "!input_file!" -q:v 6 -map_metadata 0 -stats -update 1 "%output_dir%\!filename!.jpg"
+    rem Copy all metadata from source but remove Orientation to avoid auto-rotation
+    exiftool -tagsfromfile "!input_file!" -all:all -Orientation= -overwrite_original "%output_dir%\!filename!.jpg"
+)
+
+echo Handling videos
+for %%f in ("%input_dir%\*.MP4") do (
+    set input_file=%%f
+    set filename=%%~nf
+
+     ffmpeg -hide_banner -i "!input_file!" -c:v hevc_nvenc -preset p5 -cq 35 -multipass fullres -spatial_aq 1 -map_metadata 0 -c:a aac -b:a 128k -ac 1 "%output_dir%\!filename!.MP4"
+)
+
+
+echo Processing complete!
+pause
+```
+
