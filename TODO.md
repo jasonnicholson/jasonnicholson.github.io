@@ -1,0 +1,14 @@
+- Clifford/Geometric algebra article
+- Consider creating a hydraulic control systems course. Teach the whole book.
+- Setup to make CFD of pumps, motors, and valves. Modules
+  - Geometry meshing. gmsh. SOmething else?
+  - Gridap.jl setup
+  - Solve
+  - 3d display of results
+- Hydrualic library of a semi-compressible fluid
+  - Modelica (OMEdit)
+  - Hopsan
+  - Julia. Not sure what library
+  - Simscape
+  - Simulink
+  - FMU generation?
