@@ -1,5 +1,5 @@
-- Clifford/Geometric algebra article
-- Consider creating a hydraulic control systems course. Teach the whole book.
+- Update footer pointing to source location
+- Update main page pointing to what happens if domain expires
 - Setup to make CFD of pumps, motors, and valves. Modules
   - Geometry meshing. gmsh. SOmething else?
   - Gridap.jl setup
@@ -12,3 +12,5 @@
   - Simscape
   - Simulink
   - FMU generation?
+- Consider creating a hydraulic control systems course. Teach the whole book.
+- Clifford/Geometric algebra article
