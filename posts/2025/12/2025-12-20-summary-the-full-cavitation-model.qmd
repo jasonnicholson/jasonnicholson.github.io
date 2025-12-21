@@ -1,0 +1,154 @@
+---
+title: "Summary of the full cavitation model"
+date: 2025-12-20
+bibliography: ../../../references.bib
+---
+
+This post is a code-oriented restatement of the **Full Cavitation Model** from @singhal2002full, with the core equations collected in one place.
+
+The model is a homogeneous mixture (Equal-Velocity / Equal-Temperature; EVET) formulation:
+
+- One mixture momentum equation (variable density)
+- One scalar transport equation for vapor mass fraction
+- Algebraic mixture closure for density (and optionally non-condensable gas)
+- Algebraic source terms for evaporation/condensation derived from a reduced Rayleigh-Plesset argument
+
+## Primary variables
+
+- $\rho$ mixture density
+- $\mathbf{V}$ mixture velocity
+- $f$ vapor mass fraction (base model)
+- $\alpha$ vapor volume fraction
+- $R_e$, $R_c$ evaporation and condensation source terms
+
+When including a non-condensable gas (NCG):
+
+- $f_v$ vapor mass fraction
+- $f_g$ non-condensable gas mass fraction
+- $\rho_g$ NCG density
+
+## Mixture closure (base model)
+
+Mixture density is related to vapor mass fraction $f$ by:
+
+$$
+\frac{1}{\rho}=\frac{f}{\rho_v}+\frac{1-f}{\rho_l}
+$$
+
+Vapor volume fraction is then:
+
+$$
+\alpha \equiv f\,\frac{\rho}{\rho_v}
+$$
+
+## Vapor mass fraction transport
+
+The vapor mass fraction is governed by:
+
+$$
+\frac{\partial}{\partial t}(\rho f)+\nabla\cdot(\rho\,\mathbf{V}\,f)=\nabla\cdot(\Gamma\,\nabla f)+R_e-R_c
+$$
+
+Here $\Gamma$ is an effective diffusion coefficient used for the scalar transport (typically a turbulence-model-based closure in CFD implementations).
+
+## Phase-change source terms (no NCG)
+
+Evaporation (vapor generation) rate:
+
+$$
+R_e=C_e\,\frac{V_{ch}}{\sigma}\,\rho_l\,\rho_v\left[\frac{2}{3}\,\frac{(P_v-P)}{\rho_l}\right]^{1/2}(1-f)
+$$
+
+Condensation rate:
+
+$$
+R_c=C_c\,\frac{V_{ch}}{\sigma}\,\rho_l\,\rho_l\left[\frac{2}{3}\,\frac{(P-P_v)}{\rho_l}\right]^{1/2}f
+$$
+
+Where:
+
+- $P$ is the local pressure
+- $P_v$ is the phase-change threshold pressure (see turbulence section below)
+- $\sigma$ is liquid-vapor surface tension
+- $V_{ch}$ is a characteristic velocity
+
+The authors recommend estimating $V_{ch}$ from turbulent kinetic energy:
+
+$$
+V_{ch}=\sqrt{k}
+$$
+
+## Effect of turbulence (threshold pressure)
+
+The phase-change threshold pressure is raised using turbulent pressure fluctuations:
+
+$$
+P'_{turb}=0.39\,\rho\,k
+$$
+
+$$
+P_v=\left(P_{sat}+\frac{P'_{turb}}{2}\right)
+$$
+
+## Extension: non-condensable gas (NCG)
+
+With NCG, the mixture density relation becomes:
+
+$$
+\frac{1}{\rho}=\frac{f_v}{\rho_v}+\frac{f_g}{\rho_g}+\frac{1-f_v-f_g}{\rho_l}
+$$
+
+NCG density is computed as:
+
+$$
+\rho_g=\frac{P}{R_{air}T}
+$$
+
+Volume fractions are updated as:
+
+$$
+\alpha_g=f_g\,\frac{\rho}{\rho_g}
+$$
+
+$$
+\alpha_l=1-\alpha_v-\alpha_g
+$$
+
+The paper then rewrites the phase-change rates (replacing $V_{ch}$ with $\sqrt{k}$) as:
+
+$$
+R_e=C_e\,\frac{\sqrt{k}}{\sigma}\,\rho_l\,\rho_v\left[\frac{2}{3}\,\frac{(P_v-P)}{\rho_l}\right]^{1/2}\left(1-f_v-f_g\right)
+$$
+
+and
+
+$$
+R_c= C_c\,\frac{\sqrt{k}}{\sigma}\,\rho_l\,\rho_l\left[\frac{2}{3}\,\frac{(P-P_v)}{\rho_l}\right]^{1/2}f_v
+$$
+
+### Note on an apparent inconsistency in Eq. (24)
+
+There are a couple of error in Eq. (24) of the original paper. Eq (24) is supposed to be a restatement of Eq. (16) with $V_{ch}$ is replaced with $\sqrt{k}$. However, there are two mistakes.
+
+Eq. (16)
+
+$$
+R_c=C_c\,\frac{V_{ch}}{\sigma}\,\rho_l\,\rho_l\left[\frac{2}{3}\,\frac{(P-P_v)}{\rho_l}\right]^{1/2}f
+$$
+
+Eq. (24) as printed
+$$
+R_c= {\color{red}{C_e}}\,\frac{\sqrt{k}}{\sigma}\,\rho_l\,\rho_l\left[\frac{2}{3}\,\frac{(P-P_v)}{\color{red}{\rho}}\right]^{1/2}f_v
+$$
+
+Eq. (24) corrected:
+$$
+R_c= C_c\,\frac{\sqrt{k}}{\sigma}\,\rho_l\,\rho_l\left[\frac{2}{3}\,\frac{(P-P_v)}{\rho_l}\right]^{1/2}f_v
+$$
+
+## Recommended constants
+
+$$
+C_e=0.02\qquad C_c=0.01
+$$
+
