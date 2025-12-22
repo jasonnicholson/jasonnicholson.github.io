@@ -1,0 +1,84 @@
+---
+title: "Summary of a second order cavitation model"
+date: 2025-12-21
+bibliography: ../../../references.bib
+---
+
+This post was AI generated to help summarize the key aspects of a second-order cavitation model proposed [@liu2025implementation]. My quick take is this more advanced model is more than I need for hydraulic simulations for now.
+
+This is a summary of Liu, Wang, and Liu’s cavitation model that (i) retains the second-order bubble inertia term from the Rayleigh–Plesset equation and (ii) accounts for non‑condensable gas (NCG) effects through physically meaningful parameters. The authors implement the model in OpenFOAM and validate it on two canonical benchmarks: cavitation over a NACA0015 hydrofoil and cavitation‑induced choked flow in a venturi tube [@liu2025implementation].
+
+## Motivation
+
+Most homogeneous (Euler–Euler) cavitation models used in practical CFD are built around a transport equation for vapor volume fraction with a *closure* for the phase‑change source term. Common closures are derived from simplified or linearized bubble dynamics, and they often rely on empirical constants tuned per case.
+
+Liu et al. argue that two pieces of physics are especially important in many engineering flows:
+
+- **Nonlinear bubble inertia** during growth/collapse (acceleration/deceleration phases), which is dropped when the second‑order inertial term is neglected.
+- **Non‑condensable gas content**, which can materially affect stability of nuclei and collapse dynamics.
+
+## What the model changes
+
+The paper stays within a standard homogeneous mixture framework (mixture continuity + momentum + vapor transport). The key change is the *mass‑transfer source term*.
+
+### 1) Second‑order inertia retained
+
+Instead of using a purely first‑order bubble growth law, the authors start from a more complete Rayleigh–Plesset formulation and retain the second‑order inertial contribution. Practically, this introduces a stronger nonlinearity into the collapse/condensation behavior, which they later link to improved predictions of re‑entrant jet dynamics and cavity shedding [@liu2025implementation].
+
+### 2) NCG enters via physically interpretable parameters
+
+Rather than introducing (or tuning) purely empirical rate constants, the model is parameterized around quantities with clearer physical meaning:
+
+- A **critical nucleus/bubble radius** (a stability threshold for nuclei).
+- A **molar density of non‑condensable gas** in the mixture.
+
+NCG is *not* treated as its own transported species; instead, its effect is folded into the phase‑change rate expression. The authors frame this as a pragmatic trade‑off: capture first‑order NCG influence without the cost/complexity of a fully miscible multicomponent formulation.
+
+### 3) Evaporation vs condensation behavior
+
+The source term is split into evaporation and condensation contributions based on whether local pressure is below/above the saturation vapor pressure. A key design choice is that the condensation behavior becomes strongly nonlinear in vapor fraction, suppressing “too‑rapid” collapse in near‑pure vapor regions and shifting condensation to behave more like an interfacial process.
+
+## Implementation details (as used in the paper)
+
+- Solver: OpenFOAM’s `interPhaseChangeFoam` (homogeneous cavitation framework).
+- Test cases:
+	- **Case A**: 2D NACA0015 hydrofoil (multiple angles of attack and cavitation numbers).
+	- **Case B**: 2D (axisymmetric half‑domain) venturi tube (multiple pressure ratios).
+- Turbulence: SST $k$–$\omega$; for hydrofoil morphology they also use a Reboud-type correction for eddy viscosity.
+- The paper uses representative parameter values for the new physical knobs (e.g., a micrometer-scale initial nucleus radius and an NCG molar density within a plausible range for air in water) [@liu2025implementation].
+
+## Validation results: what improved
+
+### NACA0015 hydrofoil
+
+Across the hydrofoil comparisons, the paper’s main claim is: **global loads and surface pressure are closer to experiments**, especially around inception/development where many models struggle.
+
+Notable reported behaviors:
+
+- **Lift/drag**: the proposed model generally predicts lift and drag trends that better match experimental data than Schnerr–Sauer, and it places the onset/threshold for “effectively non‑cavitating” conditions closer to experiment in the tested sets.
+- **Pressure coefficient**: predictions near the leading edge are smoother and closer to measurements; Schnerr–Sauer shows stronger non‑physical oscillations in some regimes.
+- **Unsteady shedding and re‑entrant jet**: the proposed model tends to produce a more intense re‑entrant jet and a bubble/cavity collapse process that looks more realistic compared to available experimental visualizations.
+
+The paper also notes a limitation: in some **very intense cavitation / low cavitation number** scenarios, the model can over‑extend the cavity (a reminder that Euler–Euler closures + finite grid resolution can struggle to represent fine-scale bubble clouds and sharp interfaces).
+
+### Venturi tube (cavitation‑induced choked flow)
+
+The venturi case focuses on the “choked” regime where increasing upstream driving no longer increases mass flow once cavitation becomes established.
+
+Key outcomes reported:
+
+- **Critical pressure ratio** for onset of cavitation‑induced choking is predicted closer to experiment than Schnerr–Sauer.
+- **Dominant oscillation frequency** of vapor dynamics at a representative pressure ratio (around 0.5) is closer to the measured value.
+- **Cavity closure morphology**: the model better reproduces a jagged/oblique cavity-termination structure near the wall, attributed to a stronger re‑entrant jet.
+
+## Takeaways
+
+- Keeping the **second‑order inertia term** changes the *shape* of the closure, not just a constant factor; it can materially affect collapse and shedding dynamics.
+- Encoding NCG effects via a small number of **physically interpretable knobs** is attractive for engineering CFD workflows, even if it is not a full multicomponent model.
+- The model seems to help most where many closures struggle: inception/transition regimes and unsteady cavity break‑up.
+
+## References
+
+::: {#refs}
+:::
+
