@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>System Identification – Jason H. Nicholson</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-b2820ec6bfda03a924896dfff64bda6f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#definition" id="toc-definition" class="nav-link active" data-scroll-target="#definition">Definition</a></li>
+  <li><a href="#books" id="toc-books" class="nav-link" data-scroll-target="#books">Books</a></li>
+  <li><a href="#researchers" id="toc-researchers" class="nav-link" data-scroll-target="#researchers">Researchers</a></li>
+  <li><a href="#online-course" id="toc-online-course" class="nav-link" data-scroll-target="#online-course">Online Course</a></li>
+  <li><a href="#videos" id="toc-videos" class="nav-link" data-scroll-target="#videos">Videos</a></li>
+  <li><a href="#software" id="toc-software" class="nav-link" data-scroll-target="#software">Software</a></li>
+  <li><a href="#github-repositories" id="toc-github-repositories" class="nav-link" data-scroll-target="#github-repositories">Github Repositories</a></li>
+  <li><a href="#links" id="toc-links" class="nav-link" data-scroll-target="#links">Links</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">System Identification</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="definition" class="level2">
+<h2 class="anchored" data-anchor-id="definition">Definition</h2>
+<p>What is System Identification? <a href="https://en.wikipedia.org/wiki/System_identification">System Identification Wikipedia</a></p>
+</section>
+<section id="books" class="level2">
+<h2 class="anchored" data-anchor-id="books">Books</h2>
+<p><a href="https://www.amazon.com/dp/0136566952/ref=cm_sw_em_r_mt_dp_B0M9BGCQBN4SF3FP9FKS">Lennart, Ljung. “System identification: theory for the user.”&nbsp;<em>PTR Prentice Hall, Upper Saddle River, NJ</em>&nbsp;28 (1999).</a> Errata can be found <a href="http://www.control.isy.liu.se/books/sysid/errata/">here</a>.</p>
+<p><a href="https://www.amazon.com/dp/013079211X/ref=cm_sw_em_r_mt_dp_JZB3ZDVR1X6DT7BXNKAF">Juang, Jer-Nan.&nbsp;<em>Applied system identification</em>. Prentice-Hall, Inc., 1994.</a></p>
+<p><a href="https://www.amazon.com/dp/0997430613/ref=cm_sw_em_r_mt_dp_QF5HFWJ3CHPBE1F4REHK">Morelli, Eugene A., and Vladislav Klein.&nbsp;<em>Aircraft system identification: theory and practice</em>. Vol. 2. Williamsburg, VA: Sunflyte Enterprises, 2016.</a></p>
+<p>Soderstrom and P. Stoica,&nbsp;<em>System Identification, Prentice Hall</em>. 1989 (available for&nbsp;<a href="http://user.it.uu.se/~ps/sysidbook.pdf">download</a>&nbsp;from the author’s website)</p>
+<p>Brunton, Steven L., and J. Nathan Kutz. <em>Data-driven science and engineering: Machine learning, dynamical systems, and control</em>. Cambridge University Press, 2022. Available here: <a href="https://www.databookuw.com/">https://www.databookuw.com/</a></p>
+<p>I have created a list of system identification books via WorldCat. WorldCat allows you to search libraries across the wold. <a href="https://www.worldcat.org/lists/ff02bdc7-d182-431c-979f-1e25348aa7b0">WorldCat Book List</a>.</p>
+</section>
+<section id="researchers" class="level2">
+<h2 class="anchored" data-anchor-id="researchers">Researchers</h2>
+<p><a href="https://scholar.google.com/citations?view_op=search_authors&amp;hl=en&amp;mauthors=label:system_identification">Google Scholar search by System Identification label</a>.</p>
+</section>
+<section id="online-course" class="level2">
+<h2 class="anchored" data-anchor-id="online-course">Online Course</h2>
+<p><a href="https://video.ethz.ch/lectures/d-itet/2017/autumn/227-0689-00L.html">System Identification by Roy Stephen Smith from ETH Zürich. Video lectures only.</a> At the time of writing this, a course webpage that is more current than the lectures can be found <a href="https://people.ee.ethz.ch/~sysid/course/index.html">here</a>.</p>
+<p><a href="https://ocw.tudelft.nl/courses/system-identification-and-parameter-estimation/subjects/1-introduction-course-system-identification-parameter-estimation/">System Identification and Parameter Estimation from TUDelft OpenCourseWare.</a> Has videos.</p>
+<p><a href="https://www.control.isy.liu.se/en/student/graduate/idkurs/schedule.html">System Identification at Linköping University</a>. Not an online course but gives a recommended schedule of lectures and readings. To preserve this information for the future, a screenshot is below of the schedule.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="image.png" class="img-fluid figure-img"></p>
+<figcaption>Example Course schedlue. Schedule for System Identification 2020</figcaption>
+</figure>
+</div>
+<p><a href="http://mocha-java.uccs.edu/ECE5560/index.html">Lecture notes and recordings for ECE5560: System Identification</a>. Uses Lennart Ljung’s book.</p>
+<p><a href="https://freevideolectures.com/course/4181/nptel-system-identification">System Identification IIT Madras, Prof.&nbsp;Dr.&nbsp;Arun K.Tangirala</a>. Video lectures are available.</p>
+<p><a href="https://ocw.mit.edu/courses/6-435-system-identification-spring-2005/">System Identification via MIT OpenCourseWare</a> - This course uses Lennart Ljung’s Book. No videos. A syllabus (outline), calendar, lecture notes, and assignments are available.</p>
+<p><a href="https://youtube.com/playlist?list=PL5OWEh_D2xktbqfoCpe7qqa0W0d3_cBTc">System identification: parametric approach</a> an approximate 27-hour (English) lecture series on system identification using parametric approaches. See the selected topics and handouts at <a href="https://www.youtube.com/redirect?event=playlist_description&amp;redir_token=QUFFLUhqbkVqOEJHOVhJS2J6VFhNV0ZwRGVPOVpLRUpEUXxBQ3Jtc0ttNHFHNkgzRUVHOFNBRTZta1hqSjh6Z3B2Z0d0MXdLMEpXS19iU2JOU3B6TnQ3bkpmUFlwczZIWE9IYVdnUDJQcm9KdVJ0M3NYb2NNUU9wOXk2WTBGNkRQQXllSDlRX1pOTDhoVEdqZTVUbWtsZnhFNA&amp;q=http%3A%2F%2Fjitkomut.eng.chula.ac.th%2Fee531.html">http://jitkomut.eng.chula.ac.th/ee531…</a> Instructor: Jitkomut Songsiri, Chulalongkorn University, Thailand</p>
+<p>Identification, Estimation, and Learning MIT 2.160<br>
+<a href="https://youtube.com/playlist?list=PLDHxS-d2mJqup7SwhgQjqCkXiDKo4rcL6">2.160 Identification, Estimation, and Learning Youtube</a><br>
+<a href="https://mit.hosted.panopto.com/Panopto/Pages/Sessions/List.aspx#folderID=%22e673193a-a503-4485-819f-ac32016cbc1b%22">2.160 Identification, Estimation, and Learning Panopto Video</a><br>
+https://darbelofflab.mit.edu/teaching/ Slides and Notes can be obtained from links on this page.</p>
+</section>
+<section id="videos" class="level2">
+<h2 class="anchored" data-anchor-id="videos">Videos</h2>
+<p><a href="https://youtu.be/78KzrXE-Ng8">Technical Seminar: ‘Quest for Aircraft Stability and Control’ by Eugene Morelli</a>. Testing of full-scale aircraft in flight to validate or improve predictions obtained through wind tunnel testing or CFD calculations is expensive and time-consuming. Being able to test aircraft stability and control using real-time onboard computations is now within reach and has far-reaching implications for efficient flight testing, control system design, aircraft health monitoring, pilot training, aircraft fleet maintenance, and safety. Aired May 18, 2007.</p>
+<p><a href="https://youtu.be/u7hJ1aF-JrU">Introduction to System Identification</a>. An introduction to System Identification with the System Identification Toolbox in MATLAB. Lennart Ljung is the presenter.</p>
+<p><a href="https://www.youtube.com/playlist?list=PLKqQa2b_GjJICVjrAWF7WtyFTwOx4xX-x">Linear system identification video lecture</a> - YouTube playlist. The video course “System identification - linear theory” introduces the student to linear system identification techniques based on data-driven modeling techniques. The focus lies on experiment design, understanding and selecting model structures, and computing the best model within the model set using prediction error methods and model validation.</p>
+<p><a href="https://www.youtube.com/watch?v=Z1QS6FsxrJI&amp;list=PLn8PRpmsu08p5KkY8_P8G6fJhelUHHi6b">System Identification</a>. Videos by Brian Douglas. Throughout the series, see the system identification workflow through several different examples that highlight the importance of data collection, model selection, model fitting, and model validation in MATLAB with the System Identification Toolbox.</p>
+</section>
+<section id="software" class="level2">
+<h2 class="anchored" data-anchor-id="software">Software</h2>
+<p><a href="https://www.mathworks.com/help/ident/index.html">MathWorks System Identification Toolbox</a> This one is written by Lenart Ljung at least initially. His book is linked above. Uses Lennart Ljung’s book.</p>
+<p><a href="https://software.nasa.gov/software/LAR-15241">System/Observer/Controller Identification Toolbox (SOCIT)</a> This one is written at least initially by Jer-Nan Juang; his book is linked above. This is free but export-controlled.<br>
+SOCIT is a collection of functions, written in MATLAB language and expressed in M-files, that implements a variety of modern system identification techniques. For an open-loop system, it features functions for identification of a system model and corresponding forward and backward observers directly from input and output data. For a closed-loop system, SOCIT identifies an open-loop model, an observer, and a corresponding controller gained directly from input and output data.</p>
+<p><a href="https://software.nasa.gov/software/LAR-16100-1">System IDentification Programs for AirCraft (SIDPAC)</a> This one is written and maintained by Gene Morelli. His book is linked above. It is free and allowed for foreign use (not export controlled).<br>
+Written in MATLAB, SIDPAC is a collection of over 300 programs that perform a wide variety of tasks related to system identification applied to aircraft. SIDPAC includes tools for experiment design, data analysis, kinematic consistency checking, static and dynamic modeling, simulation, numerical integration and differentiation, smoothing, filtering, finite Fourier transformation, statistical modeling and evaluation, optimization, parameter estimation, model accuracy quantification, model validation, and more.</p>
+</section>
+<section id="github-repositories" class="level2">
+<h2 class="anchored" data-anchor-id="github-repositories">Github Repositories</h2>
+<p><a href="https://github.com/DanielMartensson/Mataveid">Mataveid</a> System identification toolbox for GNU Octave and MATLAB was written by Daniel Mårtensson. It is mostly based on <em>Applied System Identification</em>.</p>
+<p>More to come here….</p>
+</section>
+<section id="links" class="level2">
+<h2 class="anchored" data-anchor-id="links">Links</h2>
+<p><a href="https://homes.esat.kuleuven.be/~smc/daisy/">Database for the Identification of Systems (DaISy)</a></p>
+<p><a href="https://pdf.sciencedirectassets.com/314898/1-s2.0-S1474667000X71029/1-s2.0-S147466701739852X/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEJX%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIACBQO8GiJfKii%2F3qbsCpDq%2B0sjFY0%2BhfD%2BIP%2FwlFGPQAiAOfBm44D0oQzSao9RftKZHK7gZcxisYW2EZCr8k%2BEuyiqDBAiN%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAQaDDA1OTAwMzU0Njg2NSIMHUf6fJgIC%2Bw835ODKtcDetIIqDj32R2xl0iR4w0szSbx7a9mGN%2BjJb3sTit05j%2BF8uTYl%2Bixyd9ISvihhYuaa79z4rP0YFM%2B76zqk%2B2HBc13ujRyrG0vrXAfrpz1vfM%2FrQUU%2FsdsnnCPEaIk221HygEkMqg%2FjDKynxlBlXogrIa%2FMYIlAE%2BcKLcQwE0Q9BGLeQfebigmTNmuv2TKv2DIfoW%2Bh%2FNnfqBfJ1GEY1rmPY%2BsQ3SQ4XxbKB3TdsQe95w6XU7lNEvMQgmVHwkhc4pmCxV6Aa3%2Bh5FhTYK76j%2F%2Bn7rFtvMYaj2IvZVu%2FVq7CKh5hvksewCN%2B3JUm7W492xpGNoUqZ%2BoaYN9p%2FGKw0oaa1Nqw4azx9ebMhcVRzReOvBEd3Wn8NzA8bHj7R7Suv2H%2FwTty2oxMRDe1dCsBvsiyNI3wacTCStgBkufIuQojyoBKnWzw1Q3%2FNRENA3MS%2FI5kNvqjBG0apCTzXlZm3zTQZi90mSZ%2Bniigrb0TDC6dgkmvarc3XsZ17FgkYcejyDVvW1KI0sDPIlm2biG7ishfKTUhinBhMyMDdU92qpL65clLpEItXzxGrbx%2BIhz8cJYDeYRqrI6eBoF2l0WYEtVUOQ8LvM%2Bdv9eS8539b2Od6j51xvvt21FMNzW1YcGOqYBTP1YmFYoBzLwFw68GwZ2tOsaN%2BCxbTg0gJRIDkbBUkIrAJO6XLLpe4H8o3XvoJoQ3n2UhsqMdZe5w4aXupvcxYQSEASnYxRg0iSJVnBFUhG92fp0xy7ZV5CjPW7bZOhSUSh%2BI3BbePiDrGPUbeKwTV51HzZaYXo981ze0e4%2BIFL8N3MdyjkymvSwCxqEwxKMTKpyQ%2BKyS%2BFA9Lx0GUGuKOYX%2BPRiZw%3D%3D&amp;X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Date=20210719T132945Z&amp;X-Amz-SignedHeaders=host&amp;X-Amz-Expires=300&amp;X-Amz-Credential=ASIAQ3PHCVTYWA5JGYWQ%2F20210719%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Signature=31695deb85b734484387b867e39227be58eb98a92b8795924d606ec3bdf94b4b&amp;hash=ee329917fe0848977d795ad39fd6a90e3fab865582ae42e031f491a895cc5de2&amp;host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&amp;pii=S147466701739852X&amp;tid=spdf-5606ae0b-eaf5-44ae-8c84-9f8a37c2baec&amp;sid=6b4a71868fdeb0406d39d3c65d5a323ad5e2gxrqa&amp;type=client">TEACHING SYSTEM IDENTIFICATION. GOALS AND FORMATS FOR DIFFERENT COURSES</a>. Paper by Lennart Ljung</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
