@@ -1,0 +1,74 @@
+---
+title: "The full cavitation model with only NCG (no vapor)"
+date: 2025-12-21
+bibliography: ../../../references.bib
+---
+
+This note takes the @singhal2002full *homogeneous-mixture* framework and explicitly **turns off the vapor/cavitation part** (no vapor phase, no phase change). What remains is a two-constituent EVET mixture: **liquid + non-condensable gas (NCG)**.
+
+The model is a homogeneous mixture (Equal-Velocity / Equal-Temperature; EVET) formulation:
+
+- One mixture momentum equation (variable density)
+- One scalar transport equation for non-condensable gas mass fraction
+- Algebraic mixture closure for density (liquid + NCG)
+
+## Primary variables
+
+- $\rho$ mixture density
+- $\mathbf{V}$ mixture velocity
+- $f_g$ non-condensable gas mass fraction
+- $\rho_g$ NCG density
+- $\alpha_g$ NCG volume fraction
+- $\alpha_l$ liquid volume fraction
+
+## Mixture closure (liquid + NCG only)
+
+With vapor ignored (set $f_v=0$ everywhere), the mixture density relation reduces to:
+
+$$
+\frac{1}{\rho}=\frac{f_g}{\rho_g}+\frac{1-f_g}{\rho_l}
+$$
+
+NCG density is computed as:
+
+$$
+\rho_g=\frac{P}{R_{air}T}
+$$
+
+The corresponding *volume fractions* follow from the same algebra used in the full model:
+
+$$
+\alpha_g=f_g\,\frac{\rho}{\rho_g}
+$$
+
+$$
+\alpha_l=1-\alpha_g
+$$
+
+## NCG mass fraction transport (no phase change)
+
+In this vapor-off limit there are **no** evaporation/condensation source terms. The transported scalar is the NCG mass fraction $f_g$:
+
+$$
+\frac{\partial}{\partial t}(\rho f_g)+\nabla\cdot(\rho\,\mathbf{V}\,f_g)=\nabla\cdot(\Gamma\,\nabla f_g)
+$$
+
+Here $\Gamma$ is an effective diffusion coefficient used for the scalar transport (typically a turbulence-model-based closure in CFD implementations).
+
+## What this is (and is not)
+
+- This is still an EVET *homogeneous mixture* (one velocity, one temperature, variable density).
+- It is **not** a cavitation model anymore in the classic fluid-mechanics sense, because cavitation refers to the formation of **vapor-filled** cavities when local pressure falls below the liquid vapor pressure, and the associated collapse when pressure recovers (@brennen1995cavitation).
+
+In hydraulics practice it’s common to associate cavitation damage with “air” because:
+
+- Entrained/dissolved gas provides nuclei and strongly influences how cavities grow/collapse.
+- Some phenomena are more properly called *aeration/ventilation* (gas ingestion/entrained bubbles) rather than vapor cavitation; Brennen explicitly distinguishes air entrainment (“ventilation”) from vaporization-driven cavities in the historical context of propellers (@brennen1995cavitation).
+
+So: a liquid+air (NCG) mixture model can still be useful for predicting density/compressibility effects, but by itself it does not model vaporization/condensation.
+
+
+## References
+
+::: {#refs}
+:::
