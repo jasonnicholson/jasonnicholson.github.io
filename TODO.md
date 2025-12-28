@@ -7,6 +7,7 @@
 
 ## Posts
 - [ ] Write Clifford/Geometric algebra article
+- [ ] Using AI effectively. Calculator example. Embrace it. Monitoring outputs.
 
 ## Projects
 
