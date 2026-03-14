@@ -1,0 +1,82 @@
+---
+title: "Deep-Dive: Regularizer Design and Derivative Order"
+bibliography: ../../references.bib
+---
+
+[Back to regularizeNd series home](index.qmd)
+
+This article is the rigorous companion to the tutorial series. It connects implementation details in regularizeNd to methodological choices in regularization design.
+
+## Problem Setup
+
+regularizeNd builds a linear least-squares system with two equation families:
+
+- fidelity equations from interpolation consistency
+- regularization equations from smoothness operators
+
+Conceptually, the objective can be viewed as
+
+$$
+\min_{z} \lVert A_f z - y \rVert_2^2 + \sum_{k=1}^{n} \lambda_k^2 \lVert L_k z \rVert_2^2
+$$
+
+where $A_f$ is the fidelity matrix and $L_k$ are per-axis regularization operators.
+
+## Where It Lives in the Code
+
+- Matrix assembly: `regularizeNd/source/regularizeNdMatrices.m`
+- Main solve path and solver choices: `regularizeNd/source/regularizeNd.m`
+- Constraint helper workflow: `regularizeNd/source/monotonicConstraint.m`
+
+## Swapping the Regularizer Operator
+
+The regularizer can be treated as a design choice rather than a fixed component.
+
+### Baseline in Current Workflow
+
+A second-derivative style regularizer penalizes curvature and tends to promote locally linear behavior where data is sparse.
+
+### Why Consider a Third Derivative
+
+If one axis has underlying near-parabolic structure, then enforcing low second derivative can over-flatten meaningful curvature. In these cases, a third-derivative penalty can be more appropriate because it encourages piecewise quadratic behavior while still controlling rapid changes in curvature.
+
+Representative context: pressure-flow-position relationships where one direction may be dominated by quadratic trends over an operating range.
+
+### Axis-Selective Mixed Order
+
+A practical extension is mixed derivative order by axis:
+
+- keep second-derivative regularization on axes expected to be locally linear
+- use third-derivative regularization on axes expected to be near-quadratic
+
+Conceptually,
+
+$$
+\min_{z} \lVert A_f z - y \rVert_2^2
++ \sum_{k \in S_2} \lambda_k^2 \lVert L_k^{(2)} z \rVert_2^2
++ \sum_{k \in S_3} \mu_k^2 \lVert L_k^{(3)} z \rVert_2^2
+$$
+
+with $S_2 \cup S_3 = \{1,\dots,n\}$ and $S_2 \cap S_3 = \emptyset$.
+
+### Practical Tradeoffs
+
+- Higher-order operators can require denser grid support to avoid artifacts.
+- Conditioning can degrade as operator order increases.
+- Solver and preconditioner settings may need retuning.
+- Stronger operator assumptions increase model bias if physics assumptions are wrong.
+
+## Proposed Validation Workflow
+
+1. Define candidate derivative-order maps per axis.
+2. Fit models under identical fidelity data.
+3. Compare residuals, smoothness diagnostics, and extrapolation behavior.
+4. Stress-test near sparse regions and along physically important slices.
+
+## Attribution
+
+This work is inspired by prior regularization resources including Peter Goldstein's educational series and related historical tools. This article documents methodology as implemented and extendable in regularizeNd.
+
+## References
+
+Citations and software references are maintained in the site bibliography.
