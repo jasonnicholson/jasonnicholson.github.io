@@ -5,32 +5,115 @@ bibliography: ../../references.bib
 
 [Back to regularizeNd series home](index.qmd)
 
-This part introduces the regularization problem solved by regularizeNd: fitting a gridded lookup table to noisy scattered data while controlling smoothness.
+This part introduces the core problem solved by regularizeNd: create a regular lookup table from scattered points while balancing two competing goals:
+
+- fit the measured data
+- keep the output smooth enough to avoid noise-driven artifacts
 
 ## Practical Goal
 
-- Build intuition for the smoothness parameter.
-- Understand fidelity versus smoothness tradeoff.
-- Produce your first regularized surface from scattered points.
+1. Build intuition for the smoothness parameter.
+2. Understand fidelity versus smoothness tradeoff.
+3. Produce your first regularized surface from scattered points.
 
 ## Example Anchor
 
-Primary script: `regularizeNd/Examples/START_HERE_example1.m`
+Primary script: regularizeNd/Examples/START_HERE_example1.m
 
-## Suggested Walkthrough
+This script uses `etopo_loihi.mat`, a local subset derived from NOAA ETOPO 2022 [@noaa2022etopo], defines a 2D grid, solves for a gridded surface with regularizeNd, and compares scattered data against the fitted surface.
 
-1. Generate noisy data from a known relation.
-2. Define `xGrid` for each input dimension.
-3. Solve with regularizeNd for at least three smoothness values.
-4. Compare exact, noisy, and regularized surfaces.
+## Conceptual Model
 
-## Interpretation
+regularizeNd solves a sparse least-squares problem that combines:
 
-Use visual comparison to understand where stronger smoothing helps and where it removes detail.
+- fidelity equations from interpolation consistency
+- smoothness equations from regularization operators
+
+In plain terms:
+
+- lower smoothness gives tighter tracking of noisy points
+- higher smoothness gives more stable and cleaner surfaces
+
+The right value depends on measurement noise, expected physics, and how much local detail you need to preserve.
+
+## Minimal Reproducible Run
+
+```{matlab}
+clc; clear; close all;
+data = load('etopo_loihi.mat');
+x = double(data.x); x2 = x(data.mask);
+y = double(data.y); y2 = y(data.mask);
+z = double(data.z); z2 = z(data.mask);
+
+
+xLimits = [min(x), max(x)];
+yLimits = [min(y), max(y)];
+
+xGrid = {linspace(xLimits(1) - eps(xLimits(1)), xLimits(2) + eps(xLimits(2)), 120), ...
+         linspace(yLimits(1) - eps(yLimits(1)), yLimits(2) + eps(yLimits(2)), 121)};
+
+smoothness = 0.0001;
+    
+zGrid = regularizeNd([x2,y2], z2, xGrid, smoothness, 'cubic');
+% equivalents ways to call regularizeNd
+% zGrid = regularizeNd([x,y], z, xGrid, smoothness, 'cubic');
+% zGrid = regularizeNd([x,y], z, xGrid, smoothness, 'cubic', 'normal');
+
+
+scatter3(x2, y2, z2, [], 'r', 'filled')
+hold on;
+surf(xGrid{:}, zGrid','FaceColor','interp','EdgeColor','interp')
+view(31.5,36)
+xlabel('Longitude')
+ylabel('Latitude')
+zlabel('Depth in Feet')
+grid on
+legend({'Scattered Data', 'Regularized Surface'}, 'location', 'best');
+```
+
+## What To Change First
+
+1. Keep the same grid and vary smoothness across orders of magnitude.
+2. Compare surface roughness and local peaks.
+3. Keep interpolation fixed initially so you isolate smoothness effects.
+
+Suggested quick sweep values:
+
+- `1e-6`
+- `1e-4`
+- `1e-2`
+
+## How To Read The Plot
+
+Look for three common regimes:
+
+1. Too low smoothness: the fitted surface chases local noise.
+2. Balanced smoothness: broad trend and local structure are both visible.
+3. Too high smoothness: physically meaningful gradient changes are flattened and the surface becomes too linear in each axis.
+
+## Practical Notes
+
+1. If your data are sparse near boundaries, expect extrapolation behavior to reflect regularization assumptions more strongly than fidelity.
+2. If one axis has very different scale, use per-axis strategy in later parts instead of forcing one global value.
+3. Keep this first pass simple: tune smoothness before exploring solver and interpolation alternatives.
+
+## Data Source Note (ETOPO 2022 subset)
+
+The example uses `etopo_loihi.mat`, a local topography subset prepared from NOAA ETOPO 2022 [@noaa2022etopo].
+
+For readers running the example:
+
+1. Keep `etopo_loihi.mat` on the MATLAB path.
+2. If you regenerate the subset, preserve the same variables (`x`, `y`, `z`) so the script remains plug-compatible.
+3. Prefer citing the upstream NOAA dataset directly for reproducibility.
 
 ## Attribution
 
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
+This educational progression is inspired by Peter Goldstein's regularization article sequence and related historical tools, including gridfit and RegularizeData3D. This tutorial text is independently written for regularizeNd.
+
+## Next Step
+
+Continue to Part 2 to isolate parameter behavior in 1D and build a reproducible smoothness tuning workflow.
 
 ## Next
 
