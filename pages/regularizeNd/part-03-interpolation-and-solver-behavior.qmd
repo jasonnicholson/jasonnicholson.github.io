@@ -15,6 +15,18 @@ This part focuses on interpolation choices and solver strategy in regularizeNd.
 - Compare solver behavior for representative problem sizes.
 - Understand when the normal-equation pathway is useful and when iterative options are needed.
 
+## Why This Matters
+
+In regularizeNd practice, interpolation and solver are two separate decisions:
+
+- interpolation is mainly about local shape and behavior,
+- solver is mainly about numerical robustness, speed, and memory.
+
+The key solver takeaway from project guidance is simple:
+
+- `\` is usually the most robust fallback,
+- `normal` is usually about 3x faster for the equation systems regularizeNd generates when conditioning is acceptable, which is 99.999% of the time.
+
 ## Example Anchor
 
 Primary script: `regularizeNd/Examples/example_solver_differences.m`
@@ -25,6 +37,162 @@ Primary script: `regularizeNd/Examples/example_solver_differences.m`
 2. Run selected solver configurations.
 3. Compare run time, stability, and output shape.
 4. Keep notes on conditioning-sensitive settings.
+
+## Interpolation Modes in Practice
+
+### Nearest
+
+- Fastest local interpolation rule.
+- Most blocky output.
+- Useful as a coarse baseline and for sanity checks.
+
+### Linear
+
+- Usually the best default for reliability and speed-quality balance.
+- Piecewise-linear local behavior often avoids overshoot artifacts.
+- Good starting point for engineering lookup tables.
+- Extremum are always at grid points, which can be desirable for some applications.
+
+### Cubic
+
+- Smoother local appearance and gradients.
+- Wider local stencil increases coupling and can increase runtime.
+- More sensitive to sparse/noisy regions; use only when you need smoother local derivatives.
+- Extremum can be between grid points, which can be desirable for some applications but also can lead to overshoot artifacts.
+
+## Minimal Comparison Run
+
+Use one fixed dataset and only change interpolation mode to see differences. The timing difference do not approach their asymptotic complexity differences because the problem size is small, but you should see some difference in output shape.
+
+```matlab
+%| fig-width: 4
+%| fig-height: 8
+%| out-width: "100%"
+clc; clear; close all;
+
+data = load('etopo_loihi.mat');
+x = double(data.x);
+y = double(data.y);
+z = double(data.z);
+
+xLimits = [min(x), max(x)];
+yLimits = [min(y), max(y)];
+
+xGrid = {linspace(xLimits(1), xLimits(2), 50), ...
+		 linspace(yLimits(1), yLimits(2), 51)};
+
+smoothness = 1e-4;
+modes = {'nearest', 'linear', 'cubic'};
+
+
+tiledlayout(2,2, 'Padding', 'compact', 'TileSpacing', 'compact')
+
+for k = 1:numel(modes)
+  tic;
+	zGrid = regularizeNd([x,y], z, xGrid, smoothness, modes{k});
+  zFunction = griddedInterpolant(xGrid, zGrid, modes{k});
+	t = toc;
+	fprintf('%-7s runtime: %.3f s\n', modes{k}, t);
+	nexttile
+  fcontour(@(x,y) reshape(zFunction(x(:),y(:)), size(x)), [xLimits, yLimits],"Fill","on")
+	axis tight
+	axis equal
+	title(modes{k})
+	xlabel('Longitude')
+	ylabel('Latitude')
+	colormap(turbo)
+	cb = colorbar;
+	cb.Label.String = 'Depth';
+end
+```
+
+```text
+nearest runtime: 0.008 s
+linear  runtime: 0.010 s
+cubic   runtime: 0.017 s
+```
+
+![Nearest, Linear, Cubic Comparison](part-03-block-01.png)
+
+What to inspect:
+
+- local roughness around sparse regions,
+- edge behavior near low-sample zones,
+- whether visually smooth output still respects major trend features.
+
+## Solver Pathways
+
+regularizeNd supports multiple solve pathways. For this project, a practical policy is:
+
+1. Try `normal` first for speed.
+2. If warnings or conditioning issues appear, switch to `\` for robustness.
+3. Use iterative solvers when memory or factorization cost becomes limiting.
+
+## Timing and Stability Sweep
+
+Keep interpolation fixed and compare solver choices on the same matrix build.
+
+```{matlab}
+clc
+
+data = load('etopo_loihi.mat');
+x = double(data.x);
+y = double(data.y);
+z = double(data.z);
+
+xLimits = [min(x), max(x)];
+yLimits = [min(y), max(y)];
+
+xGrid = {linspace(xLimits(1), xLimits(2), 500), ...
+		 linspace(yLimits(1), yLimits(2), 501)};
+
+smoothness = 1e-4;
+interpMethod = 'linear';
+
+solverList = ["normal", "\", "pcg", "symmlq", "lsqr"];
+maxIterations = 4e4;
+solverTolerance = 1e-8;
+
+for i = 1:numel(solverList)
+	solver = solverList(i);
+
+	tic
+	if any(solver == ["pcg", "symmlq", "lsqr"])
+		zGrid = regularizeNd([x,y], z, xGrid, smoothness, interpMethod, solver, maxIterations, solverTolerance);
+	else
+		zGrid = regularizeNd([x,y], z, xGrid, smoothness, interpMethod, solver);
+	end
+	t = toc;
+
+	fprintf('%-7s runtime: %.3f s\n', char(solver), t);
+
+	if any(~isfinite(zGrid), 'all')
+		warning('Non-finite values detected with solver %s', char(solver));
+	end
+end
+```
+
+## Decision Rules
+
+Start here, then refine:
+
+1. Use `linear` interpolation and `smoothness = 1e-4` as a neutral baseline for this dataset.
+2. Try `normal` first when no rank/conditioning warnings appear. Lowering the smoothness far enough will trigger warnings, which is a sign to switch to `\` for robustness. 
+3. Switch to `\` when robustness is more important than speed.
+4. Switch to iterative pathways when matrix size pushes memory or direct-factorization cost too high.
+5. Use `cubic` only after you verify it improves prediction quality in your target operating regions.
+
+## Common Failure Modes
+
+1. Overfitting appears as local wiggles despite visually smooth broad trend.
+2. Ill-conditioning appears as unstable runtimes, warnings, or wildly different fits from small option changes.
+3. Solver mismatch appears as long runtime with no quality gain.
+
+## Checklist Before Moving On
+
+1. You have one saved baseline plot for each interpolation mode.
+2. You recorded at least one solver runtime sweep on the same data/grid.
+3. You selected a default interpolation and solver policy for the rest of the series.
 
 ## Key Point
 
