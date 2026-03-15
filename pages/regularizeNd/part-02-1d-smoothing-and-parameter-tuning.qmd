@@ -7,32 +7,97 @@ bibliography: ../../references.bib
 
 [Previous: Part 1](part-01-introduction-and-intuition.qmd)
 
-This part reduces the problem to 1D to make parameter effects obvious.
+This part reduces the problem to 1D so the smoothness parameter behavior is easy to see and repeat.
 
 ## Practical Goal
 
-- Sweep smoothness values across orders of magnitude.
-- Observe under-smoothing and over-smoothing.
-- Build a repeatable tuning strategy.
+1. Sweep smoothness values across orders of magnitude.
+2. Observe under-smoothing and over-smoothing.
+3. Build a repeatable tuning strategy.
 
 ## Example Anchor
 
-Primary script: `regularizeNd/Examples/example1D.m`
+Primary script: regularizeNd/Examples/example1D.m
 
-## Suggested Walkthrough
+The script uses a small 1D dataset from the original educational blog progression and compares coarse and fine grids under the same smoothness value.
 
-1. Start from baseline smoothness near `1e-2`.
-2. Test lower and higher values by factors of 10.
-3. Plot residual behavior and curve shape together.
-4. Select smoothness that balances noise rejection and trend retention.
+## Why 1D First
 
-## Practical Tuning Heuristic
+In higher dimensions, you may not immediately distinguish noise tracking from true structure. In 1D, the failure modes are visually obvious, so you can establish parameter discipline before moving to 2D and nD cases.
 
-When data is noisy, move smoothness up. When known structure is lost, move smoothness down.
+## Baseline Run
+
+```{matlab}
+clc; clear; close all;
+
+x = [0;0.55;1.1;2.6;2.99];
+y = [1;1.1;1.5;2.5;1.9];
+
+xGridCoarse = {[-0.50,0,0.50,1,1.50,2,2.50,3,3.30,3.60]};
+xGridFine   = {-0.5:0.1:3.6};
+
+smoothness = 5e-3;
+yGridCoarse = regularizeNd(x, y, xGridCoarse, smoothness);
+yGridFine   = regularizeNd(x, y, xGridFine, smoothness);
+
+plot(x,y,'rx', 'MarkerSize', 20, 'DisplayName', 'Test Points')
+hold on; grid on;
+plot(xGridCoarse{1}, yGridCoarse, 'DisplayName', 'Coarse Grid')
+plot(xGridFine{1}, yGridFine, 'DisplayName', 'Fine Grid')
+legend('show', 'location', 'best')
+title('1D Regularization Example')
+xlabel('x'); ylabel('y')
+```
+
+## Smoothness Sweep Pattern
+
+Use a log sweep by powers of ten:
+
+```{matlab}
+smoothnessList = [1e-9, 5e-3, 1e-1];
+
+figure; hold on; grid on;
+plot(x, y, 'rx', 'MarkerSize', 20, 'DisplayName', 'Test Points')
+
+for k = 1:numel(smoothnessList)
+	s = smoothnessList(k);
+	yGrid = regularizeNd(x, y, xGridFine, s);
+	plot(xGridFine{1}, yGrid, 'DisplayName', sprintf('smoothness=%g', s));
+end
+
+legend('show', 'location', 'best');
+title('Smoothness Sweep in 1D');
+```
+
+The example comments note that extremely tiny values can make the system ill-conditioned, which is exactly why log-step sweeps are safer than random tweaking.
+
+## Interpretation Rules
+
+1. If curve oscillations appear between sparse data points, smoothness is likely too low.
+2. If the curve misses clear trend changes, smoothness is likely too high.
+3. If coarse and fine grids tell opposite stories, treat that as a warning and retune.
+
+## Repeatable Tuning Workflow
+
+1. Start at `1e-2` or `5e-3`.
+2. Move by factors of 10 only.
+3. Lock a candidate value where trend fidelity and smoothness are both acceptable.
+4. Validate with at least one alternate grid density.
+5. Carry the candidate value into Part 3 for interpolation and solver comparisons.
+
+## Common Mistakes
+
+1. Changing smoothness, interpolation, and solver all at once.
+2. Using linear-scale sweeps such as `0.001, 0.002, 0.003` before understanding order-of-magnitude behavior.
+3. Ignoring conditioning warnings at tiny smoothness values.
 
 ## Attribution
 
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
+This educational progression is inspired by Peter Goldstein's regularization article sequence and related historical tools, including gridfit and RegularizeData3D. This tutorial text is independently written for regularizeNd.
+
+## Next Step
+
+Proceed to Part 3 to evaluate interpolation method and solver behavior using the parameter discipline built here.
 
 ## Next
 
