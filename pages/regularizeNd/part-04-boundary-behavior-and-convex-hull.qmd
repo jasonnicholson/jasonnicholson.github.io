@@ -7,154 +7,181 @@ bibliography: ../../references.bib
 
 [Previous: Part 3](part-03-interpolation-and-solver-behavior.qmd)
 
-This part explains why regularized lookup tables can remain useful near and beyond sparse-data boundaries.
+This part explains why regularized lookup tables remain well-behaved near sparse boundaries while
+standard scattered interpolation can collapse.  The example is adapted from
+`regularizeNd/Examples/example_scattered_data_near_convex_hull.m`.
 
-## Practical Goal
+## The Dataset: A Deliberately Pathological Point Cloud
 
-- Examine behavior near the convex hull of scattered data.
-- Compare to common scattered interpolation behavior near edges.
-- Interpret why smoothness equations shape extrapolation trends.
+The example data is a synthetic 2-D point cloud shaped like a **lens**:
 
-## Why Boundaries Are Hard
+- Two arcs (upper and lower) tracing portions of a unit circle.
+- A thin horizontal bar connecting them through the middle.
 
-Inside dense sample regions, fidelity equations dominate because many data constraints are nearby. Near the boundary and outside the convex hull, fewer fidelity constraints are active, so regularization structure has much more influence.
+This geometry is designed so that the Delaunay triangulation used internally by
+`scatteredInterpolant` produces extremely sliver-like triangles in the nearly-empty corners of the
+convex hull.  The true underlying surface is the paraboloid $z = x^2 + y^2$.
 
-That is not a bug. It is exactly how regularized fitting is supposed to work:
-
-- data-dense zones are data-driven,
-- data-sparse zones are prior-driven (smoothness-driven).
-
-## Example Anchor
-
-Primary script: `regularizeNd/Examples/example_scattered_data_near_convex_hull.m`
-
-Companion script often useful for this part:
-
-- `regularizeNd/Examples/example_boundary_behavior_comparison.m`
-
-## Suggested Walkthrough
-
-1. Visualize sample coverage and hull boundary.
-2. Query near and beyond sparse regions.
-3. Compare trend consistency and smoothness.
-
-## Convex Hull Refresher
-
-For a set of scattered input points, the convex hull is the smallest convex region containing all points. Many interpolation schemes are trustworthy primarily inside this region.
-
-In regularizeNd, you can still evaluate outside the hull because the fitted lookup table exists on the full grid. The important question is not "can it evaluate?" but "is boundary behavior physically plausible for my use case?"
-
-## Practical Boundary Diagnostics
-
-### 1. Coverage Visualization
-
-Always inspect sample geometry first.
-
-```{matlab}
+```{matlab fig-width=6 fig-height=5 out-width='75%'}
 clc; clear; close all;
 
-if exist('etopo_loihi.mat', 'file') ~= 2
-	error(['This example expects etopo_loihi.mat derived from NOAA ETOPO 2022. ' ...
-		'Ensure the file is on the MATLAB path.']);
-end
+% --- build the lens-shaped point cloud ---
+t  = 0.4*pi : 0.02 : 0.6*pi;
+x1 = cos(t)';    y1 = sin(t)' - 1.02;   % bottom arc
+x2 = x1;         y2 = -y1;              % top arc (mirror)
+x3 = linspace(-0.3, 0.3, 16)';  y3 = zeros(16,1);  % horizontal bar
 
-data = load('etopo_loihi.mat');
-x = double(data.x);
-y = double(data.y);
-z = double(data.z);
+x = [x1; x2; x3];
+y = [y1; y2; y3];
+z = x.^2 + y.^2;   % true paraboloid
 
 k = convhull(x, y);
 
 figure
-scatter(x, y, 8, z, 'filled')
+scatter(x, y, 40, z, 'filled')
 hold on
 plot(x(k), y(k), 'k-', 'LineWidth', 1.5)
-xlabel('Longitude')
-ylabel('Latitude')
-title('Scattered Data with Convex Hull')
 colorbar
-grid on
+xlabel('x'); ylabel('y')
+title('Point cloud with convex hull')
+grid on; axis equal
 ```
 
-### 2. Boundary Slice Check
+Notice that the convex hull covers a much larger area than the data itself.  The four corner
+regions are almost entirely unsupported.
 
-Take slices that cross hull boundaries and inspect continuity and slope.
+## Why `scatteredInterpolant` Fails Near This Hull
 
-```{matlab}
-smoothness = 1e-4;
-xGrid = {linspace(min(x), max(x), 120), linspace(min(y), max(y), 120)};
-zGrid = regularizeNd([x,y], z, xGrid, smoothness, 'linear');
+`scatteredInterpolant` builds a Delaunay triangulation of the input points and then interpolates
+within each triangle.  In the corner regions the triangles are sliver-shaped — connecting points
+that are far apart and nearly collinear.  Interpolation inside a sliver triangle amplifies
+numerical error, leading to wildly wrong surface values near the hull boundary.
 
-% Example: middle-latitude slice
-midIdx = round(numel(xGrid{2}) / 2);
-profileX = xGrid{1};
-profileZ = zGrid(:, midIdx);
+## regularizeNd Does Not Fail Here
+
+regularizeNd is **not** an interpolant.  It solves a weighted least-squares problem:
+
+$$
+\min_{\mathbf{y}_\text{grid}} \left\| A_\text{fidelity}\,\mathbf{y}_\text{grid} - \mathbf{z}_\text{data} \right\|^2
++ \lambda^2 \left\| L\,\mathbf{y}_\text{grid} \right\|^2
+$$
+
+Where data is sparse the regularization term takes over and enforces a smooth continuation of
+whatever trend exists nearby.  It does not need a well-shaped triangulation.
+
+## Side-by-Side Comparison
+
+```{matlab fig-width=10 fig-height=5 out-width='100%'}
+% --- build point cloud (same as above, in same script session) ---
+t  = 0.4*pi : 0.02 : 0.6*pi;
+x1 = cos(t)';    y1 = sin(t)' - 1.02;
+x2 = x1;         y2 = -y1;
+x3 = linspace(-0.3, 0.3, 16)';  y3 = zeros(16,1);
+x = [x1; x2; x3];
+y = [y1; y2; y3];
+z = x.^2 + y.^2;
+
+% --- scatteredInterpolant ---
+F = scatteredInterpolant(x, y, z);
+
+% --- regularizeNd ---
+xGrid = {linspace(min(x)-eps(min(x)), max(x)+eps(max(x)), 20), ...
+         linspace(min(y)-eps(min(y)), max(y)+eps(max(y)), 21)};
+zGrid = regularizeNd([x,y], z, xGrid, [0.001, 0.005], 'linear');
+F2 = griddedInterpolant(xGrid, zGrid, 'linear');
+
+% --- evaluation grid ---
+[xi, yi] = ndgrid(-0.3:0.02:0.3, -0.0688:0.01:0.0688);
+zi_scattered  = F(xi, yi);
+zi_regularize = F2(xi, yi);
+zi_true       = xi.^2 + yi.^2;
+
+tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact')
+
+nexttile
+mesh(xi, yi, zi_scattered)
+title('scatteredInterpolant')
+xlabel('x'); ylabel('y'); zlabel('z')
+
+nexttile
+mesh(xi, yi, zi_regularize)
+title('regularizeNd')
+xlabel('x'); ylabel('y'); zlabel('z')
+
+nexttile
+mesh(xi, yi, zi_true)
+title('True surface z = x² + y²')
+xlabel('x'); ylabel('y'); zlabel('z')
+```
+
+The `scatteredInterpolant` surface spikes dramatically near the convex hull corners.  The
+regularized surface follows the paraboloid trend smoothly even in the corner regions where no data
+exists.
+
+## Inspecting the Triangulation
+
+The reason for the failure is visible in the Delaunay triangulation:
+
+```{matlab fig-width=6 fig-height=5 out-width='75%'}
+t  = 0.4*pi : 0.02 : 0.6*pi;
+x1 = cos(t)';    y1 = sin(t)' - 1.02;
+x2 = x1;         y2 = -y1;
+x3 = linspace(-0.3,0.3,16)';  y3 = zeros(16,1);
+x = [x1; x2; x3];
+y = [y1; y2; y3];
+
+dt = delaunayTriangulation(x, y);
 
 figure
-plot(profileX, profileZ, 'LineWidth', 1.8)
-xlabel('Longitude')
-ylabel('Depth')
-title('Boundary Crossing Slice')
-grid on
+triplot(dt, 'Color', [0.6 0.6 0.6])
+hold on
+plot(x, y, '*r', 'MarkerSize', 5)
+plot(x1, y1, '-r', 'LineWidth', 1.5)
+plot(x2, y2, '-r', 'LineWidth', 1.5)
+axis equal; grid on
+title('Delaunay triangulation — note the sliver triangles in the corners')
+xlabel('x'); ylabel('y')
 ```
 
-Look for:
+Triangles inside the red arc boundaries are reasonably shaped.  Outside them, the triangles
+connect remote points across nearly-empty regions — linear interpolation inside a sliver produces
+values that have little to do with the underlying surface.
 
-- unrealistic end-of-grid spikes,
-- abrupt slope reversals near sparse boundaries,
-- trends that violate known physics.
+## Key Takeaways
 
-## Comparison Mindset: Interpolation-Only vs Regularized Table
+| | `scatteredInterpolant` | `regularizeNd` |
+|---|---|---|
+| Uses triangulation | Yes | No |
+| Requires well-sampled hull interior | Yes | No |
+| Behavior near sparse hull boundary | Can spike/degrade | Smooth regularized continuation |
+| Is it an interpolant? | Yes — passes through every point | No — weighted least-squares fit |
+| Control over boundary behavior | None | Via `smoothness` parameter |
 
-Interpolation-only methods may degrade or become undefined outside local support. A regularized lookup table provides a complete field over the defined grid, but the extrapolated behavior is governed by operator priors.
+## What Controls Edge Behavior in regularizeNd
 
-So evaluate both:
-
-1. fidelity inside the well-sampled interior,
-2. plausibility of boundary continuation in sparse or outside-hull regions.
-
-## What Controls Edge Behavior Most
-
-1. Smoothness magnitude.
-2. Derivative order in the regularizer design.
-3. Axis scaling and coordinate design.
-4. Grid extent relative to data coverage.
-
-In most workflows, changing smoothness by one to two orders of magnitude has a larger edge impact than changing interpolation mode.
+1. **Smoothness magnitude** — the dominant control.  Larger smoothness extends influence of nearby
+   trends further into sparse regions.
+2. **Derivative order** — second-order regularization enforces near-linear continuation; a
+   first-order variant would enforce near-constant continuation.
+3. **Grid extent relative to data coverage** — keeping the grid tightly bounded by the data
+   limits how far the model is asked to extrapolate.
+4. **Anisotropic smoothness** — per-dimension smoothness values (as used above: `[0.001, 0.005]`)
+   let you tune propagation differently along each axis.
 
 ## Boundary Tuning Protocol
 
-1. Fix interpolation mode (`linear` is a reliable baseline).
-2. Sweep smoothness over a small log range (`1e-6`, `1e-4`, `1e-2`).
-3. Evaluate only boundary-focused diagnostics (hull-near slices and corner regions).
-4. Pick the smallest smoothness that avoids implausible edge curvature.
-5. Re-check interior fit error so boundary tuning did not over-smooth useful local structure.
-
-## Common Mistakes
-
-1. Judging model quality from interior plots only.
-2. Expanding grid domain far beyond sample support without re-tuning smoothness.
-3. Treating outside-hull predictions as equally trusted as interior predictions.
-
-## Reporting Guidance
-
-When documenting results, explicitly separate:
-
-1. interpolation region performance (inside hull, dense support),
-2. regularized continuation behavior (near/outside hull),
-3. chosen smoothness rationale.
-
-This keeps claims scientifically clear and avoids overstating extrapolation certainty.
+1. Fix interpolation mode (`'linear'` is the recommended baseline).
+2. Start with equal per-dimension smoothness and compare with the true or reference surface.
+3. If boundary behavior is implausible, increase smoothness in the offending dimension.
+4. Re-check interior residuals after any smoothness increase — over-smoothing will degrade the
+   interior fit.
 
 ## Checklist Before Part 5
 
-1. You have one convex-hull plot for your data geometry.
-2. You have at least two boundary-crossing slices for different smoothness values.
-3. You selected a boundary-safe smoothness baseline for higher-dimensional scaling tests.
-
-## Attribution
-
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
+- [ ] You have plotted the data geometry and identified the convex hull.
+- [ ] You have compared your method against a known reference surface where one exists.
+- [ ] You have inspected the boundary and corner regions explicitly, not just the dense interior.
+- [ ] You have selected a smoothness value that gives plausible behavior across the full grid domain.
 
 ## Next
 

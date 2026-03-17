@@ -7,28 +7,187 @@ bibliography: ../../references.bib
 
 [Previous: Part 7](part-07-iterative-solvers-and-memory-strategy.qmd)
 
-This part documents historical lineage and practical migration guidance.
+This part documents the historical lineage of regularizeNd and gives practical migration guidance
+for users coming from `gridfit` or `RegularizeData3D`.
 
-## Practical Goal
+## Conceptual Lineage
 
-- Clarify conceptual lineage from prior tools to regularizeNd.
-- Show how to compare behavior using included historical examples.
-- Provide migration tips for users coming from older workflows.
+regularizeNd is inspired by earlier regularized surface fitting tools in the MATLAB ecosystem.
+Two tools are particularly relevant as a conceptual starting point:
 
-## Example Anchors
+- **gridfit** (John D'Errico) [@derrico2016gridfit] — a 2-D surface fitting tool using a similar
+  regularization philosophy.  gridfit introduced many users to the idea of balancing data fidelity
+  against smoothness on a grid.
+- **RegularizeData3D** [@jamal2014regularizedata3d] — extended the concept to 3-D inputs.
 
-- `regularizeNd/Examples/From gridfit/`
-- `regularizeNd/Examples/From RegularizeData3D/`
+regularizeNd generalizes the approach to an arbitrary number of input dimensions, adds support
+for per-dimension smoothness weights, exposes the underlying matrices for constrained problems,
+and provides multiple solver options including iterative solvers for large systems.
 
-## Scope and Wording
+**Important framing:** regularizeNd is inspired by this prior work and shares the regularization
+concept, but it is an independent implementation.  Claims about shared source code should not be
+made unless you have explicit evidence.
 
-- This article frames regularizeNd as inspired by earlier work.
-- It avoids derivative-code claims unless explicit evidence supports that statement.
+## Migrating from gridfit
 
-## Attribution
+### Conceptual mapping
 
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
+| gridfit concept | regularizeNd equivalent |
+|---|---|
+| `gx`, `gy` (grid vectors) | `xGrid = {gx, gy}` |
+| `smoothness` scalar | `smoothness` scalar (same meaning) |
+| `g = gridfit(x,y,z,gx,gy,s)` | `g = regularizeNd([x,y], z, {gx,gy}, s)` |
+| Interpolation method arg | 5th positional arg: `'linear'`, `'cubic'`, `'nearest'` |
+| Output is in meshgrid format | Output is in **ndgrid** format — transpose before plotting with `surf` |
 
-## Next
+### Minimal gridfit → regularizeNd rewrite
+
+```matlab
+% --- gridfit (old) ---
+% g = gridfit(x, y, z, gx, gy, smoothness);
+% surf(gx, gy, g)      % gridfit output is meshgrid-formatted
+
+% --- regularizeNd (new) ---
+g = regularizeNd([x,y], z, {gx, gy}, smoothness);
+surf(gx, gy, g')       % note the transpose: regularizeNd output is ndgrid-formatted
+```
+
+The transpose `g'` is the most common source of confusion.  regularizeNd stores the output in
+**ndgrid** format (`g(i,j)` indexes `gx(i)`, `gy(j)`), while MATLAB's `surf` expects meshgrid
+format (`g(j,i)`).
+
+### Topographic data demo rewrite
+
+Below is the first section of `demo_from_gridfit.m` rewritten in clean regularizeNd style.  The
+original used `bluff_data.mat` (Two ravines on a hillside, scanned from a topographic map of
+upstate New York).
+
+```matlab
+clc; clear; close all;
+load bluff_data
+x = bluff_data(:,1);
+y = bluff_data(:,2);
+z = bluff_data(:,3);
+
+gx = 0:4:264;
+gy = 0:4:400;
+smoothness = 1e-5;
+
+g = regularizeNd([x,y], z, {gx, gy}, smoothness);
+
+figure
+colormap(hot(256))
+surf(gx, gy, g')        % transpose for surf
+camlight right; lighting phong; shading interp
+line(x, y, z, 'Marker', '.', 'MarkerSize', 4, 'LineStyle', 'none')
+title('Topographic surface — regularizeNd rewrite of gridfit demo')
+xlabel('x'); ylabel('y'); zlabel('z')
+```
+
+## Migrating from RegularizeData3D
+
+### Conceptual mapping
+
+| RegularizeData3D concept | regularizeNd equivalent |
+|---|---|
+| `x`, `y`, `z` scatter inputs | First two columns of the input matrix |
+| `v` (value) input | Second positional arg `y` (confusingly named — it is the response) |
+| `xnodes`, `ynodes` | `xGrid = {xnodes, ynodes}` |
+| `smoothness` scalar | `smoothness` scalar |
+| `interp` string arg | 5th positional arg |
+| Output grid in meshgrid format | Output in **ndgrid** format — transpose for `surf` |
+
+### Minimal RegularizeData3D → regularizeNd rewrite
+
+```matlab
+% --- RegularizeData3D (old) ---
+% g = RegularizeData3D(x, y, z, xnodes, ynodes, smoothness, 'interp', 'linear');
+
+% --- regularizeNd (new) ---
+g = regularizeNd([x,y], z, {xnodes, ynodes}, smoothness, 'linear');
+% same ndgrid output format — surf(xnodes, ynodes, g') for display
+```
+
+The key structural change is that the separate `x`, `y` scatter inputs become the two columns of
+a single matrix argument.
+
+### Coarse vs. fine grid demo rewrite
+
+This example is adapted from `From RegularizeData3D/coarse_vs_fine_grids.m` and demonstrates a
+key property: for the same smoothness value, the fitted surface is nearly identical regardless of
+grid resolution.  Coarser grids are faster; finer grids give more evaluation points.
+
+```matlab
+clc; clear; close all;
+
+inputPoints = [
+    1,  0.5, 0.5;
+    1,    2,   1;
+    1,  3.5, 0.5;
+    3, 0.75, 0.5;
+    3,  1.5,   1;
+    3, 2.25, 0.5;
+    3,    3,   1;
+    3,    4, 0.5];
+
+x12 = inputPoints(:, 1:2);
+v   = inputPoints(:, 3);
+
+xCoarse = 0:0.2:4;  yCoarse = 0:0.4:4;
+xFine   = 0:0.02:4; yFine   = 0:0.04:4;
+smoothness = 0.001;
+
+zCoarse = regularizeNd(x12, v, {xCoarse, yCoarse}, smoothness, 'cubic');
+zFine   = regularizeNd(x12, v, {xFine,   yFine  }, smoothness, 'cubic');
+
+tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact')
+
+nexttile
+surf(xCoarse, yCoarse, zCoarse')
+title('Coarse grid'); xlabel('x'); ylabel('y'); zlabel('z')
+
+nexttile
+surf(xFine, yFine, zFine')
+title('Fine grid'); xlabel('x'); ylabel('y'); zlabel('z')
+```
+
+Both panels should show essentially the same surface shape.  The fine grid has more evaluation
+resolution, not a fundamentally different result.
+
+## What regularizeNd Does Not Do
+
+To be precise about scope:
+
+- It does **not** guarantee interpolation through every data point — it is a weighted least-squares
+  fit.  Use smoothness → 0 if you want near-interpolation behavior (at the cost of the smoother
+  no longer regularizing effectively).
+- It does **not** enforce physical constraints automatically.  Use `regularizeNdMatrices` +
+  `lsqlin` or `lsqConstrainedAlternative` for that (see Part 6).
+- It does **not** currently support unstructured output grids.  The output is always on a
+  rectilinear ndgrid.
+
+## Quick Reference: Common Output Format Confusion
+
+regularizeNd outputs in **ndgrid** format.  Most MATLAB visualization functions expect meshgrid
+format.  The relationship is:
+
+```matlab
+% regularizeNd output: zGrid(i,j) ↔ xGrid{1}(i), xGrid{2}(j)
+% surf/mesh/contourf expect: Z(j,i) for plotting against x, y vectors
+
+surf(xGrid{1}, xGrid{2}, zGrid')   % 2-D case: transpose zGrid
+```
+
+For 3-D and higher, use `permute` or `griddedInterpolant` to handle the indexing convention
+explicitly.
+
+## Checklist
+
+- [ ] You have identified which prior tool your codebase uses (gridfit or RegularizeData3D).
+- [ ] You have applied the transpose `g'` where needed for `surf` / `mesh` visualization.
+- [ ] You have verified that the migration produces the same surface shape at the same smoothness.
+- [ ] You have read the framing note: regularizeNd is inspired by prior work, not a derived copy.
+
+## References
 
 [Deep-Dive: Regularizer Design and Derivative Order](deep-dive-regularizer-design-and-derivative-order.qmd)

@@ -11,25 +11,25 @@ This part focuses on interpolation choices and solver strategy in regularizeNd.
 
 ## Practical Goal
 
-- Compare interpolation methods: linear, nearest, cubic.
+- Compare interpolation methods: nearest, linear, cubic.
 - Compare solver behavior for representative problem sizes.
-- Understand when the normal-equation pathway is useful and when iterative options are needed.
+- Understand the `\`, `normal`, and iterative solver tradeoffs.
 
 ## Why This Matters
 
 In regularizeNd practice, interpolation and solver are two separate decisions:
 
-- interpolation is mainly about local shape and behavior,
+- interpolation is mainly about local shape,
 - solver is mainly about numerical robustness, speed, and memory.
 
 The key solver takeaway from project guidance is simple:
 
 - `\` is usually the most robust fallback,
-- `normal` is usually about 3x faster for the equation systems regularizeNd generates when conditioning is acceptable, which is 99.999% of the time.
+- `normal` is usually about 3x faster than `\` when conditioning is acceptable, which is 99.9% of the time.
 
 ## Example Anchor
 
-Primary script: `regularizeNd/Examples/example_solver_differences.m`
+Primary script: `regularizeNd/Examples/a03_example_solver_differences.m`
 
 ## Suggested Walkthrough
 
@@ -45,6 +45,7 @@ Primary script: `regularizeNd/Examples/example_solver_differences.m`
 - Fastest local interpolation rule.
 - Most blocky output.
 - Useful as a coarse baseline and for sanity checks.
+- Rarely, rarely used in practice for final output because it can miss important local trends and create artificial discontinuities.
 
 ### Linear
 
@@ -52,6 +53,7 @@ Primary script: `regularizeNd/Examples/example_solver_differences.m`
 - Piecewise-linear local behavior often avoids overshoot artifacts.
 - Good starting point for engineering lookup tables.
 - Extremum are always at grid points, which can be desirable for some applications.
+- It's the most consistent with the regularization meaning a true linear underlying function has no regularization penalty.
 
 ### Cubic
 
@@ -60,14 +62,11 @@ Primary script: `regularizeNd/Examples/example_solver_differences.m`
 - More sensitive to sparse/noisy regions; use only when you need smoother local derivatives.
 - Extremum can be between grid points, which can be desirable for some applications but also can lead to overshoot artifacts.
 
-## Minimal Comparison Run
+### Interpolation Comparison Run
 
 Use one fixed dataset and only change interpolation mode to see differences. The timing difference do not approach their asymptotic complexity differences because the problem size is small, but you should see some difference in output shape.
 
 ```matlab
-%| fig-width: 4
-%| fig-height: 8
-%| out-width: "100%"
 clc; clear; close all;
 
 data = load('etopo_loihi.mat');
@@ -120,7 +119,7 @@ What to inspect:
 - edge behavior near low-sample zones,
 - whether visually smooth output still respects major trend features.
 
-## Solver Pathways
+## Solvers
 
 regularizeNd supports multiple solve pathways. For this project, a practical policy is:
 
@@ -128,9 +127,9 @@ regularizeNd supports multiple solve pathways. For this project, a practical pol
 2. If warnings or conditioning issues appear, switch to `\` for robustness.
 3. Use iterative solvers when memory or factorization cost becomes limiting.
 
-## Timing and Stability Sweep
+## Solver Comparison Run
 
-Keep interpolation fixed and compare solver choices on the same matrix build.
+Keep interpolation and grid fixed. Compare solver choices on the same matrix build.
 
 ```{matlab}
 clc
@@ -172,17 +171,16 @@ for i = 1:numel(solverList)
 end
 ```
 
-## Decision Rules
+### Decision Rules
 
 Start here, then refine:
 
-1. Use `linear` interpolation and `smoothness = 1e-4` as a neutral baseline for this dataset.
-2. Try `normal` first when no rank/conditioning warnings appear. Lowering the smoothness far enough will trigger warnings, which is a sign to switch to `\` for robustness. 
+1. Use `linear` interpolation and `smoothness = 1e-4` as a neutral baseline for this dataset. `1e-3` is the most common starting point across most datasets. This data set contains a lot of data and therefore can use smaller smoothness relying on the local high fidelity data to control the fit. If you have less data, you may need more smoothness to get a good fit.
+2. Try `normal` first when no rank/conditioning warnings appear (99.9% of the time). Lowering the smoothness far enough will trigger warnings, which is a sign to switch to `\` for robustness.
 3. Switch to `\` when robustness is more important than speed.
-4. Switch to iterative pathways when matrix size pushes memory or direct-factorization cost too high.
-5. Use `cubic` only after you verify it improves prediction quality in your target operating regions.
+4. Switch to iterative pathways when matrix size pushes memory or direct-factorization cost too high. For this dataset, the direct solvers are fast and the iterative solvers are slow. The problem size is not yet large enough that the iterative solvers are competitive, but this will change as you increase the grid size.
 
-## Common Failure Modes
+### Common Failure Modes
 
 1. Overfitting appears as local wiggles despite visually smooth broad trend.
 2. Ill-conditioning appears as unstable runtimes, warnings, or wildly different fits from small option changes.
@@ -190,17 +188,12 @@ Start here, then refine:
 
 ## Checklist Before Moving On
 
-1. You have one saved baseline plot for each interpolation mode.
-2. You recorded at least one solver runtime sweep on the same data/grid.
-3. You selected a default interpolation and solver policy for the rest of the series.
+1. You recorded at least one solver runtime sweep on the same data/grid.
+2. You compared the results across the different solvers.
 
 ## Key Point
 
 Interpolation choice should be based on output behavior and accuracy needs, not only local computational complexity.
-
-## Attribution
-
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
 
 ## Next
 

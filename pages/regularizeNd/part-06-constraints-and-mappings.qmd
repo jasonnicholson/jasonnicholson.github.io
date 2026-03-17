@@ -7,28 +7,162 @@ bibliography: ../../references.bib
 
 [Previous: Part 5](part-05-scaling-to-4d-and-beyond.qmd)
 
-This part shows constrained regularization workflows, including monotonic constraints and mapped variable spaces.
+This part covers two powerful capabilities that go beyond the basic `regularizeNd` call: applying
+inequality constraints to the lookup table output, and remapping input variables to a new coordinate
+space before fitting.
 
-## Practical Goal
+## Why Constraints Matter
 
-- Build a constrained least-squares system using matrix outputs.
-- Apply monotonic constraints in selected dimensions.
-- Understand when mapped coordinates improve model behavior.
+The unconstrained solver minimizes a weighted sum of fidelity and smoothness and is completely
+agnostic about the shape of the resulting lookup table.  Two common engineering requirements break
+that assumption:
 
-## Example Anchor
+- **Monotonicity** — the output should be non-decreasing along a given dimension (think
+  efficiency maps, calibration curves, throttle response).
+- **Bounded output** — the table values must stay above (or below) a physical limit.
 
-Primary script: `regularizeNd/Examples/constraint_and_Mapping_Example.m`
+Both are linear inequality constraints of the form $A \mathbf{y}_\text{grid} \leq \mathbf{b}$.
 
-## Suggested Walkthrough
+## The Matrix Formulation
 
-1. Assemble fidelity and regularization matrices.
-2. Build inequality constraints with `monotonicConstraint`.
-3. Solve constrained system and reshape to grid.
-4. Compare constrained and unconstrained results.
+`regularizeNd` solves a least-squares problem inside, but you can access the individual matrices
+with `regularizeNdMatrices`:
 
-## Attribution
+```
+[Afidelity, Lreg] = regularizeNdMatrices(x, xGrid, smoothness, interpMethod)
+```
 
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
+`Afidelity` maps grid values to predicted outputs at each data point.  `Lreg` is a cell array of
+second-derivative penalty matrices, one per dimension.  Stack them and you have the full system:
+
+$$
+\min_{\mathbf{y}_\text{grid}} \frac{1}{2} \left\| C \mathbf{y}_\text{grid} - \mathbf{d} \right\|_2^2
+\quad \text{subject to} \quad A \mathbf{y}_\text{grid} \leq \mathbf{b}
+$$
+
+where
+
+$$
+C = \begin{bmatrix} A_\text{fidelity} \\ L_\text{reg} \end{bmatrix},
+\qquad
+\mathbf{d} = \begin{bmatrix} \mathbf{y}_\text{data} \\ \mathbf{0} \end{bmatrix}.
+$$
+
+Two solvers can handle this system:
+
+| Solver | Requires | Notes |
+|---|---|---|
+| `lsqConstrainedAlternative` | base MATLAB | Bundled with regularizeNd; convergence less robust |
+| `lsqlin` | Optimization Toolbox | More robust; supports equality constraints |
+
+## Monotonic Constraint
+
+`monotonicConstraint` builds the $A$, $\mathbf{b}$ pair for a monotonically-increasing constraint
+across a chosen dimension:
+
+```matlab
+[Amonotonic, bMonotonic] = monotonicConstraint(xGrid)            % dimension 1 (default)
+[Amonotonic, bMonotonic] = monotonicConstraint(xGrid, dim)       % specific dimension
+[Amonotonic, bMonotonic] = monotonicConstraint(xGrid, dim, dxMin) % enforce minimum step
+```
+
+For a monotonically *decreasing* constraint negate the matrix: use `(-Amonotonic, bMonotonic)`.
+
+## Simple Constrained 1-D Example
+
+The following example shows the complete workflow on a 1-D curve that is inherently noisy and
+non-monotonic.  Without a constraint the smooth fit may exhibit small dips.  With the constraint
+the table is guaranteed non-decreasing everywhere.
+
+```matlab
+clc; clear; close all;
+
+rng(42);                        % reproducible noise
+xData = linspace(0, 1, 120)';
+yData = xData.^2 + 0.05*randn(size(xData));   % noisy up-slope curve
+
+xGrid = {linspace(0, 1, 40)'};
+smoothness = 1e-3;
+
+% --- unconstrained ---
+yGridFree = regularizeNd(xData, yData, xGrid, smoothness);
+
+% --- constrained (non-decreasing) ---
+[Afidelity, Lreg] = regularizeNdMatrices(xData, xGrid, smoothness);
+C = [Afidelity; Lreg{1}];
+d = [yData; zeros(size(Lreg{1}, 1), 1)];
+[Amono, bmono] = monotonicConstraint(xGrid);
+yGridConst = lsqConstrainedAlternative(C, d, Amono, bmono);
+
+% --- plot ---
+tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact')
+
+nexttile
+plot(xData, yData, '.', 'DisplayName', 'data'); hold on
+plot(xGrid{1}, yGridFree, '-', 'LineWidth', 2, 'DisplayName', 'unconstrained')
+plot(xGrid{1}, yGridConst, '--', 'LineWidth', 2, 'DisplayName', 'monotone')
+legend; grid on; title('Comparison'); xlabel('x'); ylabel('y')
+
+nexttile
+diff_free  = diff(yGridFree);
+diff_const = diff(yGridConst);
+plot(diff_free,  '-',  'DisplayName', 'unconstrained Δy'); hold on
+plot(diff_const, '--', 'DisplayName', 'monotone Δy')
+yline(0, 'k:', 'LineWidth', 1)
+legend; grid on; title('Table Differences (should be ≥ 0 for monotone)')
+xlabel('grid index'); ylabel('Δy')
+```
+
+The right panel confirms that every difference in the constrained table is non-negative.
+
+## Input Variable Mapping
+
+When the relationship from $x$ to $y$ changes so rapidly over some intervals that the smoothing
+term fights against fidelity, a simple coordinate transform can spread the complexity more evenly.
+Examples:
+
+- engine speed has a nonlinear perceptual response — map to `log(speed)`.
+- a calibration curve has a steep cliff near one boundary — stretch that region using a manually
+  tuned piecewise linear mapping.
+
+The standard workflow is:
+
+1. Scatter-plot the raw data; identify the fast-changing intervals.
+2. Construct a monotonic `griddedInterpolant` mapping $x \to x_\text{new}$.
+3. Apply the mapping to both the scatter data *and* `xGrid` before calling
+   `regularizeNdMatrices`.
+4. Evaluate the result by inverting the mapping for display.
+
+The `constraint_and_Mapping_Example.m` in the examples folder demonstrates a 1-D case where the
+output spans several orders of magnitude.  The mapping compresses the steep section so the
+regularizer sees a nominally constant slope throughout.
+
+### Key rules
+
+- The mapping **must be strictly monotonic** (one-to-one) so that the grid in the new space maps
+  back unambiguously.
+- Use `'pchip'` for the mapping interpolant — it guarantees monotonicity locally, unlike
+  `'spline'` which can oscillate.
+- Fit `log10(y)` when the output spans several decades; back-transform after evaluating.
+- The same `xGrid` structure is passed to `regularizeNdMatrices` *after* mapping, but the
+  `monotonicConstraint` and result reshape work on the same grid in mapped space.
+
+## Output Log Transform
+
+When the data range spans orders of magnitude, fitting `log10(y)` often yields a far better result
+than fitting `y` directly.  After solving for `yLog10Grid`, the recovered lookup table is:
+
+```matlab
+yGridFunction = griddedInterpolant(xGridMapped, yLog10Grid, 'linear');
+yFunction = @(xQuery) 10.^yGridFunction(mapping(xQuery));
+```
+
+## Checklist Before Leaving This Part
+
+- [ ] Can you assemble `C` and `d` manually from `regularizeNdMatrices` output?
+- [ ] Does `lsqConstrainedAlternative` solve and return a non-decreasing table?
+- [ ] Have you verified the difference vector `diff(yGrid)` is everywhere ≥ 0?
+- [ ] If the raw data has a steep section, have you tried a log-axis or a piecewise mapping?
 
 ## Next
 

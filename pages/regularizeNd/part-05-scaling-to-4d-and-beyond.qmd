@@ -7,28 +7,250 @@ bibliography: ../../references.bib
 
 [Previous: Part 4](part-04-boundary-behavior-and-convex-hull.qmd)
 
-This part addresses dimensional scaling and practical model size choices.
+This part shows how regularizeNd extends naturally to 4-D (and higher) inputs.  The concepts
+follow the workflow in `regularizeNd/Examples/example_4D_input.m`, adapted to a self-contained
+synthetic dataset so you can run it anywhere.
 
-## Practical Goal
+## The Core Challenge of High Dimensions
 
-- Understand how grid design drives problem size.
-- Learn when memory and solver limits dominate runtime.
-- Build rules of thumb for n-D lookup table construction.
+Adding a dimension does not add to grid count — it multiplies it.  For a grid of $N$ points per
+dimension across $d$ dimensions, the total node count is $N^d$:
 
-## Example Anchor
+| Nodes/dim | 2-D | 3-D | 4-D | 5-D |
+|---:|---:|---:|---:|---:|
+| 5 | 25 | 125 | 625 | 3 125 |
+| 10 | 100 | 1 000 | 10 000 | 100 000 |
+| 20 | 400 | 8 000 | 160 000 | 3 200 000 |
+| 30 | 900 | 27 000 | 810 000 | 24 300 000 |
 
-Primary script: `regularizeNd/Examples/example_4D_input.m`
+This is the **curse of dimensionality** for grid-based methods.  The practical consequence is that
+you must be intentional about how many points you allocate to each dimension.
 
-## Suggested Walkthrough
+The linear system solved internally has:
 
-1. Start with coarse grid per dimension.
-2. Measure quality and runtime.
-3. Refine one dimension at a time.
-4. Record tradeoffs in cost versus fidelity.
+- **columns** = total grid nodes = $\prod_i N_i$
+- **rows** = data count + regularization equations ≫ columns (overdetermined)
+- **nonzeros** ∝ $2^d \cdot N_\text{data}$ (for linear interpolation)
 
-## Attribution
+The reference 4-D example in `example_4D_input.m` uses 30 240 grid nodes, producing a system
+with 250 505 rows and 2 539 252 nonzero elements, which solves in ~6 seconds on a laptop.
 
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
+## The Synthetic 4-D Dataset
+
+The synthetic response is:
+
+$$
+w = \sin(2\pi x_1) \cdot \cos(\pi x_2) + 0.4 \, x_3^2 + 0.1 \, x_4 + \varepsilon
+$$
+
+where $\varepsilon \sim \mathcal{N}(0, 0.05^2)$.  The four inputs span different physical scales
+and have deliberately different levels of variation — motivating per-dimension smoothness.
+
+```{matlab}
+clc; clear; close all;
+rng(2025);
+
+% --- scatter data ---
+N = 4000;
+x1 = rand(N,1);           % [0, 1]   — fast oscillation
+x2 = 5*rand(N,1);         % [0, 5]   — moderate variation
+x3 = 10*rand(N,1).^2;     % [0, 10]  — nonlinear fill (denser near 0)
+x4 = 100 + 50*rand(N,1);  % [100,150] — slow ramp
+
+noise = 0.05 * randn(N,1);
+w = sin(2*pi*x1) .* cos(pi*x2/5) + 0.4*(x3/10).^2 + 0.1*(x4-100)/50 + noise;
+
+% --- inspect each input marginal ---
+figure
+tiledlayout(2, 3, 'TileSpacing', 'compact', 'Padding', 'compact')
+
+inputs  = {x1, x2, x3, x4, w};
+iLabels = {'x_1', 'x_2', 'x_3', 'x_4', 'w (response)'};
+for k = 1:5
+    nexttile
+    histogram(inputs{k}, 30)
+    xlabel(iLabels{k}); grid on
+end
+
+nexttile
+scatter3(x1, x2, x3, 12, w, 'filled')
+xlabel('x_1'); ylabel('x_2'); zlabel('x_3')
+h = colorbar; ylabel(h, 'w')
+title('3-D projection coloured by w')
+```
+
+The `x3` marginal is right-skewed because we drew from a squared-uniform distribution.  This
+will motivate non-uniform grid spacing in that dimension later.
+
+## Coarse Grid: Getting Oriented
+
+Always start coarse.  A coarse grid tells you whether the smoothness values are in the right
+ballpark before committing to a fine grid.
+
+```{matlab}
+% --- coarse grid (fast) ---
+g1c = linspace(0,   1,   8);
+g2c = linspace(0,   5,   8);
+g3c = linspace(0,  10,   8);   % uniform for now
+g4c = linspace(100,150,  6);
+gridCoarse = {g1c, g2c, g3c, g4c};
+
+% per-dimension smoothness:
+%   x1 has fast oscillation → small smoothness
+%   x2 moderate              → moderate
+%   x3 slow quadratic        → larger smoothness is fine
+%   x4 very slow ramp        → largest smoothness
+smoothness = [1e-4, 1e-3, 2e-3, 5e-3];
+
+tic
+wGridCoarse = regularizeNd([x1,x2,x3,x4], w, gridCoarse, smoothness, 'linear');
+fprintf('Coarse grid  (%d nodes)  solve time: %.2f s\n', numel(wGridCoarse), toc)
+
+wFuncCoarse = griddedInterpolant(gridCoarse, wGridCoarse, 'linear');
+```
+
+Inspect the fit with 2-D slices.  Fix two of the four inputs at representative levels and sweep
+the other two:
+
+```{matlab}
+% --- 2-D slice: vary x1 and x3, fix x2≈2.5, x4≈125 ---
+[sx1, sx3] = ndgrid(linspace(0,1,60), linspace(0,10,61));
+sx2 = 2.5 * ones(size(sx1));
+sx4 = 125 * ones(size(sx1));
+
+wSlice = wFuncCoarse(sx1, sx2, sx3, sx4);
+
+figure
+contourf(sx1, sx3, wSlice, 16, 'LineColor', 'none')
+colorbar; xlabel('x_1'); ylabel('x_3')
+title('Coarse fit — slice at x_2 = 2.5, x_4 = 125')
+```
+
+## Refine One Dimension at a Time
+
+Increase resolution only in the dimension where the slice shows unresolved curvature.  Measure
+cost after each step to stay within budget.
+
+```{matlab}
+% --- moderate grid: refine x1 and x2 where variation is fastest ---
+g1m = linspace(0,   1,  16);
+g2m = linspace(0,   5,  14);
+g3m = [0, 1, 2, 3, 4, 5, 7, 10];   % denser near 0 to match data fill
+g4m = linspace(100,150,  6);
+gridMed = {g1m, g2m, g3m, g4m};
+
+fprintf('Medium grid node count: %d\n', prod(cellfun(@numel,gridMed)))
+
+tic
+wGridMed = regularizeNd([x1,x2,x3,x4], w, gridMed, smoothness, 'linear');
+fprintf('Medium grid  (%d nodes)  solve time: %.2f s\n', numel(wGridMed), toc)
+
+wFuncMed = griddedInterpolant(gridMed, wGridMed, 'linear');
+```
+
+Notice the non-uniform `g3m` spacing.  Because `x3` data is denser near 0, placing more grid
+nodes there improves fidelity in the data-rich region while keeping node count low elsewhere.
+
+## Checking Residuals
+
+Residuals are the quickest global quality indicator.  If they are symmetrically distributed near
+zero with no heavy tails, the smoothness and grid combination is adequate.
+
+```{matlab}
+resid = w - wFuncMed(x1, x2, x3, x4);
+
+figure
+tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact')
+
+nexttile
+histogram(resid, 40, 'FaceColor', [0.2 0.5 0.8])
+xlabel('Residual'); ylabel('Count')
+title(sprintf('Residual histogram  (RMSE = %.4f)', sqrt(mean(resid.^2))))
+grid on
+
+nexttile
+plot(w, resid, '.', 'MarkerSize', 4, 'Color', [0.2 0.5 0.8])
+yline(0, 'k-'); grid on
+xlabel('w (true)'); ylabel('Residual')
+title('Residual vs. response')
+```
+
+If the residual histogram is significantly wider than the noise level ($\sigma \approx 0.05$ for
+this synthetic dataset), the grid is too coarse or the smoothness is too large.
+
+## Comparing Slices Across Smoothness Values
+
+The interactive loop in `example_4D_input.m` iterates over smoothness values while updating a
+surface plot.  In a notebook context the equivalent is to evaluate a small set of representative
+values and compare slices side by side:
+
+```{matlab}
+smoothnessValues = {
+    [1e-4, 1e-3, 2e-3, 5e-3],   % baseline
+    [1e-3, 1e-2, 2e-2, 5e-2],   % 10× smoother
+    [1e-5, 1e-4, 2e-4, 5e-4],   % 10× tighter
+};
+labels = {'baseline (1e-4 …)', 'smooth (1e-3 …)', 'tight (1e-5 …)'};
+
+[sx1, sx3] = ndgrid(linspace(0,1,60), linspace(0,10,61));
+sx2 = 2.5 * ones(size(sx1));
+sx4 = 125 * ones(size(sx1));
+
+figure
+tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact')
+
+for k = 1:3
+    wG = regularizeNd([x1,x2,x3,x4], w, gridMed, smoothnessValues{k}, 'linear');
+    fk = griddedInterpolant(gridMed, wG, 'linear');
+    wS = fk(sx1, sx2, sx3, sx4);
+
+    nexttile
+    contourf(sx1, sx3, wS, 16, 'LineColor', 'none')
+    colorbar; xlabel('x_1'); ylabel('x_3')
+    title(labels{k})
+end
+```
+
+The tight (low smoothness) slice will show the raw data scatter bleeding through.  The smooth
+(high smoothness) slice will wash out the oscillation in `x1`.  The baseline should split the
+difference cleanly.
+
+## Grid Design Rules of Thumb
+
+These rules follow directly from the `example_4D_input.m` comments and workflow:
+
+1. **Start coarse** (5–10 nodes/dim) and verify the smoothness range before refining.
+2. **Non-uniform spacing** where the data or function has concentrated structure — denser nodes
+   in the dense-data region, sparser in sparse regions.
+3. **Per-dimension smoothness** — assign smaller values to fast-varying dimensions and larger
+   values to slow-varying ones.
+4. **Budget the node product** — for a direct solver, a practical ceiling is roughly 50 000–
+   100 000 total grid nodes before switching to an iterative solver (see Part 7).
+5. **Residuals before slices** — a bad residual histogram reveals a grid/smoothness problem
+   faster than any visual surface inspection.
+6. **Grid must span the data** — regularizeNd throws an error if any data point falls outside
+   `xGrid`.  Add a small buffer: `linspace(min(x)-eps(min(x)), max(x)+eps(max(x)), N)`.
+
+## Node-Count Budget at a Glance
+
+A rough guide for the `"normal"` direct solver on a modern laptop:
+
+| Total grid nodes | Approx. RAM | Approx. solve time |
+|---:|---|---|
+| 10 000 | < 500 MB | < 1 s |
+| 50 000 | 1–2 GB | 2–10 s |
+| 150 000 | 4–8 GB | 30–120 s |
+| > 200 000 | may exhaust RAM | use `"pcg"` (Part 7) |
+
+These are orientations only — actual cost depends on data count, sparsity, and hardware.
+
+## Checklist Before Part 6
+
+- [ ] You have computed the total grid node count and it is within your solver budget.
+- [ ] You have inspected per-dimension marginal histograms and aligned grid spacing to data density.
+- [ ] You have assigned per-dimension smoothness values proportional to observed variation rate.
+- [ ] You have confirmed residuals are symmetric and near the noise floor.
+- [ ] You have compared at least two smoothness levels to confirm the baseline choice is stable.
 
 ## Next
 

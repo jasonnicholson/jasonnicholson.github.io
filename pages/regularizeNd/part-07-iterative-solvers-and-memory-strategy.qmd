@@ -7,28 +7,173 @@ bibliography: ../../references.bib
 
 [Previous: Part 6](part-06-constraints-and-mappings.qmd)
 
-This part focuses on large problems where direct methods can fail due to memory or factorization issues.
+This part focuses on the practical decision of which solver to use and why memory and factorization
+can become the binding constraint for large problems.
 
-## Practical Goal
+## The Full Solver Menu
 
-- Use iterative solver options for very large systems.
-- Understand preconditioning role in convergence behavior.
-- Set practical tolerance and iteration limits.
+`regularizeNd` accepts the `solver` argument as the sixth positional parameter:
 
-## Example Anchor
+```matlab
+yGrid = regularizeNd(x, y, xGrid, smoothness, interpMethod, solver)
+```
 
-Primary script: `regularizeNd/Examples/exampleIterativeSolver.m`
+| Solver | Type | When to use |
+|---|---|---|
+| `"normal"` | Direct (normal equations) | **Default recommendation.** ~3× faster than `\` for well-conditioned systems; regularizeNd generates well-conditioned systems in the overwhelming majority of cases. |
+| `"\"` | Direct (backslash / sparse QR-LU) | Most robust; fall back when `"normal"` produces unexpected results. |
+| `"pcg"` | Iterative (conjugate gradient) | Large problems where direct solvers exhaust RAM. First iterative choice. |
+| `"symmlq"` | Iterative (symmetric LQ) | Very similar to `pcg`; try if `pcg` stalls or diverges. |
+| `"lsqr"` | Iterative (least-squares QR) | Last resort when `pcg` and `symmlq` fail; solves $A\mathbf{x}=\mathbf{b}$ directly rather than the normal equations. Slower but most numerically stable of the three iterative options. |
 
-## Suggested Walkthrough
+## Why Normal Equations Are Faster Here
 
-1. Reproduce a large-dimensional case.
-2. Compare iterative options and stopping behavior.
-3. Track memory use and runtime.
-4. Pick settings that are reliable for your problem class.
+The `"normal"` solver forms $A^\top A \mathbf{x} = A^\top \mathbf{b}$ and solves a symmetric
+positive-definite (SPD) system via Cholesky factorization.  The regularizeNd system is
+well-conditioned by design (the smoothness penalty adds a positive-definite correction), so the
+squared condition number of the normal equations is rarely a problem in practice.
 
-## Attribution
+The `"\"` solver uses MATLAB's sparse direct solver on the full rectangular $A$ matrix — more
+general but roughly 2–3× slower for the structure regularizeNd produces.
 
-This educational progression is inspired by Peter Goldstein's regularization articles and related prior tools.
+## Why Iterative Solvers Exist
+
+For a 5-D grid with moderate resolution, the system can have 100 000+ unknowns.  Storing the full
+Cholesky factor ($O(n^2)$ in the worst case) can exhaust RAM.  Iterative solvers need only
+matrix-vector products, so memory scales as $O(n)$.
+
+The tradeoff is convergence: iterative solvers need preconditioning to converge in a reasonable
+number of iterations.  regularizeNd uses an incomplete Cholesky preconditioner internally.  The
+preconditioner is the dominant reason `"pcg"` and `"symmlq"` are practical even at large scale.
+
+Measured timing from the `exampleIterativeSolver.m` reference script (5-D, ~117 600 grid points):
+
+| Solver | Approximate solve time |
+|---|---|
+| `"normal"` | ~930 s |
+| `"\"` | ~8 266 s |
+| `"pcg"` | ~53 s |
+| `"symmlq"` | ~53 s |
+| `"lsqr"` | ~378 s |
+
+The iterative solvers are 12–17× faster than the direct options at that scale.
+
+## Controlling Iterative Solver Behavior
+
+Two additional optional positional arguments are available:
+
+```matlab
+yGrid = regularizeNd(x, y, xGrid, smoothness, interpMethod, solver, ...
+    maxIterations, solverTolerance)
+```
+
+| Argument | Default | Effect |
+|---|---|---|
+| `maxIterations` | solver default | Maximum number of iterations before early exit |
+| `solverTolerance` | solver default | Relative residual tolerance for convergence |
+
+Tighter tolerances increase iteration count and runtime.  For engineering lookup tables `1e-6` is
+almost always sufficient.
+
+## Decision Tree
+
+```
+Start: pick solver
+  │
+  ├─ Is the grid smaller than ~50 000 nodes?
+  │     YES → use "normal"   (fast, robust for this scale)
+  │     NO  → continue
+  │
+  ├─ Does "normal" run out of memory or produce a warning?
+  │     NO  → keep "normal"
+  │     YES → try "pcg"
+  │               Converges?  YES → done
+  │               Converges?  NO  → try "symmlq"
+  │                                     Converges?  YES → done
+  │                                     Converges?  NO  → try "lsqr"
+  │
+  └─ If all iterative options fail → reduce grid resolution or
+       split the problem into smaller subdomains
+```
+
+## Compression Approach for Very Large Grids
+
+If you cannot reduce grid size without sacrificing quality, two practical strategies:
+
+1. **Dimension-by-dimension refinement** — keep coarse in all dimensions except the one that most
+   drives quality, then refine that dimension alone.  The grid count grows linearly, not
+   exponentially.
+
+2. **Local fitting** — partition the domain into overlapping subdomains, fit each independently,
+   and stitch with a smooth blending function.  Not built into regularizeNd but straightforward to
+   implement around it.
+
+## Memory Footprint Estimate
+
+A rough estimate of peak memory before the solve step for an $n$-node grid:
+
+| Component | Memory |
+|---|---|
+| $A_\text{fidelity}$ (sparse) | $\approx 2^D \cdot N_\text{data} \cdot 8$ bytes (linear interp) |
+| $L_\text{reg}$ per dimension | $\approx 3 \cdot n \cdot 8$ bytes (tridiagonal) |
+| $A^\top A$ (SPD, direct) | $\approx n^2 \cdot 8$ bytes worst case |
+
+Where $D$ is the number of input dimensions and $N_\text{data}$ is the scatter data count.  The
+$A^\top A$ term is the one that kills direct solvers at large $n$.
+
+## Solver Sweep — Small-Scale Reference
+
+The following code sweeps all five solvers on the Loihi bathymetry data with a moderately fine
+grid.  Run it to confirm all solvers return the same answer and to benchmark relative timing on
+your hardware.
+
+```matlab
+clc; clear; close all;
+
+data = load('etopo_loihi.mat');
+x = double(data.x);
+y = double(data.y);
+z = double(data.z);
+
+xGrid = {linspace(min(x), max(x), 60), linspace(min(y), max(y), 61)};
+smoothness = 1e-4;
+interpMethod = "linear";
+
+solvers = ["normal", "\", "pcg", "symmlq", "lsqr"];
+times   = zeros(1, numel(solvers));
+grids   = cell(1, numel(solvers));
+
+for k = 1:numel(solvers)
+    s = solvers(k);
+    if ismember(s, ["pcg", "symmlq", "lsqr"])
+        tic
+        grids{k} = regularizeNd([x,y], z, xGrid, smoothness, interpMethod, s, ...
+            500, 1e-6);
+        times(k) = toc;
+    else
+        tic
+        grids{k} = regularizeNd([x,y], z, xGrid, smoothness, interpMethod, s);
+        times(k) = toc;
+    end
+    fprintf('%-8s  %.3f s\n', s, times(k));
+end
+
+% Verify all grids agree
+for k = 2:numel(solvers)
+    rmseDiff = sqrt(mean((grids{k}(:) - grids{1}(:)).^2));
+    fprintf('RMSE vs normal: %-8s  %.3e\n', solvers(k), rmseDiff);
+end
+```
+
+Expected result: RMSE values should all be below `1e-4` relative to the reference grid, confirming
+that solver choice does not affect the answer at normal problem scales.
+
+## Checklist Before Leaving This Part
+
+- [ ] Have you confirmed `"normal"` works for your problem size?
+- [ ] If RAM is the constraint, have you tried `"pcg"` with `maxIterations` and `solverTolerance`?
+- [ ] Have you verified that the iterative result matches the direct result to your required tolerance?
+- [ ] Have you estimated grid node count and peak memory before scaling up?
 
 ## Next
 
