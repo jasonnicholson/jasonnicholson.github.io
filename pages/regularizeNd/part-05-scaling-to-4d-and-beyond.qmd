@@ -8,8 +8,21 @@ bibliography: ../../references.bib
 [Previous: Part 4](part-04-boundary-behavior-and-convex-hull.qmd)
 
 This part shows how regularizeNd extends naturally to 4-D (and higher) inputs.  The concepts
-follow the workflow in `regularizeNd/Examples/example_4D_input.m`, adapted to a self-contained
-synthetic dataset so you can run it anywhere.
+follow a workflow adapted to a self-contained synthetic dataset so you can run it anywhere.
+
+## Practical Goal
+
+1. Build intuition for how grid size grows from 2D to 4D and beyond.
+2. Apply per-dimension smoothness values based on signal behavior.
+3. Use coarse-to-fine refinement to control runtime and memory.
+
+## Example Anchor
+
+Primary script: `regularizeNd/Examples/a05_example_4D_input.m`
+
+## Conceptual Model
+
+High-dimensional fitting in regularizeNd is still the same fidelity-plus-smoothness least-squares model used in lower dimensions, but grid cardinality grows multiplicatively. The key strategy is to stay coarse first, tune smoothness, then selectively refine dimensions that matter most adding points only where needed to capture variation without exploding the total grid size.
 
 ## The Core Challenge of High Dimensions
 
@@ -32,8 +45,8 @@ The linear system solved internally has:
 - **rows** = data count + regularization equations ≫ columns (overdetermined)
 - **nonzeros** ∝ $2^d \cdot N_\text{data}$ (for linear interpolation)
 
-The reference 4-D example in `example_4D_input.m` uses 30 240 grid nodes, producing a system
-with 250 505 rows and 2 539 252 nonzero elements, which solves in ~6 seconds on a laptop.
+The reference 4-D example in `a05_example_4D_input.m` uses 30 240 grid nodes, producing a system
+with 250 505 rows and 2 539 252 nonzero elements, which solves in ~3.5 seconds on a 2019 laptop (32 GB RAM, i7 CPU).
 
 ## The Synthetic 4-D Dataset
 
@@ -43,7 +56,7 @@ $$
 w = \sin(2\pi x_1) \cdot \cos(\pi x_2) + 0.4 \, x_3^2 + 0.1 \, x_4 + \varepsilon
 $$
 
-where $\varepsilon \sim \mathcal{N}(0, 0.05^2)$.  The four inputs span different physical scales
+where $\varepsilon \sim \mathcal{N}(0, 0.05^2)$, normally distributed with 0.05 standard deviation.  The four inputs span different physical scales
 and have deliberately different levels of variation — motivating per-dimension smoothness.
 
 ```{matlab}
@@ -89,41 +102,49 @@ ballpark before committing to a fine grid.
 
 ```{matlab}
 % --- coarse grid (fast) ---
-g1c = linspace(0,   1,   8);
-g2c = linspace(0,   5,   8);
-g3c = linspace(0,  10,   8);   % uniform for now
-g4c = linspace(100,150,  6);
-gridCoarse = {g1c, g2c, g3c, g4c};
+x1GridCoarse = linspace(0,   1,   8);
+x2GridCoarse = linspace(0,   5,   9);
+x3GridCoarse = linspace(0,  10,   10);   % uniform for now
+x4GridCoarse = linspace(100,150,  6);
+xGridCoarse = {x1GridCoarse, x2GridCoarse, x3GridCoarse, x4GridCoarse};
 
 % per-dimension smoothness:
 %   x1 has fast oscillation → small smoothness
 %   x2 moderate              → moderate
 %   x3 slow quadratic        → larger smoothness is fine
 %   x4 very slow ramp        → largest smoothness
-smoothness = [1e-4, 1e-3, 2e-3, 5e-3];
+smoothness = [1e-3, 1e-3, 1e-3, 1e-3];
 
 tic
-wGridCoarse = regularizeNd([x1,x2,x3,x4], w, gridCoarse, smoothness, 'linear');
+wGridCoarse = regularizeNd([x1,x2,x3,x4], w, xGridCoarse, smoothness);
 fprintf('Coarse grid  (%d nodes)  solve time: %.2f s\n', numel(wGridCoarse), toc)
 
-wFuncCoarse = griddedInterpolant(gridCoarse, wGridCoarse, 'linear');
+wFuncCoarse = griddedInterpolant(xGridCoarse, wGridCoarse);
 ```
 
 Inspect the fit with 2-D slices.  Fix two of the four inputs at representative levels and sweep
 the other two:
 
 ```{matlab}
-% --- 2-D slice: vary x1 and x3, fix x2≈2.5, x4≈125 ---
-[sx1, sx3] = ndgrid(linspace(0,1,60), linspace(0,10,61));
-sx2 = 2.5 * ones(size(sx1));
-sx4 = 125 * ones(size(sx1));
-
-wSlice = wFuncCoarse(sx1, sx2, sx3, sx4);
-
-figure
-contourf(sx1, sx3, wSlice, 16, 'LineColor', 'none')
-colorbar; xlabel('x_1'); ylabel('x_3')
-title('Coarse fit — slice at x_2 = 2.5, x_4 = 125')
+% --- 2-D slice: vary x1 and x2, fix x3 and x4 ---
+onesMatrix = ones(numel(x1GridCoarse), numel(x2GridCoarse))';
+for i = 1:numel(x4GridCoarse)
+  for j = 1:numel(x3GridCoarse)
+    wSlice = squeeze(wGridCoarse(:,:,j,i))';
+    if j == 1
+      titleStr = sprintf("Slice at x_4 = %g, coarse grid", x4GridCoarse(i));
+      figure("Name", titleStr);
+      surf(x1GridCoarse, x2GridCoarse, wSlice, x3GridCoarse(j)*onesMatrix);
+      hold on;
+      ylabel(colorbar,"x_3");
+      xlabel('x_1'); 
+      ylabel('x_2');
+      title(titleStr);
+    else
+      surf(x1GridCoarse, x2GridCoarse, wSlice, x3GridCoarse(j)*onesMatrix);
+    end
+  end
+end
 ```
 
 ## Refine One Dimension at a Time
@@ -133,23 +154,44 @@ cost after each step to stay within budget.
 
 ```{matlab}
 % --- moderate grid: refine x1 and x2 where variation is fastest ---
-g1m = linspace(0,   1,  16);
-g2m = linspace(0,   5,  14);
-g3m = [0, 1, 2, 3, 4, 5, 7, 10];   % denser near 0 to match data fill
-g4m = linspace(100,150,  6);
-gridMed = {g1m, g2m, g3m, g4m};
+x1GridMedium = linspace(0,   1,  16);
+x2GridMedium = linspace(0,   5,  14);
+x3GridMedium = [0, 1, 2, 3, 4, 5, 7, 10];   % denser near 0 to match data fill
+x4GridMedium = linspace(100,150,  6);
+gridMed = {x1GridMedium, x2GridMedium, x3GridMedium, x4GridMedium};
 
 fprintf('Medium grid node count: %d\n', prod(cellfun(@numel,gridMed)))
 
 tic
-wGridMed = regularizeNd([x1,x2,x3,x4], w, gridMed, smoothness, 'linear');
+wGridMed = regularizeNd([x1,x2,x3,x4], w, gridMed, smoothness);
 fprintf('Medium grid  (%d nodes)  solve time: %.2f s\n', numel(wGridMed), toc)
 
 wFuncMed = griddedInterpolant(gridMed, wGridMed, 'linear');
 ```
 
-Notice the non-uniform `g3m` spacing.  Because `x3` data is denser near 0, placing more grid
-nodes there improves fidelity in the data-rich region while keeping node count low elsewhere.
+Notice the non-uniform `x3GridMedium` spacing.  Because `x3` data is denser near 0, placing more grid nodes there improves fidelity in the data-rich region while keeping node count low elsewhere.
+
+```{matlab}
+% --- 2-D slice: vary x1 and x2, fix x3 and x4 ---
+onesMatrix = ones(numel(x1GridMedium), numel(x2GridMedium))';
+for i = 1:numel(x4GridMedium)
+  for j = 1:numel(x3GridMedium)
+    wSlice = squeeze(wGridMed(:,:,j,i))';
+    if j == 1
+      titleStr = sprintf("Slice at x_4 = %g, Medium grid", x4GridMedium(i));
+      figure("Name", titleStr);
+      surf(x1GridMedium, x2GridMedium, wSlice, x3GridMedium(j)*onesMatrix);
+      hold on;
+      ylabel(colorbar,"x_3");
+      xlabel('x_1'); 
+      ylabel('x_2');
+      title(titleStr);
+    else
+      surf(x1GridMedium, x2GridMedium, wSlice, x3GridMedium(j)*onesMatrix);
+    end
+  end
+end
+```
 
 ## Checking Residuals
 
@@ -159,20 +201,24 @@ zero with no heavy tails, the smoothness and grid combination is adequate.
 ```{matlab}
 resid = w - wFuncMed(x1, x2, x3, x4);
 
-figure
-tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact')
+figure("Name", "Residuals")
+tiledlayout('TileSpacing', 'compact', 'Padding', 'compact')
 
 nexttile
-histogram(resid, 40, 'FaceColor', [0.2 0.5 0.8])
-xlabel('Residual'); ylabel('Count')
-title(sprintf('Residual histogram  (RMSE = %.4f)', sqrt(mean(resid.^2))))
-grid on
-
+scatter(x1, resid,".", "filled");
+xlabel('x_1'); ylabel('Residual')
 nexttile
-plot(w, resid, '.', 'MarkerSize', 4, 'Color', [0.2 0.5 0.8])
-yline(0, 'k-'); grid on
+scatter(x2, resid,".", "filled");
+xlabel('x_2'); ylabel('Residual')
+nexttile
+scatter(x3, resid,".", "filled");
+xlabel('x_3'); ylabel('Residual')
+nexttile
+scatter(x4, resid,".", "filled");
+xlabel('x_4'); ylabel('Residual')
+nexttile
+scatter(w, resid,".", "filled");
 xlabel('w (true)'); ylabel('Residual')
-title('Residual vs. response')
 ```
 
 If the residual histogram is significantly wider than the noise level ($\sigma \approx 0.05$ for
@@ -180,17 +226,17 @@ this synthetic dataset), the grid is too coarse or the smoothness is too large.
 
 ## Comparing Slices Across Smoothness Values
 
-The interactive loop in `example_4D_input.m` iterates over smoothness values while updating a
+The interactive loop in `a05_example_4D_input.m` iterates over smoothness values while updating a
 surface plot.  In a notebook context the equivalent is to evaluate a small set of representative
 values and compare slices side by side:
 
 ```{matlab}
 smoothnessValues = {
-    [1e-4, 1e-3, 2e-3, 5e-3],   % baseline
-    [1e-3, 1e-2, 2e-2, 5e-2],   % 10× smoother
+    [1e-3, 1e-3, 1e-3, 1e-3],   % baseline
+    [1e-2, 1e-2, 1e-2, 1e-2],   % 10× smoother
     [1e-5, 1e-4, 2e-4, 5e-4],   % 10× tighter
 };
-labels = {'baseline (1e-4 …)', 'smooth (1e-3 …)', 'tight (1e-5 …)'};
+labels = {'baseline (1e-3 …)', 'smooth (1e-2 …)', 'tight (1e-5 …)'};
 
 [sx1, sx3] = ndgrid(linspace(0,1,60), linspace(0,10,61));
 sx2 = 2.5 * ones(size(sx1));
@@ -217,32 +263,19 @@ difference cleanly.
 
 ## Grid Design Rules of Thumb
 
-These rules follow directly from the `example_4D_input.m` comments and workflow:
+These rules follow directly from the `a05_example_4D_input.m` comments and workflow:
 
 1. **Start coarse** (5–10 nodes/dim) and verify the smoothness range before refining.
 2. **Non-uniform spacing** where the data or function has concentrated structure — denser nodes
    in the dense-data region, sparser in sparse regions.
 3. **Per-dimension smoothness** — assign smaller values to fast-varying dimensions and larger
    values to slow-varying ones.
-4. **Budget the node product** — for a direct solver, a practical ceiling is roughly 50 000–
-   100 000 total grid nodes before switching to an iterative solver (see Part 7).
+4. **Budget the node product** — for a direct solver, a practical ceiling is roughly 1e6–10e6
+   total grid nodes before switching to an iterative solver (see Part 7). This number will depend on your computer resources (RAM and CPU). 1e6–10e6 is a rough orientation for a modern laptop with 32 GB of RAM and 1 min solve time; adjust downward if you have less memory or slower CPU.
 5. **Residuals before slices** — a bad residual histogram reveals a grid/smoothness problem
    faster than any visual surface inspection.
 6. **Grid must span the data** — regularizeNd throws an error if any data point falls outside
-   `xGrid`.  Add a small buffer: `linspace(min(x)-eps(min(x)), max(x)+eps(max(x)), N)`.
-
-## Node-Count Budget at a Glance
-
-A rough guide for the `"normal"` direct solver on a modern laptop:
-
-| Total grid nodes | Approx. RAM | Approx. solve time |
-|---:|---|---|
-| 10 000 | < 500 MB | < 1 s |
-| 50 000 | 1–2 GB | 2–10 s |
-| 150 000 | 4–8 GB | 30–120 s |
-| > 200 000 | may exhaust RAM | use `"pcg"` (Part 7) |
-
-These are orientations only — actual cost depends on data count, sparsity, and hardware.
+   `xGrid`.  Add a small buffer if using min or max ever fails: `linspace(min(x)-eps(min(x)), max(x)+eps(max(x)), N)`.
 
 ## Checklist Before Part 6
 
