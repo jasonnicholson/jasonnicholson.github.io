@@ -51,13 +51,12 @@ with 250 505 rows and 2 539 252 nonzero elements, which solves in ~3.5 seconds o
 ## The Synthetic 4-D Dataset
 
 The synthetic response is:
-
+dens
 $$
 w = \sin(2\pi x_1) \cdot \cos(\pi x_2) + 0.4 \, x_3^2 + 0.1 \, x_4 + \varepsilon
 $$
 
-where $\varepsilon \sim \mathcal{N}(0, 0.05^2)$, normally distributed with 0.05 standard deviation.  The four inputs span different physical scales
-and have deliberately different levels of variation — motivating per-dimension smoothness.
+where $\varepsilon \sim \mathcal{N}(0, 0.05^2)$, normally distributed with 0.05 standard deviation.  The four inputs span different physical scales and have deliberately different levels of variation — motivating per-dimension smoothness.
 
 ```{matlab}
 clc; clear; close all;
@@ -113,7 +112,7 @@ xGridCoarse = {x1GridCoarse, x2GridCoarse, x3GridCoarse, x4GridCoarse};
 %   x2 moderate              → moderate
 %   x3 slow quadratic        → larger smoothness is fine
 %   x4 very slow ramp        → largest smoothness
-smoothness = [1e-3, 1e-3, 1e-3, 1e-3];
+smoothness = [1e-3, 1e-3, 1e-2, 2e-2];
 
 tic
 wGridCoarse = regularizeNd([x1,x2,x3,x4], w, xGridCoarse, smoothness);
@@ -122,8 +121,8 @@ fprintf('Coarse grid  (%d nodes)  solve time: %.2f s\n', numel(wGridCoarse), toc
 wFuncCoarse = griddedInterpolant(xGridCoarse, wGridCoarse);
 ```
 
-Inspect the fit with 2-D slices.  Fix two of the four inputs at representative levels and sweep
-the other two:
+Inspect the fit with `x_1` on the x-axis and `x_2` on the y-axis. Each figure fixes one `x_4`
+value and overlays surfaces across the `x_3` slices:
 
 ```{matlab}
 % --- 2-D slice: vary x1 and x2, fix x3 and x4 ---
@@ -149,8 +148,7 @@ end
 
 ## Refine One Dimension at a Time
 
-Increase resolution only in the dimension where the slice shows unresolved curvature.  Measure
-cost after each step to stay within budget.
+Increase resolution only in the dimension where the slice shows unresolved detail. You can see this from high residuals or local large gradients even with large smoothness.
 
 ```{matlab}
 % --- moderate grid: refine x1 and x2 where variation is fastest ---
@@ -158,15 +156,15 @@ x1GridMedium = linspace(0,   1,  16);
 x2GridMedium = linspace(0,   5,  14);
 x3GridMedium = [0, 1, 2, 3, 4, 5, 7, 10];   % denser near 0 to match data fill
 x4GridMedium = linspace(100,150,  6);
-gridMed = {x1GridMedium, x2GridMedium, x3GridMedium, x4GridMedium};
+gridMedium = {x1GridMedium, x2GridMedium, x3GridMedium, x4GridMedium};
 
-fprintf('Medium grid node count: %d\n', prod(cellfun(@numel,gridMed)))
+fprintf('Medium grid node count: %d\n', prod(cellfun(@numel,gridMedium)))
 
 tic
-wGridMed = regularizeNd([x1,x2,x3,x4], w, gridMed, smoothness);
-fprintf('Medium grid  (%d nodes)  solve time: %.2f s\n', numel(wGridMed), toc)
+wGridMedium = regularizeNd([x1,x2,x3,x4], w, gridMedium, smoothness);
+fprintf('Medium grid  (%d nodes)  solve time: %.2f s\n', numel(wGridMedium), toc)
 
-wFuncMed = griddedInterpolant(gridMed, wGridMed, 'linear');
+wFuncMedium = griddedInterpolant(gridMedium, wGridMedium);
 ```
 
 Notice the non-uniform `x3GridMedium` spacing.  Because `x3` data is denser near 0, placing more grid nodes there improves fidelity in the data-rich region while keeping node count low elsewhere.
@@ -176,7 +174,7 @@ Notice the non-uniform `x3GridMedium` spacing.  Because `x3` data is denser near
 onesMatrix = ones(numel(x1GridMedium), numel(x2GridMedium))';
 for i = 1:numel(x4GridMedium)
   for j = 1:numel(x3GridMedium)
-    wSlice = squeeze(wGridMed(:,:,j,i))';
+    wSlice = squeeze(wGridMedium(:,:,j,i))';
     if j == 1
       titleStr = sprintf("Slice at x_4 = %g, Medium grid", x4GridMedium(i));
       figure("Name", titleStr);
@@ -195,71 +193,73 @@ end
 
 ## Checking Residuals
 
-Residuals are the quickest global quality indicator.  If they are symmetrically distributed near
-zero with no heavy tails, the smoothness and grid combination is adequate.
+Residuals are the quickest global quality indicator. Look for patterns in the residuals versus each input dimension or versus the true response — systematic structure indicates underfitting (grid too coarse or smoothness too large), while residuals that are roughly zero with no heavy tails indicate the smoothness and grid combination is adequate.
+
+In this data set, the residuals from the medium grid fit should be roughly zero with no obvious patterns, indicating that the grid resolution and smoothness are capturing the main structure of the function without overfitting the noise. TIP: In other data sets, with bias present or high noise, some patterns or large residuals is to be expected. A decent fit rather than a great fit is the compromise when dealing with noisy or biased data.
 
 ```{matlab}
-resid = w - wFuncMed(x1, x2, x3, x4);
+resid = w - wFuncMedium(x1, x2, x3, x4);
 
 figure("Name", "Residuals")
-tiledlayout('TileSpacing', 'compact', 'Padding', 'compact')
+tl = tiledlayout('TileSpacing', 'compact', 'Padding', 'compact');
+title(tl, "Residual plots")
 
 nexttile
-scatter(x1, resid,".", "filled");
+scatter(x1, resid,"x");
 xlabel('x_1'); ylabel('Residual')
 nexttile
-scatter(x2, resid,".", "filled");
+scatter(x2, resid,"x");
 xlabel('x_2'); ylabel('Residual')
 nexttile
-scatter(x3, resid,".", "filled");
+scatter(x3, resid,"x");
 xlabel('x_3'); ylabel('Residual')
 nexttile
-scatter(x4, resid,".", "filled");
+scatter(x4, resid,"x");
 xlabel('x_4'); ylabel('Residual')
-nexttile
-scatter(w, resid,".", "filled");
+nexttile([1,2])
+scatter(w, resid,"x");
 xlabel('w (true)'); ylabel('Residual')
 ```
 
-If the residual histogram is significantly wider than the noise level ($\sigma \approx 0.05$ for
-this synthetic dataset), the grid is too coarse or the smoothness is too large.
-
 ## Comparing Slices Across Smoothness Values
 
-The interactive loop in `a05_example_4D_input.m` iterates over smoothness values while updating a
-surface plot.  In a notebook context the equivalent is to evaluate a small set of representative
-values and compare slices side by side:
+The same slice-plot approach can be reused to compare several smoothness settings. Here the page
+regenerates the `x_1`-`x_2` slice families for three representative smoothness choices:
 
 ```{matlab}
 smoothnessValues = {
-    [1e-3, 1e-3, 1e-3, 1e-3],   % baseline
-    [1e-2, 1e-2, 1e-2, 1e-2],   % 10× smoother
-    [1e-5, 1e-4, 2e-4, 5e-4],   % 10× tighter
+    [1e-3, 1e-3, 1e-2, 2e-2],   % baseline
+    [1e-2, 1e-2, 1e-1, 2e-1],   % 10× smoother
+    [1e-4, 1e-4, 1e-3, 2e-3],   % 10× tighter
 };
-labels = {'baseline (1e-3 …)', 'smooth (1e-2 …)', 'tight (1e-5 …)'};
-
-[sx1, sx3] = ndgrid(linspace(0,1,60), linspace(0,10,61));
-sx2 = 2.5 * ones(size(sx1));
-sx4 = 125 * ones(size(sx1));
-
-figure
-tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact')
+labels = {'baseline (1e-3 …)', 'smooth (1e-2 …)', 'tight (1e-4 …)'};
 
 for k = 1:3
-    wG = regularizeNd([x1,x2,x3,x4], w, gridMed, smoothnessValues{k}, 'linear');
-    fk = griddedInterpolant(gridMed, wG, 'linear');
-    wS = fk(sx1, sx2, sx3, sx4);
+  wG = regularizeNd([x1,x2,x3,x4], w, gridMedium, smoothnessValues{k});
 
-    nexttile
-    contourf(sx1, sx3, wS, 16, 'LineColor', 'none')
-    colorbar; xlabel('x_1'); ylabel('x_3')
-    title(labels{k})
+  onesMatrix = ones(numel(x1GridMedium), numel(x2GridMedium))';
+  x4SliceIndex = numel(x4GridMedium);
+  for j = 1:numel(x3GridMedium)
+    wSlice = squeeze(wG(:,:,j,x4SliceIndex))';
+    if j == 1
+      titleStr = sprintf("Slice at x_4 = %g, %s", x4GridMedium(x4SliceIndex), labels{k});
+      figure("Name", titleStr);
+      surf(x1GridMedium, x2GridMedium, wSlice, x3GridMedium(j)*onesMatrix);
+      hold on;
+      ylabel(colorbar,"x_3");
+      xlabel('x_1');
+      ylabel('x_2');
+      title(titleStr);
+    else
+      surf(x1GridMedium, x2GridMedium, wSlice, x3GridMedium(j)*onesMatrix);
+    end
+  end
 end
 ```
 
-The tight (low smoothness) slice will show the raw data scatter bleeding through.  The smooth
-(high smoothness) slice will wash out the oscillation in `x1`.  The baseline should split the
-difference cleanly.
+The tight (low smoothness) plots will show more local variation across the `x_3` overlays. The
+smooth (high smoothness) plots will flatten those differences. The baseline should preserve the
+main structure without overreacting to noise.
 
 ## Grid Design Rules of Thumb
 
@@ -276,13 +276,14 @@ These rules follow directly from the `a05_example_4D_input.m` comments and workf
    faster than any visual surface inspection.
 6. **Grid must span the data** — regularizeNd throws an error if any data point falls outside
    `xGrid`.  Add a small buffer if using min or max ever fails: `linspace(min(x)-eps(min(x)), max(x)+eps(max(x)), N)`.
+7. **Different number of nodes per dimension** — When working with higher-dimensional inputs, having    
+   different number of nodes per dimension will reveal errors in indexing or array reshaping that might otherwise be hidden if all dimensions have the same node count. Using the same number of nodes in each dimension can mask bugs in how the multi-dimensional arrays are being indexed or reshaped; varying the node counts per dimension helps catch these issues early.
 
 ## Checklist Before Part 6
 
-- [ ] You have computed the total grid node count and it is within your solver budget.
-- [ ] You have inspected per-dimension marginal histograms and aligned grid spacing to data density.
+- [ ] You have computed the total grid node count and it is within your solver budget. i.e. It solves in a reasonable time without exhausting memory.
 - [ ] You have assigned per-dimension smoothness values proportional to observed variation rate.
-- [ ] You have confirmed residuals are symmetric and near the noise floor.
+- [ ] You have confirmed residuals are symmetric and near pattern free..
 - [ ] You have compared at least two smoothness levels to confirm the baseline choice is stable.
 
 ## Next
