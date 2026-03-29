@@ -19,6 +19,8 @@ This part focuses on interpolation choices and solver strategy in regularizeNd.
 
 Primary script: `regularizeNd/Examples/a03_example_solver_differences.m`
 
+Download the example data file [`a01_etopo_loihi.mat`](a01_etopo_loihi.mat) to run this script.
+
 ## Why This Matters
 
 In regularizeNd practice, interpolation and solver are two separate decisions:
@@ -66,10 +68,10 @@ The key solver takeaway from project guidance is simple:
 
 Use one fixed dataset and only change interpolation mode to see differences. The timing difference do not approach their asymptotic complexity differences because the problem size is small, but you should see some difference in output shape.
 
-```matlab
+```{matlab}
 clc; clear; close all;
 
-data = load('etopo_loihi.mat');
+data = load('a01_etopo_loihi.mat');
 x = double(data.x);
 y = double(data.y);
 z = double(data.z);
@@ -95,7 +97,6 @@ for k = 1:numel(modes)
 	nexttile
   fcontour(@(x,y) reshape(zFunction(x(:),y(:)), size(x)), [xLimits, yLimits],"Fill","on")
 	axis tight
-	axis equal
 	title(modes{k})
 	xlabel('Longitude')
 	ylabel('Latitude')
@@ -104,14 +105,6 @@ for k = 1:numel(modes)
 	cb.Label.String = 'Depth';
 end
 ```
-
-```text
-nearest runtime: 0.008 s
-linear  runtime: 0.010 s
-cubic   runtime: 0.017 s
-```
-
-![Nearest, Linear, Cubic Comparison](part-03-block-01.png)
 
 What to inspect:
 
@@ -134,7 +127,7 @@ Keep interpolation and grid fixed. Compare solver choices on the same matrix bui
 ```matlab
 clc
 
-data = load('etopo_loihi.mat');
+data = load('a01_etopo_loihi.mat');
 x = double(data.x);
 y = double(data.y);
 z = double(data.z);
@@ -172,11 +165,11 @@ end
 ```
 
 ```text
-normal  runtime: 1.119 s
-\       runtime: 2.427 s
-pcg     runtime: 17.604 s
-symmlq  runtime: 19.436 s
-lsqr    runtime: 78.086 s
+normal  runtime: 1.146 s
+\       runtime: 2.885 s
+pcg     runtime: 13.404 s
+symmlq  runtime: 12.943 s
+lsqr    runtime: 64.713 s
 ```
 
 ### Decision Rules

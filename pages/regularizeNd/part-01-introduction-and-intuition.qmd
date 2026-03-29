@@ -20,7 +20,9 @@ This part introduces the core problem solved by regularizeNd: create a lookup ta
 
 Primary script: `regularizeNd/Examples/a01_START_HERE_example.m`
 
-This script uses `etopo_loihi.mat`, a local subset derived from NOAA ETOPO 2022 [@noaa2022etopo], defines a 2D grid, solves for a gridded surface with regularizeNd, and compares scattered data against the fitted surface.
+This script uses `a01_etopo_loihi.mat`, a local subset derived from NOAA ETOPO 2022 [@noaa2022etopo], centered on Kamaʻehuakanaloa Seamount. It defines a 2D grid, solves for a gridded surface with regularizeNd, upsamples the fitted surface for visualization, and compares scattered data against the fitted surface.
+
+Download the example data file [`a01_etopo_loihi.mat`](a01_etopo_loihi.mat) to run this script.
 
 ## Conceptual Model
 
@@ -40,35 +42,47 @@ The right value depends on measurement noise, expected physics, and how much loc
 
 ```{matlab}
 clc; clear; close all;
-data = load('etopo_loihi.mat');
-x = double(data.x); x2 = x(data.mask);
-y = double(data.y); y2 = y(data.mask);
-z = double(data.z); z2 = z(data.mask);
+data = load('a01_etopo_loihi.mat');
+x = double(data.x);
+y = double(data.y);
+z = double(data.z);
 
 
 xLimits = [min(x), max(x)];
 yLimits = [min(y), max(y)];
 
-xGrid = {linspace(xLimits(1) - eps(xLimits(1)), xLimits(2) + eps(xLimits(2)), 120), ...
-         linspace(yLimits(1) - eps(yLimits(1)), yLimits(2) + eps(yLimits(2)), 121)};
+xGrid = {linspace(xLimits(1) - eps(xLimits(1)), xLimits(2) + eps(xLimits(2)), 480), ...
+         linspace(yLimits(1) - eps(yLimits(1)), yLimits(2) + eps(yLimits(2)), 481)};
 
-smoothness = 0.0001;
+smoothness = 0.000001;
     
-zGrid = regularizeNd([x2,y2], z2, xGrid, smoothness, 'cubic');
+zGrid = regularizeNd([x,y], z, xGrid, smoothness, 'cubic');
 % equivalents ways to call regularizeNd
-% zGrid = regularizeNd([x,y], z, xGrid, smoothness, 'cubic');
 % zGrid = regularizeNd([x,y], z, xGrid, smoothness, 'cubic', 'normal');
 
+% Upsample grid since we are using cubic interpolation
+zFunction = griddedInterpolant(xGrid, zGrid);
+xGrid2= {linspace(xLimits(1) - eps(xLimits(1)), xLimits(2) + eps(xLimits(2)), 2000), ...
+         linspace(yLimits(1) - eps(yLimits(1)), yLimits(2) + eps(yLimits(2)), 2001)};
+xGrid2Expanded = cell(2,1);
+[xGrid2Expanded{:}] = ndgrid(xGrid2{:});
+zGrid2 = zFunction(xGrid2Expanded{1}, xGrid2Expanded{2});
 
-scatter3(x2, y2, z2, [], 'r', 'filled')
+surf(xGrid2{:}, zGrid2','EdgeColor','none','FaceColor','interp')
 hold on;
-surf(xGrid{:}, zGrid','FaceColor','interp','EdgeColor','interp')
-view(31.5,36)
+contour3(xGrid2{:}, zGrid2', 22, 'k', 'LineWidth', 0.45)
+GRAY = [0.5 0.5 0.5];
+scatter3(x, y, z, 10, GRAY, 'filled')
+colormap(turbo(256))
+clim([-5400 -900])
+view(329.7,61)
 xlabel('Longitude')
 ylabel('Latitude')
-zlabel('Depth in Feet')
+zlabel('Depth (m)')
 grid on
-legend({'Scattered Data', 'Regularized Surface'}, 'location', 'best');
+axis tight
+title('3D bathymetry view')
+ylabel(colorbar, 'Depth (m)')
 ```
 
 ## What To Change First
@@ -82,6 +96,8 @@ Suggested quick sweep values:
 - `1e-6`
 - `1e-4`
 - `1e-2`
+
+The example dataset is intentionally undersampled, so use this first pass to tune smoothness expectations rather than to recover every local summit detail.
 
 ## How To Read The Plot
 
