@@ -18,9 +18,9 @@ can become the binding constraint for large problems.
 
 ## Example Anchor
 
-Primary script: `regularizeNd/Examples/exampleIterativeSolver.m`
+Primary script: `regularizeNd/Examples/a07_exampleIterativeSolver.m`
 
-Download the example data file [`a01_etopo_loihi.mat`](a01_etopo_loihi.mat) to run this script.
+Primary data file: [a07_iterative_solver_data.mat](a07_iterative_solver_data.mat)
 
 ## The Full Solver Menu
 
@@ -32,33 +32,71 @@ yGrid = regularizeNd(x, y, xGrid, smoothness, interpMethod, solver)
 
 | Solver | Type | When to use |
 |---|---|---|
-| `"normal"` | Direct (normal equations) | **Default recommendation.** ~3× faster than `\` for well-conditioned systems; regularizeNd generates well-conditioned systems in the overwhelming majority of cases. |
+| `"normal"` | Direct (normal equations) | Fast direct baseline when memory is sufficient; often ~3× faster than `\` for well-conditioned systems. |
 | `"\"` | Direct (backslash / sparse QR-LU) | Most robust; fall back when `"normal"` produces unexpected results. |
 | `"pcg"` | Iterative (conjugate gradient) | Large problems where direct solvers exhaust RAM. First iterative choice. |
 | `"symmlq"` | Iterative (symmetric LQ) | Very similar to `pcg`; try if `pcg` stalls or diverges. |
 | `"lsqr"` | Iterative (least-squares QR) | Last resort when `pcg` and `symmlq` fail; solves $A\mathbf{x}=\mathbf{b}$ directly rather than the normal equations. Slower but most numerically stable of the three iterative options. |
 
-## Why Normal Equations Are Faster Here
+## Pathology Summary (From a07 Example)
 
-The `"normal"` solver forms $A^\top A \mathbf{x} = A^\top \mathbf{b}$ and solves a symmetric
-positive-definite (SPD) system via Cholesky factorization.  The regularizeNd system is
-well-conditioned by design (the smoothness penalty adds a positive-definite correction), so the
-squared condition number of the normal equations is rarely a problem in practice.
+The attached a07 example is a 5D case with grid:
 
-The `"\"` solver uses MATLAB's sparse direct solver on the full rectangular $A$ matrix — more
-general but roughly 2–3× slower for the structure regularizeNd produces.
+$$
+25 \times 7 \times 7 \times 12 \times 8 = 117{,}600
+$$
 
-## Why Iterative Solvers Exist
+Observed matrix sizes:
 
-For a 5-D grid with moderate resolution, the system can have 100 000+ unknowns.  Storing the full
-Cholesky factor ($O(n^2)$ in the worst case) can exhaust RAM.  Iterative solvers need only
-matrix-vector products, so memory scales as $O(n)$.
+- $A \in \mathbb{R}^{499{,}748 \times 117{,}600}$, sparse, $\operatorname{nnz}(A)=2{,}582{,}568$.
+- $b \in \mathbb{R}^{499{,}748}$.
 
-The tradeoff is convergence: iterative solvers need preconditioning to converge in a reasonable
-number of iterations.  regularizeNd uses an incomplete Cholesky preconditioner internally.  The
-preconditioner is the dominant reason `"pcg"` and `"symmlq"` are practical even at large scale.
+Two row families appear in $A$:
 
-Measured timing from the `exampleIterativeSolver.m` reference script (5-D, ~117 600 grid points):
+- 37,356 rows with 32 nonzeros (data-fidelity rows from $2^5$ multilinear interpolation stencils).
+- 462,392 rows with 3 nonzeros (second-order regularization rows).
+
+This is why the problem feels pathological: $A$ itself is modest, but direct factorization of the normal system creates massive fill.
+
+## What Is a Stride?
+
+A stride is the index jump in flattened column-major storage when you move by +1 in one grid dimension.
+
+For grid $[25, 7, 7, 12, 8]$, strides are:
+
+| Dimension | Grid size | Stride |
+|---|---:|---:|
+| 1 | 25 | 1 |
+| 2 | 7 | 25 |
+| 3 | 7 | 175 |
+| 4 | 12 | 1,225 |
+| 5 | 8 | 14,700 |
+
+Second-order regularization uses a stencil of the form $[1,-2,1]$ across indices
+$[j, j+s, j+2s]$ where $s$ is the stride for that dimension.
+
+In dimension 5, $s=14{,}700$, so rows can connect nodes $j$ and $j+29{,}400$.
+That produces direct edges in $A^\top A$ at bandwidth 29,400.
+
+## Why Direct Methods Blow Up in RAM
+
+Even though $A^\top A$ is still sparse, Cholesky fill-in is enormous for this graph structure.
+
+- $\operatorname{nnz}(A^\top A) \approx 2.27\times10^6$
+- Symbolic AMD Cholesky gives $\operatorname{nnz}(L) \approx 1.81\times10^9$
+- Sparse storage for $L$ is about 21.8 GB, and factorization peak memory is about 44 GB.
+
+So direct methods are not "failing randomly"; they are hitting a predictable structural memory wall.
+
+The practical consequence is:
+
+- `"normal"` can be much faster than `"\"` when it fits.
+- Both direct methods can become impractical once fill-in dominates available RAM.
+- Iterative methods become the preferred strategy for this case.
+
+## Measured Timing (From a07)
+
+These are measured values from the a07 example data and script:
 
 | Solver | Approximate solve time |
 |---|---|
@@ -69,6 +107,14 @@ Measured timing from the `exampleIterativeSolver.m` reference script (5-D, ~117 
 | `"lsqr"` | ~378 s |
 
 The iterative solvers are 12–17× faster than the direct options at that scale.
+
+## Why Iterative Solvers Work Here
+
+Iterative methods avoid explicit factorization and rely on matrix-vector products with $A$ and
+$A^\top$. Memory stays close to $O(\operatorname{nnz}(A))$ plus a few working vectors, which is why
+they remain practical in this problem class.
+
+For this specific a07 case, start with iterative methods first if your workstation has limited RAM.
 
 ## Controlling Iterative Solver Behavior
 
@@ -89,23 +135,101 @@ almost always sufficient.
 
 ## Decision Tree
 
+```{mermaid}
+flowchart TD
+    A([Start]) --> B{1D, 2D, or 3D?}
+    B -- Yes --> C(["Use 'normal' ✓"])
+    B -- No, 4D or higher --> D{"Last dim has large stride?<br/>stride &gt; n / 10"}
+    D -- Yes, fill explosion likely --> G
+    D -- No --> E["Try 'normal'"]
+    E --> F{"Fast enough<br/>and fits in RAM?"}
+    F -- Yes --> Done1(["✓ Done"])
+    F -- No, slow or out of memory --> G["Try 'pcg'"]
+    G --> H{Converges?}
+    H -- Yes --> Done2(["✓ Done"])
+    H -- No --> I["Try 'symmlq'"]
+    I --> J{Converges?}
+    J -- Yes --> Done3(["✓ Done"])
+    J -- No --> K["Try 'lsqr'<br/>last resort"]
+    K --> L{Converges?}
+    L -- Yes --> Done4(["✓ Done"])
+    L -- No --> M(["Reduce grid resolution<br/>in the highest-stride dimension,<br/>or split into subdomains"])
 ```
-Start: pick solver
-  │
-  ├─ Is the grid smaller than ~50 000 nodes?
-  │     YES → use "normal"   (fast, robust for this scale)
-  │     NO  → continue
-  │
-  ├─ Does "normal" run out of memory or produce a warning?
-  │     NO  → keep "normal"
-  │     YES → try "pcg"
-  │               Converges?  YES → done
-  │               Converges?  NO  → try "symmlq"
-  │                                     Converges?  YES → done
-  │                                     Converges?  NO  → try "lsqr"
-  │
-  └─ If all iterative options fail → reduce grid resolution or
-       split the problem into smaller subdomains
+
+## Live Code Walkthrough (Short Blocks, Mocked Output)
+
+The blocks below are intentionally short and marked `eval: false` so the page renders quickly.
+Outputs are mocked from measured runs.
+
+### Load the a07 data
+
+```{matlab}
+clc; clear; close all;
+load('a07_iterative_solver_data.mat');
+
+smoothness = [0.001 0.01 0.01 0.001 0.01];
+interpMethod = "linear";
+```
+
+
+
+### Direct solvers
+
+```matlab
+tic;
+~ = regularizeNd(inputs, output, xGrid, smoothness, interpMethod, 'normal');
+toc;
+```
+
+```text
+[Mock output]
+Elapsed time is 930.022098 seconds.
+```
+
+```matlab
+tic;
+~ = regularizeNd(inputs, output, xGrid, smoothness, interpMethod, '\');
+toc;
+```
+
+```text
+[Mock output]
+Elapsed time is 8266.395394 seconds.
+```
+
+### Iterative solvers
+
+```matlab
+tic;
+~ = regularizeNd(inputs, output, xGrid, smoothness, interpMethod, 'pcg');
+toc;
+```
+
+```text
+[Mock output]
+Elapsed time is 53.382053 seconds.
+```
+
+```matlab
+tic;
+~ = regularizeNd(inputs, output, xGrid, smoothness, interpMethod, 'symmlq');
+toc;
+```
+
+```text
+[Mock output]
+Elapsed time is 52.895435 seconds.
+```
+
+```matlab
+tic;
+~ = regularizeNd(inputs, output, xGrid, smoothness, interpMethod, 'lsqr');
+toc;
+```
+
+```text
+[Mock output]
+Elapsed time is 377.954214 seconds.
 ```
 
 ## Compression Approach for Very Large Grids
@@ -117,10 +241,23 @@ If you cannot reduce grid size without sacrificing quality, two practical strate
    exponentially.
 
 2. **Local fitting** — partition the domain into overlapping subdomains, fit each independently,
-   and stitch with a smooth blending function.  Not built into regularizeNd but straightforward to
-   implement around it.
+   and stitch with a smooth blending function.  Not built into regularizeNd but straightforward to implement around it.
 
-## Memory Footprint Estimate
+## Memory Footprint Reality Check for This Example
+
+For this specific a07 case:
+
+| Quantity | Approximate value |
+|---|---:|
+| $\operatorname{nnz}(A)$ | 2,582,568 |
+| $\operatorname{nnz}(A^\top A)$ | 2,266,280 |
+| $\operatorname{nnz}(L)$ (symbolic AMD Cholesky) | $1.81\times10^9$ |
+| $L$ sparse storage | ~21.8 GB |
+| Factorization peak memory | ~44 GB |
+
+This is why direct methods can run out of RAM/swap even when $A$ appears modest.
+
+## Memory Footprint Estimate (Rule of Thumb)
 
 A rough estimate of peak memory before the solve step for an $n$-node grid:
 
@@ -133,58 +270,10 @@ A rough estimate of peak memory before the solve step for an $n$-node grid:
 Where $D$ is the number of input dimensions and $N_\text{data}$ is the scatter data count.  The
 $A^\top A$ term is the one that kills direct solvers at large $n$.
 
-## Solver Sweep — Small-Scale Reference
-
-The following code sweeps all five solvers on the Loihi bathymetry data with a moderately fine
-grid.  Run it to confirm all solvers return the same answer and to benchmark relative timing on
-your hardware.
-
-```matlab
-clc; clear; close all;
-
-data = load('a01_etopo_loihi.mat');
-x = double(data.x);
-y = double(data.y);
-z = double(data.z);
-
-xGrid = {linspace(min(x), max(x), 60), linspace(min(y), max(y), 61)};
-smoothness = 1e-4;
-interpMethod = "linear";
-
-solvers = ["normal", "\", "pcg", "symmlq", "lsqr"];
-times   = zeros(1, numel(solvers));
-grids   = cell(1, numel(solvers));
-
-for k = 1:numel(solvers)
-    s = solvers(k);
-    if ismember(s, ["pcg", "symmlq", "lsqr"])
-        tic
-        grids{k} = regularizeNd([x,y], z, xGrid, smoothness, interpMethod, s, ...
-            500, 1e-6);
-        times(k) = toc;
-    else
-        tic
-        grids{k} = regularizeNd([x,y], z, xGrid, smoothness, interpMethod, s);
-        times(k) = toc;
-    end
-    fprintf('%-8s  %.3f s\n', s, times(k));
-end
-
-% Verify all grids agree
-for k = 2:numel(solvers)
-    rmseDiff = sqrt(mean((grids{k}(:) - grids{1}(:)).^2));
-    fprintf('RMSE vs normal: %-8s  %.3e\n', solvers(k), rmseDiff);
-end
-```
-
-Expected result: RMSE values should all be below `1e-4` relative to the reference grid, confirming
-that solver choice does not affect the answer at normal problem scales.
-
 ## Checklist Before Leaving This Part
 
-- [ ] Have you confirmed `"normal"` works for your problem size?
+- [ ] Acknowledge that `"normal"` does not works for your problem size.
 - [ ] If RAM is the constraint, have you tried `"pcg"` with `maxIterations` and `solverTolerance`?
-- [ ] Have you verified that the iterative result matches the direct result to your required tolerance?
 - [ ] Have you estimated grid node count and peak memory before scaling up?
 
 ## Next
