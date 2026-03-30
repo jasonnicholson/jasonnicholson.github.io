@@ -12,31 +12,29 @@ for users coming from `gridfit` or `RegularizeData3D`.
 
 ## Practical Goal
 
-1. Clarify how regularizeNd relates to earlier tools without overstating code lineage.
+1. How regularizeNd relates to earlier tools.
 2. Map common gridfit and RegularizeData3D patterns to regularizeNd equivalents.
-3. Avoid migration mistakes related to grid orientation and argument structure.
 
 ## Example Anchor
 
-Primary migration examples in this part: `regularizeNd/Examples/From gridfit/demo_from_gridfit.m` rewrite and `RegularizeData3D` rewrite patterns.
+Primary migration examples in this part: `regularizeNd/Examples/From gridfit/demo_from_gridfit.m` rewrite and `regularizeNd/Examples/From RegularizeData3D` rewrite patterns.
+
+gridfit example data: [bluff_data.mat](bluff_data.mat)
 
 ## Conceptual Lineage
 
 regularizeNd is inspired by earlier regularized surface fitting tools in the MATLAB ecosystem.
 Two tools are particularly relevant as a conceptual starting point:
 
-- **gridfit** (John D'Errico) [@derrico2016gridfit] — a 2-D surface fitting tool using a similar
+- **gridfit** (John D'Errico) [@derrico2016gridfit] — a 2-D input surface fitting tool using a similar
   regularization philosophy.  gridfit introduced many users to the idea of balancing data fidelity
   against smoothness on a grid.
-- **RegularizeData3D** [@jamal2014regularizedata3d] — extended the concept to 3-D inputs.
+- **RegularizeData3D** [@jamal2014regularizedata3d] — extended the concept to cubic interpolation. Made the smoothness parameter reusable across problems by scaling the regularization relative to the fidelity term.
 
-regularizeNd generalizes the approach to an arbitrary number of input dimensions, adds support
-for per-dimension smoothness weights, exposes the underlying matrices for constrained problems,
-and provides multiple solver options including iterative solvers for large systems.
+regularizeNd generalizes the approach to an arbitrary number of input dimensions, fixed some all zero rows in `gridfit` and `RegularizeData3D`,exposes the underlying matrices for constrained problems, and provides multiple solver options including iterative solvers for large systems.
 
 **Important framing:** regularizeNd is inspired by this prior work and shares the regularization
-concept, but it is an independent implementation.  Claims about shared source code should not be
-made unless you have explicit evidence.
+concept, but it is an independent implementation.
 
 ## Migrating from gridfit
 
@@ -45,9 +43,10 @@ made unless you have explicit evidence.
 | gridfit concept | regularizeNd equivalent |
 |---|---|
 | `gx`, `gy` (grid vectors) | `xGrid = {gx, gy}` |
-| `smoothness` scalar | `smoothness` scalar (same meaning) |
+| `'smoothness'` property (default `1`), scalar, vector | `smoothness` positional arg (similar role, different scaling/defaults), scalar, vector |
 | `g = gridfit(x,y,z,gx,gy,s)` | `g = regularizeNd([x,y], z, {gx,gy}, s)` |
-| Interpolation method arg | 5th positional arg: `'linear'`, `'cubic'`, `'nearest'` |
+| `'interp'` property (`'triangle'`, `'bilinear'`, `'nearest'`) | 5th positional arg ( `'nearest'`, `'linear'`, `'cubic'`). `'bilinear'` = `'linear'` |
+| `'regularizer'` property (`'gradient'`, `'diffusion'`/`'laplacian'`, `'springs'`) | regularizeNd's regularization is fixed to the `gradient` regularizer because the others don't work well.
 | Output is in meshgrid format | Output is in **ndgrid** format — transpose before plotting with `surf` |
 
 ### Minimal gridfit → regularizeNd rewrite
@@ -72,7 +71,7 @@ Below is the first section of `demo_from_gridfit.m` rewritten in clean regulariz
 original used `bluff_data.mat` (Two ravines on a hillside, scanned from a topographic map of
 upstate New York).
 
-```matlab
+```{matlab}
 clc; clear; close all;
 load bluff_data
 x = bluff_data(:,1);
@@ -100,26 +99,31 @@ xlabel('x'); ylabel('y'); zlabel('z')
 
 | RegularizeData3D concept | regularizeNd equivalent |
 |---|---|
-| `x`, `y`, `z` scatter inputs | First two columns of the input matrix |
-| `v` (value) input | Second positional arg `y` (confusingly named — it is the response) |
+| `x`, `y` scatter inputs | First two columns of the input matrix |
+| `z` (value) input | Second positional arg (response vector) |
 | `xnodes`, `ynodes` | `xGrid = {xnodes, ynodes}` |
-| `smoothness` scalar | `smoothness` scalar |
-| `interp` string arg | 5th positional arg |
+| `smoothness` scalar, vector | `smoothness` scalar, vector |
+| `'interp'` property (`'triangle'`, `'bilinear'`, `'bicubic'`, `'nearest'`) | 5th positional arg (`'nearest'`, `'linear'`, `'cubic'`) `'bilinear'` = `'linear'`. `'bicubic'` = `'cubic'` |
 | Output grid in meshgrid format | Output in **ndgrid** format — transpose for `surf` |
 
 ### Minimal RegularizeData3D → regularizeNd rewrite
 
 ```matlab
 % --- RegularizeData3D (old) ---
-% g = RegularizeData3D(x, y, z, xnodes, ynodes, smoothness, 'interp', 'linear');
+% g = RegularizeData3D(x, y, z, xnodes, ynodes, ...
+%                     'smoothness', smoothness, 'interp', 'bicubic');
 
 % --- regularizeNd (new) ---
-g = regularizeNd([x,y], z, {xnodes, ynodes}, smoothness, 'linear');
+g = regularizeNd([x,y], z, {xnodes, ynodes}, smoothness, 'cubic');
 % same ndgrid output format — surf(xnodes, ynodes, g') for display
 ```
 
 The key structural change is that the separate `x`, `y` scatter inputs become the two columns of
 a single matrix argument.
+
+Interpolation naming is not one-to-one: in practice, `RegularizeData3D` `'bicubic'` aligns with
+`regularizeNd` `'cubic'`, and `RegularizeData3D` `'bilinear'` align most closely
+with `regularizeNd` `'linear'`.
 
 ### Coarse vs. fine grid demo rewrite
 
@@ -127,9 +131,8 @@ This example is adapted from `From RegularizeData3D/coarse_vs_fine_grids.m` and 
 key property: for the same smoothness value, the fitted surface is nearly identical regardless of
 grid resolution.  Coarser grids are faster; finer grids give more evaluation points.
 
-```matlab
+```{matlab}
 clc; clear; close all;
-
 inputPoints = [
     1,  0.5, 0.5;
     1,    2,   1;
@@ -157,7 +160,7 @@ surf(xCoarse, yCoarse, zCoarse')
 title('Coarse grid'); xlabel('x'); ylabel('y'); zlabel('z')
 
 nexttile
-surf(xFine, yFine, zFine')
+surf(xFine, yFine, zFine','EdgeColor', 'none')
 title('Fine grid'); xlabel('x'); ylabel('y'); zlabel('z')
 ```
 
