@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Deep-Dive: RegularizeNd Design – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-b0055fe3f16fc4a17aa491bd47adb78c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-765aeea877339cbfbd7cb4bd0fa7078b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#attribution-and-lineage" id="toc-attribution-and-lineage" class="nav-link active" data-scroll-target="#attribution-and-lineage">Attribution and Lineage</a></li>
+  <li><a href="#code-anchors" id="toc-code-anchors" class="nav-link" data-scroll-target="#code-anchors">Code Anchors</a></li>
+  <li><a href="#fidelity" id="toc-fidelity" class="nav-link" data-scroll-target="#fidelity">Fidelity</a>
+  <ul class="collapse">
+  <li><a href="#objective-structure" id="toc-objective-structure" class="nav-link" data-scroll-target="#objective-structure">Objective Structure</a></li>
+  <li><a href="#fidelity-block" id="toc-fidelity-block" class="nav-link" data-scroll-target="#fidelity-block">Fidelity block</a></li>
+  <li><a href="#fidelity-matrix-structure-examples" id="toc-fidelity-matrix-structure-examples" class="nav-link" data-scroll-target="#fidelity-matrix-structure-examples">Fidelity Matrix Structure Examples</a></li>
+  <li><a href="#nd-lookup-table-unwrapping-and-linear-indexing" id="toc-nd-lookup-table-unwrapping-and-linear-indexing" class="nav-link" data-scroll-target="#nd-lookup-table-unwrapping-and-linear-indexing">nD Lookup Table Unwrapping and Linear Indexing</a></li>
+  </ul></li>
+  <li><a href="#regularization" id="toc-regularization" class="nav-link" data-scroll-target="#regularization">Regularization</a>
+  <ul class="collapse">
+  <li><a href="#regularization-blocks" id="toc-regularization-blocks" class="nav-link" data-scroll-target="#regularization-blocks">Regularization blocks</a></li>
+  <li><a href="#scaling-embedded-in-each-regularization-block" id="toc-scaling-embedded-in-each-regularization-block" class="nav-link" data-scroll-target="#scaling-embedded-in-each-regularization-block">Scaling embedded in each regularization block</a></li>
+  <li><a href="#relationship-between-fidelity-and-smoothness-equations" id="toc-relationship-between-fidelity-and-smoothness-equations" class="nav-link" data-scroll-target="#relationship-between-fidelity-and-smoothness-equations">Relationship Between Fidelity and Smoothness Equations</a></li>
+  <li><a href="#how-to-interpret-the-smoothness-value" id="toc-how-to-interpret-the-smoothness-value" class="nav-link" data-scroll-target="#how-to-interpret-the-smoothness-value">How to interpret the smoothness value</a></li>
+  <li><a href="#why-smoothness-count-normalization-matters" id="toc-why-smoothness-count-normalization-matters" class="nav-link" data-scroll-target="#why-smoothness-count-normalization-matters">Why smoothness-count normalization matters</a></li>
+  <li><a href="#why-range-scaling-matters" id="toc-why-range-scaling-matters" class="nav-link" data-scroll-target="#why-range-scaling-matters">Why range scaling matters</a></li>
+  <li><a href="#smoothness-transferability-across-similar-problems" id="toc-smoothness-transferability-across-similar-problems" class="nav-link" data-scroll-target="#smoothness-transferability-across-similar-problems">Smoothness transferability across similar problems</a></li>
+  <li><a href="#exact-zero-penalty-function-class" id="toc-exact-zero-penalty-function-class" class="nav-link" data-scroll-target="#exact-zero-penalty-function-class">Exact Zero-Penalty Function Class</a></li>
+  </ul></li>
+  <li><a href="#solving" id="toc-solving" class="nav-link" data-scroll-target="#solving">Solving</a>
+  <ul class="collapse">
+  <li><a href="#solve-stage" id="toc-solve-stage" class="nav-link" data-scroll-target="#solve-stage">Solve stage</a></li>
+  <li><a href="#why-the-normal-solver-is-often-faster" id="toc-why-the-normal-solver-is-often-faster" class="nav-link" data-scroll-target="#why-the-normal-solver-is-often-faster">Why the Normal Solver Is Often Faster</a></li>
+  <li><a href="#why-second-derivative-is-the-current-default" id="toc-why-second-derivative-is-the-current-default" class="nav-link" data-scroll-target="#why-second-derivative-is-the-current-default">Why Second Derivative Is the Current Default</a></li>
+  </ul></li>
+  <li><a href="#extension" id="toc-extension" class="nav-link" data-scroll-target="#extension">Extension</a>
+  <ul class="collapse">
+  <li><a href="#mapped-coordinate-extension" id="toc-mapped-coordinate-extension" class="nav-link" data-scroll-target="#mapped-coordinate-extension">Mapped-Coordinate Extension</a></li>
+  <li><a href="#constrained-least-squares-extension" id="toc-constrained-least-squares-extension" class="nav-link" data-scroll-target="#constrained-least-squares-extension">Constrained Least-Squares Extension</a></li>
+  <li><a href="#third-order-regularization-extension" id="toc-third-order-regularization-extension" class="nav-link" data-scroll-target="#third-order-regularization-extension">Third-Order Regularization Extension</a></li>
+  </ul></li>
+  <li><a href="#variables-and-notation" id="toc-variables-and-notation" class="nav-link" data-scroll-target="#variables-and-notation">Variables and Notation</a>
+  <ul class="collapse">
+  <li><a href="#core-unknowns-and-data" id="toc-core-unknowns-and-data" class="nav-link" data-scroll-target="#core-unknowns-and-data">Core Unknowns and Data</a></li>
+  <li><a href="#fidelity-terms" id="toc-fidelity-terms" class="nav-link" data-scroll-target="#fidelity-terms">Fidelity Terms</a></li>
+  <li><a href="#regularization-terms" id="toc-regularization-terms" class="nav-link" data-scroll-target="#regularization-terms">Regularization Terms</a></li>
+  <li><a href="#system-assembly-and-constrained-form" id="toc-system-assembly-and-constrained-form" class="nav-link" data-scroll-target="#system-assembly-and-constrained-form">System Assembly and Constrained Form</a></li>
+  <li><a href="#grid-and-indexing-symbols" id="toc-grid-and-indexing-symbols" class="nav-link" data-scroll-target="#grid-and-indexing-symbols">Grid and Indexing Symbols</a></li>
+  <li><a href="#local-stencil-coordinates-and-values" id="toc-local-stencil-coordinates-and-values" class="nav-link" data-scroll-target="#local-stencil-coordinates-and-values">Local Stencil Coordinates and Values</a></li>
+  <li><a href="#function-class-coefficients" id="toc-function-class-coefficients" class="nav-link" data-scroll-target="#function-class-coefficients">Function-Class Coefficients</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Deep-Dive: RegularizeNd Design</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../../pages/regularizeNd/index.html">Back to regularizeNd series home</a></p>
+<p>This article is the rigorous companion to the tutorial series. It documents how regularizeNd constructs and solves its optimization problem, then shows how to generalize the regularizer operator by axis and derivative order.</p>
+<section id="attribution-and-lineage" class="level2">
+<h2 class="anchored" data-anchor-id="attribution-and-lineage">Attribution and Lineage</h2>
+<p>The educational progression is inspired by Peter Goldstein’s regularization articles and related historical tools <span class="citation" data-cites="derrico2016gridfit">D’Errico (<a href="#ref-derrico2016gridfit" role="doc-biblioref">2016</a>)</span> <span class="citation" data-cites="jamal2014regularizedata3d">Jamal (<a href="#ref-jamal2014regularizedata3d" role="doc-biblioref">2014</a>)</span>. The implementation discussed here is regularizeNd and this article is independently written for that codebase.</p>
+</section>
+<section id="code-anchors" class="level2">
+<h2 class="anchored" data-anchor-id="code-anchors">Code Anchors</h2>
+<p>The key implementation points are:</p>
+<ul>
+<li>matrix assembly: regularizeNd/source/regularizeNdMatrices.m</li>
+<li>full system construction and solver dispatch: regularizeNd/source/regularizeNd.m</li>
+<li>constrained workflows: regularizeNd/source/monotonicConstraint.m and regularizeNd/source/lsqConstrainedAlternative.m</li>
+<li>mapped-coordinate example workflow: regularizeNd/Examples/constraint_and_Mapping_Example.m</li>
+</ul>
+<hr>
+</section>
+<section id="fidelity" class="level2">
+<h2 class="anchored" data-anchor-id="fidelity">Fidelity</h2>
+<section id="objective-structure" class="level3">
+<h3 class="anchored" data-anchor-id="objective-structure">Objective Structure</h3>
+<p>regularizeNd solves for a gridded parameter vector <span class="math inline">\(z\)</span> using two equation families:</p>
+<ul>
+<li>fidelity equations, formed from interpolation consistency against scattered data</li>
+<li>regularization equations, formed from finite-difference smoothness operators</li>
+</ul>
+<p>Let <span class="math inline">\(A_f\)</span> denote the fidelity matrix and <span class="math inline">\(L_k\)</span> denote the regularization matrix for axis <span class="math inline">\(k\)</span>. The least-squares structure is</p>
+<p><span class="math display">\[
+\min_z\;\frac{1}{2}\left\|A_f z - y\right\|_2^2 + \sum_{k=1}^{n}\left\|L_k z\right\|_2^2.
+\]</span></p>
+<p>In current implementation, each <span class="math inline">\(L_k\)</span> already includes axis-specific scaling and user smoothness weight. More on this below.</p>
+</section>
+<section id="fidelity-block" class="level3">
+<h3 class="anchored" data-anchor-id="fidelity-block">Fidelity block</h3>
+<p>regularizeNdMatrices builds <span class="math inline">\(A_f\)</span> using selected interpolation mode:</p>
+<ul>
+<li>nearest: one node per point</li>
+<li>linear: <span class="math inline">\(2^n\)</span> nodes per point</li>
+<li>cubic: <span class="math inline">\(4^n\)</span> nodes per point</li>
+</ul>
+<p>Each scattered sample contributes one row in <span class="math inline">\(A_f\)</span>. The sum of each row’s weights is one.</p>
+<p>For scattered sample <span class="math inline">\(i\)</span>, the row can be written as:</p>
+<p><span class="math display">\[
+(A_f)_{i,:} z = \sum_{j\in\mathcal{N}_i} w_{ij} z_j,\qquad \sum_{j\in\mathcal{N}_i} w_{ij}=1,
+\]</span></p>
+<p>where <span class="math inline">\(\mathcal{N}_i\)</span> is the interpolation stencil around sample <span class="math inline">\(i\)</span>.</p>
+<ul>
+<li>nearest: <span class="math inline">\(|\mathcal{N}_i|=1\)</span>, one weight equal to 1.</li>
+<li>linear in <span class="math inline">\(n\)</span> dimensions: <span class="math inline">\(|\mathcal{N}_i|=2^n\)</span>.</li>
+<li>cubic in <span class="math inline">\(n\)</span> dimensions: <span class="math inline">\(|\mathcal{N}_i|=4^n\)</span>.</li>
+</ul>
+<p>This matches the implementation where sparse rows are assembled from interpolation indices and weights.</p>
+</section>
+<section id="fidelity-matrix-structure-examples" class="level3">
+<h3 class="anchored" data-anchor-id="fidelity-matrix-structure-examples">Fidelity Matrix Structure Examples</h3>
+<section id="example-a-1d-linear-interpolation" class="level4">
+<h4 class="anchored" data-anchor-id="example-a-1d-linear-interpolation">Example A: 1D linear interpolation</h4>
+<p>If sample <span class="math inline">\(x_i\)</span> lies between grid nodes <span class="math inline">\(x_j\)</span> and <span class="math inline">\(x_{j+1}\)</span>, define local fraction</p>
+<p><span class="math display">\[
+t_i = \frac{x_i-x_j}{x_{j+1}-x_j},\qquad 0\le t_i\le 1.
+\]</span></p>
+<p>Then row <span class="math inline">\(i\)</span> of <span class="math inline">\(A_f\)</span> has two nonzeros:</p>
+<p><span class="math display">\[
+(A_f)_{i,j}=1-t_i,\qquad (A_f)_{i,j+1}=t_i.
+\]</span></p>
+</section>
+<section id="example-b-2d-linear-interpolation" class="level4">
+<h4 class="anchored" data-anchor-id="example-b-2d-linear-interpolation">Example B: 2D linear interpolation</h4>
+<p>For local fractions <span class="math inline">\((t_x,t_y)\)</span> inside one cell, row <span class="math inline">\(i\)</span> has four nonzeros at the bilinear cell corners:</p>
+<p><span class="math display">\[
+\begin{aligned}
+w_{00}&amp;=(1-t_x)(1-t_y),\\
+w_{10}&amp;=t_x(1-t_y),\\
+w_{01}&amp;=(1-t_x)t_y,\\
+w_{11}&amp;=t_x t_y.
+\end{aligned}
+\]</span></p>
+<p>Again, these four weights sum to one.</p>
+<p>These two examples show the row structure explicitly. The next examples show the full sparse-pattern structure of the fidelity matrix.</p>
+</section>
+<section id="example-c-spy-plots-of-fidelity-matrices" class="level4">
+<h4 class="anchored" data-anchor-id="example-c-spy-plots-of-fidelity-matrices">Example C: spy plots of fidelity matrices</h4>
+<p>The easiest way to see the global structure of <span class="math inline">\(A_f\)</span> is with sparse-pattern plots. In regularizeNd, each interpolation mode changes the number and arrangement of nonzeros per row.</p>
+<div id="08833e61" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">clc</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="va">smoothness</span> <span class="op">=</span> <span class="fl">1e-3</span><span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="va">x1</span> <span class="op">=</span> [<span class="fl">0.10</span><span class="op">;</span> <span class="fl">0.45</span><span class="op">;</span> <span class="fl">0.95</span><span class="op">;</span> <span class="fl">1.30</span><span class="op">;</span> <span class="fl">1.85</span><span class="op">;</span> <span class="fl">2.20</span><span class="op">;</span> <span class="fl">2.65</span>]<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="va">grid1</span> <span class="op">=</span> {<span class="fl">0</span><span class="op">:</span><span class="fl">0.5</span><span class="op">:</span><span class="fl">3.0</span>}<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>[<span class="va">A1Nearest</span><span class="op">,</span> <span class="op">~</span>] <span class="op">=</span> <span class="va">regularizeNdMatrices</span>(<span class="va">x1</span><span class="op">,</span> <span class="va">grid1</span><span class="op">,</span> <span class="va">smoothness</span><span class="op">,</span> <span class="ss">'nearest'</span>)<span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>[<span class="va">A1Linear</span><span class="op">,</span> <span class="op">~</span>] <span class="op">=</span> <span class="va">regularizeNdMatrices</span>(<span class="va">x1</span><span class="op">,</span> <span class="va">grid1</span><span class="op">,</span> <span class="va">smoothness</span><span class="op">,</span> <span class="ss">'linear'</span>)<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="va">x2</span> <span class="op">=</span> [<span class="fl">0.20</span> <span class="fl">0.30</span><span class="op">;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>      <span class="fl">0.80</span> <span class="fl">0.60</span><span class="op">;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>      <span class="fl">1.40</span> <span class="fl">0.20</span><span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>      <span class="fl">1.70</span> <span class="fl">1.10</span><span class="op">;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="fl">0.30</span> <span class="fl">1.70</span><span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      <span class="fl">1.20</span> <span class="fl">1.60</span>]<span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="va">grid2</span> <span class="op">=</span> {<span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">,</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>}<span class="op">;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>[<span class="va">A2Linear</span><span class="op">,</span> <span class="op">~</span>] <span class="op">=</span> <span class="va">regularizeNdMatrices</span>(<span class="va">x2</span><span class="op">,</span> <span class="va">grid2</span><span class="op">,</span> <span class="va">smoothness</span><span class="op">,</span> <span class="ss">'linear'</span>)<span class="op">;</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="va">figure</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="va">tiledlayout</span>(<span class="fl">1</span><span class="op">,</span> <span class="fl">3</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="va">nexttile</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="va">spy</span>(<span class="va">A1Nearest</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="va">title</span>(<span class="ss">'1D nearest'</span>)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="va">xlabel</span>(<span class="ss">'Grid node index'</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="va">ylabel</span>(<span class="ss">'Sample row'</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="va">nexttile</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="va">spy</span>(<span class="va">A1Linear</span>)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="va">title</span>(<span class="ss">'1D linear'</span>)</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="va">xlabel</span>(<span class="ss">'Grid node index'</span>)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="va">ylabel</span>(<span class="ss">'Sample row'</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="va">nexttile</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="va">spy</span>(<span class="va">A2Linear</span>)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="va">title</span>(<span class="ss">'2D linear'</span>)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="va">xlabel</span>(<span class="ss">'Flattened grid index'</span>)</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="va">ylabel</span>(<span class="ss">'Sample row'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div>
+<figure class="figure">
+<p><img src="deep-dive-regularizeNd-design_files/figure-html/cell-2-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The structural takeaway is:</p>
+<ul>
+<li>nearest interpolation gives exactly one nonzero per row,</li>
+<li>1D linear interpolation gives exactly two neighboring nonzeros per row,</li>
+<li>2D linear interpolation gives exactly four nonzeros per row, but those four entries are separated in the flattened indexing because the 2D grid has been unwrapped into one column vector.</li>
+</ul>
+</section>
+<section id="example-d-cubic-fidelity-patterns-are-wider" class="level4">
+<h4 class="anchored" data-anchor-id="example-d-cubic-fidelity-patterns-are-wider">Example D: cubic fidelity patterns are wider</h4>
+<p>Higher-order interpolation widens the fidelity row stencil. In 2D cubic interpolation, each row touches <span class="math inline">\(4^2=16\)</span> nearby grid values.</p>
+<div id="df411796" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">smoothness</span> <span class="op">=</span> <span class="fl">1e-3</span><span class="op">;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="va">xCubic</span> <span class="op">=</span> [<span class="fl">1.2</span> <span class="fl">1.4</span><span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>           <span class="fl">1.8</span> <span class="fl">2.6</span><span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>           <span class="fl">2.5</span> <span class="fl">3.1</span><span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>           <span class="fl">3.7</span> <span class="fl">1.9</span><span class="op">;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>           <span class="fl">4.4</span> <span class="fl">4.2</span><span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>           <span class="fl">5.3</span> <span class="fl">2.7</span><span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>           <span class="fl">6.1</span> <span class="fl">5.8</span><span class="op">;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>           <span class="fl">6.6</span> <span class="fl">3.6</span>]<span class="op">;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="va">gridCubic</span> <span class="op">=</span> {<span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">,</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span>}<span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>[<span class="va">A2Cubic</span><span class="op">,</span> <span class="op">~</span>] <span class="op">=</span> <span class="va">regularizeNdMatrices</span>(<span class="va">xCubic</span><span class="op">,</span> <span class="va">gridCubic</span><span class="op">,</span> <span class="va">smoothness</span><span class="op">,</span> <span class="ss">'cubic'</span>)<span class="op">;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="va">figure</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="va">spy</span>(<span class="va">A2Cubic</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="va">title</span>(<span class="va">sprintf</span>(<span class="ss">'2D cubic fidelity matrix (nnz = %d of %d)'</span><span class="op">,</span> <span class="va">nnz</span>(<span class="va">A2Cubic</span>)<span class="op">,</span> <span class="va">numel</span>(<span class="va">A2Cubic</span>)))</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="va">xlabel</span>(<span class="ss">'Flattened grid index'</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="va">ylabel</span>(<span class="ss">'Sample row'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div>
+<figure class="figure">
+<p><img src="deep-dive-regularizeNd-design_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>That is the same fidelity concept as the earlier algebraic examples, just viewed as a whole sparse matrix instead of one row at a time.</p>
+</section>
+</section>
+<section id="nd-lookup-table-unwrapping-and-linear-indexing" class="level3">
+<h3 class="anchored" data-anchor-id="nd-lookup-table-unwrapping-and-linear-indexing">nD Lookup Table Unwrapping and Linear Indexing</h3>
+<p>regularizeNd uses MATLAB linear indexing to represent an nD lookup table as a vector of unknowns.</p>
+<p>Let grid size be <span class="math inline">\((n_1,\dots,n_d)\)</span> and total unknowns <span class="math inline">\(N=\prod_{m=1}^d n_m\)</span>. The unknown table <span class="math inline">\(Z\in\mathbb{R}^{n_1\times\cdots\times n_d}\)</span> is vectorized as <span class="math inline">\(z\in\mathbb{R}^{N}\)</span>.</p>
+<p>For subscript <span class="math inline">\((i_1,\dots,i_d)\)</span>, MATLAB-style 1-based linear index is:</p>
+<p><span class="math display">\[
+\operatorname{ind}(i_1,\dots,i_d)=i_1+\sum_{m=2}^{d}(i_m-1)\prod_{r=1}^{m-1}n_r.
+\]</span></p>
+<p>Here <span class="math inline">\(\operatorname{ind}\)</span> is just a name for the linear-index mapping. It means “the vector position corresponding to subscripts <span class="math inline">\((i_1,\dots,i_d)\)</span>”. It is not special MATLAB syntax; it is only a label for the indexing formula.</p>
+<p>This is exactly why fidelity and smoothness stencils become sparse rows in a single global linear system. It avoids treating each axis separately in custom tensor solvers and keeps the assembly compatible with MATLAB sparse operators.</p>
+<section id="graphical-3d-unwrapping-example-array-size-3-4-5" class="level4">
+<h4 class="anchored" data-anchor-id="graphical-3d-unwrapping-example-array-size-3-4-5">Graphical 3D unwrapping example: array size <code>[3 4 5]</code></h4>
+<p>Suppose</p>
+<p><span class="math display">\[
+Z = \operatorname{reshape}(1:60,[3,4,5]).
+\]</span></p>
+<p>Then MATLAB fills the first dimension first. The five slices are:</p>
+<pre class="text"><code>Z(:,:,1) =
+
+     1   4   7  10
+     2   5   8  11
+     3   6   9  12
+
+Z(:,:,2) =
+
+    13  16  19  22
+    14  17  20  23
+    15  18  21  24
+
+Z(:,:,3) =
+
+    25  28  31  34
+    26  29  32  35
+    27  30  33  36
+
+Z(:,:,4) =
+
+    37  40  43  46
+    38  41  44  47
+    39  42  45  48
+
+Z(:,:,5) =
+
+    49  52  55  58
+    50  53  56  59
+    51  54  57  60</code></pre>
+<p>Unwrapping to a column vector gives</p>
+<pre class="text"><code>z = Z(:) =
+
+     [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 11; 12; ... ; 60]</code></pre>
+<p>So the order is:</p>
+<ol type="1">
+<li>move down rows first,</li>
+<li>then move across columns,</li>
+<li>then advance to the next 2D slice.</li>
+</ol>
+<p>For example:</p>
+<ul>
+<li><span class="math inline">\(\operatorname{ind}(1,1,1)=1\)</span></li>
+<li><span class="math inline">\(\operatorname{ind}(2,1,1)=2\)</span></li>
+<li><span class="math inline">\(\operatorname{ind}(3,1,1)=3\)</span></li>
+<li><span class="math inline">\(\operatorname{ind}(1,2,1)=4\)</span></li>
+<li><span class="math inline">\(\operatorname{ind}(3,4,1)=12\)</span></li>
+<li><span class="math inline">\(\operatorname{ind}(1,1,2)=13\)</span></li>
+<li><span class="math inline">\(\operatorname{ind}(3,4,5)=60\)</span></li>
+</ul>
+<p>This is the concrete mechanism regularizeNd relies on when it assembles nD interpolation and regularization stencils into one sparse linear system.</p>
+</section>
+</section>
+</section>
+<section id="regularization" class="level2">
+<h2 class="anchored" data-anchor-id="regularization">Regularization</h2>
+<section id="regularization-blocks" class="level3">
+<h3 class="anchored" data-anchor-id="regularization-blocks">Regularization blocks</h3>
+<p>For each axis, regularizeNdMatrices builds a sparse block <span class="math inline">\(L_k\)</span> based on second-derivative finite-difference stencils. For non-uniform grids, weights are computed from local spacing, not a uniform-grid assumption.</p>
+<p>Per axis, each regularization row has three nonzero entries tied to adjacent grid nodes along that axis.</p>
+<p>For axis coordinate triplet <span class="math inline">\((x_{i-1},x_i,x_{i+1})\)</span> and unknown samples <span class="math inline">\((z_{i-1},z_i,z_{i+1})\)</span>, the second-derivative stencil used in code is:</p>
+<p><span class="math display">\[
+\frac{\partial^2 z}{\partial x^2}\bigg|_{x_i}
+\approx
+\frac{2}{(x_{i-1}-x_{i+1})(x_{i-1}-x_i)}z_{i-1}
++\frac{2}{(x_i-x_{i-1})(x_i-x_{i+1})}z_i
++\frac{2}{(x_{i+1}-x_{i-1})(x_{i+1}-x_i)}z_{i+1}.
+\]</span></p>
+<p>So each row of <span class="math inline">\(L_k\)</span> is exactly a three-point nonuniform second-derivative operator embedded in nD by linear indexing.</p>
+</section>
+<section id="scaling-embedded-in-each-regularization-block" class="level3">
+<h3 class="anchored" data-anchor-id="scaling-embedded-in-each-regularization-block">Scaling embedded in each regularization block</h3>
+<p>Each <span class="math inline">\(L_k\)</span> is scaled by three factors:</p>
+<ul>
+<li>user smoothness for axis <span class="math inline">\(k\)</span></li>
+<li>smoothness-equation count normalization via <span class="math inline">\(\sqrt{N_f/N_{s,k}}\)</span></li>
+<li>axis range scaling proportional to <span class="math inline">\((x_{k,\max}-x_{k,\min})^2\)</span></li>
+</ul>
+<p>This is why smoothness can be tuned per axis while staying reasonably comparable across grid resolutions and axis ranges.</p>
+<p>In code form, each axis block is assembled as:</p>
+<p><span class="math display">\[
+L_k = s_k\,\sqrt{\frac{N_f}{N_{s,k}}}\,(x_{k,\max}-x_{k,\min})^2\,D_k^{(2)},
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(s_k\)</span> is the user smoothness for axis <span class="math inline">\(k\)</span>,</li>
+<li><span class="math inline">\(N_f\)</span> is number of fidelity equations,</li>
+<li><span class="math inline">\(N_{s,k}\)</span> is number of smoothness equations for axis <span class="math inline">\(k\)</span>,</li>
+<li><span class="math inline">\(D_k^{(2)}\)</span> is the unscaled nonuniform second-derivative operator.</li>
+</ul>
+</section>
+<section id="relationship-between-fidelity-and-smoothness-equations" class="level3">
+<h3 class="anchored" data-anchor-id="relationship-between-fidelity-and-smoothness-equations">Relationship Between Fidelity and Smoothness Equations</h3>
+<p>The solve stacks equations as</p>
+<p><span class="math display">\[
+A=\begin{bmatrix}A_f\\L_1\\\vdots\\L_n\end{bmatrix},\qquad
+b=\begin{bmatrix}y\\0\\\vdots\\0\end{bmatrix},
+\]</span></p>
+<p>and minimizes <span class="math inline">\(\|Az-b\|_2^2\)</span>. This means:</p>
+<ul>
+<li>fidelity rows pull the solution toward measured scattered data,</li>
+<li>smoothness rows pull the solution toward smoothly varying gradients.</li>
+</ul>
+<p>The practical tradeoff is controlled by the scaled magnitude of each <span class="math inline">\(L_k\)</span> relative to <span class="math inline">\(A_f\)</span>.</p>
+</section>
+<section id="how-to-interpret-the-smoothness-value" class="level3">
+<h3 class="anchored" data-anchor-id="how-to-interpret-the-smoothness-value">How to interpret the smoothness value</h3>
+<p>In regularizeNd usage, smoothness is best interpreted as the approximate ratio of smoothness importance to fidelity importance after the built-in normalization and axis scaling are applied.</p>
+<p>So, as a tuning rule of thumb:</p>
+<ul>
+<li><span class="math inline">\(s=1\)</span> means smoothness and fidelity are treated as comparably important,</li>
+<li><span class="math inline">\(s=10^{-3}\)</span> means smoothness is treated as roughly <span class="math inline">\(1/1000\)</span> as important as fidelity,</li>
+<li>smaller values push the fit toward the data more aggressively,</li>
+<li>larger values push the fit toward smoother directional gradients.</li>
+</ul>
+<p>That interpretation is exactly why the project documentation describes smoothness as the ratio of smoothness to goodness of fit.</p>
+</section>
+<section id="why-smoothness-count-normalization-matters" class="level3">
+<h3 class="anchored" data-anchor-id="why-smoothness-count-normalization-matters">Why smoothness-count normalization matters</h3>
+<p>Without normalization, changing grid density changes how many smoothness equations are present, which would implicitly retune smoothness even when user intent is unchanged.</p>
+<p>Using <span class="math inline">\(\sqrt{N_f/N_{s,k}}\)</span> normalizes for number fidelity equations versus smoothness equations from each axis. Smoothness values generalize and not problem and grid-specific.</p>
+</section>
+<section id="why-range-scaling-matters" class="level3">
+<h3 class="anchored" data-anchor-id="why-range-scaling-matters">Why range scaling matters</h3>
+<p>If one axis spans values like <span class="math inline">\(10^{-3}\)</span> and another spans <span class="math inline">\(10^3\)</span>, raw derivatives are numerically imbalanced. Multiplying by <span class="math inline">\((x_{k,\max}-x_{k,\min})^2\)</span> is equivalent to derivative scaling under normalization to a unit axis, reducing this magnitude bias.</p>
+<p>So the regularizer behaves more consistently when axes have drastically different magnitudes.</p>
+</section>
+<section id="smoothness-transferability-across-similar-problems" class="level3">
+<h3 class="anchored" data-anchor-id="smoothness-transferability-across-similar-problems">Smoothness transferability across similar problems</h3>
+<p>Because of smoothness-count and axis-range normalization, a chosen smoothness value is often reusable across similar datasets and grids in regularizeNd. This is a practical difference from older workflows such as gridfit, where retuning is more sensitive to grid and scale changes.</p>
+</section>
+<section id="exact-zero-penalty-function-class" class="level3">
+<h3 class="anchored" data-anchor-id="exact-zero-penalty-function-class">Exact Zero-Penalty Function Class</h3>
+<p>The most useful structural fact is the null space of the regularizer. If the second derivative along every axis is exactly zero, then the function is linear in each axis.</p>
+<p>That means:</p>
+<ul>
+<li>in 1D, the exact zero-penalty class is affine,</li>
+<li>in 2D, it is bilinear,</li>
+<li>in 3D, it is trilinear,</li>
+<li>in nD, it is multilinear.</li>
+</ul>
+<p>The same nD pattern can be written in more familiar expanded notation as</p>
+<p><span class="math display">\[
+f(x_1,\dots,x_d) = (a_1 + b_1 x_1)(a_2 + b_2 x_2)\cdots(a_d + b_d x_d).
+\]</span></p>
+<p>When expanded, this produces a constant term, every single-axis term, every pairwise product, every triple product, and so on up to the full product of all axes. Each variable appears with power at most 1, so every pure second derivative with respect to a single axis vanishes.</p>
+<p>More generally, the full multilinear null-space class is any linear combination of those expanded terms. The product form above is the most compact way to picture why the regularizer is exactly satisfied by functions that are linear in each coordinate separately.</p>
+<p>This is a better mental model than treating the regularizer as a generic smoothing penalty. The operator is really expressing a preference for grid functions whose directional gradients vary slowly, with exact agreement when the table is multilinear.</p>
+</section>
+</section>
+<section id="solving" class="level2">
+<h2 class="anchored" data-anchor-id="solving">Solving</h2>
+<section id="solve-stage" class="level3">
+<h3 class="anchored" data-anchor-id="solve-stage">Solve stage</h3>
+<p>regularizeNd concatenates rows into</p>
+<p><span class="math display">\[
+A = \begin{bmatrix}A_f\\L_1\\\vdots\\L_n\end{bmatrix},\qquad
+b = \begin{bmatrix}y\\0\\\vdots\\0\end{bmatrix}
+\]</span></p>
+<p>and solves with one of the configured pathways:</p>
+<ul>
+<li>direct backslash on <span class="math inline">\(A\)</span></li>
+<li>normal equations on <span class="math inline">\(A^TA\)</span></li>
+<li>iterative pathways (pcg, symmlq, lsqr), including preconditioning support</li>
+</ul>
+</section>
+<section id="why-the-normal-solver-is-often-faster" class="level3">
+<h3 class="anchored" data-anchor-id="why-the-normal-solver-is-often-faster">Why the Normal Solver Is Often Faster</h3>
+<p>For this sparse least-squares form, constructing and solving normal equations</p>
+<p><span class="math display">\[
+(A^TA)z=A^Tb
+\]</span></p>
+<p>is typically much faster in regularizeNd tests for large grids. The project notes report about 3x speedup versus direct sparse backslash, and the direct project guidance is to try normal first on well-conditioned problems.</p>
+<p>Key reason: sparse structure is preserved well enough that factorization cost is often lower than solving rectangular sparse least squares directly.</p>
+<p>In practice:</p>
+<ul>
+<li>normal-equation solve is commonly handled by sparse Cholesky factorization of symmetric positive-definite systems,</li>
+<li>direct sparse backslash on rectangular <span class="math inline">\(A\)</span> is generally based on sparse QR.</li>
+</ul>
+<p>For regularizeNd-style systems, this normal-equation route is practical to large systems. A useful rule of thumb from project experience is that roughly <span class="math inline">\(2\times 10^6\)</span> grid points can still be solved on a normal 32 GB laptop in about 10 to 60 seconds when the problem is well-conditioned and the sparsity pattern remains favorable.</p>
+<p>Sparse QR remains the safer default when ill-conditioning is a concern, for example very small smoothness values with small amount data and large number of grid points.</p>
+<p>So recommended policy is:</p>
+<ol type="1">
+<li>try normal first for speed on well-conditioned problems,</li>
+<li>use direct sparse QR when rank/conditioning warnings appear,</li>
+<li>above roughly the <span class="math inline">\(2\times 10^6\)</span> grid point scale, or whenever memory becomes the practical limit, switch to iterative pathways.</li>
+</ol>
+<p>For iterative order, the project guidance is:</p>
+<ol type="1">
+<li>start with <code>pcg</code>,</li>
+<li>then try <code>symmlq</code>,</li>
+<li>finally use <code>lsqr</code> as a last resort.</li>
+</ol>
+<p>That ordering mirrors the example notes: <code>pcg</code> and <code>symmlq</code> are usually much faster than <code>lsqr</code>, while <code>lsqr</code> remains valuable when the normal-equation iterative methods struggle.</p>
+<section id="why-incomplete-cholesky-is-the-default-general-preconditioner" class="level4">
+<h4 class="anchored" data-anchor-id="why-incomplete-cholesky-is-the-default-general-preconditioner">Why Incomplete Cholesky Is the Default General Preconditioner</h4>
+<p>The iterative <code>pcg</code> and <code>symmlq</code> paths solve the normal equation</p>
+<p><span class="math display">\[
+(A^TA)z = A^Tb,
+\]</span></p>
+<p>so the coefficient matrix is symmetric and, in the regularized full-rank case, positive definite. That is exactly the setting where incomplete Cholesky is the natural general-purpose preconditioner.</p>
+<p>regularizeNd therefore uses incomplete Cholesky when possible, with diagonal compensation fallback when needed. This is a strong default because it matches the algebraic structure of the matrix being solved rather than treating the system as a generic nonsymmetric least-squares problem.</p>
+</section>
+</section>
+<section id="why-second-derivative-is-the-current-default" class="level3">
+<h3 class="anchored" data-anchor-id="why-second-derivative-is-the-current-default">Why Second Derivative Is the Current Default</h3>
+<p>A second-derivative penalty suppresses rapid changes in gradient. In sparse-data regions, this tends to produce behavior that is linear in each axis, which is often desirable for stable interpolation and pragmatic extrapolation behavior.</p>
+<p>Conceptually, this corresponds to discouraging large values of <span class="math inline">\(\partial^2 f / \partial x_k^2\)</span> for each axis.</p>
+<p>Equivalent gradient view:</p>
+<p><span class="math display">\[
+\frac{\partial^2 f}{\partial x_k^2} = \frac{\partial}{\partial x_k}\left(\frac{\partial f}{\partial x_k}\right),
+\]</span></p>
+<p>so penalizing second derivative is penalizing rapid variation of slope. In other words, it promotes smooth gradients, not necessarily flat gradients.</p>
+<p>This is why the method can keep broad trends while damping jagged high-frequency behavior.</p>
+</section>
+</section>
+<section id="extension" class="level2">
+<h2 class="anchored" data-anchor-id="extension">Extension</h2>
+<section id="mapped-coordinate-extension" class="level3">
+<h3 class="anchored" data-anchor-id="mapped-coordinate-extension">Mapped-Coordinate Extension</h3>
+<p>Another useful extension is to change coordinates before fitting. This is the core idea behind the mapping workflow in Part 6 and in <code>constraint_and_Mapping_Example.m</code>.</p>
+<p>Suppose the original independent variable <span class="math inline">\(x\)</span> produces a difficult relationship, but a monotone transformed coordinate</p>
+<p><span class="math display">\[
+u = g(x)
+\]</span></p>
+<p>makes the surface smoother. Then solve for the lookup table in <span class="math inline">\(u\)</span> rather than directly in <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[
+\min_z \left\|A_f(g(x))z-y\right\|_2^2 + \sum_k \left\|L_k z\right\|_2^2.
+\]</span></p>
+<p>After solving, evaluation is just composition: map the query point into the transformed coordinate and interpolate there.</p>
+<p>The advantage is not only that the fitted table can become smoother. It also makes many dual or inverse formulations much easier:</p>
+<ul>
+<li>if the forward map is sharp or badly scaled, a transformed forward coordinate may become closer to multilinear,</li>
+<li>if an inverse map is smoother and monotone, fit the inverse table directly instead of forcing the rougher forward map,</li>
+<li>if a log, semilog, or custom monotone warp straightens one axis, the same sparse least-squares machinery still applies with no conceptual change to the solver.</li>
+</ul>
+<p>This is powerful because regularizeNd operates on table values after discretization. Once the coordinates are mapped, the fidelity and regularization machinery is unchanged. You have effectively changed the problem geometry without changing the optimization backbone.</p>
+<p>In practice, that means the same matrix-assembly pattern can support:</p>
+<ul>
+<li>smoother forward lookup tables,</li>
+<li>inverse lookup tables when the inverse problem is better conditioned,</li>
+<li>dual formulations where a physically awkward variable is replaced by a more regular latent coordinate.</li>
+</ul>
+<p>That flexibility is one of the strongest practical arguments for a lookup-table formulation: coordinate design, regularizer design, and constraint design can all be modified while keeping the core sparse least-squares solve recognizable.</p>
+</section>
+<section id="constrained-least-squares-extension" class="level3">
+<h3 class="anchored" data-anchor-id="constrained-least-squares-extension">Constrained Least-Squares Extension</h3>
+<p>Another important extension is constraint handling. Because regularizeNd already builds a sparse linear least-squares problem in the lookup-table values themselves, adding many useful constraints is straightforward.</p>
+<p>The unconstrained stacked system is</p>
+<p><span class="math display">\[
+\min_z \|Az-b\|_2^2.
+\]</span></p>
+<p>Linear constraints extend this naturally to</p>
+<p><span class="math display">\[
+\min_z \|Az-b\|_2^2
+\quad\text{subject to}\quad
+C_{eq}z=d_{eq},\qquad Cz\le d.
+\]</span></p>
+<p>This is attractive because the unknowns are grid values, not parameters of a nonlinear symbolic model. The underlying physical relationship may be nonlinear, but once it is discretized onto the grid, many desired behaviors become linear equalities or inequalities in the unknown table entries.</p>
+<p>Examples that discretize cleanly include:</p>
+<ul>
+<li>monotonicity constraints,</li>
+<li>upper and lower bounds on the table values,</li>
+<li>bounded slope constraints,</li>
+<li>convexity or concavity constraints via finite differences,</li>
+<li>region-specific tie constraints or anchor conditions.</li>
+</ul>
+<p>In other words, the function represented by the table can be nonlinear in the physical variables while the optimization over table entries remains a convex constrained least-squares problem.</p>
+<p>That is a major practical advantage of the lookup-table formulation: global solutions are still easy to compute even when the modeled relationship itself is nonlinear.</p>
+<section id="why-this-works-well-in-regularizend" class="level4">
+<h4 class="anchored" data-anchor-id="why-this-works-well-in-regularizend">Why this works well in regularizeNd</h4>
+<p>The matrix structure is already sparse and local:</p>
+<ul>
+<li>fidelity rows only touch nearby interpolation nodes,</li>
+<li>smoothness rows only touch local stencil nodes,</li>
+<li>many useful constraints also only touch local neighboring nodes.</li>
+</ul>
+<p>So the constrained problem preserves the same sparse-operator flavor as the unconstrained one.</p>
+<p>The current codebase already reflects this extension path through <code>monotonicConstraint.m</code> and <code>lsqConstrainedAlternative.m</code>.</p>
+</section>
+<section id="discretized-nonlinear-constraints" class="level4">
+<h4 class="anchored" data-anchor-id="discretized-nonlinear-constraints">Discretized nonlinear constraints</h4>
+<p>Even some constraints that are nonlinear when stated on a continuous function become easy to encode after discretization.</p>
+<p>For example, statements like</p>
+<ul>
+<li>“the table should be monotone increasing in flow”,</li>
+<li>“the slope should stay nonnegative in this operating region”,</li>
+<li>“the curvature sign should not change here”,</li>
+</ul>
+<p>can be enforced using finite-difference relations on neighboring grid entries. Once written in those discrete variables, the solve often remains linear or convex.</p>
+<p>That means one can incorporate substantial physical structure without giving up the ability to compute a global optimum reliably.</p>
+</section>
+</section>
+<section id="third-order-regularization-extension" class="level3">
+<h3 class="anchored" data-anchor-id="third-order-regularization-extension">Third-Order Regularization Extension</h3>
+<p>This section is intentionally isolated as an extension concept, not a required default path.</p>
+<section id="when-a-third-derivative-is-more-appropriate" class="level4">
+<h4 class="anchored" data-anchor-id="when-a-third-derivative-is-more-appropriate">When a Third Derivative Is More Appropriate</h4>
+<p>If one axis is expected to be near-parabolic across the operating region, second-derivative penalization can over-flatten physically meaningful gradient change or require a larger number of grid points. In that case, penalizing the third derivative along that axis can be a better structural prior.</p>
+<p>Typical engineering pattern: pressure-flow-position couplings where one direction exhibits approximately quadratic trends over relevant operating windows. i.e.&nbsp;Pressure as the output and flow as input axis, using a third-derivative penalty implies a parabolic relationship between pressure flow implicitly encoded in the regularizer and thus extrapolation behavior encodes the expected parabolic trend.</p>
+<p>Penalizing third derivative encourages piecewise-quadratic behavior by discouraging rapid changes of second derivative. Equivalently, it allows gradients to vary approximately linearly instead of forcing each axis toward multilinear behavior.</p>
+</section>
+<section id="swapping-the-regularizer-operator" class="level4">
+<h4 class="anchored" data-anchor-id="swapping-the-regularizer-operator">Swapping the Regularizer Operator</h4>
+<p>The regularizer should be treated as an operator design choice. A practical mixed-order objective is</p>
+<p><span class="math display">\[
+\min_z\;\left\|A_f z - y\right\|_2^2
++ \sum_{k\in S_2} \alpha_k^2\left\|L_k^{(2)}z\right\|_2^2
++ \sum_{k\in S_3} \beta_k^2\left\|L_k^{(3)}z\right\|_2^2,
+\]</span></p>
+<p>with <span class="math inline">\(S_2\cup S_3=\{1,\dots,n\}\)</span> and <span class="math inline">\(S_2\cap S_3=\emptyset\)</span>.</p>
+<p>Interpretation:</p>
+<ul>
+<li>axes in <span class="math inline">\(S_2\)</span>: linear-trend prior in sparse regions</li>
+<li>axes in <span class="math inline">\(S_3\)</span>: quadratic-trend prior in sparse regions</li>
+</ul>
+</section>
+<section id="numerical-implications-of-third-derivative-blocks" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-implications-of-third-derivative-blocks">Numerical Implications of Third Derivative Blocks</h4>
+<p>Expected impacts when moving from order 2 to order 3 on selected axes:</p>
+<ul>
+<li>stronger sensitivity to local spacing quality along that axis</li>
+<li>potential condition-number increase in the assembled normal matrix</li>
+<li>greater need for preconditioning quality checks in iterative solves</li>
+<li>higher risk of oscillatory behavior if data are sparse and weight is too small</li>
+</ul>
+<p>These are manageable if derivative order is used selectively and validated against physical priors.</p>
+</section>
+<section id="practical-selection-rule-second-vs-third-derivative" class="level4">
+<h4 class="anchored" data-anchor-id="practical-selection-rule-second-vs-third-derivative">Practical Selection Rule: Second vs Third Derivative</h4>
+<p>Use second derivative on an axis when:</p>
+<ul>
+<li>local linear continuation is plausible in sparse zones</li>
+<li>monotonic or gently varying behavior dominates</li>
+</ul>
+<p>Use third derivative on an axis when:</p>
+<ul>
+<li>local quadratic structure is expected from physics or mechanism</li>
+<li>preserving linearly changing gradients is important for prediction quality</li>
+</ul>
+<p>Use mixed order when:</p>
+<ul>
+<li>different axes have different expected structure</li>
+<li>one axis is near-parabolic while others are not</li>
+</ul>
+</section>
+<section id="validation-protocol-for-mixed-order-design" class="level4">
+<h4 class="anchored" data-anchor-id="validation-protocol-for-mixed-order-design">Validation Protocol for Mixed-Order Design</h4>
+<ol type="1">
+<li>Hold scattered data, grid, and interpolation method fixed.</li>
+<li>Compare operator maps: all-second vs mixed-order candidate sets.</li>
+<li>Report:</li>
+</ol>
+<ul>
+<li>train residual norm</li>
+<li>physically relevant slice behavior</li>
+<li>edge and extrapolation behavior near sparse boundaries</li>
+<li>solver convergence statistics and runtime</li>
+</ul>
+<ol start="4" type="1">
+<li>Select the lowest-complexity operator map that meets physical plausibility and prediction error targets.</li>
+</ol>
+</section>
+<section id="limits-and-scope" class="level4">
+<h4 class="anchored" data-anchor-id="limits-and-scope">Limits and Scope</h4>
+<p>This article describes a mathematically and computationally consistent extension pathway. It does not claim that mixed-order regularization is always better. The benefit depends on whether derivative-order priors match the underlying system.</p>
+</section>
+<section id="implementation-path-for-regularizend" class="level4">
+<h4 class="anchored" data-anchor-id="implementation-path-for-regularizend">Implementation Path for regularizeNd</h4>
+<p>This section outlines a direct extension strategy without changing the external conceptual model.</p>
+<ol type="1">
+<li>Extend operator construction in regularizeNdMatrices:</li>
+</ol>
+<ul>
+<li>add derivative-order control per axis, for example an integer vector with values 2 or 3</li>
+<li>keep scalar-to-vector expansion behavior consistent with current smoothness handling</li>
+</ul>
+<ol start="2" type="1">
+<li>Add third-derivative stencil generator:</li>
+</ol>
+<ul>
+<li>keep existing secondDerivativeWeights for order 2</li>
+<li>add thirdDerivativeWeights for order 3 on non-uniform grids</li>
+<li>require minimum grid points per axis based on derivative order (order 3 requires at least 4 points)</li>
+</ul>
+<ol start="3" type="1">
+<li>Generalize row indexing logic:</li>
+</ol>
+<ul>
+<li>current second-derivative blocks use 3-point stencils and 3 column indices per row</li>
+<li>third-derivative blocks will use 4-point stencils and 4 column indices per row</li>
+<li>compute equation counts per axis as <span class="math inline">\(n_k-\text{order}\)</span> rather than hard-coded <span class="math inline">\(n_k-2\)</span></li>
+</ul>
+<ol start="4" type="1">
+<li>Preserve scaling policy:</li>
+</ol>
+<ul>
+<li>retain smoothness-equation normalization and axis scaling for both derivative orders</li>
+<li>tune separate per-axis weights when combining orders, because operator magnitudes differ</li>
+</ul>
+<ol start="5" type="1">
+<li>Keep solver interface unchanged initially:</li>
+</ol>
+<ul>
+<li>output remains stacked sparse least-squares system</li>
+<li>existing direct and iterative solve paths remain valid</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="variables-and-notation" class="level2">
+<h2 class="anchored" data-anchor-id="variables-and-notation">Variables and Notation</h2>
+<p>This section defines symbols used across the fidelity, regularization, solving, and extension equations.</p>
+<section id="core-unknowns-and-data" class="level3">
+<h3 class="anchored" data-anchor-id="core-unknowns-and-data">Core Unknowns and Data</h3>
+<ul>
+<li><span class="math inline">\(z\)</span>: vectorized lookup-table unknowns (all grid values stacked into one column vector).</li>
+<li><span class="math inline">\(Z\)</span>: nD lookup table before vectorization.</li>
+<li><span class="math inline">\(y\)</span>: measured scattered-data values used by the fidelity equations.</li>
+<li><span class="math inline">\(x\)</span>: original independent variable (or coordinate vector) in mapped-coordinate discussions.</li>
+<li><span class="math inline">\(u = g(x)\)</span>: mapped coordinate after monotone transformation.</li>
+</ul>
+</section>
+<section id="fidelity-terms" class="level3">
+<h3 class="anchored" data-anchor-id="fidelity-terms">Fidelity Terms</h3>
+<ul>
+<li><span class="math inline">\(A_f\)</span>: fidelity (interpolation-consistency) matrix.</li>
+<li><span class="math inline">\(i\)</span>: scattered sample index.</li>
+<li><span class="math inline">\(j\)</span>: grid-node index in a local interpolation stencil.</li>
+<li><span class="math inline">\(\mathcal{N}_i\)</span>: interpolation stencil (neighbor set) for sample <span class="math inline">\(i\)</span>.</li>
+<li><span class="math inline">\(w_{ij}\)</span>: interpolation weight of node <span class="math inline">\(j\)</span> for sample <span class="math inline">\(i\)</span>.</li>
+<li><span class="math inline">\(t_i\)</span>: 1D local interpolation fraction between <span class="math inline">\(x_j\)</span> and <span class="math inline">\(x_{j+1}\)</span>.</li>
+<li><span class="math inline">\(t_x, t_y\)</span>: local 2D interpolation fractions within one cell.</li>
+<li><span class="math inline">\(w_{00}, w_{10}, w_{01}, w_{11}\)</span>: bilinear corner weights in 2D linear interpolation.</li>
+</ul>
+</section>
+<section id="regularization-terms" class="level3">
+<h3 class="anchored" data-anchor-id="regularization-terms">Regularization Terms</h3>
+<ul>
+<li><span class="math inline">\(L_k\)</span>: regularization matrix block for axis <span class="math inline">\(k\)</span>.</li>
+<li><span class="math inline">\(D_k^{(2)}\)</span>: unscaled second-derivative operator for axis <span class="math inline">\(k\)</span>.</li>
+<li><span class="math inline">\(L_k^{(2)}, L_k^{(3)}\)</span>: second- and third-derivative regularization operators.</li>
+<li><span class="math inline">\(s_k\)</span>: smoothness weight for axis <span class="math inline">\(k\)</span> in the second-derivative formulation.</li>
+<li><span class="math inline">\(\alpha_k, \beta_k\)</span>: mixed-order regularization weights for second- and third-derivative terms.</li>
+<li><span class="math inline">\(S_2, S_3\)</span>: axis index sets assigned to second- or third-derivative regularization.</li>
+<li><span class="math inline">\(N_f\)</span>: number of fidelity equations (rows in <span class="math inline">\(A_f\)</span>).</li>
+<li><span class="math inline">\(N_{s,k}\)</span>: number of smoothness equations for axis <span class="math inline">\(k\)</span>.</li>
+<li><span class="math inline">\(x_{k,\max}, x_{k,\min}\)</span>: max/min coordinate values along axis <span class="math inline">\(k\)</span>.</li>
+</ul>
+</section>
+<section id="system-assembly-and-constrained-form" class="level3">
+<h3 class="anchored" data-anchor-id="system-assembly-and-constrained-form">System Assembly and Constrained Form</h3>
+<ul>
+<li><span class="math inline">\(A\)</span>: full stacked least-squares matrix, typically <span class="math inline">\([A_f; L_1; \dots; L_n]\)</span>.</li>
+<li><span class="math inline">\(b\)</span>: stacked right-hand side, typically <span class="math inline">\([y; 0; \dots; 0]\)</span>.</li>
+<li><span class="math inline">\(C_{eq}, d_{eq}\)</span>: linear equality constraint matrix and target vector.</li>
+<li><span class="math inline">\(C, d\)</span>: linear inequality constraint matrix and bound vector in <span class="math inline">\(Cz \le d\)</span>.</li>
+</ul>
+</section>
+<section id="grid-and-indexing-symbols" class="level3">
+<h3 class="anchored" data-anchor-id="grid-and-indexing-symbols">Grid and Indexing Symbols</h3>
+<ul>
+<li><span class="math inline">\(d\)</span>: number of dimensions (axes).</li>
+<li><span class="math inline">\(n\)</span>: number of axes (used interchangeably with <span class="math inline">\(d\)</span> in some equations).</li>
+<li><span class="math inline">\(n_k\)</span>: number of grid points on axis <span class="math inline">\(k\)</span>.</li>
+<li><span class="math inline">\((n_1,\dots,n_d)\)</span>: full grid shape.</li>
+<li><span class="math inline">\(N = \prod_{m=1}^{d} n_m\)</span>: total number of unknowns in the vectorized table.</li>
+<li><span class="math inline">\((i_1,\dots,i_d)\)</span>: nD subscript tuple.</li>
+<li><span class="math inline">\(\operatorname{ind}(i_1,\dots,i_d)\)</span>: MATLAB-style 1-based linear-index mapping.</li>
+<li><span class="math inline">\(m, r\)</span>: dummy product/summation indices used in index formulas.</li>
+</ul>
+</section>
+<section id="local-stencil-coordinates-and-values" class="level3">
+<h3 class="anchored" data-anchor-id="local-stencil-coordinates-and-values">Local Stencil Coordinates and Values</h3>
+<ul>
+<li><span class="math inline">\(x_{i-1}, x_i, x_{i+1}\)</span>: adjacent axis coordinates in a second-derivative stencil.</li>
+<li><span class="math inline">\(z_{i-1}, z_i, z_{i+1}\)</span>: corresponding unknown values at adjacent stencil nodes.</li>
+<li><span class="math inline">\(x_j, x_{j+1}\)</span>: bracketing grid nodes for a 1D interpolation segment.</li>
+</ul>
+</section>
+<section id="function-class-coefficients" class="level3">
+<h3 class="anchored" data-anchor-id="function-class-coefficients">Function-Class Coefficients</h3>
+<ul>
+<li><span class="math inline">\(a_1,\dots,a_d\)</span> and <span class="math inline">\(b_1,\dots,b_d\)</span>: coefficients in the multilinear null-space form <span class="math inline">\(f(x_1,\dots,x_d)=\prod_{q=1}^{d}(a_q+b_qx_q)\)</span>.</li>
+</ul>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-derrico2016gridfit" class="csl-entry" role="listitem">
+D’Errico, John. 2016. <em>Surface Fitting Using Gridfit</em>. Released. <a href="https://www.mathworks.com/matlabcentral/fileexchange/8998-surface-fitting-using-gridfit">https://www.mathworks.com/matlabcentral/fileexchange/8998-surface-fitting-using-gridfit</a>.
+</div>
+<div id="ref-jamal2014regularizedata3d" class="csl-entry" role="listitem">
+Jamal. 2014. <em>RegularizeData3D</em>. Released. <a href="https://www.mathworks.com/matlabcentral/fileexchange/46223-regularizedata3d">https://www.mathworks.com/matlabcentral/fileexchange/46223-regularizedata3d</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
