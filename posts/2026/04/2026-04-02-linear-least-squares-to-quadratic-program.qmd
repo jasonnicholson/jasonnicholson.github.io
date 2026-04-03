@@ -1,0 +1,74 @@
+---
+title: "Linear Least Squares to Quadratic Program"
+date: 2026-04-02
+categories: [linear algebra, optimization, quadratic programming]
+tags: [linear least squares, quadratic program, optimization]
+---
+
+This the derivation from a constrained linear least squares problem to a quadratic program.
+
+## Given
+
+$$
+\begin{aligned}
+\underbrace{J}_{ 1 \times 1} &= \frac{1}{2}||\underbrace{C}_{m \times n} \underbrace{x}_{n \times 1} -\underbrace{d}_{m \times 1}||_2^2 \\ 
+\underbrace{C_{ineq}}_{p \times n} &\underbrace{x}_{n \times 1} \leq \underbrace{d_{ineq}}_{p \times 1} \\
+\underbrace{C_{eq}}_{q \times n} &\underbrace{x}_{n \times 1} = \underbrace{d_{eq}}_{q \times 1} \\
+\underbrace{x_{lb}}_{n \times 1} \leq &\underbrace{x}_{n \times 1} \leq \underbrace{x_{ub}}_{n \times 1}
+\end{aligned}
+$$
+
+## Goal 
+Convert to the quadratic program form:
+
+$$
+\begin{aligned}
+J &= \frac{1}{2}x^T P x + q^T x\\
+l &\leq Ax \leq u
+\end{aligned}
+$$
+
+## Derivation
+
+### 1. Expand the linear least squares cost function:
+
+$$
+\begin{aligned}
+J &= \frac{1}{2}||Cx-d||_2^2 \\ 
+  &= \frac{1}{2}(Cx-d)^T(Cx-d) \\
+  &= \frac{1}{2}(x^TC^T-d^T)(Cx-d) \\
+  &= \frac{1}{2}(x^TC^TCx - x^TC^Td - d^TCx + d^Td) \\
+  &= \frac{1}{2} (x^TC^TCx - 2d^TCx + d^Td)
+\end{aligned}
+$$
+
+Compare to $\frac{1}{2}x^TPx + q^Tx$.  
+
+$$
+\begin{aligned}
+\underbrace{P}_{n \times n} &= C^TC \\
+\underbrace{q}_{n \times 1} &= -C^Td \\ 
+\end{aligned}
+$$
+
+We drop the constant term because it doesn't affect the optim of the problem.
+
+### 2. Convert the constraints the $l \leq Ax \leq u$ form used in quadratic programming:
+
+$$
+\begin{aligned}
+-\infty \leq C_{ineq} &x \leq d_{ineq} \\
+d_{eq} = C_{eq} &x = d_{eq} \\
+x_{lb} \leq &x \leq x_{ub}
+\end{aligned}
+$$
+
+can be written as 
+
+$$
+\begin{aligned}
+\underbrace{l}_{(p+q+n) \times 1} &= \begin{bmatrix} -\infty \\ b_{eq} \\ x_{lb} \end{bmatrix}, \quad
+\underbrace{u}_{(p+q+n) \times 1} = \begin{bmatrix} b_{ineq} \\ b_{eq} \\ x_{ub} \end{bmatrix}, \quad
+\underbrace{A}_{(p+q+n) \times n} = \begin{bmatrix} C_{ineq} \\ C_{eq} \\ I \end{bmatrix}
+\end{aligned}
+$$
