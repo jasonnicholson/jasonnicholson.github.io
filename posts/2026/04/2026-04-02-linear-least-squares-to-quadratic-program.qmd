@@ -5,9 +5,11 @@ categories: [linear algebra, optimization, quadratic programming]
 tags: [linear least squares, quadratic program, optimization]
 ---
 
-This the derivation from a constrained linear least squares problem to a quadratic program.
+## Constrained Linear Least Squares to Quadratic Program
 
-## Given
+This is the derivation from a constrained linear least squares problem to a quadratic program.
+
+### Given
 
 $$
 \begin{aligned}
@@ -18,7 +20,7 @@ $$
 \end{aligned}
 $$
 
-## Goal 
+### Goal 
 Convert to the quadratic program form:
 
 $$
@@ -28,9 +30,9 @@ l &\leq Ax \leq u
 \end{aligned}
 $$
 
-## Derivation
+### Derivation
 
-### 1. Expand the linear least squares cost function:
+#### 1. Expand the linear least squares cost function:
 
 $$
 \begin{aligned}
@@ -53,7 +55,7 @@ $$
 
 We drop the constant term because it doesn't affect the optim of the problem.
 
-### 2. Convert the constraints the $l \leq Ax \leq u$ form used in quadratic programming:
+#### 2. Convert the constraints the $l \leq Ax \leq u$ form used in quadratic programming:
 
 $$
 \begin{aligned}
@@ -67,8 +69,135 @@ can be written as
 
 $$
 \begin{aligned}
-\underbrace{l}_{(p+q+n) \times 1} &= \begin{bmatrix} -\infty \\ b_{eq} \\ x_{lb} \end{bmatrix}, \quad
-\underbrace{u}_{(p+q+n) \times 1} = \begin{bmatrix} b_{ineq} \\ b_{eq} \\ x_{ub} \end{bmatrix}, \quad
+\underbrace{l}_{(p+q+n) \times 1} &= \begin{bmatrix} -\infty \\ d_{eq} \\ x_{lb} \end{bmatrix}, \quad
+\underbrace{u}_{(p+q+n) \times 1} = \begin{bmatrix} d_{ineq} \\ d_{eq} \\ x_{ub} \end{bmatrix}, \quad
 \underbrace{A}_{(p+q+n) \times n} = \begin{bmatrix} C_{ineq} \\ C_{eq} \\ I \end{bmatrix}
 \end{aligned}
 $$
+
+## A better approach using quadratic programming
+
+Following the [OSQP least-squares example](https://osqp.org/docs/examples/least-squares.html), introduce the slack variable
+
+$$
+\underbrace{y}_{m \times 1} = Cx - d,
+$$
+
+so the cost $\frac{1}{2}\|Cx-d\|_2^2 = \frac{1}{2}y^Ty$. The problem becomes
+
+$$
+\begin{aligned}
+\min_{x,\,y} \quad &\frac{1}{2} y^T y \\
+\text{s.t.} \quad & y = Cx - d \\
+& C_{ineq}\,x \leq d_{ineq} \\
+& C_{eq}\,x = d_{eq} \\
+& x_{lb} \leq x \leq x_{ub}
+\end{aligned}
+$$
+
+Stack the variables into $\underbrace{z}_{(n+m)\times 1} = \begin{bmatrix} x \\ y \end{bmatrix}$. Then the QP matrices are
+
+$$
+\begin{aligned}
+\underbrace{P}_{(n+m)\times(n+m)} &= \begin{bmatrix} 0_{n\times n} & 0 \\ 0 & I_{m\times m} \end{bmatrix}, \qquad
+\underbrace{q}_{(n+m)\times 1} = 0
+\end{aligned}
+$$
+
+and the constraint $l \leq Az \leq u$ is formed by stacking all constraints:
+
+$$
+\underbrace{A}_{(m+p+q+n)\times(n+m)} = \begin{bmatrix} C & -I_m \\ C_{ineq} & 0 \\ C_{eq} & 0 \\ I_n & 0 \end{bmatrix}, \qquad
+\underbrace{l}_{(m+p+q+n)\times 1} = \begin{bmatrix} d \\ -\infty \\ d_{eq} \\ x_{lb} \end{bmatrix}, \qquad
+\underbrace{u}_{(m+p+q+n)\times 1} = \begin{bmatrix} d \\ d_{ineq} \\ d_{eq} \\ x_{ub} \end{bmatrix}
+$$
+
+The advantage over the direct $P = C^TC$ formulation is 
+
+- $P = \operatorname{blkdiag}(0, I)$ is sparser and already in a standard block-diagonal form that many QP solvers (e.g. OSQP) exploit efficiently. 
+- This formulation has the advantage that the condition number scales with $C$ rather than $C^TC$, so it is not squared as in the direct formulation, which can improve numerical stability of the QP solver. 
+
+The disadvantages are
+
+- Not all solvers can handle this because $P$ is semidefinite rather than positive definite. OSQP is a solver built to handle this kind of semidefinite $P$ efficiently. `quadprog` in MATLAB, for example, requires $P$ to be positive definite and cannot handle this formulation.
+- This is a larger problem than the original because it introduces the slack variable $y$, so the number of variables increases from $n$ to $n+m$.
+
+## Using the QR factorization to solve the equality constrained least squares problem
+
+For the equality constrained least squares problem
+
+$$
+\min_x \frac{1}{2}||Cx-d||_2^2 \quad \text{s.t.} \quad C_{eq}x = d_{eq},
+$$
+
+The QR decomposition of $C_{eq}^T$ can be used to transform the problem into an unconstrained least squares problem in a reduced set of variables.  Specifically, if 
+
+$$
+\begin{split}
+\underbrace{C_{eq}^T}_{n \times q} = \underbrace{Q}_{n \times q} \underbrace{R}_{q \times q} \\
+\underbrace{C_{eq}^T}_{n \times q} = \begin{bmatrix} \underbrace{Q_1}_{n \times q} & \underbrace{Q_2}_{n \times (n-q)} \end{bmatrix} \begin{bmatrix} \underbrace{R_1}_{q \times q} \\ \underbrace{0}_{(n-q) \times q} \end{bmatrix}
+\end{split}
+$$
+
+where $Q$ is orthogonal and $R$ is upper triangular. Then, define: 
+
+$$
+\begin{aligned}
+x &= \underbrace{Q}_{n \times q} \begin{bmatrix} \underbrace{y}_{q \times 1} \\ \underbrace{z}_{(n-q) \times 1} \end{bmatrix} \\
+x &= \begin{bmatrix} \underbrace{Q_1}_{n \times q} & \underbrace{Q_2}_{n \times (n-q)} \end{bmatrix} \begin{bmatrix} \underbrace{y}_{q \times 1} \\ \underbrace{z}_{(n-q) \times 1} \end{bmatrix}
+\end{aligned}
+$$
+
+- $y$ is in the range space of $C_{eq}^T$. $Q_1y$ satisfies the equality constraints.
+- $z$ is in the null space of $C_{eq}^T$. $Q_2z$ does not affect the equality constraints. $z$ is the free variable that can be used in the unconstrained optimization problem.
+
+$$
+\begin{split}
+C_{eq}Q \begin{bmatrix} y \\ z \end{bmatrix} = d_{eq} \\
+\begin{bmatrix}R_1^T & 0 \end{bmatrix}Q^T Q \begin{bmatrix} y \\ z \end{bmatrix} = d_{eq}
+\end{split}
+$$
+
+$Q^T Q = I$ disappears.
+
+$$
+\begin{aligned}
+\begin{bmatrix}R_1^T & 0 \end{bmatrix} \begin{bmatrix} y \\ z \end{bmatrix} &= d_{eq} \\
+R_1^T y &= d_{eq} \\
+y &= R_1^{T} \backslash d_{eq}
+\end{aligned}
+$$
+
+The unconstrained least squares problem in $z$ is then
+
+$$
+\begin{split}
+\min_z \frac{1}{2} \left\| C Q \begin{bmatrix} y \\ z \end{bmatrix} - d \right\|_2^2 \\
+\min_z \frac{1}{2} \left\| C \begin{bmatrix} Q_1 & Q_2 \end{bmatrix} \begin{bmatrix} y \\ z \end{bmatrix} - d \right\|_2^2 \\
+\min_z \frac{1}{2} \left\| CQ_1y + CQ_2z - d \right\|_2^2 \\
+\min_z \frac{1}{2} \left\| CQ_2z - (d- CQ_1y) \right\|_2^2 \\
+\end{split}
+$$
+
+The downside of this method is the a large sparse problem requires a full $Q$ which is not sparse. This method should only used for small to medium sized problems where forming the full $Q$ is computationally feasible. The upside is that when iterating in the optimization problem, the equality constraints are automatically satisfied.
+
+To restate the optimization in the new coordinate system:
+
+$$
+\begin{split}
+\min_z \frac{1}{2} \left\| CQ_2z - (d- CQ_1y) \right\|_2^2 \\
+Q = \begin{bmatrix} Q_1 & Q_2 \end{bmatrix} \\
+x = Q \begin{bmatrix} y \\ z \end{bmatrix}
+\end{split}
+$$
+
+In code:
+
+```matlab
+[Q,R] = qr(C_eq');
+Q1 = Q(:,1:q);
+Q2 = Q(:,q+1:end);
+y = R' \ d_eq;
+z = (C*Q2) \ (d - C*Q1*y);
+x = Q*[y;z];
+```
