@@ -24,6 +24,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -452,22 +487,63 @@ x_{lb} \leq &amp;x \leq x_{ub}
 <p><span class="math display">\[
 \min_x \frac{1}{2}||Cx-d||_2^2 \quad \text{s.t.} \quad C_{eq}x = d_{eq},
 \]</span></p>
-<p>one can use the QR decomposition of <span class="math inline">\(C_{eq}^T\)</span> to transform the problem into an unconstrained least squares problem in a reduced set of variables. Specifically, if</p>
+<p>The QR decomposition of <span class="math inline">\(C_{eq}^T\)</span> can be used to transform the problem into an unconstrained least squares problem in a reduced set of variables. Specifically, if</p>
 <p><span class="math display">\[
-C_{eq}^T = Q \begin{bmatrix} R \\ 0 \end{bmatrix},
+\begin{split}
+\underbrace{C_{eq}^T}_{n \times q} = \underbrace{Q}_{n \times q} \underbrace{R}_{q \times q} \\
+\underbrace{C_{eq}^T}_{n \times q} = \begin{bmatrix} \underbrace{Q_1}_{n \times q} &amp; \underbrace{Q_2}_{n \times (n-q)} \end{bmatrix} \begin{bmatrix} \underbrace{R_1}_{q \times q} \\ \underbrace{0}_{(n-q) \times q} \end{bmatrix}
+\end{split}
 \]</span></p>
-<p>where <span class="math inline">\(Q\)</span> is orthogonal and <span class="math inline">\(R\)</span> is upper triangular, then by defining <span class="math inline">\(x = Q \begin{bmatrix} y \\ z \end{bmatrix}\)</span>, the equality constraints can be satisfied by choosing <span class="math inline">\(y = R^{-T} d_{eq}\)</span>, leaving an unconstrained least squares problem in <span class="math inline">\(z\)</span>.</p>
+<p>where <span class="math inline">\(Q\)</span> is orthogonal and <span class="math inline">\(R\)</span> is upper triangular. Then, define:</p>
+<p><span class="math display">\[
+\begin{aligned}
+x &amp;= \underbrace{Q}_{n \times q} \begin{bmatrix} \underbrace{y}_{q \times 1} \\ \underbrace{z}_{(n-q) \times 1} \end{bmatrix} \\
+x &amp;= \begin{bmatrix} \underbrace{Q_1}_{n \times q} &amp; \underbrace{Q_2}_{n \times (n-q)} \end{bmatrix} \begin{bmatrix} \underbrace{y}_{q \times 1} \\ \underbrace{z}_{(n-q) \times 1} \end{bmatrix}
+\end{aligned}
+\]</span></p>
 <ul>
-<li><span class="math inline">\(y\)</span> is in the range space of <span class="math inline">\(C_{eq}^T\)</span>.</li>
-<li><span class="math inline">\(z\)</span> is in the null space of <span class="math inline">\(C_{eq}^T\)</span>.</li>
+<li><span class="math inline">\(y\)</span> is in the range space of <span class="math inline">\(C_{eq}^T\)</span>. <span class="math inline">\(Q_1y\)</span> satisfies the equality constraints.</li>
+<li><span class="math inline">\(z\)</span> is in the null space of <span class="math inline">\(C_{eq}^T\)</span>. <span class="math inline">\(Q_2z\)</span> does not affect the equality constraints. <span class="math inline">\(z\)</span> is the free variable that can be used in the unconstrained optimization problem.</li>
 </ul>
+<p><span class="math display">\[
+\begin{split}
+C_{eq}Q \begin{bmatrix} y \\ z \end{bmatrix} = d_{eq} \\
+\begin{bmatrix}R_1^T &amp; 0 \end{bmatrix}Q^T Q \begin{bmatrix} y \\ z \end{bmatrix} = d_{eq}
+\end{split}
+\]</span></p>
+<p><span class="math inline">\(Q^T Q = I\)</span> disappears.</p>
+<p><span class="math display">\[
+\begin{aligned}
+\begin{bmatrix}R_1^T &amp; 0 \end{bmatrix} \begin{bmatrix} y \\ z \end{bmatrix} &amp;= d_{eq} \\
+R_1^T y &amp;= d_{eq} \\
+y &amp;= R_1^{T} \backslash d_{eq}
+\end{aligned}
+\]</span></p>
 <p>The unconstrained least squares problem in <span class="math inline">\(z\)</span> is then</p>
 <p><span class="math display">\[
-\min_z \frac{1}{2} \left\| C Q \begin{bmatrix} R^{-T} d_{eq} \\ z \end{bmatrix} - d \right\|_2^2,
+\begin{split}
+\min_z \frac{1}{2} \left\| C Q \begin{bmatrix} y \\ z \end{bmatrix} - d \right\|_2^2 \\
+\min_z \frac{1}{2} \left\| C \begin{bmatrix} Q_1 &amp; Q_2 \end{bmatrix} \begin{bmatrix} y \\ z \end{bmatrix} - d \right\|_2^2 \\
+\min_z \frac{1}{2} \left\| CQ_1y + CQ_2z - d \right\|_2^2 \\
+\min_z \frac{1}{2} \left\| CQ_2z - (d- CQ_1y) \right\|_2^2 \\
+\end{split}
 \]</span></p>
+<p>The downside of this method is the a large sparse problem requires a full <span class="math inline">\(Q\)</span> which is not sparse. This method should only used for small to medium sized problems where forming the full <span class="math inline">\(Q\)</span> is computationally feasible. The upside is that when iterating in the optimization problem, the equality constraints are automatically satisfied.</p>
+<p>To restate the optimization in the new coordinate system:</p>
 <p><span class="math display">\[
-\min_z \frac{1}{2} \left\| CQ z + (CQR^{-T} d_{eq}- d) \right\|_2^2,
+\begin{split}
+\min_z \frac{1}{2} \left\| CQ_2z - (d- CQ_1y) \right\|_2^2 \\
+Q = \begin{bmatrix} Q_1 &amp; Q_2 \end{bmatrix} \\
+x = Q \begin{bmatrix} y \\ z \end{bmatrix}
+\end{split}
 \]</span></p>
+<p>In code:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>[<span class="va">Q</span><span class="op">,</span><span class="va">R</span>] <span class="op">=</span> <span class="va">qr</span>(<span class="va">C_eq</span><span class="op">'</span>)<span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">Q1</span> <span class="op">=</span> <span class="va">Q</span>(<span class="op">:,</span><span class="fl">1</span><span class="op">:</span><span class="va">q</span>)<span class="op">;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="va">Q2</span> <span class="op">=</span> <span class="va">Q</span>(<span class="op">:,</span><span class="va">q</span><span class="op">+</span><span class="fl">1</span><span class="op">:</span><span class="kw">end</span>)<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="va">y</span> <span class="op">=</span> <span class="va">R</span><span class="op">'</span> <span class="op">\</span> <span class="va">d_eq</span><span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="va">z</span> <span class="op">=</span> (<span class="va">C</span><span class="op">*</span><span class="va">Q2</span>) <span class="op">\</span> (<span class="va">d</span> <span class="op">-</span> <span class="va">C</span><span class="op">*</span><span class="va">Q1</span><span class="op">*</span><span class="va">y</span>)<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="va">x</span> <span class="op">=</span> <span class="va">Q</span><span class="op">*</span>[<span class="va">y</span><span class="op">;</span><span class="va">z</span>]<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 
 
 </section>
