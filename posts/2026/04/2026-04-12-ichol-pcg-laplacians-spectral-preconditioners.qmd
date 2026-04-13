@@ -1,0 +1,132 @@
+---
+title: "Solving Sparse Normal Equations: ichol+PCG, Laplacians.jl, and Spectral Preconditioners"
+date: 2026-04-12
+categories: [math, programming]
+tags: [linear algebra, sparse, preconditioner, pcg, ichol, julia, matlab, laplacians]
+---
+
+## Motivation
+
+I solve large sparse normal equations of the form $A^T A \, x = A^T b$ where $A$ is built by stacking a fidelity (interpolation) matrix and scaled 2nd-derivative finite difference operators across 5 dimensions of a lookup table:
+
+$$
+A = \begin{bmatrix} A_{\text{fidelity}} \\ L_1 \\ L_2 \\ L_3 \\ L_4 \\ L_5 \end{bmatrix}, \quad
+b = \begin{bmatrix} b_{\text{data}} \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+$$
+
+The resulting $A^T A$ is 117,600 × 117,600 sparse symmetric positive definite with ~2.3M nonzeros. The grid dimensions are 7 × 7 × 8 × 12 × 25.
+
+My production solver uses MATLAB's `ichol` with diagonal compensation as a preconditioner for `pcg`, consistently solving to tight tolerances in ~35 seconds. I investigated whether Julia's [Laplacians.jl](https://github.com/danspielman/Laplacians.jl) or a spectral (eigendecomposition-based) preconditioner could compete.
+
+## Baseline: ichol + PCG in MATLAB
+
+The incomplete Cholesky preconditioner `M = ichol(ATA)` builds in ~0.03 seconds. The key is passing **both** `M` and `M'` to `pcg`:
+
+```matlab
+M = ichol(ATA);
+[x, flag] = pcg(ATA, ATb, tol, maxiter, M, M');  % ~35 s, 3564 iterations
+```
+
+### Why `pcg(A, b, tol, maxit, M, M')` vs `pcg(A, b, tol, maxit, M)`
+
+This is a subtle but critical point. When `M = ichol(ATA)` returns a lower triangular $L$ such that $L L^T \approx A^T A$:
+
+- **`pcg(..., M, M')`**: The effective preconditioner is $M_1 M_2 = L L^T \approx A^T A$. The preconditioned system $\left(L L^T\right)^{-1} A^T A \approx I$ has condition number near 1. This is **correct** split preconditioning.
+
+- **`pcg(..., M)`**: The effective preconditioner is just $L$ (with $M_2 = I$). The preconditioned operator $L^{-1} A^T A$ is **not symmetric** and **not positive definite** — it violates the fundamental assumptions CG depends on.
+
+I verified this on a 500×500 subproblem:
+
+| Quantity | Value |
+|----------|-------|
+| $\kappa(A_{\text{sub}})$ | 6.1 × 10¹ |
+| $\kappa(L^{-1} A \, L^{-T})$ | 4.6 × 10⁰ |
+| $\kappa(L^{-1} A)$ | 1.3 × 10¹ |
+| symmetry error of $L^{-1} A$ | 0.78 |
+| symmetry error of $L^{-1} A \, L^{-T}$ | 2.5 × 10⁻¹⁶ |
+
+With only `M`, pcg hit 100,000 iterations without converging (relres = 5.5 × 10⁻²). With `M, M'`, it converged in 3,564 iterations to relres = 4.9 × 10⁻¹⁰.
+
+### Diagonal Compensation Search for ichol
+
+`ichol` can fail on matrices that are not sufficiently diagonally dominant. My strategy for finding the minimal diagonal compensation:
+
+1. Try `ichol(ATA, struct('diagcomp', α))` starting at α = 0.
+2. If it fails, multiply α by 10 until it succeeds.
+3. Bisect 3 times between the last failure and first success.
+
+This minimizes the diagonal perturbation (preserving preconditioner quality) without spending excessive time on preconditioner construction.
+
+## Laplacians.jl: Not a Fit
+
+[Laplacians.jl](https://github.com/danspielman/Laplacians.jl) provides near-linear-time solvers for graph Laplacian and SDDM (symmetric diagonally dominant with non-positive off-diagonals) systems. My $A^T A$ has **negative off-diagonal entries** from the cross-terms in the stacked system, so:
+
+- `approxchol_sddm(ATA)` immediately fails: *"Adjacency matrix can not have negative edge weights"*.
+- `cgSolver(ATA)` falls back to **unpreconditioned CG** — no advantage over calling CG directly.
+
+| Method | Time | Converged | Rel. Residual |
+|--------|------|-----------|---------------|
+| Laplacians `cgSolver` | 61.9 s | yes (tol=1e-6) | 2.9 × 10⁻⁵ |
+| Direct `ATA \ ATb` (natural order) | 72.6 s | — | 3.1 × 10⁻¹⁵ |
+| Direct Cholesky (METIS order) | 61.1 s | — | 1.9 × 10⁻¹⁵ |
+| Direct Cholesky (AMD order) | 387.6 s | — | 2.4 × 10⁻¹⁵ |
+| MATLAB ichol + pcg | 35 s | yes | 4.9 × 10⁻¹⁰ |
+
+**Bottom line**: Laplacians.jl is designed for graph Laplacians with non-negative edge weights. Normal equations from regularized least squares don't satisfy those structural assumptions.
+
+## Julia's Incomplete Factorization: Not Competitive
+
+Julia's `LimitedLDLFactorizations.jl` (the `lldl` function used by `Preconditioners.jl`) is a limited-memory LDL factorization, **not** a true incomplete Cholesky. Testing it with `IterativeSolvers.cg`:
+
+- With `memory=20`, `droptol=1e-4`: 5000 iterations, **not converged**, relres = 8.2 × 10⁻⁴.
+- Higher memory settings (40, 80): even slower, still not converged.
+
+The Julia incomplete factorization ecosystem currently lacks a MATLAB `ichol`-equivalent that produces a good preconditioner for this class of problem.
+
+## Spectral (Kronecker Eigendecomposition) Preconditioner
+
+Since $L_1$ through $L_5$ are 2nd-derivative operators along each grid dimension, the regularization part of $A^T A$ has Kronecker structure:
+
+$$
+R = \sum_{k=1}^{5} L_k^T L_k = \sum_{k=1}^{5} I \otimes \cdots \otimes G_k \otimes \cdots \otimes I
+$$
+
+where each $G_k = L_k^T L_k$ restricted to dimension $k$ is a small matrix (7×7 to 25×25). $R$ is simultaneously diagonalized by $V = V_5 \otimes \cdots \otimes V_1$ where $V_k$ are eigenvectors of $G_k$.
+
+The spectral preconditioner applies $P^{-1} r$ as:
+
+1. Forward transform: project $r$ onto each 1D eigenbasis (small dense mat-vecs along each dimension).
+2. Pointwise divide by $\lambda_i + \sigma$ (eigenvalues of $R$ plus a shift for the fidelity term).
+3. Inverse transform.
+
+Cost per iteration is $O(N)$ with small constants — no triangular solves needed.
+
+### Results
+
+The shift $\sigma$ approximates the contribution of $A_{\text{fidelity}}^T A_{\text{fidelity}}$. I swept several values:
+
+| Shift $\sigma$ | Time | Iterations | Converged |
+|---------|------|------------|-----------|
+| `mean(diag(Afid'*Afid))/10` = 6.4 × 10⁻³ | 34.8 s | 6,277 | yes |
+| `mean(diag(Afid'*Afid))` = 6.4 × 10⁻² | 84.0 s | 15,481 | yes |
+| 6.4 × 10⁻¹ | >120 s | — | timed out |
+
+The best shift matched ichol+pcg wall-clock time (34.8 s vs 34.7 s) but needed ~2× more iterations. Each spectral iteration is cheaper (FFT-like transforms vs triangular solves), which compensates.
+
+### Limitation
+
+Dimension 1 broke the pure Kronecker assumption (fiber check error = 0.44), likely due to non-uniform scaling. This limits the spectral preconditioner's effectiveness. It captures the regularization structure exactly but treats the fidelity term as a scalar shift — a coarse approximation.
+
+## Conclusions
+
+1. **ichol + pcg remains the best choice** for this problem class. MATLAB's `ichol` is fast, robust, and captures both the regularization and fidelity coupling.
+
+2. **Laplacians.jl does not apply** to normal equations with negative off-diagonals. Its solvers target graph Laplacians specifically.
+
+3. **Julia's incomplete factorization packages** (`LimitedLDLFactorizations`, `IncompleteLU`) did not produce preconditioners of comparable quality to MATLAB's `ichol` on this problem.
+
+4. **A spectral Kronecker preconditioner is competitive** when the shift is well-tuned, achieving the same wall time with cheaper per-iteration cost but more iterations. It's an interesting alternative for problems where ichol is unavailable or the grid structure is more regular.
+
+5. **Stride ordering matters**. Placing the largest grid dimension last minimizes cache misses in both sparse matvec and triangular solves — a universal optimization regardless of solver choice.
+
+6. **Always use split preconditioning** with incomplete Cholesky: `pcg(A, b, tol, maxit, L, L')`, never `pcg(A, b, tol, maxit, L)`. The single-L form breaks CG's symmetry assumption and can fail to converge entirely.
