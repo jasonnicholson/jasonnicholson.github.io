@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-04-12">
+
+<title>Solving Sparse Normal Equations: ichol+PCG, Laplacians.jl, and Spectral Preconditioners – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-b0055fe3f16fc4a17aa491bd47adb78c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-765aeea877339cbfbd7cb4bd0fa7078b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Solving Sparse Normal Equations: ichol+PCG, Laplacians.jl, and Spectral Preconditioners</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">math</div>
+                <div class="quarto-category">programming</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">April 12, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link active" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#baseline-ichol-pcg-in-matlab" id="toc-baseline-ichol-pcg-in-matlab" class="nav-link" data-scroll-target="#baseline-ichol-pcg-in-matlab">Baseline: ichol + PCG in MATLAB</a>
+  <ul class="collapse">
+  <li><a href="#why-pcga-b-tol-maxit-m-m-vs-pcga-b-tol-maxit-m" id="toc-why-pcga-b-tol-maxit-m-m-vs-pcga-b-tol-maxit-m" class="nav-link" data-scroll-target="#why-pcga-b-tol-maxit-m-m-vs-pcga-b-tol-maxit-m">Why <code>pcg(A, b, tol, maxit, M, M')</code> vs <code>pcg(A, b, tol, maxit, M)</code></a></li>
+  <li><a href="#diagonal-compensation-search-for-ichol" id="toc-diagonal-compensation-search-for-ichol" class="nav-link" data-scroll-target="#diagonal-compensation-search-for-ichol">Diagonal Compensation Search for ichol</a></li>
+  </ul></li>
+  <li><a href="#laplacians.jl-not-a-fit" id="toc-laplacians.jl-not-a-fit" class="nav-link" data-scroll-target="#laplacians.jl-not-a-fit">Laplacians.jl: Not a Fit</a></li>
+  <li><a href="#julias-incomplete-factorization-not-competitive" id="toc-julias-incomplete-factorization-not-competitive" class="nav-link" data-scroll-target="#julias-incomplete-factorization-not-competitive">Julia’s Incomplete Factorization: Not Competitive</a></li>
+  <li><a href="#spectral-kronecker-eigendecomposition-preconditioner" id="toc-spectral-kronecker-eigendecomposition-preconditioner" class="nav-link" data-scroll-target="#spectral-kronecker-eigendecomposition-preconditioner">Spectral (Kronecker Eigendecomposition) Preconditioner</a>
+  <ul class="collapse">
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#limitation" id="toc-limitation" class="nav-link" data-scroll-target="#limitation">Limitation</a></li>
+  </ul></li>
+  <li><a href="#conclusions" id="toc-conclusions" class="nav-link" data-scroll-target="#conclusions">Conclusions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<p>I solve large sparse normal equations of the form <span class="math inline">\(A^T A \, x = A^T b\)</span> where <span class="math inline">\(A\)</span> is built by stacking a fidelity (interpolation) matrix and scaled 2nd-derivative finite difference operators across 5 dimensions of a lookup table:</p>
+<p><span class="math display">\[
+A = \begin{bmatrix} A_{\text{fidelity}} \\ L_1 \\ L_2 \\ L_3 \\ L_4 \\ L_5 \end{bmatrix}, \quad
+b = \begin{bmatrix} b_{\text{data}} \\ 0 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+\]</span></p>
+<p>The resulting <span class="math inline">\(A^T A\)</span> is 117,600 × 117,600 sparse symmetric positive definite with ~2.3M nonzeros. The grid dimensions are 7 × 7 × 8 × 12 × 25.</p>
+<p>My production solver uses MATLAB’s <code>ichol</code> with diagonal compensation as a preconditioner for <code>pcg</code>, consistently solving to tight tolerances in ~35 seconds. I investigated whether Julia’s <a href="https://github.com/danspielman/Laplacians.jl">Laplacians.jl</a> or a spectral (eigendecomposition-based) preconditioner could compete.</p>
+</section>
+<section id="baseline-ichol-pcg-in-matlab" class="level2">
+<h2 class="anchored" data-anchor-id="baseline-ichol-pcg-in-matlab">Baseline: ichol + PCG in MATLAB</h2>
+<p>The incomplete Cholesky preconditioner <code>M = ichol(ATA)</code> builds in ~0.03 seconds. The key is passing <strong>both</strong> <code>M</code> and <code>M'</code> to <code>pcg</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">M</span> <span class="op">=</span> <span class="va">ichol</span>(<span class="va">ATA</span>)<span class="op">;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="va">x</span><span class="op">,</span> <span class="va">flag</span>] <span class="op">=</span> <span class="va">pcg</span>(<span class="va">ATA</span><span class="op">,</span> <span class="va">ATb</span><span class="op">,</span> <span class="va">tol</span><span class="op">,</span> <span class="va">maxiter</span><span class="op">,</span> <span class="va">M</span><span class="op">,</span> <span class="va">M</span><span class="op">'</span>)<span class="op">;</span>  <span class="co">% ~35 s, 3564 iterations</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="why-pcga-b-tol-maxit-m-m-vs-pcga-b-tol-maxit-m" class="level3">
+<h3 class="anchored" data-anchor-id="why-pcga-b-tol-maxit-m-m-vs-pcga-b-tol-maxit-m">Why <code>pcg(A, b, tol, maxit, M, M')</code> vs <code>pcg(A, b, tol, maxit, M)</code></h3>
+<p>This is a subtle but critical point. When <code>M = ichol(ATA)</code> returns a lower triangular <span class="math inline">\(L\)</span> such that <span class="math inline">\(L L^T \approx A^T A\)</span>:</p>
+<ul>
+<li><p><strong><code>pcg(..., M, M')</code></strong>: The effective preconditioner is <span class="math inline">\(M_1 M_2 = L L^T \approx A^T A\)</span>. The preconditioned system <span class="math inline">\(\left(L L^T\right)^{-1} A^T A \approx I\)</span> has condition number near 1. This is <strong>correct</strong> split preconditioning.</p></li>
+<li><p><strong><code>pcg(..., M)</code></strong>: The effective preconditioner is just <span class="math inline">\(L\)</span> (with <span class="math inline">\(M_2 = I\)</span>). The preconditioned operator <span class="math inline">\(L^{-1} A^T A\)</span> is <strong>not symmetric</strong> and <strong>not positive definite</strong> — it violates the fundamental assumptions CG depends on.</p></li>
+</ul>
+<p>I verified this on a 500×500 subproblem:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\kappa(A_{\text{sub}})\)</span></td>
+<td>6.1 × 10¹</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\kappa(L^{-1} A \, L^{-T})\)</span></td>
+<td>4.6 × 10⁰</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\kappa(L^{-1} A)\)</span></td>
+<td>1.3 × 10¹</td>
+</tr>
+<tr class="even">
+<td>symmetry error of <span class="math inline">\(L^{-1} A\)</span></td>
+<td>0.78</td>
+</tr>
+<tr class="odd">
+<td>symmetry error of <span class="math inline">\(L^{-1} A \, L^{-T}\)</span></td>
+<td>2.5 × 10⁻¹⁶</td>
+</tr>
+</tbody>
+</table>
+<p>With only <code>M</code>, pcg hit 100,000 iterations without converging (relres = 5.5 × 10⁻²). With <code>M, M'</code>, it converged in 3,564 iterations to relres = 4.9 × 10⁻¹⁰.</p>
+</section>
+<section id="diagonal-compensation-search-for-ichol" class="level3">
+<h3 class="anchored" data-anchor-id="diagonal-compensation-search-for-ichol">Diagonal Compensation Search for ichol</h3>
+<p><code>ichol</code> can fail on matrices that are not sufficiently diagonally dominant. My strategy for finding the minimal diagonal compensation:</p>
+<ol type="1">
+<li>Try <code>ichol(ATA, struct('diagcomp', α))</code> starting at α = 0.</li>
+<li>If it fails, multiply α by 10 until it succeeds.</li>
+<li>Bisect 3 times between the last failure and first success.</li>
+</ol>
+<p>This minimizes the diagonal perturbation (preserving preconditioner quality) without spending excessive time on preconditioner construction.</p>
+</section>
+</section>
+<section id="laplacians.jl-not-a-fit" class="level2">
+<h2 class="anchored" data-anchor-id="laplacians.jl-not-a-fit">Laplacians.jl: Not a Fit</h2>
+<p><a href="https://github.com/danspielman/Laplacians.jl">Laplacians.jl</a> provides near-linear-time solvers for graph Laplacian and SDDM (symmetric diagonally dominant with non-positive off-diagonals) systems. My <span class="math inline">\(A^T A\)</span> has <strong>negative off-diagonal entries</strong> from the cross-terms in the stacked system, so:</p>
+<ul>
+<li><code>approxchol_sddm(ATA)</code> immediately fails: <em>“Adjacency matrix can not have negative edge weights”</em>.</li>
+<li><code>cgSolver(ATA)</code> falls back to <strong>unpreconditioned CG</strong> — no advantage over calling CG directly.</li>
+</ul>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Time</th>
+<th>Converged</th>
+<th>Rel. Residual</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Laplacians <code>cgSolver</code></td>
+<td>61.9 s</td>
+<td>yes (tol=1e-6)</td>
+<td>2.9 × 10⁻⁵</td>
+</tr>
+<tr class="even">
+<td>Direct <code>ATA \ ATb</code> (natural order)</td>
+<td>72.6 s</td>
+<td>—</td>
+<td>3.1 × 10⁻¹⁵</td>
+</tr>
+<tr class="odd">
+<td>Direct Cholesky (METIS order)</td>
+<td>61.1 s</td>
+<td>—</td>
+<td>1.9 × 10⁻¹⁵</td>
+</tr>
+<tr class="even">
+<td>Direct Cholesky (AMD order)</td>
+<td>387.6 s</td>
+<td>—</td>
+<td>2.4 × 10⁻¹⁵</td>
+</tr>
+<tr class="odd">
+<td>MATLAB ichol + pcg</td>
+<td>35 s</td>
+<td>yes</td>
+<td>4.9 × 10⁻¹⁰</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bottom line</strong>: Laplacians.jl is designed for graph Laplacians with non-negative edge weights. Normal equations from regularized least squares don’t satisfy those structural assumptions.</p>
+</section>
+<section id="julias-incomplete-factorization-not-competitive" class="level2">
+<h2 class="anchored" data-anchor-id="julias-incomplete-factorization-not-competitive">Julia’s Incomplete Factorization: Not Competitive</h2>
+<p>Julia’s <code>LimitedLDLFactorizations.jl</code> (the <code>lldl</code> function used by <code>Preconditioners.jl</code>) is a limited-memory LDL factorization, <strong>not</strong> a true incomplete Cholesky. Testing it with <code>IterativeSolvers.cg</code>:</p>
+<ul>
+<li>With <code>memory=20</code>, <code>droptol=1e-4</code>: 5000 iterations, <strong>not converged</strong>, relres = 8.2 × 10⁻⁴.</li>
+<li>Higher memory settings (40, 80): even slower, still not converged.</li>
+</ul>
+<p>The Julia incomplete factorization ecosystem currently lacks a MATLAB <code>ichol</code>-equivalent that produces a good preconditioner for this class of problem.</p>
+</section>
+<section id="spectral-kronecker-eigendecomposition-preconditioner" class="level2">
+<h2 class="anchored" data-anchor-id="spectral-kronecker-eigendecomposition-preconditioner">Spectral (Kronecker Eigendecomposition) Preconditioner</h2>
+<p>Since <span class="math inline">\(L_1\)</span> through <span class="math inline">\(L_5\)</span> are 2nd-derivative operators along each grid dimension, the regularization part of <span class="math inline">\(A^T A\)</span> has Kronecker structure:</p>
+<p><span class="math display">\[
+R = \sum_{k=1}^{5} L_k^T L_k = \sum_{k=1}^{5} I \otimes \cdots \otimes G_k \otimes \cdots \otimes I
+\]</span></p>
+<p>where each <span class="math inline">\(G_k = L_k^T L_k\)</span> restricted to dimension <span class="math inline">\(k\)</span> is a small matrix (7×7 to 25×25). <span class="math inline">\(R\)</span> is simultaneously diagonalized by <span class="math inline">\(V = V_5 \otimes \cdots \otimes V_1\)</span> where <span class="math inline">\(V_k\)</span> are eigenvectors of <span class="math inline">\(G_k\)</span>.</p>
+<p>The spectral preconditioner applies <span class="math inline">\(P^{-1} r\)</span> as:</p>
+<ol type="1">
+<li>Forward transform: project <span class="math inline">\(r\)</span> onto each 1D eigenbasis (small dense mat-vecs along each dimension).</li>
+<li>Pointwise divide by <span class="math inline">\(\lambda_i + \sigma\)</span> (eigenvalues of <span class="math inline">\(R\)</span> plus a shift for the fidelity term).</li>
+<li>Inverse transform.</li>
+</ol>
+<p>Cost per iteration is <span class="math inline">\(O(N)\)</span> with small constants — no triangular solves needed.</p>
+<section id="results" class="level3">
+<h3 class="anchored" data-anchor-id="results">Results</h3>
+<p>The shift <span class="math inline">\(\sigma\)</span> approximates the contribution of <span class="math inline">\(A_{\text{fidelity}}^T A_{\text{fidelity}}\)</span>. I swept several values:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Shift <span class="math inline">\(\sigma\)</span></th>
+<th>Time</th>
+<th>Iterations</th>
+<th>Converged</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mean(diag(Afid'*Afid))/10</code> = 6.4 × 10⁻³</td>
+<td>34.8 s</td>
+<td>6,277</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td><code>mean(diag(Afid'*Afid))</code> = 6.4 × 10⁻²</td>
+<td>84.0 s</td>
+<td>15,481</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>6.4 × 10⁻¹</td>
+<td>&gt;120 s</td>
+<td>—</td>
+<td>timed out</td>
+</tr>
+</tbody>
+</table>
+<p>The best shift matched ichol+pcg wall-clock time (34.8 s vs 34.7 s) but needed ~2× more iterations. Each spectral iteration is cheaper (FFT-like transforms vs triangular solves), which compensates.</p>
+</section>
+<section id="limitation" class="level3">
+<h3 class="anchored" data-anchor-id="limitation">Limitation</h3>
+<p>Dimension 1 broke the pure Kronecker assumption (fiber check error = 0.44), likely due to non-uniform scaling. This limits the spectral preconditioner’s effectiveness. It captures the regularization structure exactly but treats the fidelity term as a scalar shift — a coarse approximation.</p>
+</section>
+</section>
+<section id="conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions">Conclusions</h2>
+<ol type="1">
+<li><p><strong>ichol + pcg remains the best choice</strong> for this problem class. MATLAB’s <code>ichol</code> is fast, robust, and captures both the regularization and fidelity coupling.</p></li>
+<li><p><strong>Laplacians.jl does not apply</strong> to normal equations with negative off-diagonals. Its solvers target graph Laplacians specifically.</p></li>
+<li><p><strong>Julia’s incomplete factorization packages</strong> (<code>LimitedLDLFactorizations</code>, <code>IncompleteLU</code>) did not produce preconditioners of comparable quality to MATLAB’s <code>ichol</code> on this problem.</p></li>
+<li><p><strong>A spectral Kronecker preconditioner is competitive</strong> when the shift is well-tuned, achieving the same wall time with cheaper per-iteration cost but more iterations. It’s an interesting alternative for problems where ichol is unavailable or the grid structure is more regular.</p></li>
+<li><p><strong>Stride ordering matters</strong>. Placing the largest grid dimension last minimizes cache misses in both sparse matvec and triangular solves — a universal optimization regardless of solver choice.</p></li>
+<li><p><strong>Always use split preconditioning</strong> with incomplete Cholesky: <code>pcg(A, b, tol, maxit, L, L')</code>, never <code>pcg(A, b, tol, maxit, L)</code>. The single-L form breaks CG’s symmetry assumption and can fail to converge entirely.</p></li>
+</ol>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

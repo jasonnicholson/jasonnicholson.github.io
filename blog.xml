@@ -10,7 +10,260 @@
 <atom:link href="https://jasonhnicholson.com/blog.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.9.36</generator>
-<lastBuildDate>Thu, 02 Apr 2026 04:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sun, 12 Apr 2026 04:00:00 GMT</lastBuildDate>
+<item>
+  <title>Solving Sparse Normal Equations: ichol+PCG, Laplacians.jl, and Spectral Preconditioners</title>
+  <link>https://jasonhnicholson.com/posts/2026/04/2026-04-12-ichol-pcg-laplacians-spectral-preconditioners.html</link>
+  <description><![CDATA[ 
+
+
+
+
+
+
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<p>I solve large sparse normal equations of the form <img src="https://latex.codecogs.com/png.latex?A%5ET%20A%20%5C,%20x%20=%20A%5ET%20b"> where <img src="https://latex.codecogs.com/png.latex?A"> is built by stacking a fidelity (interpolation) matrix and scaled 2nd-derivative finite difference operators across 5 dimensions of a lookup table:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AA%20=%20%5Cbegin%7Bbmatrix%7D%20A_%7B%5Ctext%7Bfidelity%7D%7D%20%5C%5C%20L_1%20%5C%5C%20L_2%20%5C%5C%20L_3%20%5C%5C%20L_4%20%5C%5C%20L_5%20%5Cend%7Bbmatrix%7D,%20%5Cquad%0Ab%20=%20%5Cbegin%7Bbmatrix%7D%20b_%7B%5Ctext%7Bdata%7D%7D%20%5C%5C%200%20%5C%5C%200%20%5C%5C%200%20%5C%5C%200%20%5C%5C%200%20%5Cend%7Bbmatrix%7D%0A"></p>
+<p>The resulting <img src="https://latex.codecogs.com/png.latex?A%5ET%20A"> is 117,600 × 117,600 sparse symmetric positive definite with ~2.3M nonzeros. The grid dimensions are 7 × 7 × 8 × 12 × 25.</p>
+<p>My production solver uses MATLAB’s <code>ichol</code> with diagonal compensation as a preconditioner for <code>pcg</code>, consistently solving to tight tolerances in ~35 seconds. I investigated whether Julia’s <a href="https://github.com/danspielman/Laplacians.jl">Laplacians.jl</a> or a spectral (eigendecomposition-based) preconditioner could compete.</p>
+</section>
+<section id="baseline-ichol-pcg-in-matlab" class="level2">
+<h2 class="anchored" data-anchor-id="baseline-ichol-pcg-in-matlab">Baseline: ichol + PCG in MATLAB</h2>
+<p>The incomplete Cholesky preconditioner <code>M = ichol(ATA)</code> builds in ~0.03 seconds. The key is passing <strong>both</strong> <code>M</code> and <code>M'</code> to <code>pcg</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">M</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ichol</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ATA</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb1-2">[<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">x</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">flag</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">pcg</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ATA</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ATb</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">tol</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">maxiter</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">M</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">M</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">'</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span>  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">% ~35 s, 3564 iterations</span></span></code></pre></div></div>
+<section id="why-pcga-b-tol-maxit-m-m-vs-pcga-b-tol-maxit-m" class="level3">
+<h3 class="anchored" data-anchor-id="why-pcga-b-tol-maxit-m-m-vs-pcga-b-tol-maxit-m">Why <code>pcg(A, b, tol, maxit, M, M')</code> vs <code>pcg(A, b, tol, maxit, M)</code></h3>
+<p>This is a subtle but critical point. When <code>M = ichol(ATA)</code> returns a lower triangular <img src="https://latex.codecogs.com/png.latex?L"> such that <img src="https://latex.codecogs.com/png.latex?L%20L%5ET%20%5Capprox%20A%5ET%20A">:</p>
+<ul>
+<li><p><strong><code>pcg(..., M, M')</code></strong>: The effective preconditioner is <img src="https://latex.codecogs.com/png.latex?M_1%20M_2%20=%20L%20L%5ET%20%5Capprox%20A%5ET%20A">. The preconditioned system <img src="https://latex.codecogs.com/png.latex?%5Cleft(L%20L%5ET%5Cright)%5E%7B-1%7D%20A%5ET%20A%20%5Capprox%20I"> has condition number near 1. This is <strong>correct</strong> split preconditioning.</p></li>
+<li><p><strong><code>pcg(..., M)</code></strong>: The effective preconditioner is just <img src="https://latex.codecogs.com/png.latex?L"> (with <img src="https://latex.codecogs.com/png.latex?M_2%20=%20I">). The preconditioned operator <img src="https://latex.codecogs.com/png.latex?L%5E%7B-1%7D%20A%5ET%20A"> is <strong>not symmetric</strong> and <strong>not positive definite</strong> — it violates the fundamental assumptions CG depends on.</p></li>
+</ul>
+<p>I verified this on a 500×500 subproblem:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><img src="https://latex.codecogs.com/png.latex?%5Ckappa(A_%7B%5Ctext%7Bsub%7D%7D)"></td>
+<td>6.1 × 10¹</td>
+</tr>
+<tr class="even">
+<td><img src="https://latex.codecogs.com/png.latex?%5Ckappa(L%5E%7B-1%7D%20A%20%5C,%20L%5E%7B-T%7D)"></td>
+<td>4.6 × 10⁰</td>
+</tr>
+<tr class="odd">
+<td><img src="https://latex.codecogs.com/png.latex?%5Ckappa(L%5E%7B-1%7D%20A)"></td>
+<td>1.3 × 10¹</td>
+</tr>
+<tr class="even">
+<td>symmetry error of <img src="https://latex.codecogs.com/png.latex?L%5E%7B-1%7D%20A"></td>
+<td>0.78</td>
+</tr>
+<tr class="odd">
+<td>symmetry error of <img src="https://latex.codecogs.com/png.latex?L%5E%7B-1%7D%20A%20%5C,%20L%5E%7B-T%7D"></td>
+<td>2.5 × 10⁻¹⁶</td>
+</tr>
+</tbody>
+</table>
+<p>With only <code>M</code>, pcg hit 100,000 iterations without converging (relres = 5.5 × 10⁻²). With <code>M, M'</code>, it converged in 3,564 iterations to relres = 4.9 × 10⁻¹⁰.</p>
+</section>
+<section id="diagonal-compensation-search-for-ichol" class="level3">
+<h3 class="anchored" data-anchor-id="diagonal-compensation-search-for-ichol">Diagonal Compensation Search for ichol</h3>
+<p><code>ichol</code> can fail on matrices that are not sufficiently diagonally dominant. My strategy for finding the minimal diagonal compensation:</p>
+<ol type="1">
+<li>Try <code>ichol(ATA, struct('diagcomp', α))</code> starting at α = 0.</li>
+<li>If it fails, multiply α by 10 until it succeeds.</li>
+<li>Bisect 3 times between the last failure and first success.</li>
+</ol>
+<p>This minimizes the diagonal perturbation (preserving preconditioner quality) without spending excessive time on preconditioner construction.</p>
+</section>
+</section>
+<section id="laplacians.jl-not-a-fit" class="level2">
+<h2 class="anchored" data-anchor-id="laplacians.jl-not-a-fit">Laplacians.jl: Not a Fit</h2>
+<p><a href="https://github.com/danspielman/Laplacians.jl">Laplacians.jl</a> provides near-linear-time solvers for graph Laplacian and SDDM (symmetric diagonally dominant with non-positive off-diagonals) systems. My <img src="https://latex.codecogs.com/png.latex?A%5ET%20A"> has <strong>negative off-diagonal entries</strong> from the cross-terms in the stacked system, so:</p>
+<ul>
+<li><code>approxchol_sddm(ATA)</code> immediately fails: <em>“Adjacency matrix can not have negative edge weights”</em>.</li>
+<li><code>cgSolver(ATA)</code> falls back to <strong>unpreconditioned CG</strong> — no advantage over calling CG directly.</li>
+</ul>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Time</th>
+<th>Converged</th>
+<th>Rel. Residual</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Laplacians <code>cgSolver</code></td>
+<td>61.9 s</td>
+<td>yes (tol=1e-6)</td>
+<td>2.9 × 10⁻⁵</td>
+</tr>
+<tr class="even">
+<td>Direct <code>ATA \ ATb</code> (natural order)</td>
+<td>72.6 s</td>
+<td>—</td>
+<td>3.1 × 10⁻¹⁵</td>
+</tr>
+<tr class="odd">
+<td>Direct Cholesky (METIS order)</td>
+<td>61.1 s</td>
+<td>—</td>
+<td>1.9 × 10⁻¹⁵</td>
+</tr>
+<tr class="even">
+<td>Direct Cholesky (AMD order)</td>
+<td>387.6 s</td>
+<td>—</td>
+<td>2.4 × 10⁻¹⁵</td>
+</tr>
+<tr class="odd">
+<td>MATLAB ichol + pcg</td>
+<td>35 s</td>
+<td>yes</td>
+<td>4.9 × 10⁻¹⁰</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bottom line</strong>: Laplacians.jl is designed for graph Laplacians with non-negative edge weights. Normal equations from regularized least squares don’t satisfy those structural assumptions.</p>
+</section>
+<section id="julias-incomplete-factorization-not-competitive" class="level2">
+<h2 class="anchored" data-anchor-id="julias-incomplete-factorization-not-competitive">Julia’s Incomplete Factorization: Not Competitive</h2>
+<p>Julia’s <code>LimitedLDLFactorizations.jl</code> (the <code>lldl</code> function used by <code>Preconditioners.jl</code>) is a limited-memory LDL factorization, <strong>not</strong> a true incomplete Cholesky. Testing it with <code>IterativeSolvers.cg</code>:</p>
+<ul>
+<li>With <code>memory=20</code>, <code>droptol=1e-4</code>: 5000 iterations, <strong>not converged</strong>, relres = 8.2 × 10⁻⁴.</li>
+<li>Higher memory settings (40, 80): even slower, still not converged.</li>
+</ul>
+<p>The Julia incomplete factorization ecosystem currently lacks a MATLAB <code>ichol</code>-equivalent that produces a good preconditioner for this class of problem.</p>
+</section>
+<section id="spectral-kronecker-eigendecomposition-preconditioner" class="level2">
+<h2 class="anchored" data-anchor-id="spectral-kronecker-eigendecomposition-preconditioner">Spectral (Kronecker Eigendecomposition) Preconditioner</h2>
+<p>Since <img src="https://latex.codecogs.com/png.latex?L_1"> through <img src="https://latex.codecogs.com/png.latex?L_5"> are 2nd-derivative operators along each grid dimension, the regularization part of <img src="https://latex.codecogs.com/png.latex?A%5ET%20A"> has Kronecker structure:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AR%20=%20%5Csum_%7Bk=1%7D%5E%7B5%7D%20L_k%5ET%20L_k%20=%20%5Csum_%7Bk=1%7D%5E%7B5%7D%20I%20%5Cotimes%20%5Ccdots%20%5Cotimes%20G_k%20%5Cotimes%20%5Ccdots%20%5Cotimes%20I%0A"></p>
+<p>where each <img src="https://latex.codecogs.com/png.latex?G_k%20=%20L_k%5ET%20L_k"> restricted to dimension <img src="https://latex.codecogs.com/png.latex?k"> is a small matrix (7×7 to 25×25). <img src="https://latex.codecogs.com/png.latex?R"> is simultaneously diagonalized by <img src="https://latex.codecogs.com/png.latex?V%20=%20V_5%20%5Cotimes%20%5Ccdots%20%5Cotimes%20V_1"> where <img src="https://latex.codecogs.com/png.latex?V_k"> are eigenvectors of <img src="https://latex.codecogs.com/png.latex?G_k">.</p>
+<p>The spectral preconditioner applies <img src="https://latex.codecogs.com/png.latex?P%5E%7B-1%7D%20r"> as:</p>
+<ol type="1">
+<li>Forward transform: project <img src="https://latex.codecogs.com/png.latex?r"> onto each 1D eigenbasis (small dense mat-vecs along each dimension).</li>
+<li>Pointwise divide by <img src="https://latex.codecogs.com/png.latex?%5Clambda_i%20+%20%5Csigma"> (eigenvalues of <img src="https://latex.codecogs.com/png.latex?R"> plus a shift for the fidelity term).</li>
+<li>Inverse transform.</li>
+</ol>
+<p>Cost per iteration is <img src="https://latex.codecogs.com/png.latex?O(N)"> with small constants — no triangular solves needed.</p>
+<section id="results" class="level3">
+<h3 class="anchored" data-anchor-id="results">Results</h3>
+<p>The shift <img src="https://latex.codecogs.com/png.latex?%5Csigma"> approximates the contribution of <img src="https://latex.codecogs.com/png.latex?A_%7B%5Ctext%7Bfidelity%7D%7D%5ET%20A_%7B%5Ctext%7Bfidelity%7D%7D">. I swept several values:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Shift <img src="https://latex.codecogs.com/png.latex?%5Csigma"></th>
+<th>Time</th>
+<th>Iterations</th>
+<th>Converged</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mean(diag(Afid'*Afid))/10</code> = 6.4 × 10⁻³</td>
+<td>34.8 s</td>
+<td>6,277</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td><code>mean(diag(Afid'*Afid))</code> = 6.4 × 10⁻²</td>
+<td>84.0 s</td>
+<td>15,481</td>
+<td>yes</td>
+</tr>
+<tr class="odd">
+<td>6.4 × 10⁻¹</td>
+<td>&gt;120 s</td>
+<td>—</td>
+<td>timed out</td>
+</tr>
+</tbody>
+</table>
+<p>The best shift matched ichol+pcg wall-clock time (34.8 s vs 34.7 s) but needed ~2× more iterations. Each spectral iteration is cheaper (FFT-like transforms vs triangular solves), which compensates.</p>
+</section>
+<section id="limitation" class="level3">
+<h3 class="anchored" data-anchor-id="limitation">Limitation</h3>
+<p>Dimension 1 broke the pure Kronecker assumption (fiber check error = 0.44), likely due to non-uniform scaling. This limits the spectral preconditioner’s effectiveness. It captures the regularization structure exactly but treats the fidelity term as a scalar shift — a coarse approximation.</p>
+</section>
+</section>
+<section id="conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions">Conclusions</h2>
+<ol type="1">
+<li><p><strong>ichol + pcg remains the best choice</strong> for this problem class. MATLAB’s <code>ichol</code> is fast, robust, and captures both the regularization and fidelity coupling.</p></li>
+<li><p><strong>Laplacians.jl does not apply</strong> to normal equations with negative off-diagonals. Its solvers target graph Laplacians specifically.</p></li>
+<li><p><strong>Julia’s incomplete factorization packages</strong> (<code>LimitedLDLFactorizations</code>, <code>IncompleteLU</code>) did not produce preconditioners of comparable quality to MATLAB’s <code>ichol</code> on this problem.</p></li>
+<li><p><strong>A spectral Kronecker preconditioner is competitive</strong> when the shift is well-tuned, achieving the same wall time with cheaper per-iteration cost but more iterations. It’s an interesting alternative for problems where ichol is unavailable or the grid structure is more regular.</p></li>
+<li><p><strong>Stride ordering matters</strong>. Placing the largest grid dimension last minimizes cache misses in both sparse matvec and triangular solves — a universal optimization regardless of solver choice.</p></li>
+<li><p><strong>Always use split preconditioning</strong> with incomplete Cholesky: <code>pcg(A, b, tol, maxit, L, L')</code>, never <code>pcg(A, b, tol, maxit, L)</code>. The single-L form breaks CG’s symmetry assumption and can fail to converge entirely.</p></li>
+</ol>
+
+
+</section>
+
+ ]]></description>
+  <category>math</category>
+  <category>programming</category>
+  <guid>https://jasonhnicholson.com/posts/2026/04/2026-04-12-ichol-pcg-laplacians-spectral-preconditioners.html</guid>
+  <pubDate>Sun, 12 Apr 2026 04:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Linear Least Squares to Quadratic Program</title>
   <link>https://jasonhnicholson.com/posts/2026/04/2026-04-02-linear-least-squares-to-quadratic-program.html</link>
@@ -5901,613 +6154,6 @@ font-style: inherit;">sudo</span> apt install dhelp man2html info2www</span></co
   <category>computing</category>
   <guid>https://jasonhnicholson.com/posts/2021/05/2021-05-09-linux-html-documentation-index.html</guid>
   <pubDate>Sun, 09 May 2021 04:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>Nonlinear Equation System Solving Using Newton, Line Search, and LU factorization</title>
-  <link>https://jasonhnicholson.com/posts/2021/04/2021-04-12-nonlinear-equation-system-solving-using-newton-line-search-and-lu-factorization.html</link>
-  <description><![CDATA[ 
-
-
-
-
-
-
-<section id="summary" class="level1">
-<h1>Summary</h1>
-<p>A couple of weeks ago, I was inspired to revisit Newton’s method for solving nonlinear equations. I was reminded of my undergrad days when I read a paper by Madsen and Reid about finding the roots of a polynomial. What struck me at that time is Madsen-Reid’s application of Newton’s method with a line search was faster than any other algorithm. The Madsen-Reid papers were written in 1973 and 1975. Ever since then, when another paper benchmarked various algorithms to find roots of polynomials, Madsen-Reid would win; to my knowledge, if root-finding of polynomials is benchmarked in literature and the Fortran Madsen-Reid algorithm (PA16 and/or PA17) is used, the Madsen-Reid algorithm is the fastest and nearly the most accurate. What made the algorithm so successful? How can this generalize to solving a set of nonlinear equations? In this post, I plan to discuss these ideas.</p>
-<p>Note that I have a little math syntax but not as much as you would find in a math article or paper. This means my language is a little more inexact and high level without explaining all the detail.</p>
-</section>
-<section id="the-madsen-reid-algorithm" class="level1">
-<h1>The Madsen-Reid Algorithm</h1>
-<p>The Madsen-Reid algorithm can be summarized as follows:</p>
-<ol type="1">
-<li>Calculate a newton direction <img src="https://latex.codecogs.com/png.latex?d%20=%20-%20%7Bf'%7D%5E%7B-%201%7Df">. Do a line search along the <img src="https://latex.codecogs.com/png.latex?d"> direction to find where <img src="https://latex.codecogs.com/png.latex?%7Cf%7C"> is the smallest. However, don’t find the minimum perfectly. Instead, quit after <img src="https://latex.codecogs.com/png.latex?%7Cf%7C"> isn’t decreasing in a sequence of new guesses along <img src="https://latex.codecogs.com/png.latex?d">. This is called “stage 1.”</li>
-<li>Switch to pure newton iteration based on checking an inequality that ensures convergence. This is called “stage 2” pure Newton iteration. If the inequality fails, go back to stage 1.</li>
-</ol>
-<p>The beauty of the Madsen-Reid algorithm is that it is</p>
-<ul>
-<li>Fast</li>
-<li>Simple</li>
-<li>Guaranteed quadratic convergence even to roots with multiplicities greater than 1 because of stage 1 line search. Guaranteed quadratic convergence is rare.</li>
-</ul>
-<p>Link to a paper describing the Madsen-Reid algorithm: <a href="https://apps.dtic.mil/sti/pdfs/ADA278422.pdf" class="uri">https://apps.dtic.mil/sti/pdfs/ADA278422.pdf</a></p>
-<p>C++ implementation of Madsen-Reid algorithm: <a href="http://www.hvks.com/Numerical/ports.html" class="uri">http://www.hvks.com/Numerical/ports.html</a></p>
-<p>Fortran code PA16 and PA17 can be found at <a href="https://www.hsl.rl.ac.uk/catalogue/" class="uri">https://www.hsl.rl.ac.uk/catalogue/</a></p>
-</section>
-<section id="nonlinear-equation-systems-convex-optimization" class="level1">
-<h1>Nonlinear Equation Systems, Convex Optimization</h1>
-<p>Newton iteration with a line search has shown up a lot since Madsen-Reid in optimization and root finding of nonlinear equation systems. It isn’t necessarily because of Madsen-Reid that Newton’s method with line search is broadly used. The reason, in my opinion, is different researchers or practitioners have found that Newton’s method with line search is highly effective.</p>
-<p>The parallels between Newton iteration with line search in optimization and nonlinear equation solving are:</p>
-<style>
-#opt-vs-nleq-table tr.odd  { background-color: #fafafa; }
-#opt-vs-nleq-table tr.even { background-color: #ffffff; }
-#opt-vs-nleq-table thead th { background-color: #f2f2f2; font-weight: 600; }
-#opt-vs-nleq-table th, #opt-vs-nleq-table td { padding: 0.5rem 0.75rem; }
-</style>
-<div id="opt-vs-nleq-table">
-<table class="table">
-<colgroup>
-<col style="width: 50%;border: solid;border-width: thin;">
-<col style="width: 49%;border: solid;border-width: thin;">
-</colgroup>
-<thead>
-<tr class="header">
-<th>
-Unconstrained convex optimization (minimization)
-</th>
-<th>
-Nonlinear equation system
-</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>
-<p>
-<img src="https://latex.codecogs.com/png.latex?Cost%E2%80%84=%E2%80%84F(x)">
-</p>
-<p>
-Where
-</p>
-<ul>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?x"> is a vector value function.
-</p>
-</li>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?F"> is a scalar function of <img src="https://latex.codecogs.com/png.latex?x">. <img src="https://latex.codecogs.com/png.latex?F"> is at least twice differentiable or Lipschitz continuous. The point is <img src="https://latex.codecogs.com/png.latex?F"> needs to be twice differentiable in some sense.
-</p>
-</li>
-</ul>
-</td>
-<td>
-<p>
-You can think of the cost as
-</p>
-<p>
-<img src="https://latex.codecogs.com/png.latex?Cost=%C2%A0%7C%7CF(x)%7C%7C1">
-</p>
-<p>
-Where
-</p>
-<ul>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%7C%7C%C2%A0%C2%A0%7C%7C1"> is one norm (absolute value of the elements of the vector summed).
-</p>
-</li>
-<li>
-<p>
-However, this isn’t necessary. The above equation helps make the analog to optimization only.
-</p>
-</li>
-</ul>
-</td>
-</tr>
-<tr class="even">
-<td>
-<p>
-The gradient is 0 at minimum
-</p>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%20F%7D%7B%5Cpartial%20x%7D%20=%0A0">
-</p>
-<p>
-Where
-</p>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%20F%7D%7B%5Cpartial%20x%7D"> is a vector value function of the <img src="https://latex.codecogs.com/png.latex?x"> vector.
-</p>
-</td>
-<td>
-<p>
-<img src="https://latex.codecogs.com/png.latex?F(x)%E2%80%84=%E2%80%840">
-</p>
-<p>
-Where
-</p>
-<ul>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?F(x)"> is a vector value function of vector x.
-</p>
-</li>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?F"> must be twice differentiable in some sense, at least locally. More advanced math will use advanced ideas to say what this means.
-</p>
-</li>
-</ul>
-</td>
-</tr>
-<tr class="odd">
-<td>
-<p>
-The Newton iteration with line search is
-</p>
-<p>
-<img src="https://latex.codecogs.com/png.latex?xk%E2%80%85+%E2%80%851%E2%80%84=%E2%80%84xk%E2%80%85+%E2%80%85%CE%B1D">
-</p>
-<p>
-<img src="https://latex.codecogs.com/png.latex?D%20=%20%5Cleft(%20%5Cfrac%7B%5Cpartial%5E%7B2%7DF%7D%7B%5Cpartial%0Ax%5E%7B2%7D%7D%20%5Cright)%5E%7B-%201%7D%5Cleft(%20-%20%5Cfrac%7B%5Cpartial%20F%7D%7B%5Cpartial%20x%7D%0A%5Cright)">
-</p>
-<p>
-where
-</p>
-<ul>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%5E%7B2%7DF%7D%7B%5Cpartial%20x%5E%7B2%7D%7D"> is the Hessian matrix. If <img src="https://latex.codecogs.com/png.latex?F"> was twice differentiable, then <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%5E%7B2%7DF%7D%7B%5Cpartial%20x%5E%7B2%7D%7D%5C)%20is%20always%20symmetric.%20It%20should%20not%20be%20singular%20if%20you%20are%20going%20to%20invert%20it"></p>
-</li>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?D"> is the direction of the line search.
-</p>
-</li>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%CE%B1"> is the size of the step found via a line search along <img src="https://latex.codecogs.com/png.latex?D">. There are many inexact and exact ways to do the line search. Quadratic approximation, Inexact Line Search, etc. The point is to find an <img src="https://latex.codecogs.com/png.latex?%CE%B1"> that decreases <img src="https://latex.codecogs.com/png.latex?F">.<br> See <a href="https://youtu.be/MKmIvtq83LY">https://youtu.be/MKmIvtq83LY</a> for Quadratic Approximation.<br> See <a href="https://youtu.be/MzmqM0tuO1Q">https://youtu.be/MzmqM0tuO1Q</a> for an inexact line search.
-</p>
-</li>
-</ul>
-</td>
-<td>
-<p>
-The Newton iteration with line search is
-</p>
-<p>
-<img src="https://latex.codecogs.com/png.latex?xk%E2%80%85+%E2%80%851%E2%80%84=%E2%80%84xk%E2%80%85+%E2%80%85%CE%B1D">
-</p>
-<p>
-<img src="https://latex.codecogs.com/png.latex?D%20=%20%5Cleft(%20%5Cfrac%7B%5Cpartial%5C%20F%7D%7B%5Cpartial%0Ax%7D%20%5Cright)%5E%7B-%201%7D(%20-%20F)">
-</p>
-<p>
-Where
-</p>
-<ul>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%5C%20F%7D%7B%5Cpartial%20x%7D"> is the Jacobian matrix. It is not symmetric like in optimization. It can’t be singular if you are going to invert it.
-</p>
-</li>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?D"> is the direction of the line search.
-</p>
-</li>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%CE%B1"> is the size of the step found via a line search along <img src="https://latex.codecogs.com/png.latex?D">. There are many inexact and exact ways to do the line search. Quadratic approximation, Inexact Line Search, etc. The point is to find an <img src="https://latex.codecogs.com/png.latex?%CE%B1"> that decreases the one norm of <img src="https://latex.codecogs.com/png.latex?F">, <img src="https://latex.codecogs.com/png.latex?%7C%7CF(xk+%CE%B1D)%7C%7C1">.<br> See <a href="https://youtu.be/MKmIvtq83LY">https://youtu.be/MKmIvtq83LY</a> for Quadratic Approximation.<br> See <a href="https://youtu.be/MzmqM0tuO1Q">https://youtu.be/MzmqM0tuO1Q</a> for an inexact line search.
-</p>
-</li>
-</ul>
-</td>
-</tr>
-<tr class="even">
-<td>
-<p>
-The guarantee of convergence of the newton iteration with line search is
-</p>
-<ul>
-<li>
-<p>
-<img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%5E%7B2%7DF%7D%7B%5Cpartial%0Ax%5E%7B2%7D%7D"> is positive definite. Said another way, <img src="https://latex.codecogs.com/png.latex?F"> is convex (looks like a parabola).
-</p>
-</li>
-<li>
-<p>
-If it is not positive definite, then we need to find a replacement direction to search. That direction can come up in many ways but boils down to a change in the direction moving away from a saddle point. See:<br> <a href="https://youtu.be/x1wMciVA6Xc?t=180">https://youtu.be/x1wMciVA6Xc?t=180</a>
-</p>
-</li>
-</ul>
-</td>
-<td>
-I am not sure what the guarantee of convergence is for Newton iteration in the nonlinear system case. As far as I know, <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%5C%20F%7D%7B%5Cpartial%20x%7D"> needs to be invertible, thus nonsingular. I think that is the only requirement. However, we would like to find a way for it to still work if <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%5C%20F%7D%7B%5Cpartial%20x%7D"> is sometimes singular. This what we want to explore in the below sections.
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="lu-factorization-musings-related-to-newton-iteration" class="level1">
-<h1>LU factorization musings related to newton iteration</h1>
-<p>When solving for the direction, <img src="https://latex.codecogs.com/png.latex?D">,</p>
-<p><img src="https://latex.codecogs.com/png.latex?J%20=%20%5Cfrac%7B%5Cpartial%20F%7D%7B%5Cpartial%20x%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?JD%20=%20-%20F"></p>
-<p>The <img src="https://latex.codecogs.com/png.latex?LU"> factorization with partial pivoting of <img src="https://latex.codecogs.com/png.latex?J"> is the best approach to solve this linear system of equations. In MATLAB, <img src="https://latex.codecogs.com/png.latex?D%20=%20J%5Cbackslash%20-%20F"> does the <img src="https://latex.codecogs.com/png.latex?LU"> factorization with partial pivoting underneath the hood similar to this:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1">[<span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">L</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">U</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">p</span>] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">lu</span>(<span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">J</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span><span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'vector'</span>)<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span>  </span>
-<span id="cb1-2"><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">y</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">L</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\-</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">F</span>(<span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">p</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,:</span>)<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span>  </span>
-<span id="cb1-3"><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">D</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">U</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">\</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">y</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">;</span></span></code></pre></div></div>
-<p>If instead of using a backslash, we do the <img src="https://latex.codecogs.com/png.latex?LU"> factorization with partial pivoting ourselves, we can discover when the Jacobian is ill-conditioned by looking at the diagonal of the upper triangular matrix <img src="https://latex.codecogs.com/png.latex?U">. Let’s look at this in an example before going further.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">% this will produce an ill-conditioned A. It has rank of 2.</span></span>
-<span id="cb2-2"><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">A</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">gallery</span>(<span class="ss" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'chebspec'</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">3</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>)</span>
-<span id="cb2-3"><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">A</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span></span>
-<span id="cb2-4">          <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1.5</span>           <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>          <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.5</span></span>
-<span id="cb2-5">          <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.5</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>         <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.5</span></span>
-<span id="cb2-6">         <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.5</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>         <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1.5</span></span>
-<span id="cb2-7"></span>
-<span id="cb2-8">[<span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">L</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">U</span><span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">,</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">P</span>] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> <span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">lu</span>(<span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">A</span>)</span>
-<span id="cb2-9"><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">L</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span></span>
-<span id="cb2-10">            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span></span>
-<span id="cb2-11">     <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.33333</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span></span>
-<span id="cb2-12">      <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.33333</span>          <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.5</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span></span>
-<span id="cb2-13"><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">U</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span></span>
-<span id="cb2-14">          <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1.5</span>           <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">2</span>          <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0.5</span></span>
-<span id="cb2-15">            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>       <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1.3333</span>      <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1.3333</span></span>
-<span id="cb2-16">            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>            <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>  <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1.1102e-16</span></span>
-<span id="cb2-17"><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">P</span> <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span></span>
-<span id="cb2-18">     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span></span>
-<span id="cb2-19">     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span></span>
-<span id="cb2-20">     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span>     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">1</span>     <span class="fl" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">0</span></span></code></pre></div></div>
-<p>The U(3,3) is very small. It is close to 0, which implies that <img src="https://latex.codecogs.com/png.latex?A"> is singular within double floating-point precision. U(3,3) very small leads me to my point: <em>Can we use this?</em> Can we eliminate columns and rows from the Jacobian holding constant the value of corresponding value in <img src="https://latex.codecogs.com/png.latex?x"> at the current iteration to find a valid search direction?</p>
-<p>Let’s explore this. We need a toy problem to work with. Here is one:</p>
-<p><img src="https://latex.codecogs.com/png.latex?F(x)%20=%20%5Cbegin%7Bbmatrix%7D%0Ax_%7B1%7D%5E%7B3%7D%5Carctan%5Cleft(%20x_%7B2%7D%20%5Cright)%20-%202%20%5C%5C%0Ax_%7B1%7D%20+%20x_%7B2%7D%5E%7B2%7D%20-%205%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?x%20=%20%5Cbegin%7Bbmatrix%7D%0Ax_%7B1%7D%20%5C%5C%0Ax_%7B2%7D%0A%5Cend%7Bbmatrix%7D"></p>
-<p>The Jacobian is then:</p>
-<p><img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpartial%20F%7D%7B%5Cpartial%20x%7D%20=%20J%20=%20%5Cbegin%7Bbmatrix%7D%0A3x_%7B1%7D%5E%7B2%7D%5Carctan%5Cleft(%20x_%7B2%7D%20%5Cright)%20&amp;%20%5Cfrac%7Bx_%7B1%7D%5E%7B3%7D%7D%7Bx_%7B2%7D%5E%7B2%7D%5C%20%20+%20%5C%201%7D%20%5C%5C%0A1%20&amp;%202x_%7B2%7D%0A%5Cend%7Bbmatrix%7D"></p>
-<p>This <img src="https://latex.codecogs.com/png.latex?F"> was chosen so there was a saddle point at <img src="https://latex.codecogs.com/png.latex?x_%7B1%7D%20=%200"> and <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D%20=%200">. Note that this <img src="https://latex.codecogs.com/png.latex?F"> has other problems, such as horizontal asymptotes in arctan that cause the newton iteration to have problems. This is on purpose, and the line search should take care of problems created by arctan.</p>
-<p>There are several cases to analyze:</p>
-<ol type="1">
-<li><p>What do we do if we started from or land on <img src="https://latex.codecogs.com/png.latex?x%5C%20%20=%20%5C%20%5Clbrack%200,0%5Crbrack%5E%7BT%7D">?</p></li>
-<li><p>We start or land on <img src="https://latex.codecogs.com/png.latex?x%20=%20%5Cleft%5Clbrack%200,x_%7B2%7D%20%5Cneq%200%20%5Cright%5Crbrack%5E%7BT%7D">.</p></li>
-<li><p>We are close to <img src="https://latex.codecogs.com/png.latex?x%20=%20%5Cleft%5Clbrack%20%5Cepsilon,x_%7B2%7D%20%5Cright%5Crbrack%5E%7BT%7D"> where <img src="https://latex.codecogs.com/png.latex?%5Cepsilon"> is a small number making the Jacobian ill-conditioned but not singular according to MATLAB.</p></li>
-</ol>
-<section id="case-1-x-lbrack-00rbrackt" class="level2">
-<h2 class="anchored" data-anchor-id="case-1-x-lbrack-00rbrackt">Case 1, <img src="https://latex.codecogs.com/png.latex?x%20=%20%5Clbrack%200,0%5Crbrack%5E%7BT%7D"></h2>
-<p><img src="https://latex.codecogs.com/png.latex?F"> and J are</p>
-<p><img src="https://latex.codecogs.com/png.latex?F%20=%20%5Cleft%5Clbrack%20%5Cbegin%7Bmatrix%7D%0A-%202%20%5C%5C%0A-%205%0A%5Cend%7Bmatrix%7D%5C%20%20%5Cright%5Crbrack"></p>
-<p><img src="https://latex.codecogs.com/png.latex?J%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%200%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p>If we explicitly write out the equations for <img src="https://latex.codecogs.com/png.latex?D"> we get:</p>
-<p><img src="https://latex.codecogs.com/png.latex?%7B0*D_%7B1%7D%20+%200*D_%7B2%7D%20=%202%0A%7D%7B1*D_%7B1%7D%20+%200*D_%7B2%7D%20=%205%7D"></p>
-<p>The <img src="https://latex.codecogs.com/png.latex?LU"> with partial pivoting is</p>
-<p><img src="https://latex.codecogs.com/png.latex?L%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?U%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?P%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p>Since <img src="https://latex.codecogs.com/png.latex?U(2,2)"> is 0, the Jacobian is singular. The last column of <img src="https://latex.codecogs.com/png.latex?P"> tells us what equation we can eliminate. In this case, we can eliminate the first equation. I think that the <img src="https://latex.codecogs.com/png.latex?P(1,2)"> implies that the second column can be eliminated; this is more easily seen in explicitly writing out the equations for <img src="https://latex.codecogs.com/png.latex?D"> above. Thus, we have</p>
-<p><img src="https://latex.codecogs.com/png.latex?1*D_%7B1%7D%20=%205%0A">and we replace the column that we lost with</p>
-<p><img src="https://latex.codecogs.com/png.latex?D_%7B2%7D%20=%200"></p>
-<p>We can see what our direction should be is</p>
-<p><img src="https://latex.codecogs.com/png.latex?D%20=%20%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p>However, we need to work this out from the <img src="https://latex.codecogs.com/png.latex?LU"> factorization so we can use it more generally later. We replace the second column of U with 1 on the diagonal. The new <img src="https://latex.codecogs.com/png.latex?U"> is</p>
-<p><img src="https://latex.codecogs.com/png.latex?U%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p>We need to replace the last row of <img src="https://latex.codecogs.com/png.latex?L"> with one on the diagonal. The new <img src="https://latex.codecogs.com/png.latex?L"> is</p>
-<p><img src="https://latex.codecogs.com/png.latex?L%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?P"> does not change. However, the second row of <img src="https://latex.codecogs.com/png.latex?PF"> changes to 0. The new <img src="https://latex.codecogs.com/png.latex?P(%20-%20F)"> is</p>
-<p><img src="https://latex.codecogs.com/png.latex?P(%20-%20F)%20=%20%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p>At this point, we carry out the equations to solve the linear system.</p>
-<p><img src="https://latex.codecogs.com/png.latex?y%20=%20L%5E%7B-%201%7DP(%20-%20F)%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?D%20=%20U%5E%7B-%201%7Dy%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p>Now we have a direction. The question is, does it take us in a direction that makes any sense? If we look at the line search, we get the graph below. The <img src="https://latex.codecogs.com/png.latex?%5Calpha%20=%201"> seems to be the best choice.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://jasonhnicholson.com/posts/2021/04/image1.png" class="img-fluid figure-img"></p>
-<figcaption>Graph of line search</figcaption>
-</figure>
-</div>
-<p>The next guess is</p>
-<p><img src="https://latex.codecogs.com/png.latex?x_%7Bk%20+%201%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D%20+%201%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A5%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p>And the corresponding <img src="https://latex.codecogs.com/png.latex?F"> is</p>
-<p><img src="https://latex.codecogs.com/png.latex?F_%7Bk%20+%201%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A-%202%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p>The Jacobian is</p>
-<p><img src="https://latex.codecogs.com/png.latex?J_%7Bk%20+%201%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%20125%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?LU"> factorization with partial pivoting is</p>
-<p><img src="https://latex.codecogs.com/png.latex?L_%7Bk%20+%201%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?U_%7Bk%20+%201%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%20125%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?P_%7Bk%20+%201%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p>The diagonals of <img src="https://latex.codecogs.com/png.latex?U"> are not zero, so the Jacobian is not singular.</p>
-<p>The initial finding here is we <em>CAN</em> use the <img src="https://latex.codecogs.com/png.latex?LU"> decomposition to find a search direction even when we are on a saddle point. This is good news! More work is needed with a bigger system of equations to see if we can always do this.</p>
-</section>
-<section id="case-2-x-leftlbrack-0x_2-neq-0-rightrbrackt" class="level2">
-<h2 class="anchored" data-anchor-id="case-2-x-leftlbrack-0x_2-neq-0-rightrbrackt">Case 2, <img src="https://latex.codecogs.com/png.latex?x%20=%20%5Cleft%5Clbrack%200,x_%7B2%7D%20%5Cneq%200%20%5Cright%5Crbrack%5E%7BT%7D%5C%20"></h2>
-<p><img src="https://latex.codecogs.com/png.latex?F"> and <img src="https://latex.codecogs.com/png.latex?J"> are</p>
-<p><img src="https://latex.codecogs.com/png.latex?F%20=%20%5Cleft%5Clbrack%20%5Cbegin%7Bmatrix%7D%0A-%202%20%5C%5C%0A-%20x_%7B2%7D%5E%7B2%7D%20-%205%0A%5Cend%7Bmatrix%7D%5C%20%20%5Cright%5Crbrack"></p>
-<p><img src="https://latex.codecogs.com/png.latex?J%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%200%20%5C%5C%0A1%20&amp;%202x_%7B2%7D%0A%5Cend%7Bbmatrix%7D"></p>
-<p>If we explicitly write out the equations for <img src="https://latex.codecogs.com/png.latex?D"> we get:</p>
-<p><img src="https://latex.codecogs.com/png.latex?0*D_%7B1%7D%20+%200*D_%7B2%7D%20=%202"> <img src="https://latex.codecogs.com/png.latex?1*D_%7B1%7D%20+%202x_%7B2%7D*D_%7B2%7D%20=%20x_%7B2%7D%5E%7B2%7D%20+%205"></p>
-<p>The <img src="https://latex.codecogs.com/png.latex?LU"> with partial pivoting is</p>
-<p><img src="https://latex.codecogs.com/png.latex?L%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?U%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%202x_%7B2%7D%20%5C%5C%0A0%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?P%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p>At this point, we eliminate the first equation and second column. The new <img src="https://latex.codecogs.com/png.latex?L">, <img src="https://latex.codecogs.com/png.latex?U">, <img src="https://latex.codecogs.com/png.latex?P">, and <img src="https://latex.codecogs.com/png.latex?P(%20-%20F)"> are</p>
-<p><img src="https://latex.codecogs.com/png.latex?L%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?U%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?P%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?P(%20-%20F)%20=%20%5Cbegin%7Bbmatrix%7D%0Ax_%7B2%7D%5E%7B2%7D%20+%205%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p>At this point, we carry out the equations to solve the linear system.</p>
-<p><img src="https://latex.codecogs.com/png.latex?y%20=%20L%5E%7B-%201%7DPF%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D%5Cbegin%7Bbmatrix%7D%0Ax_%7B2%7D%5E%7B2%7D%20+%205%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D%20=%20%5Cbegin%7Bbmatrix%7D%0Ax_%7B2%7D%5E%7B2%7D%20+%205%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?D%20=%20U%5E%7B-%201%7Dy%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A0%20&amp;%201%0A%5Cend%7Bbmatrix%7D%5Cbegin%7Bbmatrix%7D%0Ax_%7B2%7D%5E%7B2%7D%20+%205%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D%20=%20%5Cbegin%7Bbmatrix%7D%0Ax_%7B2%7D%5E%7B2%7D%20+%205%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D"></p>
-<p>Now we have a direction. The question is, does it take us in a direction that makes any sense? If we look at the line search, we get the graph below. Note, several different views are displayed because of the 3d nature of the graph. The answer is we can always take a direction that makes sense based on the direction found.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://jasonhnicholson.com/posts/2021/04/image2.png" class="img-fluid figure-img"></p>
-<figcaption>Line search surface (view 1)</figcaption>
-</figure>
-</div>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://jasonhnicholson.com/posts/2021/04/image3.png" class="img-fluid figure-img"></p>
-<figcaption>Line search surface (view 2)</figcaption>
-</figure>
-</div>
-<p>If we plot <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D"> vs.&nbsp;<img src="https://latex.codecogs.com/png.latex?%5Calpha"> we get:</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://jasonhnicholson.com/posts/2021/04/image4.png" class="img-fluid figure-img"></p>
-<figcaption>Plot of <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D"> vs <img src="https://latex.codecogs.com/png.latex?%5Calpha"></figcaption>
-</figure>
-</div>
-<p>If we expand out the graph above for large values of <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D"> we see that <img src="https://latex.codecogs.com/png.latex?%5Calpha"> is heading towards 0 (shown below). In the limit <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D"> goes to infinity, <img src="https://latex.codecogs.com/png.latex?%5Calpha"> will go to 0. This tends to point to situations where the ill-conditioning of finding a new <img src="https://latex.codecogs.com/png.latex?x_%7Bk%20+%201%7D">. When <img src="https://latex.codecogs.com/png.latex?%5Calpha%20D"> is near working precision of <img src="https://latex.codecogs.com/png.latex?x_%7Bk%7D">, then <img src="https://latex.codecogs.com/png.latex?x_%7Bk%20+%201%7D%20=%20x_%7Bk%7D"> to working precision. This would cause the Newton iteration to quit near a saddle point rather than near a solution of the nonlinear system of equations. We may have to detect this case by finding the singularity of the Jacobian from the LU factorization. We will need to search an arbitrary direction to get us off this ill-conditioned point.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="https://jasonhnicholson.com/posts/2021/04/image5.png" class="img-fluid figure-img"></p>
-<figcaption><img src="https://latex.codecogs.com/png.latex?x_2"> versus <img src="https://latex.codecogs.com/png.latex?%5Calpha"></figcaption>
-</figure>
-</div>
-<p>With our direction <img src="https://latex.codecogs.com/png.latex?D">, the <img src="https://latex.codecogs.com/png.latex?x_%7Bk%20+%201%5C%20%7D"> is</p>
-<p><img src="https://latex.codecogs.com/png.latex?x_%7Bk%20+%201%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20%5C%5C%0Ax_%7B2%7D%0A%5Cend%7Bbmatrix%7D%20+%20%5Calpha%5Cbegin%7Bbmatrix%7D%0Ax_%7B2%7D%5E%7B2%7D%20+%205%20%5C%5C%0A0%0A%5Cend%7Bbmatrix%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A%5Calpha%5Cleft(%20x_%7B2%7D%5E%7B2%7D%20+%205%20%5Cright)%20%5C%5C%0Ax_%7B2%7D%0A%5Cend%7Bbmatrix%7D"></p>
-<p>The machine double precision of <img src="https://latex.codecogs.com/png.latex?x_%7B1%7D%20=%200"> is</p>
-<p><img src="https://latex.codecogs.com/png.latex?eps(0)%20=%204.9407*10%5E%7B-%20324%7D"></p>
-<p>This means that <img src="https://latex.codecogs.com/png.latex?%5Calpha%5Cleft(%20x_%7B2%7D%5E%7B2%7D%20+%205%20%5Cright)"> would have to be near <img src="https://latex.codecogs.com/png.latex?eps(0)"> for us to not find a new point, <img src="https://latex.codecogs.com/png.latex?x_%7Bk%20+%201%7D">. <img src="https://latex.codecogs.com/png.latex?%5Calpha"> can be very small and it will still have an impact in this case. For instance, when <img src="https://latex.codecogs.com/png.latex?%5Calpha%20=%2010%5E%7B-%2016%7D">, <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D%20=%202.236082770647552*10%5E%7B8%7D">, <img src="https://latex.codecogs.com/png.latex?x_%7Bk%20+%201%7D%20=%20%5Clbrack%205.000066157186832,%5C%202.236082770647552*10%5E%7B8%7D%5Crbrack"> which is still better than what we had before. More investigation is still warranted, but I am less concerned after looking at an example.</p>
-<p>Similar to case 1, we CAN take a step in a direction that makes sense. We may need to refine this at some point because of floating-point precision. For now, though, floating-point precision is not a problem for this case.</p>
-</section>
-<section id="case-3-x-leftlbrack-epsilonx_2-rightrbrackt" class="level2">
-<h2 class="anchored" data-anchor-id="case-3-x-leftlbrack-epsilonx_2-rightrbrackt">Case 3, <img src="https://latex.codecogs.com/png.latex?x%20=%20%5Cleft%5Clbrack%20%5Cepsilon,x_%7B2%7D%20%5Cright%5Crbrack%5E%7BT%7D"></h2>
-<p><img src="https://latex.codecogs.com/png.latex?F"> and <img src="https://latex.codecogs.com/png.latex?J"> are</p>
-<p><img src="https://latex.codecogs.com/png.latex?F(x)%20=%20%5Cbegin%7Bbmatrix%7D%0A%5Cepsilon%5E%7B3%7D%5Carctan%5Cleft(%20x_%7B2%7D%20%5Cright)%20-%202%20%5C%5C%0A%5Cepsilon%20+%20x_%7B2%7D%5E%7B2%7D%20-%205%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?J%20=%20%5Cbegin%7Bbmatrix%7D%0A3%5Cepsilon%5E%7B2%7D%5Carctan%5Cleft(%20x_%7B2%7D%20%5Cright)%20&amp;%20%5Cfrac%7B%5Cepsilon%5E%7B3%7D%7D%7Bx_%7B2%7D%5E%7B2%7D%5C%20%20+%20%5C%201%7D%20%5C%5C%0A1%20&amp;%202x_%7B2%7D%0A%5Cend%7Bbmatrix%7D"></p>
-<p>If we explicitly write out the equations for <img src="https://latex.codecogs.com/png.latex?D"> we get:</p>
-<p><img src="https://latex.codecogs.com/png.latex?%7B3%5Cepsilon%5E%7B2%7D%5Carctan%5Cleft(%20x_%7B2%7D%20%5Cright)*D_%7B1%7D%20+%20%5Cfrac%7B%5Cepsilon%5E%7B3%7D%7D%7Bx_%7B2%7D%5E%7B2%7D%5C%20%20+%20%5C%201%7D*D_%7B2%7D%20=%20-%20%5Cepsilon%5E%7B3%7D%5Carctan%5Cleft(%20x_%7B2%7D%20%5Cright)%20+%202%0A%7D%7B1*D_%7B1%7D%20+%202x_%7B2%7D*D_%7B2%7D%20=%20-%20%5Cepsilon%20+%20x_%7B2%7D%5E%7B2%7D%20+%205%7D"></p>
-<p>Through a bit of experiment with <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D%20=%201"> and trying to find when <img src="https://latex.codecogs.com/png.latex?J"> becomes rank 1 according to MATLAB, <img src="https://latex.codecogs.com/png.latex?%5Cepsilon%20=%202*10%5E%7B-%208%7D"> is rank 2 while <img src="https://latex.codecogs.com/png.latex?%5Cepsilon%20=%201*10%5E%7B-%208%7D"> is rank 1.</p>
-<p>For the case that <img src="https://latex.codecogs.com/png.latex?%5Cepsilon%20=%202*10%5E%7B-%208%7D"> and <img src="https://latex.codecogs.com/png.latex?x_%7B2%7D%20=%201">, the <img src="https://latex.codecogs.com/png.latex?LU"> factorization yields:</p>
-<p><img src="https://latex.codecogs.com/png.latex?L%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A9.42477796076938*10%5E%7B-%2016%7D%20&amp;%201%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?U%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%202%20%5C%5C%0A0%20&amp;%20-%201.88495558815388*10%5E%7B-%2015%7D%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?P%20=%20%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D"></p>
-<p>If we missed this as a singular case, we would get a direction of</p>
-<p><img src="https://latex.codecogs.com/png.latex?y%20=%20L%5E%7B-%201%7DP(%20-%20F)%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%200%20%5C%5C%0A-%209.42477796076938*10%5E%7B-%2016%7D%20&amp;%201%0A%5Cend%7Bbmatrix%7D%5Cbegin%7Bbmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bbmatrix%7D%5Cbegin%7Bbmatrix%7D%0A-%202%20%5C%5C%0A-%203.999999980000000%0A%5Cend%7Bbmatrix%7D%20=%20%5Cbegin%7Bbmatrix%7D%0A3.99999998%20%5C%5C%0A1.999999999999996%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?%7BD%20=%20U%5E%7B-%201%7Dy%20=%20%5Cbegin%7Bbmatrix%7D%0A1%20&amp;%201.061032956197551*10%5E%7B15%7D%20%5C%5C%0A0%20&amp;%20-%205.305164780987754*10%5E%7B14%7D%0A%5Cend%7Bbmatrix%7D%5Cbegin%7Bbmatrix%7D%0A3.99999998%20%5C%5C%0A1.999999999999996%0A%5Cend%7Bbmatrix%7D%0A%7D%7B=%20%5Cbegin%7Bbmatrix%7D%0A2.122065912395102*10%5E%7B15%7D%20%5C%5C%0A-%201.061032956197549*10%5E%7B15%7D%0A%5Cend%7Bbmatrix%7D%7D"></p>
-<p>This direction is enormous in magnitude. It seems like it could cause problems. However, the line search keeps this from getting worse. For the above <img src="https://latex.codecogs.com/png.latex?D">, <img src="https://latex.codecogs.com/png.latex?%5Calpha%20=%207.82707232360737*10%5E%7B-%2016%7D">. The line search saves the day. This is what makes the Newton iteration with line search so robust. Even with a huge Newton direction, we can take an appropriate step because of the line search.</p>
-<p><img src="https://latex.codecogs.com/png.latex?%7Bx_%7Bk%20+%201%7D%20=%20x_%7Bk%7D%20+%20%5Calpha%20D%20=%20%5Cbegin%7Bbmatrix%7D%0A2*10%5E%7B-%208%7D%20%5C%5C%0A1%0A%5Cend%7Bbmatrix%7D%20+%207.82707232360737*10%5E%7B-%2016%7D%5Cbegin%7Bbmatrix%7D%0A2.122065912395102*10%5E%7B15%7D%20%5C%5C%0A-%201.061032956197549*10%5E%7B15%7D%0A%5Cend%7Bbmatrix%7D%0A%7D%7B=%20%5Cbegin%7Bbmatrix%7D%0A1.660956357177832%20%5C%5C%0A0.169521831411085%0A%5Cend%7Bbmatrix%7D%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?F%5Cleft(%20x_%7Bk%20+%201%7D%20%5Cright)%20=%20%5Cbegin%7Bbmatrix%7D%0A-%201.230531207840158%20%5C%5C%0A-%203.310305991497200%0A%5Cend%7Bbmatrix%7D"></p>
-<p><img src="https://latex.codecogs.com/png.latex?%5Cleft%7C%20%5Cleft%7C%20F%5Cleft(%20x_%7Bk%20+%201%7D%20%5Cright)%20%5Cright%7C%20%5Cright%7C_%7B1%7D%20=%204.54083719933736"></p>
-<p>While</p>
-<p><img src="https://latex.codecogs.com/png.latex?%5Cleft%7C%20%5Cleft%7C%20F%5Cleft(%20x_%7Bk%7D%20%5Cright)%20%5Cright%7C%20%5Cright%7C_%7B1%7D%20=%205.999999980000000"></p>
-<p>In case 3, we CAN take a step that makes sense. The line search is the star of the show. It prevents us from taking too big of a step.</p>
-</section>
-</section>
-<section id="whats-next" class="level1">
-<h1>What’s Next?</h1>
-<p>I need to</p>
-<ul>
-<li><p>Write a MATLAB function for Newton iteration with line search and LU factorization to recognize singularity.</p></li>
-<li><p>Implement a line search using a quadratic interpolation to find the step size, <img src="https://latex.codecogs.com/png.latex?%5Calpha">. This will be key. Madsen-Reid’s line search would also work.</p></li>
-<li><p>I need to add inequality constraints. This will most likely add some Lagrange multipliers or something similar. This will be needed especially for functions like log where crossing a vertical asymptote is a terrible idea. This will be needed when we want one particular solution and don’t want to cross into the basin of attraction to another solution.</p></li>
-<li><p>Write this in Simulink so that it can be compiled to code and even work on fixed-point types.</p>
-<ul>
-<li>This will require using some custom LU code. See the examples of the Fixed-point types for MATLAB functions.</li>
-</ul></li>
-</ul>
-</section>
-<section id="conclusion" class="level1">
-<h1>Conclusion</h1>
-<p>Newton iteration with a line search with <img src="https://latex.codecogs.com/png.latex?LU"> factorization to find the singular case looks to be a very robust nonlinear equation solver.</p>
-
-
-</section>
-
- ]]></description>
-  <category>math</category>
-  <guid>https://jasonhnicholson.com/posts/2021/04/2021-04-12-nonlinear-equation-system-solving-using-newton-line-search-and-lu-factorization.html</guid>
-  <pubDate>Mon, 12 Apr 2021 04:00:00 GMT</pubDate>
 </item>
 </channel>
 </rss>
