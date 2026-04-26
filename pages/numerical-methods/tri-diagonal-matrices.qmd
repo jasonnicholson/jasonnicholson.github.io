@@ -3,28 +3,239 @@ title: "Tri-Diagonal Matrices"
 bibliography: ../../references.bib
 ---
 
-← [Numerical Methods](../)
+← [Numerical Methods](./)
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Background
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+In many applications — particularly in cubic spline construction, finite-difference
+boundary value problems, and parabolic PDE solvers — the coefficient matrix has a
+special banded structure.  A **sparse** matrix contains a large majority of zero
+entries.  Exploiting that structure leads to algorithms that are far more efficient
+in both time and storage than general Gaussian elimination.  The most common case is
+the *tridiagonal* matrix.
 
-### Planned animation ideas
+::: {.callout-note appearance="simple"}
+## Definition — Tridiagonal Matrix
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+An $n\times n$ matrix $A$ is called a **tridiagonal matrix** if $a_{ij} = 0$
+whenever $|i-j| > 1$.  A tridiagonal matrix has the form
 
-## Derivation Notes (Planned)
+$$
+A =
+\begin{pmatrix}
+a_{1,1} & a_{1,2} & 0       & 0       & \cdots & 0       \\
+a_{2,1} & a_{2,2} & a_{2,3} & 0       & \cdots & 0       \\
+0       & a_{3,2} & a_{3,3} & a_{3,4} & \cdots & 0       \\
+\vdots  &         & \ddots  & \ddots  & \ddots & \vdots  \\
+0       & \cdots  & 0       & a_{n,n-1} & a_{n,n}
+\end{pmatrix}.
+\tag{1}
+$$
+:::
 
-Short derivations will be added to explain the core equations and assumptions.
+## Compact Vector Notation
 
-## Worked Example (Planned)
+A full $n\times n$ storage for a tridiagonal matrix wastes $n^2 - 3n + 2$ zeros.
+Instead, it is more efficient to store only the three diagonals as vectors:
 
-A compact numerical example with intermediate steps will be included.
+| Symbol | Length | Meaning |
+|--------|--------|---------|
+| $d_k$ | $n$ | Main diagonal: $d_k = a_{k,k}$ |
+| $a_k$ | $n-1$ | Sub-diagonal: $a_k = a_{k+1,k}$ (element below $d_k$) |
+| $c_k$ | $n-1$ | Super-diagonal: $c_k = a_{k,k+1}$ (element above $d_k$) |
 
-## Implementation Notes (Planned)
+With this single-subscript notation the matrix becomes
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+$$
+A =
+\begin{pmatrix}
+d_1 & c_1 & 0   & 0   & \cdots & 0 \\
+a_1 & d_2 & c_2 & 0   & \cdots & 0 \\
+0   & a_2 & d_3 & c_3 & \cdots & 0 \\
+\vdots &   & \ddots & \ddots & \ddots & \vdots \\
+0 & \cdots & 0 & a_{n-2} & d_{n-1} & c_{n-1} \\
+0 & \cdots & 0 & 0 & a_{n-1} & d_n
+\end{pmatrix}
+\tag{2}
+$$
+
+and the system $A\mathbf{x} = \mathbf{b}$ expands to
+
+$$
+\begin{aligned}
+d_1 x_1 + c_1 x_2 &= b_1, \\
+a_{k-1} x_{k-1} + d_k x_k + c_k x_{k+1} &= b_k, \quad k = 2,\ldots,n-1,\\
+a_{n-1} x_{n-1} + d_n x_n &= b_n.
+\end{aligned}
+\tag{3}
+$$
+
+::: {.callout-warning appearance="simple"}
+## Storage savings
+
+An $n\times n$ tridiagonal system requires storing only $3n - 2$ numbers instead of
+$n^2$.  For $n = 31$ this is $91$ versus $961$ — a reduction to about $9.5\%$ of the
+naive storage.  For $n = 1000$ (common in finite-difference PDE work) the savings
+reach $99.7\%$.
+:::
+
+## Uniqueness Theorem
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Tridiagonal Unique Solution
+
+Suppose the tridiagonal system $A\mathbf{x} = \mathbf{b}$ satisfies $|d_1| > |c_1|$
+and
+
+$$
+|d_k| > |a_{k-1}| + |c_k|, \quad k = 2, \ldots, n-1,
+\quad |d_n| > |a_{n-1}|.
+$$
+
+Then there exists a unique solution.  (The condition is *diagonal dominance*.)
+:::
+
+## Thomas Algorithm
+
+The **Thomas algorithm** (also called the tridiagonal matrix algorithm, TDMA)
+applies LU factorization specialized to the tridiagonal structure.  It proceeds in
+two passes.
+
+**Forward sweep** — eliminate the sub-diagonal.
+
+For $k = 2, 3, \ldots, n$, compute the multiplier
+
+$$
+w_k = \frac{a_{k-1}}{d_{k-1}}
+\tag{4}
+$$
+
+and update
+
+$$
+d_k \;\leftarrow\; d_k - w_k\, c_{k-1},
+\qquad
+b_k \;\leftarrow\; b_k - w_k\, b_{k-1}.
+\tag{5}
+$$
+
+**Back substitution** — solve the resulting upper-bidiagonal system.
+
+$$
+x_n = \frac{b_n}{d_n},
+\qquad
+x_k = \frac{b_k - c_k\, x_{k+1}}{d_k},
+\quad k = n-1,\, n-2,\, \ldots,\, 1.
+\tag{6}
+$$
+
+The algorithm requires only $O(n)$ operations (versus $O(n^3)$ for general
+Gaussian elimination) and needs no pivoting when diagonal dominance holds.
+
+## Example 1 — Symmetric 4×4 Tridiagonal System
+
+Solve the tridiagonal system $A\mathbf{x} = \mathbf{b}$ where
+
+$$
+A =
+\begin{pmatrix}
+2 & 1 & 0 & 0 \\
+1 & 2 & 1 & 0 \\
+0 & 1 & 2 & 1 \\
+0 & 0 & 1 & 2
+\end{pmatrix},
+\qquad
+\mathbf{b} =
+\begin{pmatrix} 1 \\ 0 \\ 0 \\ 1 \end{pmatrix}.
+$$
+
+The diagonal vectors are $\mathbf{d} = (2,2,2,2)$, $\mathbf{a} = \mathbf{c} = (1,1,1)$,
+and $\mathbf{b} = (1,0,0,1)$.
+
+### Forward Sweep
+
+**Step $k=2$:**
+$$
+w_2 = \frac{a_1}{d_1} = \frac{1}{2},
+\quad
+d_2 \leftarrow 2 - \tfrac{1}{2}(1) = \tfrac{3}{2},
+\quad
+b_2 \leftarrow 0 - \tfrac{1}{2}(1) = -\tfrac{1}{2}.
+$$
+
+**Step $k=3$:**
+$$
+w_3 = \frac{a_2}{d_2} = \frac{1}{3/2} = \frac{2}{3},
+\quad
+d_3 \leftarrow 2 - \tfrac{2}{3}(1) = \tfrac{4}{3},
+\quad
+b_3 \leftarrow 0 - \tfrac{2}{3}\!\left(-\tfrac{1}{2}\right) = \tfrac{1}{3}.
+$$
+
+**Step $k=4$:**
+$$
+w_4 = \frac{a_3}{d_3} = \frac{1}{4/3} = \frac{3}{4},
+\quad
+d_4 \leftarrow 2 - \tfrac{3}{4}(1) = \tfrac{5}{4},
+\quad
+b_4 \leftarrow 1 - \tfrac{3}{4}\!\left(\tfrac{1}{3}\right) = \tfrac{3}{4}.
+$$
+
+After the sweep the system reduces to the upper-bidiagonal form with modified
+diagonals $\mathbf{d}' = (2,\,\tfrac{3}{2},\,\tfrac{4}{3},\,\tfrac{5}{4})$ and
+right-hand sides $\mathbf{b}' = (1,\,-\tfrac{1}{2},\,\tfrac{1}{3},\,\tfrac{3}{4})$.
+
+### Back Substitution
+
+$$
+x_4 = \frac{b_4'}{d_4'} = \frac{3/4}{5/4} = \frac{3}{5}.
+$$
+
+$$
+x_3 = \frac{b_3' - c_3\,x_4}{d_3'} = \frac{\tfrac{1}{3} - 1\cdot\tfrac{3}{5}}{\tfrac{4}{3}}
+     = \frac{-\tfrac{4}{15}}{\tfrac{4}{3}} = -\frac{1}{5}.
+$$
+
+$$
+x_2 = \frac{b_2' - c_2\,x_3}{d_2'} = \frac{-\tfrac{1}{2} - 1\cdot(-\tfrac{1}{5})}{\tfrac{3}{2}}
+     = \frac{-\tfrac{3}{10}}{\tfrac{3}{2}} = -\frac{1}{5}.
+$$
+
+$$
+x_1 = \frac{b_1' - c_1\,x_2}{d_1'} = \frac{1 - 1\cdot(-\tfrac{1}{5})}{2}
+     = \frac{\tfrac{6}{5}}{2} = \frac{3}{5}.
+$$
+
+The solution is
+
+$$
+\mathbf{x} = \left(\tfrac{3}{5},\,-\tfrac{1}{5},\,-\tfrac{1}{5},\,\tfrac{3}{5}\right).
+$$
+
+### Verification
+
+Substitute back into $A\mathbf{x}$:
+
+| Row | Computation | Result | $b_k$ |
+|-----|-------------|--------|-------|
+| 1 | $2\!\cdot\!\tfrac{3}{5} + 1\!\cdot\!(-\tfrac{1}{5})$ | $\tfrac{6}{5}-\tfrac{1}{5}=1$ | $1$ $\checkmark$ |
+| 2 | $1\!\cdot\!\tfrac{3}{5} + 2\!\cdot\!(-\tfrac{1}{5}) + 1\!\cdot\!(-\tfrac{1}{5})$ | $\tfrac{3-2-1}{5}=0$ | $0$ $\checkmark$ |
+| 3 | $1\!\cdot\!(-\tfrac{1}{5}) + 2\!\cdot\!(-\tfrac{1}{5}) + 1\!\cdot\!\tfrac{3}{5}$ | $\tfrac{-1-2+3}{5}=0$ | $0$ $\checkmark$ |
+| 4 | $1\!\cdot\!(-\tfrac{1}{5}) + 2\!\cdot\!\tfrac{3}{5}$ | $\tfrac{-1+6}{5}=1$ | $1$ $\checkmark$ |
+
+## Applications
+
+Tridiagonal systems arise naturally in:
+
+1. **Cubic splines** — the continuity conditions for the second derivatives produce a
+   tridiagonal system for the spline coefficients.
+2. **Finite-difference BVPs** — discretizing $u'' = f$ on a uniform grid yields a
+   tridiagonal system of dimension equal to the number of interior grid points.
+3. **Parabolic PDEs** — the Crank–Nicolson scheme for the heat equation generates a
+   tridiagonal system at every time step.
+
+In each of these contexts the dimension $n$ can be very large (hundreds to thousands),
+making the $O(n)$ Thomas algorithm essential.
+

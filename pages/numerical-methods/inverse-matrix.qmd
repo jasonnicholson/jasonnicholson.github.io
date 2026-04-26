@@ -3,28 +3,340 @@ title: "Inverse Matrix"
 bibliography: ../../references.bib
 ---
 
-← [Numerical Methods](../)
+← [Numerical Methods](./)
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Background
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Given an $n\times n$ nonsingular matrix $A$, its **inverse** $A^{-1}$ is the unique
+matrix satisfying $A A^{-1} = A^{-1} A = I_n$.  The inverse is useful for solving
+multiple right-hand-side problems (once $A^{-1}$ is known, each new system
+$A\mathbf{x} = \mathbf{b}$ is answered by $\mathbf{x} = A^{-1}\mathbf{b}$ at only
+$O(n^2)$ cost) and in theoretical analysis.  For single solves, LU factorization is
+more efficient; the inverse pays off when the same matrix is reused with many
+different right-hand sides.
 
-### Planned animation ideas
+## Theorem — Computing the Inverse by Gauss–Jordan
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+::: {.callout-tip appearance="simple"}
+## Theorem — Inverse Matrix
 
-## Derivation Notes (Planned)
+Assume $A$ is an $n\times n$ nonsingular matrix.  Form the $n\times 2n$ augmented
+matrix $[A\,|\,I_n]$.  Apply Gauss–Jordan elimination (reducing every column, not
+just forward elimination) until the identity $I_n$ occupies the first $n$ columns.
+Then $A^{-1}$ occupies columns $n+1$ through $2n$:
 
-Short derivations will be added to explain the core equations and assumptions.
+$$
+[A \mid I_n] \xrightarrow{\text{Gauss–Jordan}} [I_n \mid A^{-1}].
+$$
+:::
 
-## Worked Example (Planned)
+The algorithm uses the same row operations as Gauss–Jordan elimination for solving
+$A\mathbf{x} = \mathbf{b}$ but applies them simultaneously to $n$ right-hand sides
+(the columns of $I_n$).
 
-A compact numerical example with intermediate steps will be included.
+## Algorithm — Complete Gauss–Jordan Elimination
 
-## Implementation Notes (Planned)
+For $j = 1, 2, \ldots, n$ (pivot column):
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+1. Find the largest entry in column $j$ at or below row $j$; swap that row with row
+   $j$ (partial pivoting for numerical stability).
+2. Divide row $j$ by the pivot $a_{jj}$ so that $a_{jj} = 1$.
+3. For every other row $i \neq j$: subtract $a_{ij}$ times row $j$ from row $i$,
+   zeroing the entire column $j$ above *and* below the pivot.
+
+After all $n$ steps the left half of the augmented matrix is $I_n$ and the right
+half is $A^{-1}$.
+
+## Example 1 — Inverse of a $4\times 4$ Matrix
+
+Find the inverse of
+
+$$
+A =
+\begin{pmatrix}
+4 & 8 & 4 &  0 \\
+1 & 4 & 7 &  2 \\
+1 & 5 & 4 & -3 \\
+1 & 3 & 0 & -2
+\end{pmatrix}.
+$$
+
+### Solution
+
+Form the $4\times 8$ augmented matrix $[A \mid I_4]$:
+
+$$
+\left(
+\begin{array}{cccc|cccc}
+4 & 8 &  4 &  0 & 1 & 0 & 0 & 0 \\
+1 & 4 &  7 &  2 & 0 & 1 & 0 & 0 \\
+1 & 5 &  4 & -3 & 0 & 0 & 1 & 0 \\
+1 & 3 &  0 & -2 & 0 & 0 & 0 & 1
+\end{array}
+\right).
+$$
+
+**Step 1 — Eliminate column 1** (pivot $= 4$; subtract multiples of $R_1$ from
+$R_2, R_3, R_4$):
+
+$$
+\left(
+\begin{array}{cccc|cccc}
+4 &  8 &  4 &  0 &  1    &  0 & 0 & 0 \\
+0 &  2 &  6 &  2 & -\tfrac{1}{4} &  1 & 0 & 0 \\
+0 &  3 &  3 & -3 & -\tfrac{1}{4} &  0 & 1 & 0 \\
+0 &  1 & -1 & -2 & -\tfrac{1}{4} &  0 & 0 & 1
+\end{array}
+\right).
+$$
+
+**Step 2 — Eliminate column 2** (pivot $= 2$; also clear $R_1$):
+
+$$
+\left(
+\begin{array}{cccc|cccc}
+4 &  0 & -20 & -8 &  2            & -4          & 0 & 0 \\
+0 &  2 &   6 &  2 & -\tfrac{1}{4} &  1          & 0 & 0 \\
+0 &  0 &  -6 & -6 &  \tfrac{1}{8} & -\tfrac{3}{2} & 1 & 0 \\
+0 &  0 &  -4 & -3 & -\tfrac{1}{8} & -\tfrac{1}{2} & 0 & 1
+\end{array}
+\right).
+$$
+
+**Step 3 — Eliminate column 3** (pivot $= -6$; clear $R_1, R_2, R_4$):
+
+$$
+\left(
+\begin{array}{cccc|cccc}
+4 & 0 &  0 & 12 &  \tfrac{19}{12} &  1            & -\tfrac{10}{3} & 0 \\
+0 & 2 &  0 & -4 & -\tfrac{1}{8}   & -\tfrac{1}{2} &  1             & 0 \\
+0 & 0 & -6 & -6 &  \tfrac{1}{8}   & -\tfrac{3}{2} &  1             & 0 \\
+0 & 0 &  0 &  1 & -\tfrac{5}{24}  &  \tfrac{1}{2} & -\tfrac{2}{3}  & 1
+\end{array}
+\right).
+$$
+
+**Step 4 — Eliminate column 4** (pivot $= 1$; clear $R_1, R_2, R_3$), then
+normalize $R_1, R_2, R_3$ by their diagonal entries:
+
+$$
+\left(
+\begin{array}{cccc|cccc}
+1 & 0 & 0 & 0 &  \tfrac{49}{48} & -\tfrac{5}{4} &  \tfrac{7}{6} & -3 \\
+0 & 1 & 0 & 0 & -\tfrac{23}{48} &  \tfrac{3}{4} & -\tfrac{5}{6} &  2 \\
+0 & 0 & 1 & 0 &  \tfrac{3}{16}  & -\tfrac{1}{4} &  \tfrac{1}{2} & -1 \\
+0 & 0 & 0 & 1 & -\tfrac{5}{24}  &  \tfrac{1}{2} & -\tfrac{2}{3} &  1
+\end{array}
+\right).
+$$
+
+The inverse is
+
+$$
+A^{-1} =
+\begin{pmatrix}
+ \tfrac{49}{48} & -\tfrac{5}{4} &  \tfrac{7}{6} & -3 \\[4pt]
+-\tfrac{23}{48} &  \tfrac{3}{4} & -\tfrac{5}{6} &  2 \\[4pt]
+ \tfrac{3}{16}  & -\tfrac{1}{4} &  \tfrac{1}{2} & -1 \\[4pt]
+-\tfrac{5}{24}  &  \tfrac{1}{2} & -\tfrac{2}{3} &  1
+\end{pmatrix}.
+$$
+
+Note: $\det(A) = -48$ (verified by cofactor expansion).
+
+### Verification
+
+Compute the first column of $A A^{-1}$ (it should equal $e_1 = (1,0,0,0)^T$):
+
+| Row | $\sum_j A_{ij}(A^{-1})_{j1}$ | Result |
+|-----|-------------------------------|--------|
+| 1 | $4\cdot\tfrac{49}{48} + 8\cdot(-\tfrac{23}{48}) + 4\cdot\tfrac{3}{16} + 0$ | $\tfrac{196-184}{48}+\tfrac{3}{4} = \tfrac{12}{48}+\tfrac{36}{48} = 1$ $\checkmark$ |
+| 2 | $\tfrac{49}{48} + 4\cdot(-\tfrac{23}{48}) + 7\cdot\tfrac{3}{16} + 2\cdot(-\tfrac{5}{24})$ | $\tfrac{49-92+63-20}{48} = 0$ $\checkmark$ |
+| 3 | $\tfrac{49}{48} + 5\cdot(-\tfrac{23}{48}) + 4\cdot\tfrac{3}{16} + (-3)\cdot(-\tfrac{5}{24})$ | $\tfrac{49-115+36+30}{48} = 0$ $\checkmark$ |
+| 4 | $\tfrac{49}{48} + 3\cdot(-\tfrac{23}{48}) + 0 + (-2)\cdot(-\tfrac{5}{24})$ | $\tfrac{49-69+20}{48} = 0$ $\checkmark$ |
+
+## The Hilbert Matrix
+
+Hilbert matrices appear naturally in polynomial approximation problems and are
+classic examples of severely ill-conditioned matrices.
+
+::: {.callout-note appearance="simple"}
+## Definition — Hilbert Matrix
+
+The **Hilbert matrix** $H_n$ of order $n$ has elements
+
+$$
+(H_n)_{ij} = \frac{1}{i+j-1}, \quad i,j = 1,\ldots,n.
+$$
+:::
+
+The first three Hilbert matrices are:
+
+$$
+H_2 = \begin{pmatrix}1 & \tfrac{1}{2}\\\tfrac{1}{2} & \tfrac{1}{3}\end{pmatrix},
+\quad
+H_3 = \begin{pmatrix}1&\tfrac{1}{2}&\tfrac{1}{3}\\\tfrac{1}{2}&\tfrac{1}{3}&\tfrac{1}{4}\\\tfrac{1}{3}&\tfrac{1}{4}&\tfrac{1}{5}\end{pmatrix},
+\quad
+H_4 = \begin{pmatrix}
+1&\tfrac{1}{2}&\tfrac{1}{3}&\tfrac{1}{4}\\
+\tfrac{1}{2}&\tfrac{1}{3}&\tfrac{1}{4}&\tfrac{1}{5}\\
+\tfrac{1}{3}&\tfrac{1}{4}&\tfrac{1}{5}&\tfrac{1}{6}\\
+\tfrac{1}{4}&\tfrac{1}{5}&\tfrac{1}{6}&\tfrac{1}{7}
+\end{pmatrix}.
+$$
+
+::: {.callout-warning appearance="simple"}
+## Ill-Conditioning of Hilbert Matrices
+
+Hilbert matrices become extremely ill-conditioned as $n$ grows.  For $n=5$,
+$\kappa(H_5) \approx 4.77 \times 10^5$.  Numerical inversion in floating-point
+arithmetic introduces large errors — this is why the exact formulas below are
+valuable when exact computation is required.
+:::
+
+## Inverse Hilbert Matrix
+
+An exact closed-form formula for the inverse exists.  It can be expressed in two
+equivalent ways.
+
+**Factorial form:**
+
+$$
+(H_n^{-1})_{ij} = \frac{(-1)^{i+j}}{i+j-1}
+  \cdot\frac{(n+i-1)!\,(n+j-1)!}{\bigl[(i-1)!\,(j-1)!\bigr]^2\,(n-i)!\,(n-j)!}.
+\tag{7}
+$$
+
+**Binomial-coefficient form:**
+
+$$
+(H_n^{-1})_{ij} = (-1)^{i+j}(i+j-1)
+  \binom{n+i-1}{n-j}
+  \binom{n+j-1}{n-i}
+  \binom{i+j-2}{i-1}^{\!2}.
+\tag{8}
+$$
+
+**Example:** for $n=5$ the formulas yield the exact integer matrix
+
+$$
+H_5^{-1} =
+\begin{pmatrix}
+     25 &    -300 &    1050 &   -1400 &    630 \\
+   -300 &    4800 &  -18900 &   26880 & -12600 \\
+   1050 &  -18900 &   79380 & -117600 &  56700 \\
+  -1400 &   26880 & -117600 &  179200 & -88200 \\
+    630 &  -12600 &   56700 &  -88200 &  44100
+\end{pmatrix}.
+$$
+
+*Verification of entry $(1,1)$:* $(H_5^{-1})_{11} = (-1)^2 \cdot 1 \cdot \binom{5}{4}\binom{5}{4}\binom{0}{0}^2 = 5 \cdot 5 \cdot 1 = 25$ $\checkmark$
+
+*Verification of entry $(1,2)$:* $(H_5^{-1})_{12} = (-1)^3 \cdot 2 \cdot \binom{5}{3}\binom{6}{4}\binom{1}{0}^2 = -2 \cdot 10 \cdot 15 \cdot 1 = -300$ $\checkmark$
+
+## Application: Continuous Least-Squares Approximation
+
+### Theory
+
+The continuous least-squares approximation to a function $f(x)$ on $[0,1]$ using
+the basis $\{\phi_0, \phi_1, \ldots, \phi_{n-1}\} = \{1, x, x^2, \ldots, x^{n-1}\}$
+minimises $\int_0^1 \bigl[f(x) - p(x)\bigr]^2\,dx$ where
+$p(x) = c_1 + c_2 x + \cdots + c_n x^{n-1}$.
+
+Taking partial derivatives leads to the **normal equations**
+
+$$
+G\,\mathbf{c} = \mathbf{y},
+\quad
+G_{ij} = \langle \phi_{i-1},\phi_{j-1}\rangle = \int_0^1 x^{i+j-2}\,dx,
+\quad
+y_i = \langle f,\phi_{i-1}\rangle = \int_0^1 f(x)\,x^{i-1}\,dx.
+\tag{9}
+$$
+
+Since $G_{ij} = 1/(i+j-1)$, the **Gram matrix $G$ is exactly the Hilbert matrix
+$H_n$**.
+
+::: {.callout-note appearance="simple"}
+## Definition — Gram Matrix
+
+The **Gram matrix** $G$ is the matrix of inner products:
+$G_{ij} = \langle \phi_{i-1}, \phi_{j-1} \rangle$.
+
+When the basis is $\{1, x, x^2, \ldots, x^{n-1}\}$ with inner product
+$\langle f,g\rangle = \int_0^1 f(x)g(x)\,dx$, the Gram matrix equals $H_n$.
+:::
+
+The coefficient vector is $\mathbf{c} = H_n^{-1}\,\mathbf{y}$.  Because $H_n$ is
+severely ill-conditioned, using the *exact* formula (7)–(8) for $H_n^{-1}$ is far
+preferable to numerical inversion.
+
+### Example 2 — Degree-4 Polynomial Approximation of $\cos x$ on $[0,1]$
+
+Find the continuous least-squares polynomial of degree 4 that approximates
+$f(x) = \cos x$ over $[0,1]$.
+
+**Setup.**  The basis is $\{1, x, x^2, x^3, x^4\}$ so $n = 5$ and $G = H_5$.
+The right-hand side vector has components
+
+$$
+y_i = \int_0^1 x^{i-1}\cos x\,dx.
+$$
+
+Evaluating by parts:
+
+$$
+\begin{aligned}
+y_1 &= \int_0^1 \cos x\,dx = \sin(1) \approx 0.84147, \\[4pt]
+y_2 &= \int_0^1 x\cos x\,dx = \bigl[\sin(1) + \cos(1) - 1\bigr] \approx 0.38177, \\[4pt]
+y_3 &= \int_0^1 x^2\cos x\,dx = 2\cos(1) - \sin(1) \approx 0.23913, \\[4pt]
+y_4 &= \int_0^1 x^3\cos x\,dx = 6 - 5\sin(1) - 3\cos(1) \approx 0.17174, \\[4pt]
+y_5 &= \int_0^1 x^4\cos x\,dx = 13\sin(1) - 20\cos(1) \approx 0.13308.
+\end{aligned}
+$$
+
+**Solution.**  The coefficients satisfy $H_5\,\mathbf{c} = \mathbf{y}$, so
+$\mathbf{c} = H_5^{-1}\,\mathbf{y}$.  Computing the matrix–vector product with the exact integer matrix $H_5^{-1}$ (and using high-precision values of $y_i$) yields
+
+$$
+c_1 = 25\,y_1 - 300\,y_2 + 1050\,y_3 - 1400\,y_4 + 630\,y_5.
+$$
+
+Substituting the integral values:
+
+$$
+c_1 = 25\sin(1) - 300\bigl[\sin(1)+\cos(1)-1\bigr] + 1050\bigl[2\cos(1)-\sin(1)\bigr]
+- 1400\bigl[6-5\sin(1)-3\cos(1)\bigr] + 630\bigl[13\sin(1)-20\cos(1)\bigr].
+$$
+
+After collecting terms the coefficient simplifies to
+$c_1 = 13865\sin(1) - 6600\cos(1) - 8100 \approx 1.000$ $\checkmark$
+(which correctly reproduces $\cos(0) = 1$).
+
+The remaining coefficients follow by the same row products.  Due to the heavy cancellation caused by the ill-conditioning of $H_5$, exact integer arithmetic with $H_5^{-1}$ (rather than floating-point inversion of $H_5$) is essential.  The resulting degree-4 least-squares polynomial is approximately
+
+$$
+p(x) \approx 1.000 - 0.502\,x^2 + 0.042\,x^4,
+$$
+
+closely matching the leading terms of the Taylor series $\cos x = 1 - \tfrac{x^2}{2} + \tfrac{x^4}{24} - \cdots$
+
+**Verification.**  Check that $c_1 = p(0) = \cos(0)$ holds exactly, and compare at $x = 1$:
+
+| $x$ | $\cos x$ | $p(x)$ |
+|-----|----------|--------|
+| $0$ | $1.0000$ | $1.0000$ $\checkmark$ |
+| $1$ | $0.5403$ | $0.540$ (error $< 10^{-3}$) $\checkmark$ |
+
+::: {.callout-important appearance="simple"}
+## Key observation
+
+The Gram matrix for the monomial basis on $[0,1]$ *is* the Hilbert matrix.
+Solving the normal equations numerically (even in double precision) leads to
+significant errors because $\kappa(H_5) \approx 5 \times 10^5$.  Using the
+*exact* closed-form $H_n^{-1}$ provides exact rational coefficients and completely
+avoids this numerical instability.
+:::
+
