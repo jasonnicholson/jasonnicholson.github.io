@@ -23,19 +23,56 @@ pages/numerical-methods/<topic-slug>/
   ...
 ```
 
+## Module Page Structure
+
+All legacy module pages live under:
+```
+/home/jason/Desktop/math-fullerton/baseline/mathews/n2003/
+```
+
+For a topic named `FooBar`, the layout is:
+```
+n2003/FooBarMod.html                        ← top-level module page (lists examples)
+n2003/foobar/FooBarMod/
+  Links/
+    FooBarMod_lnk_1.html                   ← intro/background
+    FooBarMod_lnk_2.html                   ← Example 1 solution
+    FooBarMod_lnk_3.html                   ← Example 2 solution
+    FooBarMod_lnk_4.html                   ← Example 3 solution
+    ...
+  Images/
+    FooBarMod_gr_N.gif                     ← formula and graph images
+```
+
+Images in the `Images/` directory are either **inline formula GIFs** (small HEIGHT, ~17–20px) or **graph plots** (larger HEIGHT, typically 178px or more). Only graph plot GIFs are useful to view — formula GIFs render math symbols that must be read to extract function definitions and parameter values.
+
+## 20-Image View Limit
+
+`view_image` is limited to **20 images per session**. Use subagents to work around this limit — each `search_subagent` call gets its own independent 20-image budget.
+
+**Primary strategy — delegate image reading to subagents:**
+- Spawn one `search_subagent` per example (lnk_2, lnk_3, …). Each subagent can view up to 20 images for that example and return: the function formula, starting values, graph domain (xlims/ylims), and root location.
+- Reserve the main agent's 20-image budget for verifying the generated GIFs only (one view per GIF after running the Julia scripts).
+
+**Fallback — reduce views needed before calling subagents:**
+- Use `cat ... | sed 's/<[^>]*>//g' | sed '/^[[:space:]]*$/d'` to read HTML as plain text first — this often reveals numeric starting values directly without spending any image views.
+- Use `grep -n 'HEIGHT=[1-9][0-9]\{2\}' <lnk_N>.html` to identify which GIF numbers are graph plots (HEIGHT ≥ 100) vs. formula GIFs (HEIGHT ~17px), so subagents only view graph-sized images.
+- To find which GIF holds a given formula, extract the IMG tag context: `grep -B2 -A2 'gr_N.gif' | sed 's/<[^>]*>//g'`.
+
 ## Workflow
 
-1. **Identify legacy files** in `/home/jason/Desktop/math-fullerton/baseline/mathews/a2001/Animations/<category>/<Topic>/`
-2. **View each legacy GIF** using `view_image` to determine: function shape, starting point x₀, domain (xlims/ylims), and convergence character (convergent / oscillating convergent / divergent / oscillating divergent)
-3. **Determine fixed point(s)** analytically and verify `|g'(x*)|` to classify convergence
-4. **Move the flat .qmd to a folder:**
+1. **Read the top-level module page** with `cat ... | sed 's/<[^>]*>//g' | sed '/^[[:space:]]*$/d'` to identify how many examples exist and what functions/roots are described.
+2. **Read each example link HTML** (lnk_2, lnk_3, …) the same way to extract plain-text clues: root value, Newton starting value, Muller starting triple. Numeric values are often visible without viewing any images.
+3. **Spawn one subagent per example** to view formula and graph GIFs for that example. Provide the subagent with: the lnk_N.html path, the Images/ directory path, and the graph-sized GIF numbers from step 2. Ask it to return: the function definition, parameter values, domain, and root location.
+4. **Determine the functions analytically** from subagent results. Verify roots and convergence character mathematically.
+5. **Move the flat .qmd to a folder:**
    - `mv pages/numerical-methods/<topic>.qmd pages/numerical-methods/<topic>/index.qmd`
    - Update `bibliography:` depth by one level (e.g., `../../references.bib` → `../../../references.bib`)
    - Update href in `pages/numerical-methods/index.qmd` from `<topic>.qmd` → `<topic>/`
-5. **Create one .jl script per case** using the Julia script template below
-6. **Run all scripts** from the page folder: `cd pages/numerical-methods/<topic> && julia <script>.jl`
-7. **Verify each GIF** with `view_image` before updating the .qmd
-8. **Add an Animations section** to `index.qmd` using the .qmd template below — above the "Derivation Notes" section
+6. **Create one .jl script per case** using the Julia script template below
+7. **Run all scripts** from the page folder: `cd pages/numerical-methods/<topic> && julia <script>.jl`
+8. **Verify each GIF** with `view_image` in the main agent (these count against the main 20-image budget — verify all at once after generating)
+9. **Add an Animations section** to `index.qmd` using the .qmd template below — above the "Derivation Notes" section
 
 ## Julia Script Template
 
@@ -135,3 +172,20 @@ Julia source scripts that generated these animations are linked under each case.
 - `gr()` call activates the GR backend explicitly
 - GIF output: `gif(anim, path; fps=N)`
 - Run scripts from the page folder so relative paths resolve correctly
+
+## Useful Shell Patterns
+
+```bash
+# Strip HTML tags and blank lines from a module page
+cat /home/jason/Desktop/math-fullerton/baseline/mathews/n2003/<TopicMod>.html \
+  | sed 's/<[^>]*>//g' | sed '/^[[:space:]]*$/d'
+
+# Find all graph-sized images in an example link file (HEIGHT >= 100)
+grep -n 'HEIGHT=[1-9][0-9]\{2\}' .../Links/<TopicMod>_lnk_N.html
+
+# Find image context (what surrounds a given GIF reference)
+grep -B3 -A1 'gr_N.gif' .../Links/<TopicMod>_lnk_N.html | sed 's/<[^>]*>//g'
+
+# List available image files (to check which GIF numbers exist)
+ls .../Images/ | sort -V
+```
