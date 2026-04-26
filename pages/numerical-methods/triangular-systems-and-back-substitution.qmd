@@ -7,24 +7,297 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Back Substitution
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+### Upper-Triangular Systems
 
-### Planned animation ideas
+::: {.callout-note appearance="simple"}
+## Definition — Upper-Triangular Matrix
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+An $n \times n$ matrix $A$ is called **upper-triangular** if $a_{ij} = 0$ whenever $i > j$, i.e. all
+entries below the main diagonal are zero.
+:::
 
-## Derivation Notes (Planned)
+If $A$ is upper-triangular, the linear system $AX = B$ has the form
 
-Short derivations will be added to explain the core equations and assumptions.
+$$
+\begin{pmatrix}
+a_{11} & a_{12} & a_{13} & \cdots & a_{1n} \\
+0      & a_{22} & a_{23} & \cdots & a_{2n} \\
+0      & 0      & a_{33} & \cdots & a_{3n} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0      & 0      & 0      & \cdots & a_{nn}
+\end{pmatrix}
+\begin{pmatrix} x_1 \\ x_2 \\ x_3 \\ \vdots \\ x_n \end{pmatrix}
+=
+\begin{pmatrix} b_1 \\ b_2 \\ b_3 \\ \vdots \\ b_n \end{pmatrix}.
+\tag{1}
+$$
 
-## Worked Example (Planned)
+::: {.callout-tip appearance="simple"}
+## Theorem — Back Substitution
 
-A compact numerical example with intermediate steps will be included.
+If $A$ is upper-triangular with $a_{ii} \neq 0$ for all $i$, then the system (1) has a **unique
+solution** that can be computed by back substitution.
+:::
 
-## Implementation Notes (Planned)
+### Algorithm
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+Starting from the last equation and working upward:
+
+$$
+x_n = \frac{b_n}{a_{nn}},
+$$
+
+and for $i = n-1,\, n-2,\, \ldots,\, 1$:
+
+$$
+x_i = \frac{\displaystyle b_i - \sum_{j=i+1}^{n} a_{ij}\, x_j}{a_{ii}}.
+$$
+
+The loop may be written as a single formula using the convention that an empty sum equals zero:
+
+$$
+x_i = \frac{\displaystyle b_i - \sum_{j=i+1}^{n} a_{ij}\, x_j}{a_{ii}},
+\qquad i = n,\, n-1,\, \ldots,\, 1.
+$$
+
+### Example 1(a)
+
+Solve the upper-triangular system
+
+$$
+\begin{pmatrix}
+4 & -1 &  2 &  3 \\
+0 &  3 & -2 & -4 \\
+0 &  0 &  6 &  5 \\
+0 &  0 &  0 &  3
+\end{pmatrix}
+\begin{pmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{pmatrix}
+=
+\begin{pmatrix} 20 \\ -7 \\ 4 \\ 6 \end{pmatrix}.
+$$
+
+**Step 1** (last equation):
+$$x_4 = \frac{6}{3} = 2.$$
+
+**Step 2**:
+$$x_3 = \frac{4 - 5(2)}{6} = \frac{-6}{6} = -1.$$
+
+**Step 3**:
+$$x_2 = \frac{-7 - (-2)(-1) - (-4)(2)}{3} = \frac{-7 - 2 + 8}{3} = -\frac{1}{3}.$$
+
+**Step 4** (first equation):
+$$x_1 = \frac{20 - (-1)\!\left(-\tfrac{1}{3}\right) + 2(-1) + (-3)(2)}{4}
+       = \frac{20 - \tfrac{1}{3} + 2 - 6}{4}
+       = \frac{\tfrac{47}{3}}{4} = \frac{47}{12}.$$
+
+The solution is
+$$\mathbf{x} = \left(\frac{47}{12},\; -\frac{1}{3},\; -1,\; 2\right).$$
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|-----|---------------|-----------------|
+| 1 | $4\!\cdot\!\tfrac{47}{12} + (-1)\!\cdot\!(-\tfrac{1}{3}) + 2(-1) + 3(2) = \tfrac{47}{3} + \tfrac{1}{3} - 2 + 6 = 16 + 4$ | $20$ ✓ |
+| 2 | $3(-\tfrac{1}{3}) + (-2)(-1) + (-4)(2) = -1 + 2 - 8$ | $-7$ ✓ |
+| 3 | $6(-1) + 5(2) = -6 + 10$ | $4$ ✓ |
+| 4 | $3(2)$ | $6$ ✓ |
+
+### Example 1(b)
+
+The system is identical to Example 1(a) **except** that $a_{44} = 7$ instead of $3$:
+
+$$
+\begin{pmatrix}
+4 & -1 &  2 &  3 \\
+0 &  3 & -2 & -4 \\
+0 &  0 &  6 &  5 \\
+0 &  0 &  0 &  7
+\end{pmatrix}
+\begin{pmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{pmatrix}
+=
+\begin{pmatrix} 20 \\ -7 \\ 4 \\ 6 \end{pmatrix}.
+$$
+
+Applying back substitution:
+
+$$
+x_4 = \frac{6}{7}, \quad
+x_3 = \frac{4 - 5\cdot\tfrac{6}{7}}{6} = -\frac{1}{21}, \quad
+x_2 = \frac{-7 + 2(-\tfrac{1}{21}) + 4\cdot\tfrac{6}{7}}{3} = -\frac{11}{9}, \quad
+x_1 = \frac{1181}{252}.
+$$
+
+::: {.callout-note appearance="simple"}
+Changing a single diagonal entry can dramatically alter the solution. In decimal form,
+$\mathbf{x} \approx (4.687,\; -1.222,\; -0.048,\; 0.857)$.
+:::
+
+---
+
+## Forward Substitution
+
+### Lower-Triangular Systems
+
+::: {.callout-note appearance="simple"}
+## Definition — Lower-Triangular Matrix
+
+An $n \times n$ matrix $A$ is called **lower-triangular** if $a_{ij} = 0$ whenever $i < j$, i.e. all
+entries above the main diagonal are zero.
+:::
+
+The lower-triangular system $AX = B$ has the form
+
+$$
+\begin{pmatrix}
+a_{11} & 0      & 0      & \cdots & 0      \\
+a_{21} & a_{22} & 0      & \cdots & 0      \\
+a_{31} & a_{32} & a_{33} & \cdots & 0      \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+a_{n1} & a_{n2} & a_{n3} & \cdots & a_{nn}
+\end{pmatrix}
+\begin{pmatrix} x_1 \\ x_2 \\ x_3 \\ \vdots \\ x_n \end{pmatrix}
+=
+\begin{pmatrix} b_1 \\ b_2 \\ b_3 \\ \vdots \\ b_n \end{pmatrix}.
+\tag{2}
+$$
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Forward Substitution
+
+If $A$ is lower-triangular with $a_{ii} \neq 0$ for all $i$, then the system (2) has a **unique
+solution** that can be computed by forward substitution.
+:::
+
+### Algorithm
+
+Starting from the first equation and working downward:
+
+$$
+x_1 = \frac{b_1}{a_{11}},
+$$
+
+and for $i = 2,\, 3,\, \ldots,\, n$:
+
+$$
+x_i = \frac{\displaystyle b_i - \sum_{j=1}^{i-1} a_{ij}\, x_j}{a_{ii}}.
+$$
+
+### Example 2
+
+Solve the lower-triangular system
+
+$$
+\begin{pmatrix}
+ 3 &  0 &  0 & 0 \\
+-1 &  1 &  0 & 0 \\
+ 3 & -2 & -1 & 0 \\
+ 1 & -2 &  6 & 2
+\end{pmatrix}
+\begin{pmatrix} x_1 \\ x_2 \\ x_3 \\ x_4 \end{pmatrix}
+=
+\begin{pmatrix} 5 \\ 6 \\ 4 \\ 2 \end{pmatrix}.
+$$
+
+**Step 1**:
+$$x_1 = \frac{5}{3}.$$
+
+**Step 2**:
+$$x_2 = \frac{6 - (-1)\tfrac{5}{3}}{1} = 6 + \frac{5}{3} = \frac{23}{3}.$$
+
+**Step 3**:
+$$x_3 = \frac{4 - 3\cdot\tfrac{5}{3} - (-2)\cdot\tfrac{23}{3}}{-1}
+       = \frac{4 - 5 + \tfrac{46}{3}}{-1}
+       = \frac{-1 + \tfrac{46}{3}}{-1} = -\frac{43}{3}.$$
+
+**Step 4**:
+$$x_4 = \frac{2 - \tfrac{5}{3} - (-2)\cdot\tfrac{23}{3} - 6\cdot(-\tfrac{43}{3})}{2}
+       = \frac{2 + \tfrac{299}{3}}{2} = \frac{305}{6}.$$
+
+In decimal form:
+$$\mathbf{x} \approx (1.6667,\; 7.6667,\; -14.3333,\; 50.8333).$$
+
+**Verification** (decimal):
+
+$$
+\begin{pmatrix}
+ 3 &  0 &  0 & 0 \\
+-1 &  1 &  0 & 0 \\
+ 3 & -2 & -1 & 0 \\
+ 1 & -2 &  6 & 2
+\end{pmatrix}
+\begin{pmatrix} 1.6667 \\ 7.6667 \\ -14.3333 \\ 50.8333 \end{pmatrix}
+\approx
+\begin{pmatrix} 5 \\ 6 \\ 4 \\ 2 \end{pmatrix}. \checkmark
+$$
+
+---
+
+## Application: Newton Interpolation Polynomial
+
+The forward-substitution algorithm arises naturally in polynomial interpolation. Given
+$n+1$ data points $(x_1, y_1), (x_2, y_2), \ldots, (x_{n+1}, y_{n+1})$, we seek a
+**Newton polynomial** of degree $n$:
+
+$$
+P(t) = c_1 + c_2(t - x_1) + c_3(t - x_1)(t - x_2) + \cdots
+        + c_{n+1}\prod_{j=1}^{n}(t - x_j).
+$$
+
+Substituting each data point $t = x_k$ yields one equation in $c_1, \ldots, c_{n+1}$. Because
+$(t - x_j) = 0$ whenever $j \geq k$, each equation only involves $c_1, \ldots, c_k$. The
+resulting system is **lower-triangular**:
+
+$$
+\sum_{l=1}^{k} c_l \prod_{j=1}^{l-1}(x_k - x_j) = y_k, \qquad k = 1, 2, \ldots, n+1.
+$$
+
+### Example 3
+
+Find the Newton polynomial of degree $n = 3$ passing through
+
+$$
+(1,\,4),\quad (2,\,2),\quad (4,\,1),\quad (5,\,3).
+$$
+
+The four interpolation equations at $t = 1, 2, 4, 5$ give the lower-triangular system
+
+$$
+\underbrace{
+\begin{pmatrix}
+1 & 0 &  0 &  0 \\
+1 & 1 &  0 &  0 \\
+1 & 3 &  6 &  0 \\
+1 & 4 & 12 & 12
+\end{pmatrix}}_{A}
+\begin{pmatrix} c_1 \\ c_2 \\ c_3 \\ c_4 \end{pmatrix}
+=
+\begin{pmatrix} 4 \\ 2 \\ 1 \\ 3 \end{pmatrix}.
+$$
+
+where the $(k,l)$ entry of $A$ is $\prod_{j=1}^{l-1}(x_k - x_j)$.
+
+**Forward substitution**:
+
+$$
+c_1 = 4, \quad
+c_2 = \frac{2 - c_1}{1} = -2, \quad
+c_3 = \frac{1 - c_1 - 3c_2}{6} = \frac{3}{6} = \frac{1}{2}, \quad
+c_4 = \frac{3 - c_1 - 4c_2 - 12c_3}{12} = \frac{1}{12}.
+$$
+
+The Newton polynomial is therefore
+
+$$
+P(t) = 4 - 2(t-1) + \tfrac{1}{2}(t-1)(t-2) + \tfrac{1}{12}(t-1)(t-2)(t-4).
+$$
+
+**Verification** — the polynomial passes through all four points:
+
+| $t$ | $P(t)$ | $y$ |
+|-----|--------|-----|
+| 1 | $4$ | $4$ ✓ |
+| 2 | $4 - 2(1) + 0 + 0 = 2$ | $2$ ✓ |
+| 4 | $4 - 2(3) + \tfrac{1}{2}(3)(2) + 0 = 4 - 6 + 3 = 1$ | $1$ ✓ |
+| 5 | $4 - 2(4) + \tfrac{1}{2}(4)(3) + \tfrac{1}{12}(4)(3)(1) = 4 - 8 + 6 + 1 = 3$ | $3$ ✓ |

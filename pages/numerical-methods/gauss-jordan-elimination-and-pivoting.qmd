@@ -7,24 +7,242 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Overview
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Gauss-Jordan elimination is a direct method for solving linear systems
 
-### Planned animation ideas
+$$
+A\mathbf{x} = \mathbf{b},
+$$
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+by applying elementary row operations to the augmented matrix
 
-## Derivation Notes (Planned)
+$$
+\left[ A \mid \mathbf{b} \right].
+$$
 
-Short derivations will be added to explain the core equations and assumptions.
+Unlike Gaussian elimination (which stops at upper-triangular form and then uses back substitution),
+Gauss-Jordan continues until the coefficient block is reduced all the way to the identity matrix.
 
-## Worked Example (Planned)
+---
 
-A compact numerical example with intermediate steps will be included.
+## Existence and Uniqueness
 
-## Implementation Notes (Planned)
+::: {.callout-note appearance="simple"}
+## Theorem - Unique Solution Conditions
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+For an $n \times n$ matrix $A$, the following are equivalent:
+
+1. For every right-hand side $\mathbf{b}$, the system $A\mathbf{x}=\mathbf{b}$ has a unique solution.
+2. $A$ is nonsingular.
+3. $\det(A) \neq 0$.
+4. The homogeneous system $A\mathbf{x}=\mathbf{0}$ has only the trivial solution.
+:::
+
+These conditions are exactly the setting where Gauss-Jordan elimination is guaranteed to succeed
+without encountering a truly zero pivot after proper pivoting.
+
+---
+
+## Augmented Matrix and Row Operations
+
+Write the system
+
+$$
+\sum_{j=1}^{n} a_{ij}x_j = b_i, \quad i=1,\dots,n
+$$
+
+as
+
+$$
+\left[ A \mid \mathbf{b} \right].
+$$
+
+Gauss-Jordan uses three elementary row operations:
+
+1. Row interchange: $R_i \leftrightarrow R_j$.
+2. Row scaling: $R_i \leftarrow cR_i$ with $c \neq 0$.
+3. Row replacement: $R_i \leftarrow R_i + cR_j$.
+
+Each operation preserves the solution set of the linear system.
+
+---
+
+## Pivot Elements and Pivoting
+
+At step $k$, a pivot element is the entry used to eliminate all other entries in column $k$.
+In practice, we use partial pivoting:
+
+$$
+p = \operatorname*{arg\,max}_{i\in\{k,\dots,n\}} |a_{ik}|,
+$$
+
+then interchange rows $k$ and $p$ before elimination.
+
+::: {.callout-tip appearance="simple"}
+## Why Pivoting Matters
+
+Pivoting avoids division by zero and reduces roundoff amplification when pivots are very small.
+:::
+
+---
+
+## Algorithm I - Limited Gauss-Jordan (No Row Swaps)
+
+This is the pedagogical version that assumes each pivot $a_{kk}$ is already nonzero and reasonably sized.
+
+1. For $k=1,\dots,n$:
+2. Normalize pivot row: $R_k \leftarrow R_k / a_{kk}$.
+3. For each $i \neq k$, eliminate column $k$:
+
+$$
+R_i \leftarrow R_i - a_{ik}R_k.
+$$
+
+4. At termination, the left block is $I$ and the last column is the solution vector.
+
+This version is simple but fragile.
+
+---
+
+## Algorithm II - Complete Gauss-Jordan with Partial Pivoting
+
+This is the robust implementation pattern.
+
+For $k=1,\dots,n$:
+
+1. Choose pivot row $p$ with largest $|a_{pk}|$ among rows $k$ through $n$.
+2. If $a_{pk}=0$, stop: the matrix is singular (or rank-deficient in exact arithmetic).
+3. If $p \neq k$, swap rows $R_k$ and $R_p$.
+4. Normalize pivot row $R_k$.
+5. Eliminate column $k$ from all rows $i \neq k$.
+
+After the final step, the matrix is in reduced row-echelon form (RREF).
+
+---
+
+## Worked Example 1
+
+Solve
+
+$$
+\begin{aligned}
+2x + y - z &= 8, \\
+-3x - y + 2z &= -11, \\
+-2x + y + 2z &= -3.
+\end{aligned}
+$$
+
+Augmented matrix:
+
+$$
+\left[
+\begin{array}{ccc|c}
+2 & 1 & -1 & 8 \\
+-3 & -1 & 2 & -11 \\
+-2 & 1 & 2 & -3
+\end{array}
+\right].
+$$
+
+Applying Gauss-Jordan (with or without pivoting here) gives
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & 0 & 0 & 2 \\
+0 & 1 & 0 & 3 \\
+0 & 0 & 1 & -1
+\end{array}
+\right],
+$$
+
+so the solution is
+
+$$
+(x,y,z) = (2,3,-1).
+$$
+
+---
+
+## Worked Example 2 - Why Row Interchanges Are Needed
+
+Consider
+
+$$
+\left[
+\begin{array}{ccc|c}
+0 & 2 & 1 & 4 \\
+1 & -2 & -3 & -6 \\
+2 & 3 & 1 & 7
+\end{array}
+\right].
+$$
+
+If we attempt elimination starting at row 1, column 1, the pivot is zero and the method fails immediately.
+A row interchange (swap row 1 with row 2 or 3) fixes the issue and the elimination proceeds normally.
+
+This is the same failure mode emphasized in the original module: a no-pivot routine can break even when a unique solution exists.
+
+---
+
+## Inverse Matrix via Gauss-Jordan
+
+To compute $A^{-1}$, augment with the identity:
+
+$$
+\left[ A \mid I \right].
+$$
+
+Use Gauss-Jordan elimination until the left block becomes $I$:
+
+$$
+\left[ A \mid I \right]
+\longrightarrow
+\left[ I \mid A^{-1} \right].
+$$
+
+::: {.callout-note appearance="simple"}
+This works exactly when $A$ is nonsingular. If a pivot column is all zeros after pivot search,
+$A$ is singular and has no inverse.
+:::
+
+---
+
+## Application - Polynomial Interpolation as a Linear System
+
+A degree-$n$ polynomial
+
+$$
+p(x)=c_0 + c_1x + \cdots + c_nx^n
+$$
+
+through $n+1$ data points leads to an $(n+1)\times(n+1)$ linear system for the coefficients.
+In matrix form:
+
+$$
+V\mathbf{c} = \mathbf{y},
+$$
+
+where $V$ is a Vandermonde-type matrix built from sample locations.
+Gauss-Jordan provides a direct way to recover $\mathbf{c}$ (or to solve the same system with pivoted elimination).
+
+---
+
+## Practical Notes
+
+1. Gauss-Jordan is excellent for teaching and for computing inverses, but it usually does more arithmetic than Gaussian elimination with back substitution.
+2. Partial pivoting should be treated as standard practice in floating-point computation.
+3. For large dense systems, LU factorization with pivoting is typically preferred computationally.
+4. For sparse systems, specialized sparse solvers are often much more efficient.
+
+## Summary
+
+Gauss-Jordan elimination transforms $[A\mid b]$ directly to $[I\mid x]$ by row operations.
+The core ideas are:
+
+1. Equivalent row operations preserve solutions.
+2. Pivots drive elimination.
+3. Row interchanges (partial pivoting) make the method robust.
+4. The same machinery solves systems, exposes rank structure, and computes inverses.
+
