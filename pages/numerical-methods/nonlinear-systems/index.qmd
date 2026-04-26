@@ -1,6 +1,6 @@
 ---
 title: "Nonlinear Systems"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
 ← [Numerical Methods](../)
@@ -66,3 +66,29 @@ Newton's method converges **quadratically** near a non-singular solution (one wh
 | Starting-point sensitivity | High | Moderate |
 
 Newton's method is generally preferred when high accuracy is needed and the Jacobian is cheap to form. Fixed-point iteration is simpler to implement but requires careful formulation of $\mathbf{G}$ to satisfy the convergence condition.
+
+## Animations
+
+Each animation below shows the **Newton iteration path in the $xy$-plane** for the system
+
+$$\begin{cases} f_1(x,y) = 1 - 4x + 2x^2 - 2y^3 = 0 \\ f_2(x,y) = -4 + x^4 + 4y + 4y^4 = 0 \end{cases}$$
+
+The blue curve is $f_1 = 0$ and the red curve is $f_2 = 0$. Their two intersections are the solutions. Each frame adds one Newton step: the Jacobian is evaluated at the current point, the linear system $J\,\Delta\mathbf{X} = -\mathbf{F}$ is solved, and the iterate moves to $\mathbf{X}^{(k+1)} = \mathbf{X}^{(k)} + \Delta\mathbf{X}^{(k)}$. Quadratic convergence means the error roughly squares each step — the path reaches the intersection within a handful of iterations from anywhere in the basin.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Solution 1, starting at $(0.5,\; 0.8)$
+
+**Behavior:** Starting in the upper region between the two curves, Newton's method converges rapidly to Solution 1 at approximately $(x^*, y^*) \approx (0.0618,\; 0.7245)$, the intersection in the upper-left portion of the plot. The path reaches machine precision in a few steps, demonstrating $|g'(x^*)| \approx 0$ — quadratic convergence in 2D.
+
+[Julia source](newtonsysaa.jl)
+
+![Newton's method iteration path in the xy-plane converging from (0.5, 0.8) to Solution 1 at approximately (0.062, 0.724), where the blue f₁=0 curve and red f₂=0 curve intersect.](newtonsysaa.gif)
+
+### Case 2 — Solution 2, starting at $(2,\; -1)$
+
+**Behavior:** Starting in the lower-right region near Solution 2, Newton's method converges to $(x^*, y^*) \approx (1.5561,\; -0.5757)$, the intersection near the bottom of the curves. This solution has a large negative $y$ component and lies at the outer loop of the $f_2 = 0$ curve. Again convergence is quadratic: the first step brings the iterate close to the solution, and subsequent steps nail it to full precision.
+
+[Julia source](newtonsysab.jl)
+
+![Newton's method iteration path in the xy-plane converging from (2, -1) to Solution 2 at approximately (1.556, -0.576), where the blue f₁=0 curve and red f₂=0 curve intersect in the lower-right region.](newtonsysab.gif)

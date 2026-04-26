@@ -1,6 +1,6 @@
 ---
 title: "Graeffe's Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
 ← [Numerical Methods](../)
@@ -42,3 +42,25 @@ For polynomials with **distinct real roots**, the approximation error decreases 
 However, the method has a serious practical limitation: the coefficients of $p_m$ grow exponentially as $|r_k|^{2^m}$, rapidly exceeding the range of standard floating-point arithmetic. Most software cannot apply more than a handful of iterations before overflow. The method was popular in the 19th and early 20th centuries when it was implemented with extended-precision hand calculation or symbolic algebra systems; today it is primarily of historical and educational interest.
 
 Special cases — double roots, complex conjugate root pairs, roots equal in magnitude — require modified formulas and careful coefficient analysis.
+
+## Animations
+
+Each animation below shows how the **Separated Root Theorem estimates** of each root's magnitude evolve over successive Graeffe squaring iterations $m = 0, 1, 2, \ldots$. Dashed horizontal lines mark the true root magnitudes; colored traces show the estimates converging toward (or slowly approaching) those targets as $m$ increases.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Distinct real roots, $f(x) = (x+1)(x-2)(x+3)(x-4)$, true $|r_k| \in \{1,2,3,4\}$
+
+**Behavior:** All four estimates converge **quadratically** — the error roughly squares at each step because $|r_k/r_{k+1}|^{2^m} \to \infty$ exponentially, pushing the coefficient ratios cleanly toward the individual root magnitudes. Even though the roots are initially close ($|r_1|/|r_2| = 4/3$), a few squaring steps are enough to separate them.
+
+[Julia source](graeffesaa.jl)
+
+![Graeffe convergence animation for a degree-4 polynomial with four distinct real roots −3, −1, 2, 4. Each colored trace shows one root-magnitude estimate growing from its initial poor approximation toward the dashed true-value line as the squaring iteration count increases.](graeffesaa.gif)
+
+### Case 2 — Repeated real root at $x = 5$, $f(x) = (x-1)(x+2)(x-5)^2$, true $|r_k| \in \{1,2,5,5\}$
+
+**Behavior:** The two estimates for the double root (both targeting $|r| = 5$) converge **linearly** — the error is halved each iteration rather than squared — because the separated-root condition $|r_k|^{2^m} \gg |r_{k+1}|^{2^m}$ is never satisfied when two roots share the same magnitude. The two simple roots ($|r| = 1$ and $|r| = 2$) converge quadratically as usual. This contrast in convergence rate is the diagnostic signature of a repeated root.
+
+[Julia source](graeffesab.jl)
+
+![Graeffe convergence animation for a degree-4 polynomial with a double root at x=5 and simple roots at x=1 and x=−2. The two blue traces for the double root approach the dashed line at 5 slowly (linear convergence), while the crimson and orange traces for the simple roots converge rapidly (quadratic convergence).](graeffesab.gif)

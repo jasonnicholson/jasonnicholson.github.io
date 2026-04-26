@@ -1,6 +1,6 @@
 ---
 title: "Brent's Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
 ← [Numerical Methods](../)
@@ -54,4 +54,26 @@ $$s = b - f(b) \cdot \frac{b - a}{f(b) - f(a)}$$
 | Secant | No | $\approx 1.618$ (superlinear) | No |
 | Inverse Quadratic | No | $\approx 1.839$ | No |
 | **Brent's Method** | **Yes** | **Up to $\approx 1.839$** | **No** |
+
+## Animations
+
+Each animation below shows the **bracket-narrowing diagram** for Brent's method. The shaded region marks the current bracket $[a, b]$ known to contain a root. The red dot tracks $b$, the best current approximation (the endpoint with the smallest $|f|$ value). The step annotation indicates which sub-method — Bisection, Secant, or IQI — was selected at that iteration.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Polynomial root, $f(x) = 4x^3 - 16x^2 + 17x - 4$, $[a_0, b_0] = [0, 1]$
+
+**Behavior:** $f(0) = -4 < 0$ and $f(1) = 1 > 0$, so the IVT guarantees a root in $[0, 1]$. The true root is $x^* \approx 0.3268$. Brent's method begins with secant steps and quickly switches to IQI, converging superlinearly. This illustrates the method's efficiency near a simple root — far fewer iterations than bisection or regula falsi would require.
+
+[Julia source](brentsaa.jl)
+
+![Brent's Method on f(x)=4x³−16x²+17x−4: bracket narrows from [0,1] to the root at x≈0.3268, with step labels showing bisection, secant, and IQI selections](brentsaa.gif)
+
+### Case 2 — Transcendental equation, $f(x) = \tan(x) - 2x$, $[a_0, b_0] = [0.5, 1.5]$
+
+**Behavior:** The non-trivial root of $\tan(x) = 2x$ lies at $x^* \approx 1.1656$. $f(0.5) = \tan(0.5) - 1 \approx -0.454 < 0$ and $f(1.5) = \tan(1.5) - 3 \approx 11.1 > 0$. Brent's method converges in a handful of steps, while the Regula Falsi method requires ≈ 243 iterations on this same interval — because $f(1.5)$ is so large that the chord always lands near $x = 0.5$, leaving the right endpoint stationary. Brent's safeguards against exactly this pathology.
+
+[Julia source](brentsbb.jl)
+
+![Brent's Method on f(x)=tan(x)−2x: bracket narrows from [0.5,1.5] to the root at x≈1.1656, converging in a few steps despite the function blowing up near the π/2 asymptote](brentsbb.gif)
 

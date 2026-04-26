@@ -1,9 +1,9 @@
 ---
 title: "Broyden's Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](../)
+← [Numerical Methods](../../)
 
 Source inspiration: [@mathewsSite].
 
@@ -17,7 +17,7 @@ For a vector function $\mathbf{F}(\mathbf{X}) = \bigl(f_1(\mathbf{X}),\dots,f_n(
 
 $$J\!\left(\mathbf{X}^{(k)}\right)\Delta\mathbf{X}^{(k)} = -\mathbf{F}\!\left(\mathbf{X}^{(k)}\right), \qquad \mathbf{X}^{(k+1)} = \mathbf{X}^{(k)} + \Delta\mathbf{X}^{(k)}.$$
 
-It converges **quadratically** near a simple root but demands $n^2$ new partial-derivative evaluations each step. See [Nonlinear Systems](nonlinear-systems.qmd) for the full treatment.
+It converges **quadratically** near a simple root but demands $n^2$ new partial-derivative evaluations each step. See [Nonlinear Systems](../nonlinear-systems.qmd) for the full treatment.
 
 ### Reducing Cost with a Finite-Difference Jacobian
 
@@ -58,4 +58,30 @@ $$\mathbf{X}^{(1)} = \mathbf{X}^{(0)} - B_0^{-1}\,\mathbf{F}\!\left(\mathbf{X}^{
 ### Convergence
 
 Broyden's method converges **superlinearly** near a simple root — faster than linear, but slower than Newton's quadratic rate. In practice, because each iteration is far cheaper than a full Newton step, Broyden's method often reaches a given accuracy in less total work than Newton's method, especially in high dimensions. Convergence can fail if the starting point is far from a root or if the approximate Jacobian becomes ill-conditioned.
+
+## Animations
+
+Each animation below shows Broyden's method converging on the nonlinear system
+
+$$f_1(x,y) = 1 - 4x + 2x^2 - 2y^2 = 0, \qquad f_2(x,y) = -4 + x^2 + 4y + y^2 = 0.$$
+
+The **blue curve** is $f_1 = 0$ and the **red curve** is $f_2 = 0$; their intersections are the solutions. Each frame adds the next iterate $\mathbf{X}^{(k)}$, connected by a line so the path toward the root is visible.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case A — Convergent, $\mathbf{X}^{(0)} = (0,\,1)$, root $\approx (-0.088,\, 0.827)$
+
+**Behavior:** Starting near the upper-left intersection, the initial exact Newton step lands close to the root and the subsequent Broyden quasi-Newton updates converge superlinearly. The approximate Jacobian is updated cheaply by the rank-1 formula without any new derivative evaluations.
+
+[Julia source](broydenaa.jl)
+
+![Broyden's method animation starting at (0,1): iterates converge superlinearly to the root near (-0.088, 0.827) on the system f1=0 (blue) and f2=0 (red)](broydenaa.gif)
+
+### Case B — Convergent, $\mathbf{X}^{(0)} = (2.5,\,-1.5)$, root $\approx (2.808,\,-1.665)$
+
+**Behavior:** Starting near the lower-right intersection, the same Broyden algorithm converges to the second solution. This case illustrates that the method is dimension-independent and starting-point dependent: a different initial guess finds a different root.
+
+[Julia source](broydenbb.jl)
+
+![Broyden's method animation starting at (2.5,-1.5): iterates converge superlinearly to the root near (2.808, -1.665) on the system f1=0 (blue) and f2=0 (red)](broydenbb.gif)
 
