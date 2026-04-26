@@ -3,26 +3,98 @@ title: "Horner's Method"
 bibliography: ../../references.bib
 ---
 
-Source inspiration: [Numerical Methods Modules](https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html).
+← [Numerical Methods](../)
 
-## Animation Focus
+Source inspiration: [@mathewsSite].
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+## Description
 
-### Planned animation ideas
+**Horner's method** (also called *synthetic division* or *nested multiplication*) is an efficient algorithm for evaluating a polynomial at a given point. Instead of computing each power $x^k$ independently, it rewrites the polynomial as a sequence of multiply-and-add operations that requires only $n$ multiplications and $n$ additions for a degree-$n$ polynomial.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+### The Naive Approach and Its Cost
 
-## Derivation Notes (Planned)
+Given a polynomial of degree $n$,
 
-Short derivations will be added to explain the core equations and assumptions.
+$$p(x) = a_n x^n + a_{n-1} x^{n-1} + \cdots + a_1 x + a_0,$$
 
-## Worked Example (Planned)
+the straightforward approach evaluates each term $a_k x^k$ separately using $k$ multiplications, for a total of
 
-A compact numerical example with intermediate steps will be included.
+$$\sum_{k=1}^{n} k = \frac{n(n+1)}{2}$$
 
-## Implementation Notes (Planned)
+multiplications. For a degree-10 polynomial that is already 55 multiplications.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+### Nested Multiplication
+
+The key insight is that any polynomial can be rewritten by factoring $x$ repeatedly. For a fifth-degree polynomial:
+
+$$p(x) = a_5 x^5 + a_4 x^4 + a_3 x^3 + a_2 x^2 + a_1 x + a_0$$
+
+$$= \bigl(\bigl(\bigl(\bigl(a_5 \, x + a_4\bigr)x + a_3\bigr)x + a_2\bigr)x + a_1\bigr)x + a_0.$$
+
+This nested form evaluates from the inside out with exactly $n$ multiplications and $n$ additions — a reduction from $O(n^2)$ to $O(n)$ work.
+
+### The Algorithm
+
+**Theorem (Horner's Method for Polynomial Evaluation).** Given
+
+$$p(x) = a_n x^n + a_{n-1} x^{n-1} + \cdots + a_1 x + a_0$$
+
+and a value $c$ at which $p(c)$ is to be evaluated, define the sequence
+
+$$b_n = a_n, \qquad b_k = b_{k+1} \cdot c + a_k \quad \text{for } k = n-1,\, n-2,\, \ldots,\, 1,\, 0.$$
+
+Then $p(c) = b_0$.
+
+The intermediate values $b_{n-1}, b_{n-2}, \ldots, b_1$ are the coefficients of the *quotient polynomial* $q(x)$ of degree $n-1$, and $b_0$ is the remainder, giving the factorization
+
+$$p(x) = (x - c)\,q(x) + b_0, \qquad q(x) = b_n x^{n-1} + b_{n-1} x^{n-2} + \cdots + b_1.$$
+
+This is equivalent to performing *synthetic division* of $p(x)$ by $(x - c)$.
+
+### Evaluating the Derivative
+
+Applying Horner's method a second time to the quotient polynomial $q(x)$ yields $p'(c)$. Define a second sequence
+
+$$d_{n-1} = b_n, \qquad d_k = d_{k+1} \cdot c + b_{k+1} \quad \text{for } k = n-2,\, \ldots,\, 1,\, 0.$$
+
+Then $p'(c) = d_0 = b_1$. (The equality $d_0 = b_1$ follows from differentiating the factorization above.)
+
+This double application is the basis for the **Newton–Horner method**, which uses Horner's method to compute both $p(x_k)$ and $p'(x_k)$ at each Newton–Raphson step:
+
+$$x_{k+1} = x_k - \frac{p(x_k)}{p'(x_k)}.$$
+
+### The Horner Tableau
+
+A convenient hand-computation layout organizes the calculation in three rows:
+
+| $a_n$ | $a_{n-1}$ | $\cdots$ | $a_1$ | $a_0$ |
+|-------|-----------|----------|-------|-------|
+|       | $b_n \cdot c$ | $\cdots$ | $b_2 \cdot c$ | $b_1 \cdot c$ |
+| $b_n$ | $b_{n-1}$ | $\cdots$ | $b_1$ | $b_0$ |
+
+Each entry in the bottom row is the sum of the two entries above it: $b_k = b_{k+1} c + a_k$.
+
+### Worked Example
+
+Evaluate $p(2)$ for $p(x) = 2x^4 - 3x^3 + x^2 - 5x + 7$.
+
+The coefficients are $a_4 = 2,\; a_3 = -3,\; a_2 = 1,\; a_1 = -5,\; a_0 = 7$ and $c = 2$.
+
+| Step | Computation | Result |
+|------|-------------|--------|
+| $b_4$ | $= a_4$ | $2$ |
+| $b_3$ | $= 2 \cdot 2 + (-3) = 4 - 3$ | $1$ |
+| $b_2$ | $= 1 \cdot 2 + 1 = 2 + 1$ | $3$ |
+| $b_1$ | $= 3 \cdot 2 + (-5) = 6 - 5$ | $1$ |
+| $b_0$ | $= 1 \cdot 2 + 7 = 2 + 7$ | $9$ |
+
+Therefore $p(2) = 9$, and the quotient polynomial is $q(x) = 2x^3 + x^2 + 3x + 1$.
+
+Applying Horner's method again to $q(x)$ at $c = 2$ gives $p'(2) = b_1 = 1 \cdot 2 \cdot 2 \cdot 2 + \ldots$ — or more directly, since $b_1 = 1$ is already computed, a second tableau on the $b_k$ values would yield $p'(2)$.
+
+### Complexity Summary
+
+| Method | Multiplications | Additions |
+|--------|----------------|-----------|
+| Direct evaluation | $n(n+1)/2$ | $n$ |
+| Horner's method | $n$ | $n$ |
