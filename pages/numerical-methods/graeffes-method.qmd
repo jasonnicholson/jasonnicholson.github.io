@@ -3,26 +3,42 @@ title: "Graeffe's Method"
 bibliography: ../../references.bib
 ---
 
-Source inspiration: [Numerical Methods Modules](https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html).
+← [Numerical Methods](../)
 
-## Animation Focus
+Source inspiration: [@mathewsSite].
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+## Description
 
-### Planned animation ideas
+**Graeffe's method**, independently discovered by Karl Heinrich Graeffe (1799–1873), Germinal Pierre Dandelin (1794–1847), and Nikolai Ivanovich Lobachevsky (1792–1856), is a root-finding algorithm specifically for polynomials. Unlike iterative methods such as Newton-Raphson that track a single root, Graeffe's method finds **all roots simultaneously** by transforming the polynomial into one whose roots are more widely separated, then reading off approximations directly from the coefficients.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+### Root Squaring
 
-## Derivation Notes (Planned)
+The core idea is the **root-squaring transformation**. Given a degree-$n$ polynomial
 
-Short derivations will be added to explain the core equations and assumptions.
+$$p(x) = a_n x^n + a_{n-1} x^{n-1} + \cdots + a_0$$
 
-## Worked Example (Planned)
+with roots $r_1, r_2, \ldots, r_n$, define $p_1$ to be the polynomial of degree $n$ whose roots are $r_1^2, r_2^2, \ldots, r_n^2$. This is constructed via
 
-A compact numerical example with intermediate steps will be included.
+$$p_1(x) = (-1)^n \, p\!\left(\sqrt{x}\right) p\!\left(-\sqrt{x}\right).$$
 
-## Implementation Notes (Planned)
+Applying this transformation $m$ times yields a polynomial $p_m$ with roots $r_1^{2^m}, r_2^{2^m}, \ldots, r_n^{2^m}$. Even if the original roots are only mildly different in magnitude, after enough squarings the roots of $p_m$ become **widely separated**, because the ratios are raised to the power $2^m$.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+### Separated Root Theorem
+
+Once the roots are sufficiently separated in magnitude — meaning $|r_1^{2^m}| \gg |r_2^{2^m}| \gg \cdots \gg |r_n^{2^m}|$ — the **separated root theorem** (Vieta's formulas applied term by term) gives
+
+$$|r_k|^{2^m} \approx \left|\frac{c_{n-k+1}}{c_{n-k}}\right|, \qquad k = 1, 2, \ldots, n,$$
+
+where $c_0, c_1, \ldots, c_n$ are the coefficients of $p_m$. The magnitude of each original root is then recovered as
+
+$$|r_k| \approx \left|\frac{c_{n-k+1}}{c_{n-k}}\right|^{1/2^m}.$$
+
+The sign (or complex argument) of each root is determined by evaluating $p$ at the candidate magnitude.
+
+### Convergence and Limitations
+
+For polynomials with **distinct real roots**, the approximation error decreases quadratically with each root-squaring step — the number of accurate digits roughly doubles per iteration (similar to Newton-Raphson).
+
+However, the method has a serious practical limitation: the coefficients of $p_m$ grow exponentially as $|r_k|^{2^m}$, rapidly exceeding the range of standard floating-point arithmetic. Most software cannot apply more than a handful of iterations before overflow. The method was popular in the 19th and early 20th centuries when it was implemented with extended-precision hand calculation or symbolic algebra systems; today it is primarily of historical and educational interest.
+
+Special cases — double roots, complex conjugate root pairs, roots equal in magnitude — require modified formulas and careful coefficient analysis.

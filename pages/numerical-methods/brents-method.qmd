@@ -3,26 +3,55 @@ title: "Brent's Method"
 bibliography: ../../references.bib
 ---
 
-Source inspiration: [Numerical Methods Modules](https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html).
+← [Numerical Methods](../)
 
-## Animation Focus
+Source inspiration: [@mathewsSite].
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+## Description
 
-### Planned animation ideas
+**Brent's method**, developed by Richard Brent in 1971 based on earlier work by van Wijngaarden, Zonneveld, and Dijkstra (1963), Wilkinson (1967), Dekker (1969), and others, is a hybrid root-finding algorithm that guarantees convergence while achieving fast (superlinear) convergence whenever possible. It requires only that the function $f$ be continuous on $[a, b]$ with $f(a)$ and $f(b)$ of opposite sign — no derivatives are needed.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+The method maintains a bracket $[a, b]$ that always contains a root, and intelligently selects among three sub-methods at each step:
 
-## Derivation Notes (Planned)
+1. **Inverse quadratic interpolation** — fits a quadratic through the three most recent points $(a, f(a))$, $(b, f(b))$, $(c, f(c))$ and uses the $x$-intercept of that quadratic. Converges superlinearly near a simple root.
+2. **Secant method (regula falsi)** — uses a chord through the two most recent points as a fallback when inverse quadratic interpolation cannot be used.
+3. **Bisection** — used as a safeguard whenever neither of the above produces a sufficiently good step; guarantees the bracket shrinks by at least half.
 
-Short derivations will be added to explain the core equations and assumptions.
+### State Variables
 
-## Worked Example (Planned)
+At a typical step, Brent's method tracks three points — $a$, $b$, $c$ — satisfying:
 
-A compact numerical example with intermediate steps will be included.
+$$f(b) \cdot f(c) \leq 0, \qquad |f(b)| \leq |f(c)|$$
 
-## Implementation Notes (Planned)
+so that $b$ is the **current best approximation** to the root and $a$ is the previous value of $b$. The root is guaranteed to lie in either $[b, c]$ or $[a, b]$.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+### Inverse Quadratic Interpolation Formula
+
+Given function values $y_a = f(a)$, $y_b = f(b)$, $y_c = f(c)$, the next estimate is:
+
+$$s = \frac{y_b \, y_c}{(y_a - y_b)(y_a - y_c)}\,a + \frac{y_a \, y_c}{(y_b - y_a)(y_b - y_c)}\,b + \frac{y_a \, y_b}{(y_c - y_a)(y_c - y_b)}\,c$$
+
+This step is accepted only if $s$ falls inside the current bracket and the method is making adequate progress; otherwise bisection or secant is used instead.
+
+### Secant Method Formula
+
+When only two distinct function values are available (or IQI is rejected), the method falls back to the secant step:
+
+$$s = b - f(b) \cdot \frac{b - a}{f(b) - f(a)}$$
+
+### Convergence
+
+- **Guaranteed**: At worst, the method halves the bracket at every other step (like bisection), ensuring $O(2^{-n})$ convergence.
+- **Fast case**: When IQI applies consistently near a simple root, convergence is superlinear with order approximately 1.839 (the positive real root of $t^3 = t^2 + t + 1$).
+- **Robustness**: Unlike the secant method or IQI alone, Brent's method cannot fail to converge as long as the initial bracket is valid and $f$ is continuous.
+
+### Comparison with Constituent Methods
+
+| Method | Guaranteed? | Convergence order | Derivatives needed? |
+|---|---|---|---|
+| Bisection | Yes | 1 (linear) | No |
+| Regula Falsi | Yes (for sign change) | 1 (linear; slow for flat $f$) | No |
+| Secant | No | $\approx 1.618$ (superlinear) | No |
+| Inverse Quadratic | No | $\approx 1.839$ | No |
+| **Brent's Method** | **Yes** | **Up to $\approx 1.839$** | **No** |
+

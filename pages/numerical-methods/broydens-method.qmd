@@ -3,26 +3,59 @@ title: "Broyden's Method"
 bibliography: ../../references.bib
 ---
 
-Source inspiration: [Numerical Methods Modules](https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html).
+← [Numerical Methods](../)
 
-## Animation Focus
+Source inspiration: [@mathewsSite].
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+## Description
 
-### Planned animation ideas
+Solving a nonlinear system $\mathbf{F}(\mathbf{X}) = \mathbf{0}$ in $n$ dimensions by Newton's method is powerful but expensive: every iteration requires computing all $n^2$ partial derivatives that form the **Jacobian matrix** $J(\mathbf{X}^{(k)})$. In large problems this cost can dominate the computation. Broyden's method eliminates that bottleneck by maintaining an *approximate* Jacobian that is cheaply updated at each step using only the change in function values — no additional derivative or finite-difference evaluations are needed after the first iteration.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+### Newton's Method for Systems (the baseline)
 
-## Derivation Notes (Planned)
+For a vector function $\mathbf{F}(\mathbf{X}) = \bigl(f_1(\mathbf{X}),\dots,f_n(\mathbf{X})\bigr)^T$ Newton's method linearizes $\mathbf{F}$ at the current iterate and solves the resulting $n \times n$ linear system:
 
-Short derivations will be added to explain the core equations and assumptions.
+$$J\!\left(\mathbf{X}^{(k)}\right)\Delta\mathbf{X}^{(k)} = -\mathbf{F}\!\left(\mathbf{X}^{(k)}\right), \qquad \mathbf{X}^{(k+1)} = \mathbf{X}^{(k)} + \Delta\mathbf{X}^{(k)}.$$
 
-## Worked Example (Planned)
+It converges **quadratically** near a simple root but demands $n^2$ new partial-derivative evaluations each step. See [Nonlinear Systems](nonlinear-systems.qmd) for the full treatment.
 
-A compact numerical example with intermediate steps will be included.
+### Reducing Cost with a Finite-Difference Jacobian
 
-## Implementation Notes (Planned)
+One obvious improvement replaces every partial derivative with a finite-difference quotient. For two dimensions:
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+$$M_{ij} \approx \frac{F_i(\mathbf{X} + h\,\mathbf{e}_j) - F_i(\mathbf{X} - h\,\mathbf{e}_j)}{2h},$$
+
+where $\mathbf{e}_j$ is the $j$-th unit vector and $h$ is a small step size. This "Pseudo-Newton" or finite-difference Newton approach trades symbolic derivatives for $2n^2$ additional function evaluations per iteration. For large $n$ this is still expensive.
+
+### The Broyden Update: A Quasi-Newton Method
+
+Broyden's method goes further: instead of recomputing (or re-approximating) the full Jacobian at every step, it **updates** the previous approximate Jacobian $B_k$ using only the information gained in the last iteration. The key requirement is the **quasi-Newton (secant) condition** — the new approximate Jacobian must satisfy
+
+$$B_{k+1}\,\mathbf{s}_k = \mathbf{y}_k,$$
+
+where $\mathbf{s}_k = \mathbf{X}^{(k+1)} - \mathbf{X}^{(k)}$ is the step taken and $\mathbf{y}_k = \mathbf{F}(\mathbf{X}^{(k+1)}) - \mathbf{F}(\mathbf{X}^{(k)})$ is the corresponding change in function values. This is the multidimensional analogue of the scalar secant equation $f'(x) \approx (f(x_1) - f(x_0))/(x_1 - x_0)$.
+
+The secant condition alone does not uniquely determine $B_{k+1}$ when $n > 1$. Broyden's **rank-1 update** resolves the ambiguity by choosing the matrix closest to $B_k$ (in the Frobenius sense) that satisfies the secant condition:
+
+$$B_{k+1} = B_k + \frac{\left(\mathbf{y}_k - B_k\,\mathbf{s}_k\right)\mathbf{s}_k^T}{\mathbf{s}_k^T\,\mathbf{s}_k}.$$
+
+This is a **least-change secant update**: the correction to $B_k$ has rank 1, so only $O(n^2)$ arithmetic operations are needed to update the approximate Jacobian, and no new function evaluations are required beyond computing $\mathbf{F}(\mathbf{X}^{(k+1)})$.
+
+### Algorithm
+
+**Step 0.** Compute the exact Jacobian $B_0 = J(\mathbf{X}^{(0)})$. Apply one Newton step to obtain the first iterate:
+
+$$\mathbf{X}^{(1)} = \mathbf{X}^{(0)} - B_0^{-1}\,\mathbf{F}\!\left(\mathbf{X}^{(0)}\right).$$
+
+**For $k = 1, 2, \dots$:**
+
+1. Evaluate $\mathbf{F}(\mathbf{X}^{(k)})$.
+2. Update the approximate Jacobian:
+   $$B_k = B_{k-1} + \frac{\left(\mathbf{F}(\mathbf{X}^{(k)}) - \mathbf{F}(\mathbf{X}^{(k-1)}) - B_{k-1}\,\mathbf{s}_{k-1}\right)\mathbf{s}_{k-1}^T}{\mathbf{s}_{k-1}^T\,\mathbf{s}_{k-1}}.$$
+3. Solve $B_k\,\Delta\mathbf{X} = -\mathbf{F}(\mathbf{X}^{(k)})$ for the step $\Delta\mathbf{X}$.
+4. Update: $\mathbf{X}^{(k+1)} = \mathbf{X}^{(k)} + \Delta\mathbf{X}$.
+
+### Convergence
+
+Broyden's method converges **superlinearly** near a simple root — faster than linear, but slower than Newton's quadratic rate. In practice, because each iteration is far cheaper than a full Newton step, Broyden's method often reaches a given accuracy in less total work than Newton's method, especially in high dimensions. Convergence can fail if the starting point is far from a root or if the approximate Jacobian becomes ill-conditioned.
+
