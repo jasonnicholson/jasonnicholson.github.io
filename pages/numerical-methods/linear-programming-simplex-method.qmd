@@ -7,26 +7,365 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
+## Linear Programming Background
 
-## Animation Focus
+Linear programming seeks to optimize a linear objective over a feasible region defined by linear inequalities. In standard maximization form:
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+$$
+\text{maximize } f(\mathbf{x}) = c_1x_1 + c_2x_2 + \cdots + c_nx_n = \mathbf{c}^T\mathbf{x},
+\tag{1}
+$$
 
-### Planned animation ideas
+subject to
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+$$
+A\mathbf{x} \le \mathbf{b}, \qquad \mathbf{x} \ge \mathbf{0}.
+\tag{2}
+$$
 
-## Derivation Notes (Planned)
+::: {.callout-note appearance="simple"}
+## Definition - Convex Polytope
 
-Short derivations will be added to explain the core equations and assumptions.
+The feasible set
+$$
+\mathcal{R} = \{\mathbf{x}\in\mathbb{R}^n : A\mathbf{x} \le \mathbf{b},\ \mathbf{x}\ge \mathbf{0}\}
+$$
+is a convex polytope (or a convex polygon in two variables).
+:::
 
-## Worked Example (Planned)
+::: {.callout-tip appearance="simple"}
+## Theorem - Vertex Optimality
 
-A compact numerical example with intermediate steps will be included.
+If a linear program has an optimal solution and the feasible set is nonempty and bounded, then at least one optimal solution occurs at a vertex (extreme point) of the feasible polytope.
+:::
 
-## Implementation Notes (Planned)
+This is why both graphical methods (in 2D) and the simplex method focus on moving among vertices.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+## Standard Form and Tableau
+
+For constraints of the type $A\mathbf{x}\le\mathbf{b}$ with $\mathbf{b}\ge\mathbf{0}$, introduce slack variables $\mathbf{s}\ge\mathbf{0}$:
+
+$$
+A\mathbf{x} + I\mathbf{s} = \mathbf{b}.
+\tag{3}
+$$
+
+For a maximization objective $f(\mathbf{x})=\mathbf{c}^T\mathbf{x}$, the augmented objective equation is
+
+$$
+z - \mathbf{c}^T\mathbf{x} = 0.
+\tag{4}
+$$
+
+The initial simplex tableau is built from the coefficients of (3) and (4):
+
+$$
+\left[
+\begin{array}{c|c|c}
+A & I & \mathbf{b} \\
+\hline
+-\mathbf{c}^T & \mathbf{0}^T & 0
+\end{array}
+\right].
+\tag{5}
+$$
+
+::: {.callout-important appearance="simple"}
+## Pivot Rules (Simplex Method)
+
+At each iteration:
+
+1. Choose the entering variable from the most negative coefficient in the bottom row.
+2. Choose the leaving row by the minimum-ratio test $b_i/a_{ij}$ over rows with $a_{ij}>0$.
+3. Pivot to make the entering column a unit vector.
+4. Stop when there are no negative coefficients in the objective row.
+:::
+
+## Example 1 - Student Work-Hour Optimization
+
+Ann works $x$ hours and Carl works $y$ hours per week. The constraints from the source are:
+
+$$
+\begin{aligned}
+80 &\le 4x+2y,\\
+y &\le x+4,\\
+x &\le y+8,\\
+x+y &\le 40,\\
+x &\ge 0,\ y\ge 0.
+\end{aligned}
+$$
+
+Equivalent form for computation:
+
+$$
+\begin{aligned}
+2x+y &\ge 40,\\
+y &\le x+4,\\
+y &\ge x-8,\\
+x+y &\le 40,\\
+x,y &\ge 0.
+\end{aligned}
+$$
+
+The four feasible vertices are obtained by intersecting boundary lines:
+
+$$
+(12,16),\ (18,22),\ (24,16),\ (16,8).
+$$
+
+### Example 1(a)
+
+Maximize
+$$
+f(x,y)=15x+17y.
+$$
+
+Evaluate at vertices:
+
+| Vertex $(x,y)$ | $15x+17y$ |
+|---|---:|
+| $(12,16)$ | $452$ |
+| $(18,22)$ | $644$ |
+| $(24,16)$ | $632$ |
+| $(16,8)$ | $376$ |
+
+The maximum is
+$$
+f(18,22)=644.
+$$
+
+### Example 1(b)
+
+Maximize
+$$
+f(x,y)=17x+15y.
+$$
+
+| Vertex $(x,y)$ | $17x+15y$ |
+|---|---:|
+| $(12,16)$ | $444$ |
+| $(18,22)$ | $636$ |
+| $(24,16)$ | $648$ |
+| $(16,8)$ | $392$ |
+
+The maximum is
+$$
+f(24,16)=648.
+$$
+
+### Example 1(c)
+
+Maximize
+$$
+f(x,y)=16x+16y=16(x+y).
+$$
+
+Since maximizing $16(x+y)$ is equivalent to maximizing $x+y$, and the active top boundary is $x+y=40$, every feasible point on that boundary segment is optimal.
+
+In particular,
+
+$$
+f(18,22)=640,\qquad f(24,16)=640.
+$$
+
+So there are infinitely many optimal points on the segment joining $(18,22)$ and $(24,16)$.
+
+**Verification for Example 1(c):**
+
+| Point | Constraint check | Objective |
+|---|---|---:|
+| $(18,22)$ | $80\le 4(18)+2(22)=116$, $22\le 22$, $18\le 30$, $18+22=40$ | $16(18)+16(22)=640$ |
+| $(24,16)$ | $80\le 4(24)+2(16)=128$, $16\le 28$, $24\le 24$, $24+16=40$ | $16(24)+16(16)=640$ |
+
+## Example 2 - Simplex Tableau Computation
+
+From the source, maximize
+
+$$
+f(x,y)=10x+20y
+$$
+
+subject to
+
+$$
+\begin{aligned}
+2x+y &\le 30,\\
+x+4y &\le 64,\\
+5x+6y &\le 110,\\
+x,y &\ge 0.
+\end{aligned}
+$$
+
+Introduce slack variables $s_1,s_2,s_3\ge 0$:
+
+$$
+\begin{aligned}
+2x+y+s_1 &= 30,\\
+x+4y+s_2 &= 64,\\
+5x+6y+s_3 &= 110,\\
+z-10x-20y &= 0.
+\end{aligned}
+$$
+
+### Step 1: Initial Tableau
+
+$$
+\begin{array}{c|ccccc|c}
+ & x & y & s_1 & s_2 & s_3 & b \\
+\hline
+R_1 & 2 & 1 & 1 & 0 & 0 & 30 \\
+R_2 & 1 & 4 & 0 & 1 & 0 & 64 \\
+R_3 & 5 & 6 & 0 & 0 & 1 & 110 \\
+\hline
+R_z & -10 & -20 & 0 & 0 & 0 & 0
+\end{array}
+$$
+
+Entering variable: $y$ (most negative bottom-row coefficient $-20$).
+
+Minimum-ratio test:
+
+$$
+\frac{30}{1}=30,\quad \frac{64}{4}=16,\quad \frac{110}{6}=\frac{55}{3}.
+$$
+
+Leaving row: $R_2$ (minimum ratio $16$). Pivot element: $4$.
+
+### Step 2: First Pivot
+
+After pivoting on row $2$, column $y$:
+
+$$
+\begin{array}{c|ccccc|c}
+ & x & y & s_1 & s_2 & s_3 & b \\
+\hline
+R_1 & \tfrac{7}{4} & 0 & 1 & -\tfrac14 & 0 & 14 \\
+R_2 & \tfrac14 & 1 & 0 & \tfrac14 & 0 & 16 \\
+R_3 & \tfrac72 & 0 & 0 & -\tfrac32 & 1 & 14 \\
+\hline
+R_z & -5 & 0 & 0 & 5 & 0 & 320
+\end{array}
+$$
+
+Entering variable: $x$ (bottom-row coefficient $-5$).
+
+Minimum-ratio test (positive $x$ entries):
+
+$$
+\frac{14}{7/4}=8,\quad \frac{16}{1/4}=64,\quad \frac{14}{7/2}=4.
+$$
+
+Leaving row: $R_3$. Pivot element: $\tfrac72$.
+
+### Step 3: Second Pivot (Optimal Tableau)
+
+Pivoting on row $3$, column $x$ gives:
+
+$$
+\begin{array}{c|ccccc|c}
+ & x & y & s_1 & s_2 & s_3 & b \\
+\hline
+R_1 & 0 & 0 & 1 & \tfrac12 & -\tfrac12 & 7 \\
+R_2 & 0 & 1 & 0 & \tfrac{5}{14} & -\tfrac{1}{14} & 15 \\
+R_3 & 1 & 0 & 0 & -\tfrac37 & \tfrac27 & 4 \\
+\hline
+R_z & 0 & 0 & 0 & \tfrac{20}{7} & \tfrac{10}{7} & 340
+\end{array}
+$$
+
+No negative coefficients remain in the objective row, so this is optimal.
+
+The solution is
+
+$$
+x_1=x=4,\qquad x_2=y=15,\qquad z_{\max}=340.
+$$
+
+**Verification:**
+
+| Constraint | Left-hand side at $(4,15)$ | Right-hand side |
+|---|---:|---:|
+| $2x+y\le 30$ | $2(4)+15=23$ | $\le 30$ $\checkmark$ |
+| $x+4y\le 64$ | $4+4(15)=64$ | $\le 64$ $\checkmark$ |
+| $5x+6y\le 110$ | $5(4)+6(15)=110$ | $\le 110$ $\checkmark$ |
+
+Objective check:
+
+$$
+f(4,15)=10(4)+20(15)=340.
+$$
+
+## Example 3 - Same Feasible Region, Different Objectives
+
+From the source, the feasible region is defined by
+
+$$
+\begin{aligned}
+-x+2y &\le 36,\\
+x+6y &\le 132,\\
+3x+5y &\le 136,\\
+5x+3y &\le 136,\\
+6x+y &\le 132,\\
+2x-y &\le 36,\\
+x &\ge 0,\ y\ge 0.
+\end{aligned}
+$$
+
+The feasible vertices are
+
+$$
+(0,0),\ (0,18),\ (6,21),\ (12,20),\ (17,17),\ (20,12),\ (21,6),\ (18,0).
+$$
+
+### Example 3(a)
+
+Maximize
+$$
+f(x,y)=10x+10y.
+$$
+
+| Vertex $(x,y)$ | $10x+10y$ |
+|---|---:|
+| $(0,0)$ | $0$ |
+| $(0,18)$ | $180$ |
+| $(6,21)$ | $270$ |
+| $(12,20)$ | $320$ |
+| $(17,17)$ | $340$ |
+| $(20,12)$ | $320$ |
+| $(21,6)$ | $270$ |
+| $(18,0)$ | $180$ |
+
+So the maximum is
+$$
+f(17,17)=340.
+$$
+
+### Example 3(b)
+
+Maximize
+$$
+f(x,y)=10x+25y.
+$$
+
+| Vertex $(x,y)$ | $10x+25y$ |
+|---|---:|
+| $(0,0)$ | $0$ |
+| $(0,18)$ | $450$ |
+| $(6,21)$ | $585$ |
+| $(12,20)$ | $620$ |
+| $(17,17)$ | $595$ |
+| $(20,12)$ | $500$ |
+| $(21,6)$ | $360$ |
+| $(18,0)$ | $180$ |
+
+So the maximum is
+$$
+f(12,20)=620.
+$$
+
+**Verification of the two optimal points:**
+
+| Point | Active/tight constraints | Objective value |
+|---|---|---:|
+| $(17,17)$ for 3(a) | $3x+5y=136$, $5x+3y=136$ | $10(17)+10(17)=340$ |
+| $(12,20)$ for 3(b) | $x+6y=132$, $3x+5y=136$ | $10(12)+25(20)=620$ |

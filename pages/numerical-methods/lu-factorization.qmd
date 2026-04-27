@@ -7,8 +7,413 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
-
 ## Background
 
-LU factorization rewrites a matrix as a product of triangular matrices.
+LU factorization rewrites a matrix as a product of triangular matrices so that solving
+linear systems is reduced to forward and back substitution.
+
+::: {.callout-note appearance="simple"}
+## Definition - LU Factorization
+
+For a nonsingular matrix $A \in \mathbb{R}^{n\times n}$, an LU factorization is
+
+$$
+A = LU,
+$$
+
+where $L$ is lower triangular and $U$ is upper triangular.
+
+In the Doolittle form, $L$ has unit diagonal:
+
+$$
+\ell_{11}=\ell_{22}=\cdots=\ell_{nn}=1.
+$$
+:::
+
+The factorization is useful because once $A=LU$ is known, each solve $A\mathbf{x}=\mathbf{b}$
+needs only two triangular solves:
+
+$$
+L\mathbf{y}=\mathbf{b},\qquad U\mathbf{x}=\mathbf{y}.
+\tag{1}
+$$
+
+::: {.callout-tip appearance="simple"}
+## Theorem - LU without Pivoting
+
+If Gaussian elimination can be performed without row exchanges (equivalently, each pivot
+is nonzero), then $A$ admits a Doolittle factorization $A=LU$.
+:::
+
+### Doolittle Recurrence
+
+For $k=1,2,\ldots,n$:
+
+$$
+u_{kj}=a_{kj}-\sum_{s=1}^{k-1}\ell_{ks}u_{sj},\qquad j=k,\ldots,n,
+\tag{2}
+$$
+
+$$
+\ell_{ik}=\frac{a_{ik}-\sum_{s=1}^{k-1}\ell_{is}u_{sk}}{u_{kk}},\qquad i=k+1,\ldots,n,
+\tag{3}
+$$
+
+with $\ell_{kk}=1$. Breakdown occurs when $u_{kk}=0$.
+
+## Example 1 - Doolittle Factorization (No Pivoting)
+
+From the source module, use
+
+$$
+A=
+\begin{pmatrix}
+4 & 2 & 3\\
+-3 & 1 & 4\\
+2 & 4 & 5
+\end{pmatrix}.
+$$
+
+**Step 1:** First pivot $u_{11}=4$, then
+
+$$
+\ell_{21}=-\frac{3}{4},\qquad \ell_{31}=\frac12.
+$$
+
+**Step 2:** Second-row entries of $U$:
+
+$$
+u_{22}=1-\left(-\frac34\right)2=\frac52,
+\qquad
+u_{23}=4-\left(-\frac34\right)3=\frac{25}{4}.
+$$
+
+**Step 3:** Third multiplier and last pivot:
+
+$$
+\ell_{32}=\frac{4-(\frac12)2}{\frac52}=\frac65,
+\qquad
+u_{33}=5-\left(\frac12\right)3-\left(\frac65\right)\left(\frac{25}{4}\right)=-4.
+$$
+
+Hence
+
+$$
+L=
+\begin{pmatrix}
+1 & 0 & 0\\
+-\frac34 & 1 & 0\\
+\frac12 & \frac65 & 1
+\end{pmatrix},
+\qquad
+U=
+\begin{pmatrix}
+4 & 2 & 3\\
+0 & \frac52 & \frac{25}{4}\\
+0 & 0 & -4
+\end{pmatrix}.
+$$
+
+**Verification:**
+
+| Row of $LU$ | Computation | Result |
+|---|---|---|
+| 1 | $(1,0,0)U$ | $(4,2,3)$ $\checkmark$ |
+| 2 | $(-\tfrac34,1,0)U$ | $(-3,1,4)$ $\checkmark$ |
+| 3 | $(\tfrac12,\tfrac65,1)U$ | $(2,4,5)$ $\checkmark$ |
+
+So $LU=A$.
+
+## Example 2 - Nonsingular Matrix That Fails Without Pivoting
+
+From the source module, consider
+
+$$
+A=
+\begin{pmatrix}
+1 & 2 & 6\\
+4 & 8 & -1\\
+-2 & 3 & 5
+\end{pmatrix}.
+$$
+
+The matrix is nonsingular ($\det(A)=175\neq0$), but no-pivot Doolittle breaks:
+
+$$
+u_{22}=8-\left(\frac{4}{1}\right)2=0.
+$$
+
+So nonsingularity alone does not guarantee an LU factorization without pivoting.
+
+If we permute rows (equivalently, use a permutation matrix $P$), one valid reordered
+matrix is
+
+$$
+B=PA=
+\begin{pmatrix}
+4 & 8 & -1\\
+-2 & 3 & 5\\
+1 & 2 & 6
+\end{pmatrix},
+$$
+
+which factors as
+
+$$
+L=
+\begin{pmatrix}
+1 & 0 & 0\\
+-\frac12 & 1 & 0\\
+\frac14 & 0 & 1
+\end{pmatrix},
+\qquad
+U=
+\begin{pmatrix}
+4 & 8 & -1\\
+0 & 7 & \frac92\\
+0 & 0 & \frac{25}{4}
+\end{pmatrix}.
+$$
+
+**Verification:** $LU=B=PA$.
+
+::: {.callout-tip appearance="simple"}
+## Theorem - PA = LU with Pivoting
+
+For every nonsingular matrix $A$, there exists a permutation matrix $P$ such that
+
+$$
+PA=LU.
+\tag{4}
+$$
+
+Then solving $A\mathbf{x}=\mathbf{b}$ is equivalent to
+
+$$
+L\mathbf{y}=P\mathbf{b},\qquad U\mathbf{x}=\mathbf{y}.
+\tag{5}
+$$
+:::
+
+## Example 3 - Solving a System with PA = LU
+
+From the source module:
+
+$$
+\begin{pmatrix}
+2 & 4 & 1\\
+4 & -10 & 2\\
+1 & 2 & 4
+\end{pmatrix}
+\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+\begin{pmatrix}5\\-8\\13\end{pmatrix}.
+$$
+
+Here no row swaps are needed, so $P=I$. The LU factors are
+
+$$
+L=
+\begin{pmatrix}
+1 & 0 & 0\\
+2 & 1 & 0\\
+\frac12 & 0 & 1
+\end{pmatrix},
+\qquad
+U=
+\begin{pmatrix}
+2 & 4 & 1\\
+0 & -18 & 0\\
+0 & 0 & \frac72
+\end{pmatrix}.
+$$
+
+**Step 1:** Solve $L\mathbf{y}=\mathbf{b}$:
+
+$$
+y_1=5,
+\qquad
+2y_1+y_2=-8\Rightarrow y_2=-18,
+\qquad
+\frac12y_1+y_3=13\Rightarrow y_3=\frac{21}{2}.
+$$
+
+**Step 2:** Solve $U\mathbf{x}=\mathbf{y}$:
+
+$$
+\frac72x_3=\frac{21}{2}\Rightarrow x_3=3,
+\qquad
+-18x_2=-18\Rightarrow x_2=1,
+\qquad
+2x_1+4(1)+3=5\Rightarrow x_1=-1.
+$$
+
+The solution is
+
+$$
+\mathbf{x}=(-1,1,3)^T.
+$$
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|---|---|---|
+| 1 | $2(-1)+4(1)+1(3)=5$ | $5$ $\checkmark$ |
+| 2 | $4(-1)-10(1)+2(3)=-8$ | $-8$ $\checkmark$ |
+| 3 | $1(-1)+2(1)+4(3)=13$ | $13$ $\checkmark$ |
+
+## Application - Least-Squares Polynomial Fitting
+
+Given data $(x_i,y_i)$, the least-squares polynomial
+
+$$
+p_m(x)=c_0+c_1x+\cdots+c_mx^m
+$$
+
+is found from the normal equations
+
+$$
+\sum_{j=0}^m c_j\left(\sum_{i=1}^n x_i^{j+k}\right)=\sum_{i=1}^n x_i^k y_i,
+\qquad k=0,1,\ldots,m.
+\tag{6}
+$$
+
+This is a linear system $A\mathbf{c}=\mathbf{b}$ solved efficiently by LU.
+
+## Example 4 - Least-Squares Parabola (Source Example 6)
+
+Data points from the source:
+
+$$
+(2,8),\ (3,27),\ (4,64),\ (5,125).
+$$
+
+For $p_2(x)=c_1+c_2x+c_3x^2$, the normal equations are
+
+$$
+\begin{pmatrix}
+4 & 14 & 54\\
+14 & 54 & 224\\
+54 & 224 & 978
+\end{pmatrix}
+\begin{pmatrix}c_1\\c_2\\c_3\end{pmatrix}
+=
+\begin{pmatrix}224\\978\\4424\end{pmatrix}.
+$$
+
+Solving gives
+
+$$
+\begin{pmatrix}c_1\\c_2\\c_3\end{pmatrix}
+=
+\begin{pmatrix}
+\tfrac{357}{10}\\[2pt]
+-\tfrac{347}{10}\\[2pt]
+\tfrac{21}{2}
+\end{pmatrix},
+\qquad
+p_2(x)=\frac{357}{10}-\frac{347}{10}x+\frac{21}{2}x^2.
+$$
+
+**Verification (normal equations):**
+
+| Row | Left-hand side | Right-hand side |
+|---|---|---|
+| 1 | $4c_1+14c_2+54c_3=224$ | $224$ $\checkmark$ |
+| 2 | $14c_1+54c_2+224c_3=978$ | $978$ $\checkmark$ |
+| 3 | $54c_1+224c_2+978c_3=4424$ | $4424$ $\checkmark$ |
+
+## Example 5 - Cubic Fit and Ill-Conditioning (Source Examples 7-8)
+
+For $p_3(x)=c_1+c_2x+c_3x^2+c_4x^3$, the source normal equations are
+
+$$
+\begin{pmatrix}
+4 & 14 & 54 & 224\\
+14 & 54 & 224 & 978\\
+54 & 224 & 978 & 4424\\
+224 & 978 & 4424 & 20514
+\end{pmatrix}
+\begin{pmatrix}c_1\\c_2\\c_3\\c_4\end{pmatrix}
+=
+\begin{pmatrix}224\\978\\4424\\20514\end{pmatrix}.
+$$
+
+### Part (a): Unperturbed system
+
+The solution is
+
+$$
+\mathbf{c}=(0,0,0,1)^T,
+\qquad
+p_3(x)=x^3.
+$$
+
+This matches the data exactly.
+
+### Part (b): One-entry perturbation
+
+Source Example 8 changes one matrix entry by 1:
+
+$$
+a_{44}:\ 20514\to20515,
+\qquad
+\frac{1}{20514}=0.0000487=0.00487\%.
+$$
+
+The perturbed system is
+
+$$
+\widetilde{A}=
+\begin{pmatrix}
+4 & 14 & 54 & 224\\
+14 & 54 & 224 & 978\\
+54 & 224 & 978 & 4424\\
+224 & 978 & 4424 & 20515
+\end{pmatrix},
+\qquad
+\widetilde{A}\widetilde{\mathbf{c}}=\mathbf{b}.
+$$
+
+The new coefficients are
+
+$$
+\widetilde{\mathbf{c}}=
+\begin{pmatrix}
+\tfrac{51}{4}\\[2pt]
+-\tfrac{347}{28}\\[2pt]
+\tfrac{15}{4}\\[2pt]
+\tfrac{9}{14}
+\end{pmatrix}
+=
+\begin{pmatrix}
+12.75\\
+-12.3929\\
+3.75\\
+0.642857
+\end{pmatrix},
+$$
+
+so
+
+$$
+q(x)=\frac{51}{4}-\frac{347}{28}x+\frac{15}{4}x^2+\frac{9}{14}x^3.
+$$
+
+**Verification (perturbed solve):**
+
+| Row | Left-hand side with $\widetilde{\mathbf{c}}$ | Right-hand side |
+|---|---|---|
+| 1 | $4c_1+14c_2+54c_3+224c_4=224$ | $224$ $\checkmark$ |
+| 2 | $14c_1+54c_2+224c_3+978c_4=978$ | $978$ $\checkmark$ |
+| 3 | $54c_1+224c_2+978c_3+4424c_4=4424$ | $4424$ $\checkmark$ |
+| 4 | $224c_1+978c_2+4424c_3+20515c_4=20514$ | $20514$ $\checkmark$ |
+
+::: {.callout-warning appearance="simple"}
+## Numerical Warning - Sensitivity
+
+A tiny matrix perturbation ($0.00487\%$ in one entry) causes a large coefficient
+change: for example, $c_4$ moves from $1$ to $\tfrac{9}{14}$, a relative change of
+about $35.7\%$. The source reports a condition number near
+$2.87518\times 10^7$, indicating severe ill-conditioning.
+:::

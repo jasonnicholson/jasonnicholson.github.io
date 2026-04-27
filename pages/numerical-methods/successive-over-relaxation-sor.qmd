@@ -7,26 +7,128 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
+## Residual-Driven Iteration Idea
 
-## Animation Focus
+For $A\mathbf{x}=\mathbf{b}$, let
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+$$
+\mathbf{r}^{(k)}=\mathbf{b}-A\mathbf{x}^{(k)}
+	ag{1}
+$$
 
-### Planned animation ideas
+be the residual. SOR introduces a relaxation parameter $\omega$ to accelerate convergence relative to Gauss-Seidel.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+::: {.callout-tip appearance="simple"}
+## Theorem - SOR Iteration
+With $A=D-L-U$ and $0<\omega<2$, SOR is
+$$
+\mathbf{x}^{(k+1)}=(D-\omega L)^{-1}\!\left[(1-\omega)D+\omega U\right]\mathbf{x}^{(k)}
++\omega(D-\omega L)^{-1}\mathbf{b}.
+	ag{2}
+$$
+When $\omega=1$, this reduces to Gauss-Seidel.
+:::
 
-## Derivation Notes (Planned)
+## Example - 9x9 Tridiagonal System
 
-Short derivations will be added to explain the core equations and assumptions.
+Solve
 
-## Worked Example (Planned)
+$$
+\begin{pmatrix}
+2&1&0&0&0&0&0&0&0\\
+1&2&1&0&0&0&0&0&0\\
+0&1&2&1&0&0&0&0&0\\
+0&0&1&2&1&0&0&0&0\\
+0&0&0&1&2&1&0&0&0\\
+0&0&0&0&1&2&1&0&0\\
+0&0&0&0&0&1&2&1&0\\
+0&0&0&0&0&0&1&2&1\\
+0&0&0&0&0&0&0&1&2
+\end{pmatrix}
+\mathbf{x}
+=
+\begin{pmatrix}
+1\\2\\3\\4\\5\\4\\3\\2\\1
+\end{pmatrix},
+$$
 
-A compact numerical example with intermediate steps will be included.
+with $\omega=1.25$ and initial guess
 
-## Implementation Notes (Planned)
+$$
+\mathbf{x}^{(0)}=(1,1,\dots,1)^\top.
+$$
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+For this tridiagonal system, a component form of SOR is
+
+$$
+\begin{aligned}
+x_1^{(k+1)}&=(1-\omega)x_1^{(k)}+\frac{\omega}{2}\left(b_1-x_2^{(k)}\right),\\
+x_i^{(k+1)}&=(1-\omega)x_i^{(k)}+\frac{\omega}{2}\left(b_i-x_{i-1}^{(k+1)}-x_{i+1}^{(k)}\right),\quad i=2,\dots,8,\\
+x_9^{(k+1)}&=(1-\omega)x_9^{(k)}+\frac{\omega}{2}\left(b_9-x_8^{(k+1)}\right).
+\end{aligned}
+$$
+
+**Step 1:** First SOR sweep (from $\mathbf{x}^{(0)}$) begins with
+
+$$
+\begin{aligned}
+x_1^{(1)}&=-0.25,\\
+x_2^{(1)}&=0.53125,\\
+x_3^{(1)}&=0.66796875,
+\end{aligned}
+$$
+
+and continues similarly through $x_9^{(1)}$.
+
+After 10 iterations, the module reports these approximations:
+
+$$
+\mathbf{x}_{J,10}\approx
+\begin{pmatrix}
+0.353516\\0.439453\\1.10938\\0.708008\\2.01172\\0.708008\\1.10938\\0.439453\\0.353516
+\end{pmatrix},
+$$
+
+$$
+\mathbf{x}_{GS,10}\approx
+\begin{pmatrix}
+0.352474\\0.264427\\1.15727\\0.379622\\2.12333\\0.338747\\1.22693\\0.188383\\0.405809
+\end{pmatrix},
+$$
+
+$$
+\mathbf{x}_{SOR,10}\approx
+\begin{pmatrix}
+0.48649\\0.0225178\\1.47599\\0.0220403\\2.48109\\0.0143284\\1.49083\\0.0066904\\0.497745
+\end{pmatrix}.
+$$
+
+The exact solution is
+
+$$
+\mathbf{x}_*=\left(\tfrac12,0,\tfrac32,0,\tfrac52,0,\tfrac32,0,\tfrac12\right)^\top.
+$$
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|---|---:|---:|
+| 1 | $2(\tfrac12)+0=1$ | $1\;\checkmark$ |
+| 2 | $\tfrac12+2(0)+\tfrac32=2$ | $2\;\checkmark$ |
+| 3 | $0+2(\tfrac32)+0=3$ | $3\;\checkmark$ |
+| 4 | $\tfrac32+2(0)+\tfrac52=4$ | $4\;\checkmark$ |
+| 5 | $0+2(\tfrac52)+0=5$ | $5\;\checkmark$ |
+| 6 | $\tfrac52+2(0)+\tfrac32=4$ | $4\;\checkmark$ |
+| 7 | $0+2(\tfrac32)+0=3$ | $3\;\checkmark$ |
+| 8 | $\tfrac32+2(0)+\tfrac12=2$ | $2\;\checkmark$ |
+| 9 | $0+2(\tfrac12)=1$ | $1\;\checkmark$ |
+
+Using the infinity norm error $\|\mathbf{x}_{10}-\mathbf{x}_*\|_\infty$ from those vectors:
+
+| Method | Error after 10 iterations |
+|---|---:|
+| Jacobi | $0.708008$ |
+| Gauss-Seidel | $0.379622$ |
+| SOR ($\omega=1.25$) | $0.02401$ |
+
+SOR is much closer to the exact solution after the same iteration count in this example.

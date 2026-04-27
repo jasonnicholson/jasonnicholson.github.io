@@ -7,26 +7,145 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
+## Matrix Splitting Setup
 
-## Animation Focus
+For a linear system $A\mathbf{x}=\mathbf{b}$, split
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+$$
+A=D-L-U,
+	ag{1}
+$$
 
-### Planned animation ideas
+where $D$ is diagonal, $-L$ is strictly lower-triangular, and $-U$ is strictly upper-triangular.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+::: {.callout-note appearance="simple"}
+## Definition - Strict Diagonal Dominance
+$A=[a_{ij}]$ is strictly diagonally dominant if
+$$
+|a_{ii}|>\sum_{j\ne i}|a_{ij}|,\qquad i=1,\dots,n.
+$$
+:::
 
-## Derivation Notes (Planned)
+::: {.callout-tip appearance="simple"}
+## Iteration Schemes
+Jacobi:
+$$
+\mathbf{x}^{(k+1)}=D^{-1}(L+U)\mathbf{x}^{(k)}+D^{-1}\mathbf{b}.
+	ag{2}
+$$
+Gauss-Seidel:
+$$
+\mathbf{x}^{(k+1)}=(D-L)^{-1}U\mathbf{x}^{(k)}+(D-L)^{-1}\mathbf{b}.
+	ag{3}
+$$
+:::
 
-Short derivations will be added to explain the core equations and assumptions.
+## Example 1 - Convergent System and Speed Comparison
 
-## Worked Example (Planned)
+Solve
 
-A compact numerical example with intermediate steps will be included.
+$$
+\begin{pmatrix}
+7&-2&1&2\\
+2&8&3&1\\
+-1&0&5&2\\
+0&2&-1&4
+\end{pmatrix}
+\begin{pmatrix}x_1\\x_2\\x_3\\x_4\end{pmatrix}
+=
+\begin{pmatrix}3\\-2\\5\\4\end{pmatrix},
+$$
 
-## Implementation Notes (Planned)
+with starting guess
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+$$
+\mathbf{x}^{(0)}=(0,-1,1,1)^\top.
+$$
+
+From the equations,
+
+$$
+\begin{aligned}
+x_1&=\frac{3+2x_2-x_3-2x_4}{7},\\
+x_2&=\frac{-2-2x_1-3x_3-x_4}{8},\\
+x_3&=\frac{5+x_1-2x_4}{5},\\
+x_4&=\frac{4-2x_2+x_3}{4}.
+\end{aligned}
+$$
+
+**Step 1 (Jacobi, first sweep):** use only $\mathbf{x}^{(0)}$ values.
+
+$$
+\mathbf{x}_J^{(1)}=
+\left(-\frac27,-\frac34,\frac35,\frac74\right)^\top.
+$$
+
+**Step 2 (Gauss-Seidel, first sweep):** use newest available values immediately.
+
+$$
+\mathbf{x}_{GS}^{(1)}=
+\left(-\frac27,-\frac{19}{28},\frac{19}{35},\frac{59}{40}\right)^\top.
+$$
+
+Using the original module outputs for this system:
+
+| Method | Iterations | Reported check |
+|---|---:|---|
+| Jacobi | 10 | $A\mathbf{x}\approx(3.01,-1.98456,4.9987,3.99042)^\top$ |
+| Gauss-Seidel | 10 | $A\mathbf{x}\approx(3.00001,-1.99991,5,4)^\top$ |
+| Jacobi | 20 | $A\mathbf{x}\approx(2.99997,-1.99994,4.99995,4)^\top$ |
+| Gauss-Seidel | 20 | $A\mathbf{x}=(3,-2,5,4)^\top$ |
+
+So Gauss-Seidel reaches the target residual faster for this example.
+
+The exact solution is
+
+$$
+\mathbf{x}=
+\left(-\frac{127}{725},-\frac{387}{725},\frac{302}{725},\frac{994}{725}\right)^\top.
+$$
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|---|---:|---:|
+| 1 | $7x_1-2x_2+x_3+2x_4=3$ | $3\;\checkmark$ |
+| 2 | $2x_1+8x_2+3x_3+x_4=-2$ | $-2\;\checkmark$ |
+| 3 | $-x_1+5x_3+2x_4=5$ | $5\;\checkmark$ |
+| 4 | $2x_2-x_3+4x_4=4$ | $4\;\checkmark$ |
+
+## Example 2 - Divergence Warning
+
+Consider
+
+$$
+A=
+\begin{pmatrix}
+2&8&3&1\\
+0&2&-1&4\\
+7&-2&1&2\\
+-1&0&5&2
+\end{pmatrix},
+\qquad
+\mathbf{b}=
+\begin{pmatrix}-2\\4\\3\\5\end{pmatrix}.
+$$
+
+After iteration, the module reports a very large residual component, for example
+
+$$
+A\mathbf{x}\approx
+\begin{pmatrix}
+2.00761\times 10^{14}\\
+-9.64939\times 10^{14}\\
+-4.38986\times 10^{14}\\
+5.00879
+\end{pmatrix},
+$$
+
+which clearly does not match $\mathbf{b}$.
+
+::: {.callout-warning appearance="simple"}
+The matrix above is not strictly diagonally dominant, so basic fixed-point iterations can diverge.
+Always check dominance (or a stronger spectral-radius condition) before trusting the iteration.
+:::
