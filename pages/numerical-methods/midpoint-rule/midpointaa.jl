@@ -1,6 +1,6 @@
-# riemannaa.jl
-# Riemann Sums animation: Left Riemann Sum with density increase
-# Produces: riemannaa.gif
+# midpointaa.jl
+# Midpoint Rule animation with full-interval density increase
+# Produces: midpointaa.gif
 
 using Plots
 gr()
@@ -15,11 +15,14 @@ xlims = (0.0, 2.0)
 ylims = (0.0, 2.1)
 xplot = range(a, b, length=800)
 
-left_sum(n) = ((b - a) / n) * sum(f(a + i * (b - a) / n) for i in 0:n-1)
+function midpoint_sum(n)
+    dx = (b - a) / n
+    return dx * sum(f(a + (i + 0.5) * dx) for i in 0:n-1)
+end
 
 anim = @animate for n in vcat(0, n_seq)
     plot(size=(630, 480), xlims=xlims, ylims=ylims,
-         xlabel="", ylabel="", title="Left Riemann Sum",
+         xlabel="", ylabel="", title="Midpoint Rule",
          legend=false, grid=false, framestyle=:box,
          background_color=:white)
 
@@ -30,17 +33,18 @@ anim = @animate for n in vcat(0, n_seq)
         for i in 0:n-1
             xl = a + i * dx
             xr = xl + dx
-            h = f(xl)
+            xm = (xl + xr) / 2
+            h = f(xm)
             plot!([xl, xr, xr, xl, xl], [0.0, 0.0, h, h, 0.0];
                   seriestype=:shape, fillcolor=:lightpink, fillalpha=0.65,
                   linecolor=:red, lw=0.7)
         end
 
-        approx = left_sum(n)
+        approx = midpoint_sum(n)
         annotate!(1.15, 1.88, text("Sample Points = $n", :black, 10))
         annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
     end
 end
 
-gif(anim, joinpath(@__DIR__, "riemannaa.gif"); fps=2)
-println("Saved: riemannaa.gif")
+gif(anim, joinpath(@__DIR__, "midpointaa.gif"); fps=2)
+println("Saved: midpointaa.gif")

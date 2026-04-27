@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Numerical Methods – Jason H. Nicholson</title>
+<title>Newton-Cotes Integration – Jason H. Nicholson</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -45,25 +45,25 @@ div.csl-indent {
 }</style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../">
-<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/popper.min.js"></script>
-<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-b0055fe3f16fc4a17aa491bd47adb78c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../site_libs/bootstrap/bootstrap-dark-765aeea877339cbfbd7cb4bd0fa7078b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-b0055fe3f16fc4a17aa491bd47adb78c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-765aeea877339cbfbd7cb4bd0fa7078b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -92,8 +92,37 @@ div.csl-indent {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
-<link rel="stylesheet" href="../../styles.css">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
 </head>
 
 <body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
@@ -272,7 +301,7 @@ div.csl-indent {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../../index.html">
+    <a class="navbar-brand" href="../../../index.html">
     <span class="navbar-title">Jason H. Nicholson</span>
     </a>
   </div>
@@ -283,7 +312,7 @@ div.csl-indent {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../blog.html"> 
+    <a class="nav-link" href="../../../blog.html"> 
 <span class="menu-text">Blog</span></a>
   </li>  
   <li class="nav-item dropdown ">
@@ -292,21 +321,21 @@ div.csl-indent {
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
         <li>
-    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
  <span class="dropdown-text">Numerical Methods</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
  <span class="dropdown-text">regularizeNd</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
  <span class="dropdown-text">System Identification</span></a>
   </li>  
     </ul>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="../../about.html"> 
+    <a class="nav-link" href="../../../about.html"> 
 <span class="menu-text">About</span></a>
   </li>  
 </ul>
@@ -326,21 +355,15 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#function-approximation" id="toc-function-approximation" class="nav-link active" data-scroll-target="#function-approximation">Function Approximation</a>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
   <ul class="collapse">
-  <li><a href="#function-approximation-at-a-point" id="toc-function-approximation-at-a-point" class="nav-link" data-scroll-target="#function-approximation-at-a-point">Function Approximation at a Point</a></li>
-  <li><a href="#others" id="toc-others" class="nav-link" data-scroll-target="#others">Others</a></li>
+  <li><a href="#case-1-composite-trapezoidal-rule" id="toc-case-1-composite-trapezoidal-rule" class="nav-link" data-scroll-target="#case-1-composite-trapezoidal-rule">Case 1 — Composite Trapezoidal Rule</a></li>
+  <li><a href="#case-2-composite-simpsons-rule-13" id="toc-case-2-composite-simpsons-rule-13" class="nav-link" data-scroll-target="#case-2-composite-simpsons-rule-13">Case 2 — Composite Simpson’s Rule (1/3)</a></li>
+  <li><a href="#case-3-composite-simpsons-38-rule" id="toc-case-3-composite-simpsons-38-rule" class="nav-link" data-scroll-target="#case-3-composite-simpsons-38-rule">Case 3 — Composite Simpson’s 3/8 Rule</a></li>
+  <li><a href="#case-4-composite-booles-rule" id="toc-case-4-composite-booles-rule" class="nav-link" data-scroll-target="#case-4-composite-booles-rule">Case 4 — Composite Boole’s Rule</a></li>
   </ul></li>
-  <li><a href="#the-solution-of-nonlinear-equations-fx-0" id="toc-the-solution-of-nonlinear-equations-fx-0" class="nav-link" data-scroll-target="#the-solution-of-nonlinear-equations-fx-0">The Solution of Nonlinear Equations f(x) = 0</a></li>
-  <li><a href="#the-solution-of-linear-systems-ax-b" id="toc-the-solution-of-linear-systems-ax-b" class="nav-link" data-scroll-target="#the-solution-of-linear-systems-ax-b">The Solution of Linear Systems AX = B</a></li>
-  <li><a href="#interpolation-and-polynomial-approximation" id="toc-interpolation-and-polynomial-approximation" class="nav-link" data-scroll-target="#interpolation-and-polynomial-approximation">Interpolation and Polynomial Approximation</a></li>
-  <li><a href="#curve-fitting" id="toc-curve-fitting" class="nav-link" data-scroll-target="#curve-fitting">Curve Fitting</a></li>
-  <li><a href="#numerical-differentiation" id="toc-numerical-differentiation" class="nav-link" data-scroll-target="#numerical-differentiation">Numerical Differentiation</a></li>
-  <li><a href="#numerical-integration" id="toc-numerical-integration" class="nav-link" data-scroll-target="#numerical-integration">Numerical Integration</a></li>
-  <li><a href="#solution-of-differential-equations" id="toc-solution-of-differential-equations" class="nav-link" data-scroll-target="#solution-of-differential-equations">Solution of Differential Equations</a></li>
-  <li><a href="#solution-of-partial-differential-equations" id="toc-solution-of-partial-differential-equations" class="nav-link" data-scroll-target="#solution-of-partial-differential-equations">Solution of Partial Differential Equations</a></li>
-  <li><a href="#eigenvalues-and-eigenvectors" id="toc-eigenvalues-and-eigenvectors" class="nav-link" data-scroll-target="#eigenvalues-and-eigenvectors">Eigenvalues and Eigenvectors</a></li>
-  <li><a href="#numerical-optimization" id="toc-numerical-optimization" class="nav-link" data-scroll-target="#numerical-optimization">Numerical Optimization</a></li>
+  <li><a href="#derivation-notes" id="toc-derivation-notes" class="nav-link" data-scroll-target="#derivation-notes">Derivation Notes</a></li>
   </ul>
 </nav>
     </div>
@@ -350,7 +373,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Numerical Methods</h1>
+<h1 class="title">Newton-Cotes Integration</h1>
 </div>
 
 
@@ -367,185 +390,66 @@ div.csl-indent {
 </header>
 
 
-<p>I plan to put together short explanations and animations on various numerical methods and math-related topics here. It will take me a long time to put this together totally. So, please be patient.</p>
-<p>This page was inspired by John H Mathew’s website <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>. In 2019, the page was taken down. I tried contacting Cal State Fullerton in 2019 but they did not respond. Fastforward to April-2026, I realized I could pull it back from the Internet Archive (The Wayback Machine) at least partially. Therefore, you will notice that this is inspired from his page.</p>
-<section id="function-approximation" class="level2">
-<h2 class="anchored" data-anchor-id="function-approximation">Function Approximation</h2>
-<section id="function-approximation-at-a-point" class="level3">
-<h3 class="anchored" data-anchor-id="function-approximation-at-a-point">Function Approximation at a Point</h3>
-<ul>
-<li><a href="../../pages/numerical-methods/taylor-series.html">Taylor Series</a></li>
-<li><a href="../../pages/numerical-methods/pade-approximant.html">Padé approximant</a></li>
-<li><a href="../../pages/numerical-methods/laurent-series.html">Laurent series</a></li>
-</ul>
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Newton-Cotes formulas approximate <span class="math inline">\(\int_a^b f(x)\,dx\)</span> by interpolating <span class="math inline">\(f\)</span> on equally spaced nodes and integrating the interpolating polynomial on each panel. Familiar composite rules include trapezoidal (degree 1), Simpson’s <span class="math inline">\(1/3\)</span> (degree 2), Simpson’s <span class="math inline">\(3/8\)</span> (degree 3), and Boole’s rule (degree 4).</p>
+<p>For spacing <span class="math inline">\(h\)</span>, representative composite forms are: <span class="math inline">\(T_n = h\big[\tfrac12 f(x_0)+\sum_{i=1}^{n-1}f(x_i)+\tfrac12 f(x_n)\big]\)</span>, <span class="math inline">\(S_n = \tfrac{h}{3}[f(x_0)+f(x_n)+4\sum f(x_{2k-1})+2\sum f(x_{2k})]\)</span>.</p>
+<p>The animations below follow the legacy style by increasing point density over the full interval between frames.</p>
 </section>
-<section id="others" class="level3">
-<h3 class="anchored" data-anchor-id="others">Others</h3>
-<ul>
-<li><a href="../../pages/numerical-methods/power-series.html">Power Series</a></li>
-<li><a href="../../pages/numerical-methods/fourier-series.html">Fourier series</a></li>
-</ul>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each case uses <span class="math inline">\(f(x)=e^{-x}\sin(8x^{2/3})+1\)</span> on <span class="math inline">\([0,2]\)</span> and shows a different closed Newton-Cotes construction while sample density increases frame by frame.</p>
+<section id="case-1-composite-trapezoidal-rule" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-composite-trapezoidal-rule">Case 1 — Composite Trapezoidal Rule</h3>
+<p><strong>Behavior:</strong> Linear segments connect adjacent sample points, creating trapezoids that refine as nodes get denser.</p>
+<p><a href="newtoncotesaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="newtoncotesaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Trapezoidal rule animation over [0,2]: full-interval point density increases each frame and trapezoid approximation updates</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-composite-simpsons-rule-13" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-composite-simpsons-rule-13">Case 2 — Composite Simpson’s Rule (1/3)</h3>
+<p><strong>Behavior:</strong> Pairs of subintervals are approximated by quadratics, producing a visibly smoother top boundary than trapezoids.</p>
+<p><a href="newtoncotesbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="newtoncotesbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Simpson 1/3 animation over [0,2]: density increases each frame and piecewise quadratic area approximation updates</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-composite-simpsons-38-rule" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-composite-simpsons-38-rule">Case 3 — Composite Simpson’s 3/8 Rule</h3>
+<p><strong>Behavior:</strong> Triplets of subintervals are approximated by cubics, giving a higher-order piecewise fit to the curve.</p>
+<p><a href="newtoncotescc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="newtoncotescc.gif" class="img-fluid figure-img"></p>
+<figcaption>Simpson 3/8 animation over [0,2]: increasing node density with piecewise cubic area updates</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-4-composite-booles-rule" class="level3">
+<h3 class="anchored" data-anchor-id="case-4-composite-booles-rule">Case 4 — Composite Boole’s Rule</h3>
+<p><strong>Behavior:</strong> Blocks of four subintervals use quartic interpolation. As density rises, the piecewise quartic envelope tracks oscillations closely.</p>
+<p><a href="newtoncotesdd.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="newtoncotesdd.gif" class="img-fluid figure-img"></p>
+<figcaption>Boole rule animation over [0,2]: increasing point density with piecewise quartic area updates</figcaption>
+</figure>
+</div>
+<p>Legacy note: the archive is incomplete for some quadrature assets (notably Simpson’s 3/8 GIF), so the 3/8 case is reconstructed from method formulas and the available module examples.</p>
 </section>
 </section>
-<section id="the-solution-of-nonlinear-equations-fx-0" class="level2">
-<h2 class="anchored" data-anchor-id="the-solution-of-nonlinear-equations-fx-0">The Solution of Nonlinear Equations f(x) = 0</h2>
-<ul>
-<li><a href="fixed-point-iteration/">Fixed Point Iteration</a></li>
-<li><a href="bisection-method/">Bisection Method</a></li>
-<li><a href="false-position-or-regula-falsi-method/">False Position or Regula Falsi Method</a></li>
-<li><a href="newton-raphson-method/">Newton-Raphson Method</a></li>
-<li><a href="secant-method/">Secant Method</a></li>
-<li><a href="mullers-method/">Muller’s Method</a></li>
-<li><a href="aitken-method-and-steffensen-acceleration/">Aitken’s Method &amp; Steffensen’s Acceleration</a></li>
-<li><a href="accelerated-and-modified-newton-raphson/">Accelerated &amp; Modified Newton-Raphson</a></li>
-<li><a href="improved-newton-method/">Improved Newton Method</a></li>
-<li><a href="halleys-method/">Halley’s Method</a></li>
-<li><a href="../../pages/numerical-methods/horners-method.html">Horner’s Method</a></li>
-<li><a href="brents-method/">Brent’s Method</a></li>
-<li><a href="graeffes-method/">Graeffe’s Method</a></li>
-<li><a href="nonlinear-systems/">Nonlinear Systems</a></li>
-<li><a href="broydens-method/">Broyden’s Method</a></li>
-<li><a href="madsen-reid-method/">Damped Newton with Acceleration (Madsen-Reid Method)</a></li>
-</ul>
-</section>
-<section id="the-solution-of-linear-systems-ax-b" class="level2">
-<h2 class="anchored" data-anchor-id="the-solution-of-linear-systems-ax-b">The Solution of Linear Systems AX = B</h2>
-<ul>
-<li><a href="../../pages/numerical-methods/triangular-systems-and-back-substitution.html">Triangular Systems and Back Substitution</a></li>
-<li><a href="../../pages/numerical-methods/gauss-jordan-elimination-and-pivoting.html">Gauss-Jordan Elimination and Pivoting</a></li>
-<li><a href="../../pages/numerical-methods/tri-diagonal-matrices.html">Tri-Diagonal Matrices</a></li>
-<li><a href="../../pages/numerical-methods/inverse-matrix.html">Inverse Matrix</a></li>
-<li><a href="../../pages/numerical-methods/lu-factorization.html">LU Factorization</a></li>
-<li><a href="../../pages/numerical-methods/cholesky-doolittle-and-crout-factorizations.html">Cholesky, Doolittle and Crout Factorizations</a></li>
-<li><a href="../../pages/numerical-methods/jacobi-and-gauss-seidel-iteration.html">Jacobi and Gauss-Seidel Iteration</a></li>
-<li><a href="../../pages/numerical-methods/successive-over-relaxation-sor.html">Successive Over Relaxation - SOR</a></li>
-<li><a href="../../pages/numerical-methods/pivoting-methods.html">Pivoting Methods</a></li>
-<li><a href="../../pages/numerical-methods/iterative-refinement.html">Iterative Refinement</a></li>
-<li><a href="../../pages/numerical-methods/row-reduced-echelon-form.html">Row Reduced Echelon Form</a></li>
-<li><a href="../../pages/numerical-methods/homogeneous-linear-systems.html">Homogeneous Linear Systems</a></li>
-<li><a href="../../pages/numerical-methods/kirchoffs-law.html">Kirchoff’s Law</a></li>
-<li><a href="../../pages/numerical-methods/leontief-model.html">Leontief Model</a></li>
-<li><a href="../../pages/numerical-methods/linear-programming-simplex-method.html">Linear Programming-Simplex Method</a></li>
-</ul>
-</section>
-<section id="interpolation-and-polynomial-approximation" class="level2">
-<h2 class="anchored" data-anchor-id="interpolation-and-polynomial-approximation">Interpolation and Polynomial Approximation</h2>
-<ul>
-<li><a href="maclaurin-and-taylor-series/">Maclaurin and Taylor Series</a></li>
-<li><a href="lagrange-polynomial-interpolation-and-approximation/">Lagrange Polynomial Interpolation and Approximation</a></li>
-<li><a href="newton-interpolation-polynomial/">Newton Interpolation Polynomial</a></li>
-<li><a href="hermite-polynomial-interpolation/">Hermite Polynomial Interpolation</a></li>
-<li><a href="cubic-splines/">Cubic Splines</a></li>
-<li><a href="b-splines/">B-Splines</a></li>
-<li><a href="bezier-curves/">Bézier Curves</a></li>
-<li><a href="chebyshev-approximation-polynomial/">Chebyshev Approximation Polynomial</a></li>
-<li><a href="pade-approximation/">Pade Approximation</a></li>
-<li><a href="rational-approximation/">Rational Approximation</a></li>
-<li><a href="aitkens-and-nevilles-interpolation/">Aitken’s and Neville’s Interpolation</a></li>
-<li><a href="legendre-polynomials/">Legendre Polynomials</a></li>
-<li><a href="the-tangent-parabola/">The Tangent Parabola</a></li>
-<li><a href="catenary/">Catenary</a></li>
-</ul>
-</section>
-<section id="curve-fitting" class="level2">
-<h2 class="anchored" data-anchor-id="curve-fitting">Curve Fitting</h2>
-<ul>
-<li><a href="least-squares-lines/">Least Squares Lines</a></li>
-<li><a href="least-squares-polynomials/">Least Squares Polynomials</a></li>
-<li><a href="../../pages/numerical-methods/nonlinear-curve-fitting.html">Nonlinear Curve Fitting</a></li>
-<li><a href="../../pages/numerical-methods/logistic-curve.html">Logistic Curve</a></li>
-<li><a href="fft-and-trigonometric-polynomials/">FFT and Trigonometric Polynomials</a></li>
-<li><a href="../../pages/numerical-methods/conic-fit.html">Conic Fit</a></li>
-<li><a href="../../pages/numerical-methods/circle-of-curvature.html">Circle of Curvature</a></li>
-<li><a href="../../pages/regularizeNd/index.html">regularizeNd Series</a></li>
-</ul>
-</section>
-<section id="numerical-differentiation" class="level2">
-<h2 class="anchored" data-anchor-id="numerical-differentiation">Numerical Differentiation</h2>
-<ul>
-<li><a href="numerical-differentiation/">Numerical Differentiation</a></li>
-<li><a href="richardson-extrapolation/">Richardson Extrapolation</a></li>
-<li><a href="derive-numerical-differentiation-formulae/">Derive Numerical Differentiation Formulae</a></li>
-</ul>
-</section>
-<section id="numerical-integration" class="level2">
-<h2 class="anchored" data-anchor-id="numerical-integration">Numerical Integration</h2>
-<ul>
-<li><a href="riemann-sums/">Riemann Sums</a></li>
-<li><a href="midpoint-rule/">Midpoint Rule</a></li>
-<li><a href="newton-cotes-integration/">Newton-Cotes Integration</a></li>
-<li><a href="trapezoidal-rule-for-numerical-integration/">Trapezoidal Rule for Numerical Integration</a></li>
-<li><a href="simpsons-rule-for-numerical-integration/">Simpson’s Rule for Numerical Integration</a></li>
-<li><a href="../../pages/numerical-methods/simpsons-3-8-rule-for-numerical-integration.html">Simpson’s 3/8 Rule for Numerical Integration</a></li>
-<li><a href="booles-rule/">Boole’s Rule</a></li>
-<li><a href="../../pages/numerical-methods/romberg-integration.html">Romberg Integration</a></li>
-<li><a href="../../pages/numerical-methods/adaptive-simpsons-rule.html">Adaptive Simpson’s Rule</a></li>
-<li><a href="../../pages/numerical-methods/gauss-legendre-quadrature.html">Gauss-Legendre Quadrature</a></li>
-<li><a href="cubic-spline-quadrature/">Cubic Spline Quadrature</a></li>
-<li><a href="../../pages/numerical-methods/monte-carlo-pi.html">Monte Carlo Pi</a></li>
-<li><a href="../../pages/numerical-methods/monte-carlo-integration.html">Monte Carlo Integration</a></li>
-<li><a href="../../pages/numerical-methods/2d-trapezoidal-and-simpson-rules.html">2D Trapezoidal and Simpson Rules</a></li>
-</ul>
-</section>
-<section id="solution-of-differential-equations" class="level2">
-<h2 class="anchored" data-anchor-id="solution-of-differential-equations">Solution of Differential Equations</h2>
-<ul>
-<li><a href="../../pages/numerical-methods/eulers-method-for-odes.html">Euler’s Method for ODE’s</a></li>
-<li><a href="taylor-series-method-for-odes/">Taylor Series Method for ODE’s</a></li>
-<li><a href="runge-kutta-method/">Runge-Kutta Method</a></li>
-<li><a href="../../pages/numerical-methods/runge-kutta-fehlberg-method.html">Runge-Kutta-Fehlberg Method</a></li>
-<li><a href="../../pages/numerical-methods/adams-bashforth-moulton-method.html">Adams-Bashforth-Moulton Method</a></li>
-<li><a href="../../pages/numerical-methods/milne-simpsons-method.html">Milne-Simpson’s Method</a></li>
-<li><a href="../../pages/numerical-methods/predictor-corrector-methods.html">Predictor-Corrector Methods</a></li>
-<li><a href="../../pages/numerical-methods/shooting-methods-for-odes.html">Shooting Methods for ODE’s</a></li>
-<li><a href="../../pages/numerical-methods/finite-difference-method-for-odes.html">Finite Difference Method for ODE’s</a></li>
-<li><a href="../../pages/numerical-methods/galerkins-method.html">Galerkin’s Method</a></li>
-<li><a href="../../pages/numerical-methods/painleve-property.html">Painleve Property</a></li>
-<li><a href="../../pages/numerical-methods/lotka-volterra-model.html">Lotka-Volterra Model</a></li>
-<li><a href="../../pages/numerical-methods/pendulum.html">Pendulum</a></li>
-<li><a href="../../pages/numerical-methods/projectile-motion.html">Projectile Motion</a></li>
-<li><a href="../../pages/numerical-methods/lorenz-attractor.html">Lorenz Attractor</a></li>
-<li><a href="../../pages/numerical-methods/van-der-pol-system.html">van der Pol System</a></li>
-<li><a href="../../pages/numerical-methods/harvesting-model.html">Harvesting Model</a></li>
-<li><a href="../../pages/numerical-methods/frobenius-series-solution.html">Frobenius Series Solution</a></li>
-<li><a href="../../pages/numerical-methods/picard-iteration.html">Picard Iteration</a></li>
-<li><a href="../../pages/numerical-methods/spring-mass-systems.html">Spring-Mass Systems</a></li>
-</ul>
-</section>
-<section id="solution-of-partial-differential-equations" class="level2">
-<h2 class="anchored" data-anchor-id="solution-of-partial-differential-equations">Solution of Partial Differential Equations</h2>
-<ul>
-<li><a href="../../pages/numerical-methods/finite-difference-method.html">Finite Difference Method</a></li>
-<li><a href="../../pages/numerical-methods/crank-nicolson-method.html">Crank-Nicolson Method</a></li>
-<li><a href="../../pages/numerical-methods/elliptic-pdes.html">Elliptic PDE’s</a></li>
-</ul>
-</section>
-<section id="eigenvalues-and-eigenvectors" class="level2">
-<h2 class="anchored" data-anchor-id="eigenvalues-and-eigenvectors">Eigenvalues and Eigenvectors</h2>
-<ul>
-<li><a href="../../pages/numerical-methods/eigenvalues-and-eigenvectors.html">Eigenvalues and Eigenvectors</a></li>
-<li><a href="../../pages/numerical-methods/power-method.html">Power method</a></li>
-<li><a href="../../pages/numerical-methods/jacobi-method.html">Jacobi method</a></li>
-<li><a href="../../pages/numerical-methods/householder-transformations.html">Householder Transformations</a></li>
-<li><a href="../../pages/numerical-methods/qr-method.html">QR method</a></li>
-<li><a href="../../pages/numerical-methods/compartment-model.html">Compartment Model</a></li>
-<li><a href="../../pages/numerical-methods/earthquake-model.html">Earthquake Model</a></li>
-<li><a href="../../pages/numerical-methods/matrix-exponential.html">Matrix Exponential</a></li>
-<li><a href="../../pages/numerical-methods/faddeev-leverrier-method.html">Faddeev-Leverrier Method</a></li>
-<li><a href="../../pages/numerical-methods/hessenberg-factorization.html">Hessenberg Factorization</a></li>
-</ul>
-</section>
-<section id="numerical-optimization" class="level2">
-<h2 class="anchored" data-anchor-id="numerical-optimization">Numerical Optimization</h2>
-<ul>
-<li><a href="../../pages/numerical-methods/golden-ratio-search.html">Golden Ratio Search</a></li>
-<li><a href="../../pages/numerical-methods/fibonacci-search.html">Fibonacci Search</a></li>
-<li><a href="../../pages/numerical-methods/quadratic-interpolative-search.html">Quadratic Interpolative Search</a></li>
-<li><a href="../../pages/numerical-methods/nelder-mead-method.html">Nelder Mead Method</a></li>
-<li><a href="../../pages/numerical-methods/powells-method.html">Powell’s Method</a></li>
-<li><a href="../../pages/numerical-methods/steepest-descent-gradient-search.html">Steepest Descent - Gradient Search</a></li>
-<li><a href="../../pages/numerical-methods/newtons-search-method.html">Newton’s Search Method</a></li>
-</ul>
+<section id="derivation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-notes">Derivation Notes</h2>
+<p>The closed Newton-Cotes family on equally spaced nodes increases algebraic order by fitting higher-degree interpolants per panel. Higher-order rules reduce truncation error for smooth functions, but can become less robust for very high degree on wide panels.</p>
 
 
 

@@ -1,51 +1,44 @@
 # riemannbb.jl
-# Riemann Sums animation: Right Riemann Sum
+# Riemann Sums animation: Right Riemann Sum with density increase
 # Produces: riemannbb.gif
 
 using Plots
 gr()
 
-# --- Parameters ---
-f(x) = exp(-x) * sin(8 * x^(2/3)) + 1
+f(x) = exp(-x) * sin(8 * x^(2 / 3)) + 1
 a, b = 0.0, 2.0
-n = 10   # number of subintervals
+
+n_seq = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16,
+         20, 24, 28, 32, 40, 48, 56, 64, 72, 88, 104, 120]
 
 xlims = (0.0, 2.0)
-ylims = (-0.1, 2.3)
+ylims = (0.0, 2.1)
+xplot = range(a, b, length=800)
 
-title_str = "Right Riemann Sum: y = e^{-x}sin(8x^{2/3})+1"
+right_sum(n) = ((b - a) / n) * sum(f(a + i * (b - a) / n) for i in 1:n)
 
-# --- Subinterval data ---
-dx = (b - a) / n
-xs_right = [a + i*dx for i in 1:n]   # right endpoints
-
-# --- Backdrop ---
-xplot = range(a, b, length=400)
-
-# --- Animation (add one rectangle per frame) ---
-anim = @animate for frame in 0:n
-    plot(size=(640, 480), xlims=xlims, ylims=ylims,
-         xlabel="x", ylabel="y", title=title_str,
-         legend=false, grid=true, framestyle=:box,
+anim = @animate for n in vcat(0, n_seq)
+    plot(size=(630, 480), xlims=xlims, ylims=ylims,
+         xlabel="", ylabel="", title="Right Riemann Sum",
+         legend=false, grid=false, framestyle=:box,
          background_color=:white)
 
-    # Draw rectangles added so far
-    for i in 1:frame
-        xr = xs_right[i]
-        xl = xr - dx
-        h  = f(xr)
-        plot!([xl, xr, xr, xl, xl], [0.0, 0.0, h, h, 0.0];
-              seriestype=:shape, fillcolor=:darkorange, fillalpha=0.4,
-              linecolor=:darkorange, lw=1, label="")
-    end
+    plot!(xplot, f.(xplot); color=:magenta, lw=2)
 
-    # Draw function curve on top
-    plot!(collect(xplot), f.(collect(xplot)); color=:magenta, lw=2, label="")
+    if n > 0
+        dx = (b - a) / n
+        for i in 1:n
+            xr = a + i * dx
+            xl = xr - dx
+            h = f(xr)
+            plot!([xl, xr, xr, xl, xl], [0.0, 0.0, h, h, 0.0];
+                  seriestype=:shape, fillcolor=:lightpink, fillalpha=0.65,
+                  linecolor=:red, lw=0.7)
+        end
 
-    # Annotation
-    if frame > 0
-        sum_val = dx * sum(f(xs_right[i]) for i in 1:frame)
-        annotate!(1.0, 2.1, text("n=$frame  Sum≈$(round(sum_val; digits=4))", :black, 10))
+        approx = right_sum(n)
+        annotate!(1.15, 1.88, text("Sample Points = $n", :black, 10))
+        annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
     end
 end
 

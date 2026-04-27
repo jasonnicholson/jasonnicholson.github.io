@@ -1,52 +1,47 @@
 # riemanncc.jl
-# Riemann Sums animation: Lower Riemann Sum (min of endpoints)
+# Riemann Sums animation: Lower Riemann Sum with density increase
 # Produces: riemanncc.gif
 
 using Plots
 gr()
 
-# --- Parameters ---
-f(x) = exp(-x) * sin(8 * x^(2/3)) + 1
+f(x) = exp(-x) * sin(8 * x^(2 / 3)) + 1
 a, b = 0.0, 2.0
-n = 10   # number of subintervals
+
+n_seq = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16,
+         20, 24, 28, 32, 40, 48, 56, 64, 72, 88, 104, 120]
 
 xlims = (0.0, 2.0)
-ylims = (-0.1, 2.3)
+ylims = (0.0, 2.1)
+xplot = range(a, b, length=800)
 
-title_str = "Lower Riemann Sum: y = e^{-x}sin(8x^{2/3})+1"
+function lower_sum(n)
+    dx = (b - a) / n
+    return dx * sum(min(f(a + (i - 1) * dx), f(a + i * dx)) for i in 1:n)
+end
 
-# --- Subinterval data ---
-dx = (b - a) / n
-# Lower sum uses min(f(x_i), f(x_{i+1})) for each sub-interval
-hs = [min(f(a + (i-1)*dx), f(a + i*dx)) for i in 1:n]
-
-# --- Backdrop ---
-xplot = range(a, b, length=400)
-
-# --- Animation (add one rectangle per frame) ---
-anim = @animate for frame in 0:n
-    plot(size=(640, 480), xlims=xlims, ylims=ylims,
-         xlabel="x", ylabel="y", title=title_str,
-         legend=false, grid=true, framestyle=:box,
+anim = @animate for n in vcat(0, n_seq)
+    plot(size=(630, 480), xlims=xlims, ylims=ylims,
+         xlabel="", ylabel="", title="Lower Riemann Sum",
+         legend=false, grid=false, framestyle=:box,
          background_color=:white)
 
-    # Draw rectangles added so far
-    for i in 1:frame
-        xl = a + (i-1)*dx
-        xr = xl + dx
-        h  = hs[i]
-        plot!([xl, xr, xr, xl, xl], [0.0, 0.0, h, h, 0.0];
-              seriestype=:shape, fillcolor=:steelblue, fillalpha=0.4,
-              linecolor=:steelblue, lw=1, label="")
-    end
+    plot!(xplot, f.(xplot); color=:magenta, lw=2)
 
-    # Draw function curve on top
-    plot!(collect(xplot), f.(collect(xplot)); color=:magenta, lw=2, label="")
+    if n > 0
+        dx = (b - a) / n
+        for i in 1:n
+            xl = a + (i - 1) * dx
+            xr = xl + dx
+            h = min(f(xl), f(xr))
+            plot!([xl, xr, xr, xl, xl], [0.0, 0.0, h, h, 0.0];
+                  seriestype=:shape, fillcolor=:lightpink, fillalpha=0.65,
+                  linecolor=:red, lw=0.7)
+        end
 
-    # Annotation
-    if frame > 0
-        sum_val = dx * sum(hs[1:frame])
-        annotate!(1.0, 2.1, text("n=$frame  Sum≈$(round(sum_val; digits=4))", :black, 10))
+        approx = lower_sum(n)
+        annotate!(1.15, 1.88, text("Sample Points = $n", :black, 10))
+        annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
     end
 end
 
