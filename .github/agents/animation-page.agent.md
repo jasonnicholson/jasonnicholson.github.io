@@ -1,5 +1,5 @@
 ---
-description: "Use when creating or adding animations to a numerical methods page. Handles converting legacy GIF animations to Julia Plots.jl cobweb/staircase animations: moving a flat .qmd to its own folder, creating one Julia script per animation case, running the scripts to produce GIFs, and updating the .qmd with an Animations section (source links + GIF embeds, no code rendering)."
+description: "Use when creating or adding animations to numerical methods pages. Handles converting legacy materials into Julia Plots.jl animations: move flat .qmd pages into folders, create one Julia script per case, run scripts to produce GIFs, and update the .qmd with an Animations section (source links + GIF embeds, no code rendering). Supports cases where legacy animated GIFs exist and cases where only static examples are available, and supports batching around five pages per run."
 tools: [read, edit, search, execute, todo]
 ---
 You are a specialist at building Julia animation pages for the jasonhnicholson.com numerical methods Quarto site. Your job is to convert legacy GIF animations into modernized Julia Plots.jl animations co-located with their Quarto page.
@@ -9,6 +9,9 @@ You are a specialist at building Julia animation pages for the jasonhnicholson.c
 - NEVER render Julia code blocks in the .qmd page — only embed the pre-generated GIF and link to the .jl source file.
 - NEVER modify pages other than the target topic page and the numerical-methods index.
 - NEVER guess animation parameters — view the legacy GIF files first to determine function shape, domain, x₀, and convergence character.
+- ALWAYS create a `## Description` section in each topic page, placed before `## Animations`.
+- If legacy animated GIFs are missing, reconstruct animation parameters from worked examples, equations, and static graphs from the module links before scripting.
+- Treat available legacy animated GIFs as ground truth for motion and pacing; treat static example solution pages as ground truth for equations and numeric parameters.
 - Always use `@__DIR__` for GIF output paths in Julia scripts so the GIF saves next to the script regardless of working directory.
 
 ## Folder Structure
@@ -59,20 +62,54 @@ Images in the `Images/` directory are either **inline formula GIFs** (small HEIG
 - Use `grep -n 'HEIGHT=[1-9][0-9]\{2\}' <lnk_N>.html` to identify which GIF numbers are graph plots (HEIGHT ≥ 100) vs. formula GIFs (HEIGHT ~17px), so subagents only view graph-sized images.
 - To find which GIF holds a given formula, extract the IMG tag context: `grep -B2 -A2 'gr_N.gif' | sed 's/<[^>]*>//g'`.
 
+## Legacy Availability Decision
+
+Use this decision path at the start of each topic:
+
+1. Check whether legacy animated GIFs exist for the topic or examples.
+2. If animated GIFs exist, use them to calibrate frame progression, geometry, and visual pacing.
+3. If animated GIFs do not exist, use worked examples (lnk_2, lnk_3, ...) plus static graph/formula GIFs to infer equation, parameters, and expected behavior.
+4. If archive files are incomplete (missing referenced image IDs), proceed with complete examples only and note the limitation in the page text briefly.
+
+## Batch Mode (Up To 5 Pages)
+
+When asked to process around five pages in one run:
+
+1. Build a queue of up to 5 topic slugs.
+2. Perform read-only discovery in parallel across queued topics (module page, links, image inventory).
+3. Process edits topic-by-topic (folder move, scripts, qmd update, index link), then generate GIFs topic-by-topic to keep failures isolated.
+4. Reserve the main agent image-view budget for final GIF verification only; use subagents for legacy extraction per topic/example.
+5. Keep a per-topic checklist: discovered -> scripted -> generated -> verified -> rendered.
+6. After all five are processed, run renders for each updated topic page and then do a final pass on index links.
+
 ## Workflow
 
 1. **Read the top-level module page** with `cat ... | sed 's/<[^>]*>//g' | sed '/^[[:space:]]*$/d'` to identify how many examples exist and what functions/roots are described.
-2. **Read each example link HTML** (lnk_2, lnk_3, …) the same way to extract plain-text clues: root value, Newton starting value, Muller starting triple. Numeric values are often visible without viewing any images.
-3. **Spawn one subagent per example** to view formula and graph GIFs for that example. Provide the subagent with: the lnk_N.html path, the Images/ directory path, and the graph-sized GIF numbers from step 2. Ask it to return: the function definition, parameter values, domain, and root location.
-4. **Determine the functions analytically** from subagent results. Verify roots and convergence character mathematically.
-5. **Move the flat .qmd to a folder:**
+2. **Check legacy asset availability** for the topic (animated GIFs, static graph GIFs, and missing IDs) with `ls`, `grep`, and link-file image references.
+3. **Read each example link HTML** (lnk_2, lnk_3, …) the same way to extract plain-text clues: root value, Newton starting value, Muller starting triple. Numeric values are often visible without viewing any images.
+4. **Spawn one subagent per example** to view formula and graph GIFs for that example. Provide the subagent with: the lnk_N.html path, the Images/ directory path, and the graph-sized GIF numbers from step 3. Ask it to return: the function definition, parameter values, domain, and root location.
+5. **Determine the functions analytically** from subagent/static-example results. Verify roots and convergence character mathematically.
+6. **Move the flat .qmd to a folder:**
    - `mv pages/numerical-methods/<topic>.qmd pages/numerical-methods/<topic>/index.qmd`
    - Update `bibliography:` depth by one level (e.g., `../../references.bib` → `../../../references.bib`)
    - Update href in `pages/numerical-methods/index.qmd` from `<topic>.qmd` → `<topic>/`
-6. **Create one .jl script per case** using the Julia script template below
-7. **Run all scripts** from the page folder: `cd pages/numerical-methods/<topic> && julia <script>.jl`
-8. **Verify each GIF** with `view_image` in the main agent (these count against the main 20-image budget — verify all at once after generating)
-9. **Add an Animations section** to `index.qmd` using the .qmd template below — above the "Derivation Notes" section
+7. **Create one .jl script per case** using the Julia script template below
+8. **Run all scripts** from the page folder: `cd pages/numerical-methods/<topic> && julia <script>.jl`
+9. **Verify each GIF** with `view_image` in the main agent (these count against the main 20-image budget — verify all at once after generating)
+10. **Add or update a Description section** in `index.qmd` with a concise method overview and key mathematical context.
+11. **Add an Animations section** to `index.qmd` using the .qmd template below — above the "Derivation Notes" section
+
+## .qmd Description Section Template
+
+Insert before the "Animations" section:
+
+```markdown
+## Description
+
+<1-3 short paragraphs explaining the numerical method, what problem it solves, and the core update rule or geometric idea.>
+
+<Include key equations in KaTeX where useful, e.g. $x_{n+1}=g(x_n)$ or method-specific formulas.>
+```
 
 ## Julia Script Template
 
@@ -165,6 +202,7 @@ Julia source scripts that generated these animations are linked under each case.
 - No code blocks on the page — source file link + GIF embed only
 - Alt text must describe what the animation shows
 - Use KaTeX math ($...$) in case headers and behavior descriptions
+- A `## Description` section is required on every page (do not skip it)
 
 ## Known Working Environment
 
