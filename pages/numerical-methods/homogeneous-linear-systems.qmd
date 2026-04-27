@@ -7,26 +7,312 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
+## Background
 
-## Animation Focus
+A homogeneous linear system has the form
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+$$
+A\mathbf{x}=\mathbf{0}.
+\tag{1}
+$$
 
-### Planned animation ideas
+The vector $\mathbf{x}=\mathbf{0}$ always solves (1), so every homogeneous system has at least the trivial solution.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+::: {.callout-note appearance="simple"}
+## Definition - Reduced Row Echelon Form
+A matrix is in reduced row echelon form (RREF) if:
 
-## Derivation Notes (Planned)
+1. Every nonzero row has leading entry $1$.
+2. Each leading $1$ is the only nonzero entry in its column.
+3. Leading $1$ positions move to the right as you move down rows.
+4. Any zero rows are grouped at the bottom.
+:::
 
-Short derivations will be added to explain the core equations and assumptions.
+::: {.callout-note appearance="simple"}
+## Definition - Rank
+The rank of a matrix $A$, written $\operatorname{rank}(A)$, is the number of nonzero rows in its RREF.
+:::
 
-## Worked Example (Planned)
+Because an augmented homogeneous matrix is
 
-A compact numerical example with intermediate steps will be included.
+$$
+M=[A\mid \mathbf{0}],
+\tag{2}
+$$
 
-## Implementation Notes (Planned)
+the last column is always zero, so
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+$$
+\operatorname{rank}(A)=\operatorname{rank}(M).
+\tag{3}
+$$
+
+::: {.callout-tip appearance="simple"}
+## Theorem - Solution Structure for $n\times n$ Homogeneous Systems
+For $A\in\mathbb{R}^{n\times n}$:
+
+$$
+\operatorname{rank}(A)=n
+\Longleftrightarrow
+\text{the only solution is }\mathbf{x}=\mathbf{0},
+\tag{4}
+$$
+
+$$
+\operatorname{rank}(A)<n
+\Longleftrightarrow
+\text{there are infinitely many nontrivial solutions}.
+\tag{5}
+$$
+:::
+
+For square matrices, this is equivalent to:
+
+$$
+\det(A)\neq 0 \Rightarrow \text{unique trivial solution},
+\qquad
+\det(A)=0 \Rightarrow \text{infinitely many solutions}.
+\tag{6}
+$$
+
+## Algorithm
+
+1. Form $[A\mid\mathbf{0}]$.
+2. Row reduce to RREF.
+3. Identify pivot variables and free variables.
+4. Express pivot variables in terms of free variables.
+5. Write the parametric vector form and verify by substitution into $A\mathbf{x}=\mathbf{0}$.
+
+## Example 1 - Unique Trivial Solution
+
+Solve
+
+$$
+\begin{aligned}
+x_1+x_2-2x_3&=0,\\
+3x_1+2x_2+4x_3&=0,\\
+4x_1+3x_2+3x_3&=0.
+\end{aligned}
+$$
+
+**Step 1**: Build the coefficient matrix and row reduce.
+
+$$
+A=
+\begin{pmatrix}
+1&1&-2\\
+3&2&4\\
+4&3&3
+\end{pmatrix}
+\longrightarrow
+\operatorname{RREF}(A)=I_3.
+$$
+
+**Step 2**: Read off solution.
+
+$$
+x_1=x_2=x_3=0,
+\qquad
+\mathbf{x}=\begin{pmatrix}0\\0\\0\end{pmatrix}.
+$$
+
+**Verification:**
+
+| Row | Substitution result | Target |
+|---|---|---|
+| 1 | $0+0-2(0)=0$ | $0\ \checkmark$ |
+| 2 | $3(0)+2(0)+4(0)=0$ | $0\ \checkmark$ |
+| 3 | $4(0)+3(0)+3(0)=0$ | $0\ \checkmark$ |
+
+Since $\det(A)=-1\neq0$, only the trivial solution exists.
+
+## Example 2 - One Free Variable
+
+Solve
+
+$$
+\begin{aligned}
+x_1+x_2-2x_3&=0,\\
+3x_1+2x_2+4x_3&=0,\\
+4x_1+3x_2+2x_3&=0.
+\end{aligned}
+$$
+
+**Step 1**: Row reduce.
+
+$$
+\operatorname{RREF}(A)=
+\begin{pmatrix}
+1&0&8\\
+0&1&-10\\
+0&0&0
+\end{pmatrix}.
+$$
+
+So
+
+$$
+x_1+8x_3=0,
+\qquad
+x_2-10x_3=0.
+$$
+
+**Step 2**: Let the free variable $x_3=t$.
+
+$$
+x_1=-8t,
+\qquad
+x_2=10t,
+\qquad
+x_3=t.
+$$
+
+Hence
+
+$$
+\mathbf{x}(t)=t
+\begin{pmatrix}
+-8\\10\\1
+\end{pmatrix},
+\qquad t\in\mathbb{R}.
+$$
+
+**Verification:**
+
+| Row | Substitution with $(-8t,10t,t)$ | Target |
+|---|---|---|
+| 1 | $-8t+10t-2t=0$ | $0\ \checkmark$ |
+| 2 | $3(-8t)+2(10t)+4t=0$ | $0\ \checkmark$ |
+| 3 | $4(-8t)+3(10t)+2t=0$ | $0\ \checkmark$ |
+
+## Example 3 - Two Free Variables
+
+Solve
+
+$$
+\begin{aligned}
+4x_1+3x_2+2x_3&=0,\\
+4x_1+3x_2+2x_3&=0,\\
+4x_1+3x_2+2x_3&=0.
+\end{aligned}
+$$
+
+**Step 1**: Row reduce.
+
+$$
+\operatorname{RREF}(A)=
+\begin{pmatrix}
+1&\tfrac34&\tfrac12\\
+0&0&0\\
+0&0&0
+\end{pmatrix}.
+$$
+
+So
+
+$$
+x_1+\tfrac34x_2+\tfrac12x_3=0.
+$$
+
+**Step 2**: Let $x_2=s$ and $x_3=t$ be free.
+
+$$
+x_1=-\tfrac34 s-\tfrac12 t,
+\qquad
+x_2=s,
+\qquad
+x_3=t.
+$$
+
+Parametric vector form:
+
+$$
+\mathbf{x}(s,t)=
+s\begin{pmatrix}-\tfrac34\\1\\0\end{pmatrix}
++
+t\begin{pmatrix}-\tfrac12\\0\\1\end{pmatrix}.
+$$
+
+**Verification:**
+
+| Row | Substitution result | Target |
+|---|---|---|
+| 1 | $4(-\tfrac34 s-\tfrac12 t)+3s+2t=0$ | $0\ \checkmark$ |
+| 2 | same as row 1 | $0\ \checkmark$ |
+| 3 | same as row 1 | $0\ \checkmark$ |
+
+::: {.callout-warning appearance="simple"}
+When $\operatorname{rank}(A)<n$, free variables are unavoidable. The solution set is a subspace (a line, plane, or higher-dimensional analogue through the origin), not a single point.
+:::
+
+## Application - Balancing Propane Combustion
+
+Write
+
+$$
+x_1\,\mathrm{C_3H_8}+x_2\,\mathrm{O_2}
+\rightarrow
+x_3\,\mathrm{CO_2}+x_4\,\mathrm{H_2O}.
+$$
+
+Atom-balance equations give the homogeneous system
+
+$$
+\begin{aligned}
+3x_1-x_3&=0,\\
+8x_1-2x_4&=0,\\
+2x_2-2x_3-x_4&=0.
+\end{aligned}
+$$
+
+From RREF,
+
+$$
+x_1=\tfrac14x_4,
+\qquad
+x_2=\tfrac54x_4,
+\qquad
+x_3=\tfrac34x_4.
+$$
+
+Let $x_4=t$:
+
+$$
+\mathbf{x}(t)=
+\begin{pmatrix}
+\tfrac14 t\\
+\tfrac54 t\\
+\tfrac34 t\\
+t
+\end{pmatrix}.
+$$
+
+Choose $t=4$ for the smallest positive integers:
+
+$$
+(x_1,x_2,x_3,x_4)=(1,5,3,4).
+$$
+
+Balanced equation:
+
+$$
+\mathrm{C_3H_8}+5\mathrm{O_2}
+\rightarrow
+3\mathrm{CO_2}+4\mathrm{H_2O}.
+$$
+
+**Verification (atom counts):**
+
+| Element | Left side | Right side |
+|---|---:|---:|
+| C | $3(1)=3$ | $1(3)=3\ \checkmark$ |
+| H | $8(1)=8$ | $2(4)=8\ \checkmark$ |
+| O | $2(5)=10$ | $2(3)+1(4)=10\ \checkmark$ |
+
+## Summary
+
+Homogeneous systems are classified by rank (or determinant in square cases):
+
+1. Full rank gives only the trivial solution.
+2. Rank deficiency creates free variables and infinitely many solutions.
+3. RREF exposes the null-space basis directly, which is useful both in algebra and in applications such as chemical equation balancing.

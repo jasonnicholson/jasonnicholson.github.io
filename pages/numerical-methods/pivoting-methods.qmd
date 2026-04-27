@@ -7,26 +7,223 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
+## Gaussian Elimination With Pivoting
 
-## Animation Focus
+For a linear system
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+$$
+A\mathbf{x}=\mathbf{b},
+\tag{1}
+$$
 
-### Planned animation ideas
+Gaussian elimination transforms the augmented matrix $[A\mid \mathbf{b}]$ into an upper-triangular system that is solved by back substitution.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+::: {.callout-note appearance="simple"}
+## Definition - Pivot Element
+At elimination step $p$, the entry used to eliminate all entries below it in column $p$ is the pivot element. The row containing it is the pivot row.
+:::
 
-## Derivation Notes (Planned)
+::: {.callout-tip appearance="simple"}
+## Theorem - When Unique Solutions Exist
+For a square matrix $A$, the following are equivalent:
 
-Short derivations will be added to explain the core equations and assumptions.
+1. $A\mathbf{x}=\mathbf{b}$ has a unique solution for every right-hand side $\mathbf{b}$.
+2. $A$ is nonsingular.
+3. $\det(A)\neq 0$.
+:::
 
-## Worked Example (Planned)
+## Pivoting Strategies
 
-A compact numerical example with intermediate steps will be included.
+At step $p$, choose a pivot from the unprocessed submatrix.
 
-## Implementation Notes (Planned)
+::: {.callout-important appearance="simple"}
+## Practical Pivot Rules
+No pivoting: use $a_{pp}$ directly.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+Trivial pivoting: if $a_{pp}=0$, swap with the first row below having nonzero entry in column $p$.
+
+Partial pivoting:
+$$
+u=\arg\max_{i\ge p}|a_{ip}|,
+\tag{2}
+$$
+then swap rows $p$ and $u$.
+
+Scaled partial pivoting: compute
+$$
+s_i=\max_{1\le j\le n}|a_{ij}|,
+\qquad
+u=\arg\max_{i\ge p}\frac{|a_{ip}|}{s_i},
+\tag{3}
+$$
+then swap rows $p$ and $u$.
+
+Total pivoting:
+$$
+(u,v)=\arg\max_{i,j\ge p}|a_{ij}|,
+\tag{4}
+$$
+then swap rows $p\leftrightarrow u$ and columns $p\leftrightarrow v$.
+:::
+
+## Algorithm
+
+**Step 1**: Form $[A\mid\mathbf{b}]$ and choose a pivoting strategy.
+
+**Step 2**: For $p=1,\dots,n-1$, select the pivot with the chosen rule and perform elimination below the pivot.
+
+**Step 3**: Solve the resulting upper-triangular system by back substitution.
+
+**Step 4**: If total pivoting was used, undo column permutations so components map back to $(x_1,\dots,x_n)$.
+
+## Example 1 - Comparing Pivot Choices on a 4x4 System
+
+Solve
+
+$$
+\begin{pmatrix}
+1&-4&4&7\\
+0&2&-1&0\\
+2&1&1&4\\
+2&-3&2&-5
+\end{pmatrix}
+\begin{pmatrix}x_1\\x_2\\x_3\\x_4\end{pmatrix}
+=
+\begin{pmatrix}4\\5\\2\\9\end{pmatrix}.
+$$
+
+The first pivot selected by each strategy is:
+
+| Strategy | First pivot choice | First action |
+|---|---|---|
+| Trivial | $a_{11}=1$ | No swap |
+| Partial | largest $|a_{i1}|=2$ | swap row 1 with row 3 (or row 4) |
+| Scaled partial | largest $|a_{i1}|/s_i$ with $s=(7,2,4,5)$ | swap row 1 with row 4 |
+| Total | largest entry in full matrix is $7$ at $(1,4)$ | swap column 1 with column 4 |
+
+Using partial pivoting, elimination gives the equivalent triangular system
+
+$$
+\begin{aligned}
+2x_1+x_2+x_3+4x_4&=2,\\
+-\tfrac92x_2+\tfrac72x_3+5x_4&=3,\\
+-\tfrac{19}{9}x_3-\tfrac{121}{9}x_4&=\tfrac{13}{3},\\
+-\tfrac{25}{19}x_4&=\tfrac{142}{19}.
+\end{aligned}
+$$
+
+**Step 1**: Back substitute from the last row.
+
+$$
+x_4=-\frac{142}{25}.
+$$
+
+**Step 2**: Solve for $x_3$.
+
+$$
+x_3=\frac{853}{25}.
+$$
+
+**Step 3**: Solve for $x_2$.
+
+$$
+x_2=\frac{489}{25}.
+$$
+
+**Step 4**: Solve for $x_1$.
+
+$$
+x_1=-\frac{362}{25}.
+$$
+
+So the solution is
+
+$$
+\mathbf{x}=\left(-\frac{362}{25},\frac{489}{25},\frac{853}{25},-\frac{142}{25}\right)^\top.
+$$
+
+In exact arithmetic, all four pivoting strategies produce this same solution; in floating-point arithmetic they can differ due to roundoff.
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|---|---|---|
+| 1 | $x_1-4x_2+4x_3+7x_4=4$ | $4\;\checkmark$ |
+| 2 | $2x_2-x_3=5$ | $5\;\checkmark$ |
+| 3 | $2x_1+x_2+x_3+4x_4=2$ | $2\;\checkmark$ |
+| 4 | $2x_1-3x_2+2x_3-5x_4=9$ | $9\;\checkmark$ |
+
+## Example 2 - Hilbert Matrix Sensitivity
+
+The module's Hilbert test uses $n=5$ with
+
+$$
+H_5=
+\begin{pmatrix}
+1&\tfrac12&\tfrac13&\tfrac14&\tfrac15\\
+\tfrac12&\tfrac13&\tfrac14&\tfrac15&\tfrac16\\
+\tfrac13&\tfrac14&\tfrac15&\tfrac16&\tfrac17\\
+\tfrac14&\tfrac15&\tfrac16&\tfrac17&\tfrac18\\
+\tfrac15&\tfrac16&\tfrac17&\tfrac18&\tfrac19
+\end{pmatrix},
+\qquad
+\mathbf{b}=\begin{pmatrix}5\\4\\3\\2\\1\end{pmatrix}.
+$$
+
+The exact solution reported in the source is
+
+$$
+\mathbf{x}=\begin{pmatrix}-95\\2160\\-10710\\17920\\-9450\end{pmatrix}.
+$$
+
+The same source run reports these absolute 2-norm errors for the four pivoting choices:
+
+| Strategy | Reported error norm |
+|---|---:|
+| Trivial pivoting | $\lVert X-\hat X_1\rVert=1.56343\times 10^{-8}$ |
+| Partial pivoting | $\lVert X-\hat X_2\rVert=7.84695\times 10^{-9}$ |
+| Scaled partial pivoting | $\lVert X-\hat X_3\rVert=1.379\times 10^{-8}$ |
+| Total pivoting | $\lVert X-\hat X_4\rVert=1.66215\times 10^{-8}$ |
+
+For this example, partial pivoting gave the smallest error among the four reported runs.
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|---|---|---|
+| 1 | $-95+1080-3570+4480-1890=5$ | $5\;\checkmark$ |
+| 2 | $-\tfrac{95}{2}+720-\tfrac{5355}{2}+3584-1575=4$ | $4\;\checkmark$ |
+| 3 | $-\tfrac{95}{3}+540-2142+\tfrac{8960}{3}-1350=3$ | $3\;\checkmark$ |
+| 4 | $-\tfrac{95}{4}+432-1785+2560-\tfrac{4725}{4}=2$ | $2\;\checkmark$ |
+| 5 | $-19+360-1530+2240-1050=1$ | $1\;\checkmark$ |
+
+## Conditioning Warning for Hilbert Systems
+
+The module reports
+
+$$
+\kappa(A)=943656.
+$$
+
+With machine epsilon $\varepsilon=2.22045\times10^{-16}$, the page gives the bound
+
+$$
+\lVert X-\hat X\rVert\le \lVert \hat X\rVert\,\kappa(A)\,\varepsilon,
+\tag{5}
+$$
+
+and for this example ($\lVert X\rVert=23017.6$)
+
+$$
+\lVert X-\hat X\rVert
+\le
+(23017.6)(943656)(2.22045\times10^{-16})
+\approx 4.82295\times10^{-6}.
+\tag{6}
+$$
+
+::: {.callout-warning appearance="simple"}
+Hilbert matrices are highly ill-conditioned: here,
+$\log_{10}(\kappa(A))\approx 5.975$, so about 6 decimal digits can be lost due to conditioning and roundoff.
+This is why pivoting strategy and precision both matter.
+:::

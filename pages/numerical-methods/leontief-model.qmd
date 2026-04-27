@@ -7,26 +7,225 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
+## Background
 
-## Animation Focus
+The Leontief model describes how industries consume each other's output.
+If $x_i$ is the total production of industry $i$, and $a_{ij}$ is the amount of output from industry $i$ needed to produce one unit of industry $j$, then internal use is modeled linearly.
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+::: {.callout-note appearance="simple"}
+## Definition - Input-Output Matrix
+The matrix $A=(a_{ij})$ is the input-output matrix, where $a_{ij} \ge 0$.
+The production vector is
+$$
+\mathbf{x}=\begin{pmatrix}x_1\\x_2\\\vdots\\x_n\end{pmatrix}.
+$$
+:::
 
-### Planned animation ideas
+## Closed Leontief Model
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+A closed economy has no outside demand. For each sector:
 
-## Derivation Notes (Planned)
+$$
+x_i=\sum_{j=1}^n a_{ij}x_j,\qquad i=1,\dots,n.
+\tag{1}
+$$
 
-Short derivations will be added to explain the core equations and assumptions.
+In matrix form:
 
-## Worked Example (Planned)
+$$
+\mathbf{x}=A\mathbf{x}
+\quad\Longleftrightarrow\quad
+(I-A)\mathbf{x}=\mathbf{0}.
+\tag{2}
+$$
 
-A compact numerical example with intermediate steps will be included.
+::: {.callout-tip appearance="simple"}
+## Theorem - Closed Model Feasibility
+Nontrivial production levels in a closed model exist only if $\det(I-A)=0$.
+Any nonzero vector in $\mathcal{N}(I-A)$ gives a feasible production proportion.
+:::
 
-## Implementation Notes (Planned)
+### Example 1 - Closed 3-Sector Economy
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+Given
+
+$$
+A=\begin{pmatrix}
+0.2 & 0.3 & 0.2\\
+0.5 & 0.2 & 0.3\\
+0.3 & 0.5 & 0.5
+\end{pmatrix}.
+$$
+
+**Step 1**: Solve $(I-A)\mathbf{x}=\mathbf{0}$.
+
+$$
+I-A=
+\begin{pmatrix}
+0.8 & -0.3 & -0.2\\
+-0.5 & 0.8 & -0.3\\
+-0.3 & -0.5 & 0.5
+\end{pmatrix}.
+$$
+
+**Step 2**: Compute the nullspace.
+
+$$
+\mathbf{x}=t\begin{pmatrix}25\\34\\49\end{pmatrix},\qquad t>0.
+$$
+
+**Verification:**
+
+| Row | $A\mathbf{x}$ component | Target $x_i$ |
+|---|---|---|
+| 1 | $0.2(25t)+0.3(34t)+0.2(49t)=25t$ | $25t\ \checkmark$ |
+| 2 | $0.5(25t)+0.2(34t)+0.3(49t)=34t$ | $34t\ \checkmark$ |
+| 3 | $0.3(25t)+0.5(34t)+0.5(49t)=49t$ | $49t\ \checkmark$ |
+
+### Example 2 - Closed 5-Sector Economy
+
+Given
+
+$$
+A=
+\begin{pmatrix}
+0.1 & 0.2 & 0.2 & 0.2 & 0.1\\
+0.2 & 0.2 & 0.2 & 0.2 & 0.2\\
+0.2 & 0.2 & 0.1 & 0.1 & 0.1\\
+0.2 & 0.2 & 0.3 & 0.2 & 0.2\\
+0.3 & 0.2 & 0.2 & 0.3 & 0.4
+\end{pmatrix}.
+$$
+
+Solving $(I-A)\mathbf{x}=\mathbf{0}$ gives the production proportions
+
+$$
+\mathbf{x}=t\begin{pmatrix}766\\989\\670\\1056\\1464\end{pmatrix},\qquad t>0.
+$$
+
+**Verification:**
+
+| Row | $A\mathbf{x}$ component | Target $x_i$ |
+|---|---|---|
+| 1 | $t(0.1\cdot766+0.2\cdot989+0.2\cdot670+0.2\cdot1056+0.1\cdot1464)=766t$ | $766t\ \checkmark$ |
+| 2 | $t(0.2\cdot766+0.2\cdot989+0.2\cdot670+0.2\cdot1056+0.2\cdot1464)=989t$ | $989t\ \checkmark$ |
+| 3 | $t(0.2\cdot766+0.2\cdot989+0.1\cdot670+0.1\cdot1056+0.1\cdot1464)=670t$ | $670t\ \checkmark$ |
+| 4 | $t(0.2\cdot766+0.2\cdot989+0.3\cdot670+0.2\cdot1056+0.2\cdot1464)=1056t$ | $1056t\ \checkmark$ |
+| 5 | $t(0.3\cdot766+0.2\cdot989+0.2\cdot670+0.3\cdot1056+0.4\cdot1464)=1464t$ | $1464t\ \checkmark$ |
+
+## Open Leontief Model
+
+If an outside demand vector $\mathbf{b}$ is present:
+
+$$
+\mathbf{x}=A\mathbf{x}+\mathbf{b}
+\quad\Longleftrightarrow\quad
+(I-A)\mathbf{x}=\mathbf{b}.
+\tag{3}
+$$
+
+When $I-A$ is invertible,
+
+$$
+\mathbf{x}=(I-A)^{-1}\mathbf{b}.
+\tag{4}
+$$
+
+::: {.callout-important appearance="simple"}
+A matrix $A$ is called productive when the open-model solution is nonnegative for nonnegative demand vectors.
+:::
+
+### Example 3 - Open 3-Sector Economy
+
+Given
+
+$$
+A=\begin{pmatrix}
+0.1 & 0.2 & 0.1\\
+0.4 & 0.2 & 0.2\\
+0.2 & 0.3 & 0.5
+\end{pmatrix},
+\qquad
+\mathbf{b}=\begin{pmatrix}92\\69\\115\end{pmatrix}.
+$$
+
+**Step 1**: Set up the open system.
+
+$$
+(I-A)\mathbf{x}=\mathbf{b},
+\quad
+I-A=
+\begin{pmatrix}
+0.9 & -0.2 & -0.1\\
+-0.4 & 0.8 & -0.2\\
+-0.2 & -0.3 & 0.5
+\end{pmatrix}.
+$$
+
+**Step 2**: Solve.
+
+$$
+\mathbf{x}=\begin{pmatrix}235\\335\\525\end{pmatrix}.
+$$
+
+**Verification:**
+
+| Row | $A\mathbf{x}+\mathbf{b}$ component | Target $x_i$ |
+|---|---|---|
+| 1 | $0.1(235)+0.2(335)+0.1(525)+92=235$ | $235\ \checkmark$ |
+| 2 | $0.4(235)+0.2(335)+0.2(525)+69=335$ | $335\ \checkmark$ |
+| 3 | $0.2(235)+0.3(335)+0.5(525)+115=525$ | $525\ \checkmark$ |
+
+### Example 4 - Open 5-Sector Economy
+
+Given
+
+$$
+A=\begin{pmatrix}
+0.1 & 0.1 & 0.2 & 0.1 & 0.1\\
+0.2 & 0.2 & 0.2 & 0.2 & 0.1\\
+0.1 & 0.2 & 0.1 & 0.2 & 0.1\\
+0.3 & 0.1 & 0.2 & 0.2 & 0.3\\
+0.2 & 0.2 & 0.2 & 0.1 & 0.3
+\end{pmatrix},
+\qquad
+\mathbf{b}=\begin{pmatrix}21898\\27270\\25362\\32732\\29996\end{pmatrix}.
+$$
+
+Solving $(I-A)\mathbf{x}=\mathbf{b}$ yields
+
+$$
+\mathbf{x}=\begin{pmatrix}
+\frac{186489700}{1409}\\[4pt]
+\frac{273382080}{1409}\\[4pt]
+162620\\[4pt]
+\frac{333360540}{1409}\\[4pt]
+\frac{304858700}{1409}
+\end{pmatrix}
+\approx
+\begin{pmatrix}
+132356.068\\
+194025.607\\
+162620.000\\
+236593.712\\
+216365.295
+\end{pmatrix}.
+$$
+
+**Verification (rounded):**
+
+| Row | Left-hand side $A\mathbf{x}+\mathbf{b}$ | Right-hand side $x_i$ |
+|---|---:|---:|
+| 1 | $132356.068$ | $132356.068\ \checkmark$ |
+| 2 | $194025.607$ | $194025.607\ \checkmark$ |
+| 3 | $162620.000$ | $162620.000\ \checkmark$ |
+| 4 | $236593.712$ | $236593.712\ \checkmark$ |
+| 5 | $216365.295$ | $216365.295\ \checkmark$ |
+
+## Summary
+
+The Leontief framework converts inter-industry flow assumptions into linear algebra:
+
+1. Closed model: solve $(I-A)\mathbf{x}=\mathbf{0}$ for production proportions.
+2. Open model: solve $(I-A)\mathbf{x}=\mathbf{b}$ for absolute production levels.
+3. Validate every solution by direct substitution into $\mathbf{x}=A\mathbf{x}$ or $\mathbf{x}=A\mathbf{x}+\mathbf{b}$.

@@ -7,26 +7,277 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-Source inspiration: [@mathewsSite].
+## Residual-Correction Idea
 
-## Animation Focus
+Iterative refinement improves a computed solution of
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+$$
+A\mathbf{x}=\mathbf{b}
+\tag{1}
+$$
 
-### Planned animation ideas
+without recomputing a new factorization at every iteration.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+If we have already computed
 
-## Derivation Notes (Planned)
+$$
+PA=LU,
+\tag{2}
+$$
 
-Short derivations will be added to explain the core equations and assumptions.
+then each refinement step uses only triangular solves.
 
-## Worked Example (Planned)
+::: {.callout-note appearance="simple"}
+## Definition - Residual
+For an approximation $\mathbf{x}^{(k)}$, the residual is
+$$
+\mathbf{r}^{(k)}=\mathbf{b}-A\mathbf{x}^{(k)}.
+$$
+It measures how far $\mathbf{x}^{(k)}$ fails to satisfy the original equations.
+:::
 
-A compact numerical example with intermediate steps will be included.
+### Derivation of the Correction Equation
 
-## Implementation Notes (Planned)
+Suppose
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+$$
+\mathbf{x}=\mathbf{x}^{(k)}+\Delta\mathbf{x}^{(k)}.
+\tag{3}
+$$
+
+Substitute into $A\mathbf{x}=\mathbf{b}$:
+
+$$
+A\Delta\mathbf{x}^{(k)}=\mathbf{b}-A\mathbf{x}^{(k)}=\mathbf{r}^{(k)}.
+\tag{4}
+$$
+
+So each iteration solves one correction system and updates
+
+$$
+\mathbf{x}^{(k+1)}=\mathbf{x}^{(k)}+\Delta\mathbf{x}^{(k)}.
+\tag{5}
+$$
+
+::: {.callout-tip appearance="simple"}
+## Algorithm - Iterative Refinement
+1. Compute $PA=LU$ once.
+2. Compute an initial approximation $\mathbf{x}^{(0)}$ from LU-solve.
+3. For $k=0,1,2,\dots$:
+$$
+\mathbf{r}^{(k)}=\mathbf{b}-A\mathbf{x}^{(k)},
+\qquad
+A\Delta\mathbf{x}^{(k)}=\mathbf{r}^{(k)},
+\qquad
+\mathbf{x}^{(k+1)}=\mathbf{x}^{(k)}+\Delta\mathbf{x}^{(k)}.
+\tag{6}
+$$
+Stop when $\|\mathbf{r}^{(k)}\|$ is sufficiently small.
+:::
+
+## Example 1 - One Refinement Step on a 4x4 System
+
+Use
+
+$$
+\begin{pmatrix}
+1&-4&4&7\\
+0&2&-1&0\\
+2&1&1&4\\
+2&-3&2&-5
+\end{pmatrix}
+\begin{pmatrix}x_1\\x_2\\x_3\\x_4\end{pmatrix}
+=
+\begin{pmatrix}4\\5\\2\\9\end{pmatrix}.
+$$
+
+Take the initial guess
+
+$$
+\mathbf{x}^{(0)}=(-14,20,34,-6)^\top.
+$$
+
+**Step 1**: Residual
+
+$$
+\mathbf{r}^{(0)}=\mathbf{b}-A\mathbf{x}^{(0)}=
+\begin{pmatrix}4\\-1\\0\\-1\end{pmatrix}.
+$$
+
+**Step 2**: Solve correction system
+
+$$
+A\Delta\mathbf{x}^{(0)}=\mathbf{r}^{(0)},
+\qquad
+\Delta\mathbf{x}^{(0)}=
+\begin{pmatrix}
+-\tfrac{12}{25}\\
+-\tfrac{11}{25}\\
+\tfrac{3}{25}\\
+\tfrac{8}{25}
+\end{pmatrix}.
+$$
+
+**Step 3**: Update
+
+$$
+\mathbf{x}^{(1)}=\mathbf{x}^{(0)}+\Delta\mathbf{x}^{(0)}=
+\begin{pmatrix}
+-\tfrac{362}{25}\\
+\tfrac{489}{25}\\
+\tfrac{853}{25}\\
+-\tfrac{142}{25}
+\end{pmatrix}.
+$$
+
+This is the exact solution.
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|---|---|---|
+| 1 | $x_1-4x_2+4x_3+7x_4=4$ | $4\;\checkmark$ |
+| 2 | $2x_2-x_3=5$ | $5\;\checkmark$ |
+| 3 | $2x_1+x_2+x_3+4x_4=2$ | $2\;\checkmark$ |
+| 4 | $2x_1-3x_2+2x_3-5x_4=9$ | $9\;\checkmark$ |
+
+The residual drops from $\mathbf{r}^{(0)}=(4,-1,0,-1)^\top$ to
+
+$$
+\mathbf{r}^{(1)}=\mathbf{0}.
+$$
+
+## Example 2 - Hilbert Matrix (Source Reconstruction)
+
+The legacy module uses
+
+$$
+H_5\mathbf{x}=\mathbf{b},
+\qquad
+\mathbf{b}=(5,4,3,2,1)^\top,
+$$
+
+with
+
+$$
+H_5=
+\begin{pmatrix}
+1&\tfrac12&\tfrac13&\tfrac14&\tfrac15\\
+\tfrac12&\tfrac13&\tfrac14&\tfrac15&\tfrac16\\
+\tfrac13&\tfrac14&\tfrac15&\tfrac16&\tfrac17\\
+\tfrac14&\tfrac15&\tfrac16&\tfrac17&\tfrac18\\
+\tfrac15&\tfrac16&\tfrac17&\tfrac18&\tfrac19
+\end{pmatrix}.
+$$
+
+The true solution shown there is
+
+$$
+\mathbf{x}_{\text{true}}=
+\begin{pmatrix}
+-95\\2160\\-10710\\17920\\-9450
+\end{pmatrix}.
+$$
+
+The module then uses the pedagogical starting vector
+
+$$
+\mathbf{x}^{(0)}=
+\begin{pmatrix}
+-100\\2000\\-10000\\18000\\-10000
+\end{pmatrix}.
+$$
+
+**Step 1**: Compute residual
+
+$$
+\mathbf{r}^{(0)}=\mathbf{b}-H_5\mathbf{x}^{(0)}=
+\begin{pmatrix}
+-61.66666666666674\\
+-46\\
+-35.09523809502379\\
+-27.76190476190473\\
+-22.65079365079377
+\end{pmatrix}.
+$$
+
+**Step 2**: Solve correction system
+
+$$
+H_5\Delta\mathbf{x}^{(0)}=\mathbf{r}^{(0)},
+$$
+
+giving
+
+$$
+\Delta\mathbf{x}^{(0)}=
+\begin{pmatrix}
+5.000000000190141\\
+159.9999999968922\\
+-709.999999877721\\
+-80.0000000172662\\
+550.000000080213
+\end{pmatrix}.
+$$
+
+**Step 3**: Update
+
+$$
+\mathbf{x}^{(1)}=\mathbf{x}^{(0)}+\Delta\mathbf{x}^{(0)}=
+\begin{pmatrix}
+-94.9999999998099\\
+2159.999999996892\\
+-10709.9999998777\\
+17919.99999998273\\
+-9449.9999999198
+\end{pmatrix}.
+$$
+
+The source reports residuals before and after refinement as
+
+$$
+\mathbf{r}^{(0)}=
+\begin{pmatrix}
+-61.66666666666674\\-46\\-35.09523809502379\\-27.76190476190473\\-22.65079365079377
+\end{pmatrix},
+\qquad
+\mathbf{r}^{(1)}\approx
+\begin{pmatrix}
+1.77635683940025\times10^{-15}\\
+-1.77635683940025\times10^{-14}\\
+-7.993605777301127\times10^{-15}\\
+-1.021405182655144\times10^{-14}\\
+-1.643130076445232\times10^{-14}
+\end{pmatrix}.
+$$
+
+This illustrates rapid residual reduction after one correction step.
+
+## Conditioning and Accuracy Loss
+
+For this Hilbert system, the module reports
+
+$$
+\operatorname{Cond}(A)=943656.
+$$
+
+With machine epsilon $\varepsilon=2.22045\times10^{-16}$ and $\|\mathbf{x}\|_2=23017.6$,
+
+$$
+\|\mathbf{x}-\hat{\mathbf{x}}\|\le \|\mathbf{x}\|\,\operatorname{Cond}(A)\,\varepsilon
+\tag{7}
+$$
+
+gives
+
+$$
+\|\mathbf{x}-\hat{\mathbf{x}}\|
+\le
+(23017.6)(943656)(2.22045\times10^{-16})
+\approx 4.82295\times10^{-6}.
+\tag{8}
+$$
+
+::: {.callout-warning appearance="simple"}
+Iterative refinement can dramatically reduce residuals, but ill-conditioning still limits attainable accuracy. For this case, roughly $\log_{10}(943656)\approx 5.97$ digits may be lost.
+:::
