@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>LU Factorization – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-b0055fe3f16fc4a17aa491bd47adb78c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-765aeea877339cbfbd7cb4bd0fa7078b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a>
+  <ul class="collapse">
+  <li><a href="#doolittle-recurrence" id="toc-doolittle-recurrence" class="nav-link" data-scroll-target="#doolittle-recurrence">Doolittle Recurrence</a></li>
+  </ul></li>
+  <li><a href="#example-1---doolittle-factorization-no-pivoting" id="toc-example-1---doolittle-factorization-no-pivoting" class="nav-link" data-scroll-target="#example-1---doolittle-factorization-no-pivoting">Example 1 - Doolittle Factorization (No Pivoting)</a></li>
+  <li><a href="#example-2---nonsingular-matrix-that-fails-without-pivoting" id="toc-example-2---nonsingular-matrix-that-fails-without-pivoting" class="nav-link" data-scroll-target="#example-2---nonsingular-matrix-that-fails-without-pivoting">Example 2 - Nonsingular Matrix That Fails Without Pivoting</a></li>
+  <li><a href="#example-3---solving-a-system-with-pa-lu" id="toc-example-3---solving-a-system-with-pa-lu" class="nav-link" data-scroll-target="#example-3---solving-a-system-with-pa-lu">Example 3 - Solving a System with PA = LU</a></li>
+  <li><a href="#application---least-squares-polynomial-fitting" id="toc-application---least-squares-polynomial-fitting" class="nav-link" data-scroll-target="#application---least-squares-polynomial-fitting">Application - Least-Squares Polynomial Fitting</a></li>
+  <li><a href="#example-4---least-squares-parabola-source-example-6" id="toc-example-4---least-squares-parabola-source-example-6" class="nav-link" data-scroll-target="#example-4---least-squares-parabola-source-example-6">Example 4 - Least-Squares Parabola (Source Example 6)</a></li>
+  <li><a href="#example-5---cubic-fit-and-ill-conditioning-source-examples-7-8" id="toc-example-5---cubic-fit-and-ill-conditioning-source-examples-7-8" class="nav-link" data-scroll-target="#example-5---cubic-fit-and-ill-conditioning-source-examples-7-8">Example 5 - Cubic Fit and Ill-Conditioning (Source Examples 7-8)</a>
+  <ul class="collapse">
+  <li><a href="#part-a-unperturbed-system" id="toc-part-a-unperturbed-system" class="nav-link" data-scroll-target="#part-a-unperturbed-system">Part (a): Unperturbed system</a></li>
+  <li><a href="#part-b-one-entry-perturbation" id="toc-part-b-one-entry-perturbation" class="nav-link" data-scroll-target="#part-b-one-entry-perturbation">Part (b): One-entry perturbation</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">LU Factorization</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>LU factorization rewrites a matrix as a product of triangular matrices so that solving linear systems is reduced to forward and back substitution.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition - LU Factorization
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a nonsingular matrix <span class="math inline">\(A \in \mathbb{R}^{n\times n}\)</span>, an LU factorization is</p>
+<p><span class="math display">\[
+A = LU,
+\]</span></p>
+<p>where <span class="math inline">\(L\)</span> is lower triangular and <span class="math inline">\(U\)</span> is upper triangular.</p>
+<p>In the Doolittle form, <span class="math inline">\(L\)</span> has unit diagonal:</p>
+<p><span class="math display">\[
+\ell_{11}=\ell_{22}=\cdots=\ell_{nn}=1.
+\]</span></p>
+</div>
+</div>
+<p>The factorization is useful because once <span class="math inline">\(A=LU\)</span> is known, each solve <span class="math inline">\(A\mathbf{x}=\mathbf{b}\)</span> needs only two triangular solves:</p>
+<p><span class="math display">\[
+L\mathbf{y}=\mathbf{b},\qquad U\mathbf{x}=\mathbf{y}.
+\tag{1}
+\]</span></p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem - LU without Pivoting
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If Gaussian elimination can be performed without row exchanges (equivalently, each pivot is nonzero), then <span class="math inline">\(A\)</span> admits a Doolittle factorization <span class="math inline">\(A=LU\)</span>.</p>
+</div>
+</div>
+<section id="doolittle-recurrence" class="level3">
+<h3 class="anchored" data-anchor-id="doolittle-recurrence">Doolittle Recurrence</h3>
+<p>For <span class="math inline">\(k=1,2,\ldots,n\)</span>:</p>
+<p><span class="math display">\[
+u_{kj}=a_{kj}-\sum_{s=1}^{k-1}\ell_{ks}u_{sj},\qquad j=k,\ldots,n,
+\tag{2}
+\]</span></p>
+<p><span class="math display">\[
+\ell_{ik}=\frac{a_{ik}-\sum_{s=1}^{k-1}\ell_{is}u_{sk}}{u_{kk}},\qquad i=k+1,\ldots,n,
+\tag{3}
+\]</span></p>
+<p>with <span class="math inline">\(\ell_{kk}=1\)</span>. Breakdown occurs when <span class="math inline">\(u_{kk}=0\)</span>.</p>
+</section>
+</section>
+<section id="example-1---doolittle-factorization-no-pivoting" class="level2">
+<h2 class="anchored" data-anchor-id="example-1---doolittle-factorization-no-pivoting">Example 1 - Doolittle Factorization (No Pivoting)</h2>
+<p>From the source module, use</p>
+<p><span class="math display">\[
+A=
+\begin{pmatrix}
+4 &amp; 2 &amp; 3\\
+-3 &amp; 1 &amp; 4\\
+2 &amp; 4 &amp; 5
+\end{pmatrix}.
+\]</span></p>
+<p><strong>Step 1:</strong> First pivot <span class="math inline">\(u_{11}=4\)</span>, then</p>
+<p><span class="math display">\[
+\ell_{21}=-\frac{3}{4},\qquad \ell_{31}=\frac12.
+\]</span></p>
+<p><strong>Step 2:</strong> Second-row entries of <span class="math inline">\(U\)</span>:</p>
+<p><span class="math display">\[
+u_{22}=1-\left(-\frac34\right)2=\frac52,
+\qquad
+u_{23}=4-\left(-\frac34\right)3=\frac{25}{4}.
+\]</span></p>
+<p><strong>Step 3:</strong> Third multiplier and last pivot:</p>
+<p><span class="math display">\[
+\ell_{32}=\frac{4-(\frac12)2}{\frac52}=\frac65,
+\qquad
+u_{33}=5-\left(\frac12\right)3-\left(\frac65\right)\left(\frac{25}{4}\right)=-4.
+\]</span></p>
+<p>Hence</p>
+<p><span class="math display">\[
+L=
+\begin{pmatrix}
+1 &amp; 0 &amp; 0\\
+-\frac34 &amp; 1 &amp; 0\\
+\frac12 &amp; \frac65 &amp; 1
+\end{pmatrix},
+\qquad
+U=
+\begin{pmatrix}
+4 &amp; 2 &amp; 3\\
+0 &amp; \frac52 &amp; \frac{25}{4}\\
+0 &amp; 0 &amp; -4
+\end{pmatrix}.
+\]</span></p>
+<p><strong>Verification:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Row of <span class="math inline">\(LU\)</span></th>
+<th>Computation</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\((1,0,0)U\)</span></td>
+<td><span class="math inline">\((4,2,3)\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\((-\tfrac34,1,0)U\)</span></td>
+<td><span class="math inline">\((-3,1,4)\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\((\tfrac12,\tfrac65,1)U\)</span></td>
+<td><span class="math inline">\((2,4,5)\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>So <span class="math inline">\(LU=A\)</span>.</p>
+</section>
+<section id="example-2---nonsingular-matrix-that-fails-without-pivoting" class="level2">
+<h2 class="anchored" data-anchor-id="example-2---nonsingular-matrix-that-fails-without-pivoting">Example 2 - Nonsingular Matrix That Fails Without Pivoting</h2>
+<p>From the source module, consider</p>
+<p><span class="math display">\[
+A=
+\begin{pmatrix}
+1 &amp; 2 &amp; 6\\
+4 &amp; 8 &amp; -1\\
+-2 &amp; 3 &amp; 5
+\end{pmatrix}.
+\]</span></p>
+<p>The matrix is nonsingular (<span class="math inline">\(\det(A)=175\neq0\)</span>), but no-pivot Doolittle breaks:</p>
+<p><span class="math display">\[
+u_{22}=8-\left(\frac{4}{1}\right)2=0.
+\]</span></p>
+<p>So nonsingularity alone does not guarantee an LU factorization without pivoting.</p>
+<p>If we permute rows (equivalently, use a permutation matrix <span class="math inline">\(P\)</span>), one valid reordered matrix is</p>
+<p><span class="math display">\[
+B=PA=
+\begin{pmatrix}
+4 &amp; 8 &amp; -1\\
+-2 &amp; 3 &amp; 5\\
+1 &amp; 2 &amp; 6
+\end{pmatrix},
+\]</span></p>
+<p>which factors as</p>
+<p><span class="math display">\[
+L=
+\begin{pmatrix}
+1 &amp; 0 &amp; 0\\
+-\frac12 &amp; 1 &amp; 0\\
+\frac14 &amp; 0 &amp; 1
+\end{pmatrix},
+\qquad
+U=
+\begin{pmatrix}
+4 &amp; 8 &amp; -1\\
+0 &amp; 7 &amp; \frac92\\
+0 &amp; 0 &amp; \frac{25}{4}
+\end{pmatrix}.
+\]</span></p>
+<p><strong>Verification:</strong> <span class="math inline">\(LU=B=PA\)</span>.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem - PA = LU with Pivoting
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For every nonsingular matrix <span class="math inline">\(A\)</span>, there exists a permutation matrix <span class="math inline">\(P\)</span> such that</p>
+<p><span class="math display">\[
+PA=LU.
+\tag{4}
+\]</span></p>
+<p>Then solving <span class="math inline">\(A\mathbf{x}=\mathbf{b}\)</span> is equivalent to</p>
+<p><span class="math display">\[
+L\mathbf{y}=P\mathbf{b},\qquad U\mathbf{x}=\mathbf{y}.
+\tag{5}
+\]</span></p>
+</div>
+</div>
+</section>
+<section id="example-3---solving-a-system-with-pa-lu" class="level2">
+<h2 class="anchored" data-anchor-id="example-3---solving-a-system-with-pa-lu">Example 3 - Solving a System with PA = LU</h2>
+<p>From the source module:</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+2 &amp; 4 &amp; 1\\
+4 &amp; -10 &amp; 2\\
+1 &amp; 2 &amp; 4
+\end{pmatrix}
+\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}
+=
+\begin{pmatrix}5\\-8\\13\end{pmatrix}.
+\]</span></p>
+<p>Here no row swaps are needed, so <span class="math inline">\(P=I\)</span>. The LU factors are</p>
+<p><span class="math display">\[
+L=
+\begin{pmatrix}
+1 &amp; 0 &amp; 0\\
+2 &amp; 1 &amp; 0\\
+\frac12 &amp; 0 &amp; 1
+\end{pmatrix},
+\qquad
+U=
+\begin{pmatrix}
+2 &amp; 4 &amp; 1\\
+0 &amp; -18 &amp; 0\\
+0 &amp; 0 &amp; \frac72
+\end{pmatrix}.
+\]</span></p>
+<p><strong>Step 1:</strong> Solve <span class="math inline">\(L\mathbf{y}=\mathbf{b}\)</span>:</p>
+<p><span class="math display">\[
+y_1=5,
+\qquad
+2y_1+y_2=-8\Rightarrow y_2=-18,
+\qquad
+\frac12y_1+y_3=13\Rightarrow y_3=\frac{21}{2}.
+\]</span></p>
+<p><strong>Step 2:</strong> Solve <span class="math inline">\(U\mathbf{x}=\mathbf{y}\)</span>:</p>
+<p><span class="math display">\[
+\frac72x_3=\frac{21}{2}\Rightarrow x_3=3,
+\qquad
+-18x_2=-18\Rightarrow x_2=1,
+\qquad
+2x_1+4(1)+3=5\Rightarrow x_1=-1.
+\]</span></p>
+<p>The solution is</p>
+<p><span class="math display">\[
+\mathbf{x}=(-1,1,3)^T.
+\]</span></p>
+<p><strong>Verification:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Row</th>
+<th>Left-hand side</th>
+<th>Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(2(-1)+4(1)+1(3)=5\)</span></td>
+<td><span class="math inline">\(5\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(4(-1)-10(1)+2(3)=-8\)</span></td>
+<td><span class="math inline">\(-8\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(1(-1)+2(1)+4(3)=13\)</span></td>
+<td><span class="math inline">\(13\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="application---least-squares-polynomial-fitting" class="level2">
+<h2 class="anchored" data-anchor-id="application---least-squares-polynomial-fitting">Application - Least-Squares Polynomial Fitting</h2>
+<p>Given data <span class="math inline">\((x_i,y_i)\)</span>, the least-squares polynomial</p>
+<p><span class="math display">\[
+p_m(x)=c_0+c_1x+\cdots+c_mx^m
+\]</span></p>
+<p>is found from the normal equations</p>
+<p><span class="math display">\[
+\sum_{j=0}^m c_j\left(\sum_{i=1}^n x_i^{j+k}\right)=\sum_{i=1}^n x_i^k y_i,
+\qquad k=0,1,\ldots,m.
+\tag{6}
+\]</span></p>
+<p>This is a linear system <span class="math inline">\(A\mathbf{c}=\mathbf{b}\)</span> solved efficiently by LU.</p>
+</section>
+<section id="example-4---least-squares-parabola-source-example-6" class="level2">
+<h2 class="anchored" data-anchor-id="example-4---least-squares-parabola-source-example-6">Example 4 - Least-Squares Parabola (Source Example 6)</h2>
+<p>Data points from the source:</p>
+<p><span class="math display">\[
+(2,8),\ (3,27),\ (4,64),\ (5,125).
+\]</span></p>
+<p>For <span class="math inline">\(p_2(x)=c_1+c_2x+c_3x^2\)</span>, the normal equations are</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+4 &amp; 14 &amp; 54\\
+14 &amp; 54 &amp; 224\\
+54 &amp; 224 &amp; 978
+\end{pmatrix}
+\begin{pmatrix}c_1\\c_2\\c_3\end{pmatrix}
+=
+\begin{pmatrix}224\\978\\4424\end{pmatrix}.
+\]</span></p>
+<p>Solving gives</p>
+<p><span class="math display">\[
+\begin{pmatrix}c_1\\c_2\\c_3\end{pmatrix}
+=
+\begin{pmatrix}
+\tfrac{357}{10}\\[2pt]
+-\tfrac{347}{10}\\[2pt]
+\tfrac{21}{2}
+\end{pmatrix},
+\qquad
+p_2(x)=\frac{357}{10}-\frac{347}{10}x+\frac{21}{2}x^2.
+\]</span></p>
+<p><strong>Verification (normal equations):</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Row</th>
+<th>Left-hand side</th>
+<th>Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(4c_1+14c_2+54c_3=224\)</span></td>
+<td><span class="math inline">\(224\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(14c_1+54c_2+224c_3=978\)</span></td>
+<td><span class="math inline">\(978\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(54c_1+224c_2+978c_3=4424\)</span></td>
+<td><span class="math inline">\(4424\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example-5---cubic-fit-and-ill-conditioning-source-examples-7-8" class="level2">
+<h2 class="anchored" data-anchor-id="example-5---cubic-fit-and-ill-conditioning-source-examples-7-8">Example 5 - Cubic Fit and Ill-Conditioning (Source Examples 7-8)</h2>
+<p>For <span class="math inline">\(p_3(x)=c_1+c_2x+c_3x^2+c_4x^3\)</span>, the source normal equations are</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+4 &amp; 14 &amp; 54 &amp; 224\\
+14 &amp; 54 &amp; 224 &amp; 978\\
+54 &amp; 224 &amp; 978 &amp; 4424\\
+224 &amp; 978 &amp; 4424 &amp; 20514
+\end{pmatrix}
+\begin{pmatrix}c_1\\c_2\\c_3\\c_4\end{pmatrix}
+=
+\begin{pmatrix}224\\978\\4424\\20514\end{pmatrix}.
+\]</span></p>
+<section id="part-a-unperturbed-system" class="level3">
+<h3 class="anchored" data-anchor-id="part-a-unperturbed-system">Part (a): Unperturbed system</h3>
+<p>The solution is</p>
+<p><span class="math display">\[
+\mathbf{c}=(0,0,0,1)^T,
+\qquad
+p_3(x)=x^3.
+\]</span></p>
+<p>This matches the data exactly.</p>
+</section>
+<section id="part-b-one-entry-perturbation" class="level3">
+<h3 class="anchored" data-anchor-id="part-b-one-entry-perturbation">Part (b): One-entry perturbation</h3>
+<p>Source Example 8 changes one matrix entry by 1:</p>
+<p><span class="math display">\[
+a_{44}:\ 20514\to20515,
+\qquad
+\frac{1}{20514}=0.0000487=0.00487\%.
+\]</span></p>
+<p>The perturbed system is</p>
+<p><span class="math display">\[
+\widetilde{A}=
+\begin{pmatrix}
+4 &amp; 14 &amp; 54 &amp; 224\\
+14 &amp; 54 &amp; 224 &amp; 978\\
+54 &amp; 224 &amp; 978 &amp; 4424\\
+224 &amp; 978 &amp; 4424 &amp; 20515
+\end{pmatrix},
+\qquad
+\widetilde{A}\widetilde{\mathbf{c}}=\mathbf{b}.
+\]</span></p>
+<p>The new coefficients are</p>
+<p><span class="math display">\[
+\widetilde{\mathbf{c}}=
+\begin{pmatrix}
+\tfrac{51}{4}\\[2pt]
+-\tfrac{347}{28}\\[2pt]
+\tfrac{15}{4}\\[2pt]
+\tfrac{9}{14}
+\end{pmatrix}
+=
+\begin{pmatrix}
+12.75\\
+-12.3929\\
+3.75\\
+0.642857
+\end{pmatrix},
+\]</span></p>
+<p>so</p>
+<p><span class="math display">\[
+q(x)=\frac{51}{4}-\frac{347}{28}x+\frac{15}{4}x^2+\frac{9}{14}x^3.
+\]</span></p>
+<p><strong>Verification (perturbed solve):</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Row</th>
+<th>Left-hand side with <span class="math inline">\(\widetilde{\mathbf{c}}\)</span></th>
+<th>Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(4c_1+14c_2+54c_3+224c_4=224\)</span></td>
+<td><span class="math inline">\(224\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(14c_1+54c_2+224c_3+978c_4=978\)</span></td>
+<td><span class="math inline">\(978\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(54c_1+224c_2+978c_3+4424c_4=4424\)</span></td>
+<td><span class="math inline">\(4424\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><span class="math inline">\(224c_1+978c_2+4424c_3+20515c_4=20514\)</span></td>
+<td><span class="math inline">\(20514\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Numerical Warning - Sensitivity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A tiny matrix perturbation (<span class="math inline">\(0.00487\%\)</span> in one entry) causes a large coefficient change: for example, <span class="math inline">\(c_4\)</span> moves from <span class="math inline">\(1\)</span> to <span class="math inline">\(\tfrac{9}{14}\)</span>, a relative change of about <span class="math inline">\(35.7\%\)</span>. The source reports a condition number near <span class="math inline">\(2.87518\times 10^7\)</span>, indicating severe ill-conditioning.</p>
+</div>
+</div>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

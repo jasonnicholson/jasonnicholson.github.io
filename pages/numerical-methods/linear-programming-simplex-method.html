@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Linear Programming-Simplex Method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-f418161beb48e0141c760e455f12af2c.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-b0055fe3f16fc4a17aa491bd47adb78c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-765aeea877339cbfbd7cb4bd0fa7078b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#linear-programming-background" id="toc-linear-programming-background" class="nav-link active" data-scroll-target="#linear-programming-background">Linear Programming Background</a></li>
+  <li><a href="#standard-form-and-tableau" id="toc-standard-form-and-tableau" class="nav-link" data-scroll-target="#standard-form-and-tableau">Standard Form and Tableau</a></li>
+  <li><a href="#example-1---student-work-hour-optimization" id="toc-example-1---student-work-hour-optimization" class="nav-link" data-scroll-target="#example-1---student-work-hour-optimization">Example 1 - Student Work-Hour Optimization</a>
+  <ul class="collapse">
+  <li><a href="#example-1a" id="toc-example-1a" class="nav-link" data-scroll-target="#example-1a">Example 1(a)</a></li>
+  <li><a href="#example-1b" id="toc-example-1b" class="nav-link" data-scroll-target="#example-1b">Example 1(b)</a></li>
+  <li><a href="#example-1c" id="toc-example-1c" class="nav-link" data-scroll-target="#example-1c">Example 1(c)</a></li>
+  </ul></li>
+  <li><a href="#example-2---simplex-tableau-computation" id="toc-example-2---simplex-tableau-computation" class="nav-link" data-scroll-target="#example-2---simplex-tableau-computation">Example 2 - Simplex Tableau Computation</a>
+  <ul class="collapse">
+  <li><a href="#step-1-initial-tableau" id="toc-step-1-initial-tableau" class="nav-link" data-scroll-target="#step-1-initial-tableau">Step 1: Initial Tableau</a></li>
+  <li><a href="#step-2-first-pivot" id="toc-step-2-first-pivot" class="nav-link" data-scroll-target="#step-2-first-pivot">Step 2: First Pivot</a></li>
+  <li><a href="#step-3-second-pivot-optimal-tableau" id="toc-step-3-second-pivot-optimal-tableau" class="nav-link" data-scroll-target="#step-3-second-pivot-optimal-tableau">Step 3: Second Pivot (Optimal Tableau)</a></li>
+  </ul></li>
+  <li><a href="#example-3---same-feasible-region-different-objectives" id="toc-example-3---same-feasible-region-different-objectives" class="nav-link" data-scroll-target="#example-3---same-feasible-region-different-objectives">Example 3 - Same Feasible Region, Different Objectives</a>
+  <ul class="collapse">
+  <li><a href="#example-3a" id="toc-example-3a" class="nav-link" data-scroll-target="#example-3a">Example 3(a)</a></li>
+  <li><a href="#example-3b" id="toc-example-3b" class="nav-link" data-scroll-target="#example-3b">Example 3(b)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Linear Programming-Simplex Method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="linear-programming-background" class="level2">
+<h2 class="anchored" data-anchor-id="linear-programming-background">Linear Programming Background</h2>
+<p>Linear programming seeks to optimize a linear objective over a feasible region defined by linear inequalities. In standard maximization form:</p>
+<p><span class="math display">\[
+\text{maximize } f(\mathbf{x}) = c_1x_1 + c_2x_2 + \cdots + c_nx_n = \mathbf{c}^T\mathbf{x},
+\tag{1}
+\]</span></p>
+<p>subject to</p>
+<p><span class="math display">\[
+A\mathbf{x} \le \mathbf{b}, \qquad \mathbf{x} \ge \mathbf{0}.
+\tag{2}
+\]</span></p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition - Convex Polytope
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The feasible set <span class="math display">\[
+\mathcal{R} = \{\mathbf{x}\in\mathbb{R}^n : A\mathbf{x} \le \mathbf{b},\ \mathbf{x}\ge \mathbf{0}\}
+\]</span> is a convex polytope (or a convex polygon in two variables).</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem - Vertex Optimality
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If a linear program has an optimal solution and the feasible set is nonempty and bounded, then at least one optimal solution occurs at a vertex (extreme point) of the feasible polytope.</p>
+</div>
+</div>
+<p>This is why both graphical methods (in 2D) and the simplex method focus on moving among vertices.</p>
+</section>
+<section id="standard-form-and-tableau" class="level2">
+<h2 class="anchored" data-anchor-id="standard-form-and-tableau">Standard Form and Tableau</h2>
+<p>For constraints of the type <span class="math inline">\(A\mathbf{x}\le\mathbf{b}\)</span> with <span class="math inline">\(\mathbf{b}\ge\mathbf{0}\)</span>, introduce slack variables <span class="math inline">\(\mathbf{s}\ge\mathbf{0}\)</span>:</p>
+<p><span class="math display">\[
+A\mathbf{x} + I\mathbf{s} = \mathbf{b}.
+\tag{3}
+\]</span></p>
+<p>For a maximization objective <span class="math inline">\(f(\mathbf{x})=\mathbf{c}^T\mathbf{x}\)</span>, the augmented objective equation is</p>
+<p><span class="math display">\[
+z - \mathbf{c}^T\mathbf{x} = 0.
+\tag{4}
+\]</span></p>
+<p>The initial simplex tableau is built from the coefficients of (3) and (4):</p>
+<p><span class="math display">\[
+\left[
+\begin{array}{c|c|c}
+A &amp; I &amp; \mathbf{b} \\
+\hline
+-\mathbf{c}^T &amp; \mathbf{0}^T &amp; 0
+\end{array}
+\right].
+\tag{5}
+\]</span></p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Pivot Rules (Simplex Method)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>At each iteration:</p>
+<ol type="1">
+<li>Choose the entering variable from the most negative coefficient in the bottom row.</li>
+<li>Choose the leaving row by the minimum-ratio test <span class="math inline">\(b_i/a_{ij}\)</span> over rows with <span class="math inline">\(a_{ij}&gt;0\)</span>.</li>
+<li>Pivot to make the entering column a unit vector.</li>
+<li>Stop when there are no negative coefficients in the objective row.</li>
+</ol>
+</div>
+</div>
+</section>
+<section id="example-1---student-work-hour-optimization" class="level2">
+<h2 class="anchored" data-anchor-id="example-1---student-work-hour-optimization">Example 1 - Student Work-Hour Optimization</h2>
+<p>Ann works <span class="math inline">\(x\)</span> hours and Carl works <span class="math inline">\(y\)</span> hours per week. The constraints from the source are:</p>
+<p><span class="math display">\[
+\begin{aligned}
+80 &amp;\le 4x+2y,\\
+y &amp;\le x+4,\\
+x &amp;\le y+8,\\
+x+y &amp;\le 40,\\
+x &amp;\ge 0,\ y\ge 0.
+\end{aligned}
+\]</span></p>
+<p>Equivalent form for computation:</p>
+<p><span class="math display">\[
+\begin{aligned}
+2x+y &amp;\ge 40,\\
+y &amp;\le x+4,\\
+y &amp;\ge x-8,\\
+x+y &amp;\le 40,\\
+x,y &amp;\ge 0.
+\end{aligned}
+\]</span></p>
+<p>The four feasible vertices are obtained by intersecting boundary lines:</p>
+<p><span class="math display">\[
+(12,16),\ (18,22),\ (24,16),\ (16,8).
+\]</span></p>
+<section id="example-1a" class="level3">
+<h3 class="anchored" data-anchor-id="example-1a">Example 1(a)</h3>
+<p>Maximize <span class="math display">\[
+f(x,y)=15x+17y.
+\]</span></p>
+<p>Evaluate at vertices:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Vertex <span class="math inline">\((x,y)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(15x+17y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((12,16)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(452\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((18,22)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(644\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((24,16)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(632\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((16,8)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(376\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The maximum is <span class="math display">\[
+f(18,22)=644.
+\]</span></p>
+</section>
+<section id="example-1b" class="level3">
+<h3 class="anchored" data-anchor-id="example-1b">Example 1(b)</h3>
+<p>Maximize <span class="math display">\[
+f(x,y)=17x+15y.
+\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Vertex <span class="math inline">\((x,y)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(17x+15y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((12,16)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(444\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((18,22)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(636\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((24,16)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(648\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((16,8)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(392\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The maximum is <span class="math display">\[
+f(24,16)=648.
+\]</span></p>
+</section>
+<section id="example-1c" class="level3">
+<h3 class="anchored" data-anchor-id="example-1c">Example 1(c)</h3>
+<p>Maximize <span class="math display">\[
+f(x,y)=16x+16y=16(x+y).
+\]</span></p>
+<p>Since maximizing <span class="math inline">\(16(x+y)\)</span> is equivalent to maximizing <span class="math inline">\(x+y\)</span>, and the active top boundary is <span class="math inline">\(x+y=40\)</span>, every feasible point on that boundary segment is optimal.</p>
+<p>In particular,</p>
+<p><span class="math display">\[
+f(18,22)=640,\qquad f(24,16)=640.
+\]</span></p>
+<p>So there are infinitely many optimal points on the segment joining <span class="math inline">\((18,22)\)</span> and <span class="math inline">\((24,16)\)</span>.</p>
+<p><strong>Verification for Example 1(c):</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 30%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Point</th>
+<th>Constraint check</th>
+<th style="text-align: right;">Objective</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((18,22)\)</span></td>
+<td><span class="math inline">\(80\le 4(18)+2(22)=116\)</span>, <span class="math inline">\(22\le 22\)</span>, <span class="math inline">\(18\le 30\)</span>, <span class="math inline">\(18+22=40\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(16(18)+16(22)=640\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((24,16)\)</span></td>
+<td><span class="math inline">\(80\le 4(24)+2(16)=128\)</span>, <span class="math inline">\(16\le 28\)</span>, <span class="math inline">\(24\le 24\)</span>, <span class="math inline">\(24+16=40\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(16(24)+16(16)=640\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="example-2---simplex-tableau-computation" class="level2">
+<h2 class="anchored" data-anchor-id="example-2---simplex-tableau-computation">Example 2 - Simplex Tableau Computation</h2>
+<p>From the source, maximize</p>
+<p><span class="math display">\[
+f(x,y)=10x+20y
+\]</span></p>
+<p>subject to</p>
+<p><span class="math display">\[
+\begin{aligned}
+2x+y &amp;\le 30,\\
+x+4y &amp;\le 64,\\
+5x+6y &amp;\le 110,\\
+x,y &amp;\ge 0.
+\end{aligned}
+\]</span></p>
+<p>Introduce slack variables <span class="math inline">\(s_1,s_2,s_3\ge 0\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+2x+y+s_1 &amp;= 30,\\
+x+4y+s_2 &amp;= 64,\\
+5x+6y+s_3 &amp;= 110,\\
+z-10x-20y &amp;= 0.
+\end{aligned}
+\]</span></p>
+<section id="step-1-initial-tableau" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-initial-tableau">Step 1: Initial Tableau</h3>
+<p><span class="math display">\[
+\begin{array}{c|ccccc|c}
+&amp; x &amp; y &amp; s_1 &amp; s_2 &amp; s_3 &amp; b \\
+\hline
+R_1 &amp; 2 &amp; 1 &amp; 1 &amp; 0 &amp; 0 &amp; 30 \\
+R_2 &amp; 1 &amp; 4 &amp; 0 &amp; 1 &amp; 0 &amp; 64 \\
+R_3 &amp; 5 &amp; 6 &amp; 0 &amp; 0 &amp; 1 &amp; 110 \\
+\hline
+R_z &amp; -10 &amp; -20 &amp; 0 &amp; 0 &amp; 0 &amp; 0
+\end{array}
+\]</span></p>
+<p>Entering variable: <span class="math inline">\(y\)</span> (most negative bottom-row coefficient <span class="math inline">\(-20\)</span>).</p>
+<p>Minimum-ratio test:</p>
+<p><span class="math display">\[
+\frac{30}{1}=30,\quad \frac{64}{4}=16,\quad \frac{110}{6}=\frac{55}{3}.
+\]</span></p>
+<p>Leaving row: <span class="math inline">\(R_2\)</span> (minimum ratio <span class="math inline">\(16\)</span>). Pivot element: <span class="math inline">\(4\)</span>.</p>
+</section>
+<section id="step-2-first-pivot" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-first-pivot">Step 2: First Pivot</h3>
+<p>After pivoting on row <span class="math inline">\(2\)</span>, column <span class="math inline">\(y\)</span>:</p>
+<p><span class="math display">\[
+\begin{array}{c|ccccc|c}
+&amp; x &amp; y &amp; s_1 &amp; s_2 &amp; s_3 &amp; b \\
+\hline
+R_1 &amp; \tfrac{7}{4} &amp; 0 &amp; 1 &amp; -\tfrac14 &amp; 0 &amp; 14 \\
+R_2 &amp; \tfrac14 &amp; 1 &amp; 0 &amp; \tfrac14 &amp; 0 &amp; 16 \\
+R_3 &amp; \tfrac72 &amp; 0 &amp; 0 &amp; -\tfrac32 &amp; 1 &amp; 14 \\
+\hline
+R_z &amp; -5 &amp; 0 &amp; 0 &amp; 5 &amp; 0 &amp; 320
+\end{array}
+\]</span></p>
+<p>Entering variable: <span class="math inline">\(x\)</span> (bottom-row coefficient <span class="math inline">\(-5\)</span>).</p>
+<p>Minimum-ratio test (positive <span class="math inline">\(x\)</span> entries):</p>
+<p><span class="math display">\[
+\frac{14}{7/4}=8,\quad \frac{16}{1/4}=64,\quad \frac{14}{7/2}=4.
+\]</span></p>
+<p>Leaving row: <span class="math inline">\(R_3\)</span>. Pivot element: <span class="math inline">\(\tfrac72\)</span>.</p>
+</section>
+<section id="step-3-second-pivot-optimal-tableau" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-second-pivot-optimal-tableau">Step 3: Second Pivot (Optimal Tableau)</h3>
+<p>Pivoting on row <span class="math inline">\(3\)</span>, column <span class="math inline">\(x\)</span> gives:</p>
+<p><span class="math display">\[
+\begin{array}{c|ccccc|c}
+&amp; x &amp; y &amp; s_1 &amp; s_2 &amp; s_3 &amp; b \\
+\hline
+R_1 &amp; 0 &amp; 0 &amp; 1 &amp; \tfrac12 &amp; -\tfrac12 &amp; 7 \\
+R_2 &amp; 0 &amp; 1 &amp; 0 &amp; \tfrac{5}{14} &amp; -\tfrac{1}{14} &amp; 15 \\
+R_3 &amp; 1 &amp; 0 &amp; 0 &amp; -\tfrac37 &amp; \tfrac27 &amp; 4 \\
+\hline
+R_z &amp; 0 &amp; 0 &amp; 0 &amp; \tfrac{20}{7} &amp; \tfrac{10}{7} &amp; 340
+\end{array}
+\]</span></p>
+<p>No negative coefficients remain in the objective row, so this is optimal.</p>
+<p>The solution is</p>
+<p><span class="math display">\[
+x_1=x=4,\qquad x_2=y=15,\qquad z_{\max}=340.
+\]</span></p>
+<p><strong>Verification:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Constraint</th>
+<th style="text-align: right;">Left-hand side at <span class="math inline">\((4,15)\)</span></th>
+<th style="text-align: right;">Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(2x+y\le 30\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2(4)+15=23\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(\le 30\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x+4y\le 64\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4+4(15)=64\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(\le 64\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(5x+6y\le 110\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5(4)+6(15)=110\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(\le 110\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Objective check:</p>
+<p><span class="math display">\[
+f(4,15)=10(4)+20(15)=340.
+\]</span></p>
+</section>
+</section>
+<section id="example-3---same-feasible-region-different-objectives" class="level2">
+<h2 class="anchored" data-anchor-id="example-3---same-feasible-region-different-objectives">Example 3 - Same Feasible Region, Different Objectives</h2>
+<p>From the source, the feasible region is defined by</p>
+<p><span class="math display">\[
+\begin{aligned}
+-x+2y &amp;\le 36,\\
+x+6y &amp;\le 132,\\
+3x+5y &amp;\le 136,\\
+5x+3y &amp;\le 136,\\
+6x+y &amp;\le 132,\\
+2x-y &amp;\le 36,\\
+x &amp;\ge 0,\ y\ge 0.
+\end{aligned}
+\]</span></p>
+<p>The feasible vertices are</p>
+<p><span class="math display">\[
+(0,0),\ (0,18),\ (6,21),\ (12,20),\ (17,17),\ (20,12),\ (21,6),\ (18,0).
+\]</span></p>
+<section id="example-3a" class="level3">
+<h3 class="anchored" data-anchor-id="example-3a">Example 3(a)</h3>
+<p>Maximize <span class="math display">\[
+f(x,y)=10x+10y.
+\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Vertex <span class="math inline">\((x,y)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(10x+10y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((0,0)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0,18)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((6,21)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(270\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((12,20)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(320\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((17,17)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(340\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((20,12)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(320\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((21,6)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(270\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((18,0)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>So the maximum is <span class="math display">\[
+f(17,17)=340.
+\]</span></p>
+</section>
+<section id="example-3b" class="level3">
+<h3 class="anchored" data-anchor-id="example-3b">Example 3(b)</h3>
+<p>Maximize <span class="math display">\[
+f(x,y)=10x+25y.
+\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Vertex <span class="math inline">\((x,y)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(10x+25y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((0,0)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0,18)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(450\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((6,21)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(585\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((12,20)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(620\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((17,17)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(595\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((20,12)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(500\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((21,6)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(360\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((18,0)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>So the maximum is <span class="math display">\[
+f(12,20)=620.
+\]</span></p>
+<p><strong>Verification of the two optimal points:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Point</th>
+<th>Active/tight constraints</th>
+<th style="text-align: right;">Objective value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((17,17)\)</span> for 3(a)</td>
+<td><span class="math inline">\(3x+5y=136\)</span>, <span class="math inline">\(5x+3y=136\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10(17)+10(17)=340\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((12,20)\)</span> for 3(b)</td>
+<td><span class="math inline">\(x+6y=132\)</span>, <span class="math inline">\(3x+5y=136\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10(12)+25(20)=620\)</span></td>
+</tr>
+</tbody>
+</table>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
