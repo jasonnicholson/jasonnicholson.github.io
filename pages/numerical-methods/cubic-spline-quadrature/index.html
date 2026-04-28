@@ -355,18 +355,14 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#animations" id="toc-animations" class="nav-link active" data-scroll-target="#animations">Animations</a>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
   <ul class="collapse">
-  <li><a href="#case-1-natural-cubic-spline-quadrature-y-e-xsin8x231-n10" id="toc-case-1-natural-cubic-spline-quadrature-y-e-xsin8x231-n10" class="nav-link" data-scroll-target="#case-1-natural-cubic-spline-quadrature-y-e-xsin8x231-n10">Case 1 — Natural Cubic Spline Quadrature, <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>, <span class="math inline">\(n=10\)</span></a></li>
+  <li><a href="#case-1-natural-cubic-spline-quadrature-fx1e-xsin8x23-on-02" id="toc-case-1-natural-cubic-spline-quadrature-fx1e-xsin8x23-on-02" class="nav-link" data-scroll-target="#case-1-natural-cubic-spline-quadrature-fx1e-xsin8x23-on-02">Case 1 — Natural Cubic Spline Quadrature, <span class="math inline">\(f(x)=1+e^{-x}\sin(8x^{2/3})\)</span> on <span class="math inline">\([0,2]\)</span></a></li>
   </ul></li>
   <li><a href="#derivation-notes-planned" id="toc-derivation-notes-planned" class="nav-link" data-scroll-target="#derivation-notes-planned">Derivation Notes (Planned)</a></li>
   <li><a href="#worked-example-planned" id="toc-worked-example-planned" class="nav-link" data-scroll-target="#worked-example-planned">Worked Example (Planned)</a></li>
   <li><a href="#implementation-notes-planned" id="toc-implementation-notes-planned" class="nav-link" data-scroll-target="#implementation-notes-planned">Implementation Notes (Planned)</a></li>
-  <li><a href="#legacy-animation-inventory-stub" id="toc-legacy-animation-inventory-stub" class="nav-link" data-scroll-target="#legacy-animation-inventory-stub">Legacy Animation Inventory (Stub)</a>
-  <ul class="collapse">
-  <li><a href="#animation-portals" id="toc-animation-portals" class="nav-link" data-scroll-target="#animation-portals">Animation Portals</a></li>
-  <li><a href="#animation-items" id="toc-animation-items" class="nav-link" data-scroll-target="#animation-items">Animation Items</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -395,18 +391,25 @@ window.Quarto = {
 
 <p>← <a href="../">Numerical Methods</a></p>
 <p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Cubic spline quadrature approximates <span class="math inline">\(\int_a^b f(x)\,dx\)</span> by building a natural cubic spline interpolant through sampled nodes, then integrating that spline exactly over each panel. For nodes <span class="math inline">\(x_0&lt;\cdots&lt;x_n\)</span>, each panel uses a cubic polynomial with continuity of function value, first derivative, and second derivative across knots.</p>
+<p>If <span class="math inline">\(S(x)\)</span> is the natural spline interpolant (<span class="math inline">\(S''(x_0)=S''(x_n)=0\)</span>), then the quadrature estimate is <span class="math display">\[
+\int_a^b f(x)\,dx \approx \int_a^b S(x)\,dx = \sum_{i=0}^{n-1} \int_{x_i}^{x_{i+1}} S_i(x)\,dx.
+\]</span> As sample density increases over the full interval, spline interpolation error decreases and the integral estimate converges.</p>
+</section>
 <section id="animations" class="level2">
 <h2 class="anchored" data-anchor-id="animations">Animations</h2>
-<p>Each animation below shows the <strong>cubic spline quadrature diagram</strong> building up panel by panel over <span class="math inline">\([0, 2]\)</span> for <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>. Each frame adds one new spline panel. A natural cubic spline is first fitted through all <span class="math inline">\(n+1\)</span> nodes, then each sub-interval is integrated exactly (using the cubic polynomial coefficients). The dashed blue curve shows the cumulative spline approximation.</p>
+<p>Each animation below shows the <strong>natural cubic spline quadrature diagram</strong> for <span class="math inline">\(f(x)=1+e^{-x}\sin(8x^{2/3})\)</span> on <span class="math inline">\([0,2]\)</span>. Each frame recomputes the spline over the full interval using a denser odd sample count from <span class="math inline">\(m=3\)</span> to <span class="math inline">\(m=41\)</span> points.</p>
 <p>Julia source scripts that generated these animations are linked under each case.</p>
-<section id="case-1-natural-cubic-spline-quadrature-y-e-xsin8x231-n10" class="level3">
-<h3 class="anchored" data-anchor-id="case-1-natural-cubic-spline-quadrature-y-e-xsin8x231-n10">Case 1 — Natural Cubic Spline Quadrature, <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>, <span class="math inline">\(n=10\)</span></h3>
-<p><strong>Behavior:</strong> The natural cubic spline interpolates all <span class="math inline">\(n+1\)</span> nodes globally, then each sub-interval is integrated exactly. This is more accurate than Simpson’s rule for smooth functions since the cubic spline has <span class="math inline">\(O(h^4)\)</span> interpolation error with a smaller constant.</p>
+<section id="case-1-natural-cubic-spline-quadrature-fx1e-xsin8x23-on-02" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-natural-cubic-spline-quadrature-fx1e-xsin8x23-on-02">Case 1 — Natural Cubic Spline Quadrature, <span class="math inline">\(f(x)=1+e^{-x}\sin(8x^{2/3})\)</span> on <span class="math inline">\([0,2]\)</span></h3>
+<p><strong>Behavior:</strong> The spline interpolant and integral estimate are rebuilt globally at each density level. The filled spline area tracks the curve more tightly as <span class="math inline">\(m\)</span> increases.</p>
 <p><a href="splinequadaa.jl">Julia source</a></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="splinequadaa.gif" class="img-fluid figure-img"></p>
-<figcaption>Cubic Spline Quadrature animation: 10 teal spline panels build one-by-one over [0,2]; dashed blue curve shows the cumulative natural cubic spline; running sum annotated each frame</figcaption>
+<figcaption>Cubic Spline Quadrature animation over [0,2] with full-interval density refinement: each frame increases sample points, rebuilds the spline, and updates the integral estimate</figcaption>
 </figure>
 </div>
 </section>
@@ -422,36 +425,9 @@ window.Quarto = {
 <section id="implementation-notes-planned" class="level2">
 <h2 class="anchored" data-anchor-id="implementation-notes-planned">Implementation Notes (Planned)</h2>
 <p>Implementation details, numerical stability notes, and practical pitfalls will be added.</p>
-</section>
-<section id="legacy-animation-inventory-stub" class="level2">
-<h2 class="anchored" data-anchor-id="legacy-animation-inventory-stub">Legacy Animation Inventory (Stub)</h2>
-<ul>
-<li>Legacy module page: <a href="http://localhost:8000/n2003/SplineQuadMod.html">Cubic Spline Quadrature</a> (ok)</li>
-<li>Animation links found in module Animations paragraph: 4</li>
-<li>Unique animation portals: 1</li>
-</ul>
-<section id="animation-portals" class="level3">
-<h3 class="anchored" data-anchor-id="animation-portals">Animation Portals</h3>
-<ol type="1">
-<li><a href="http://localhost:8000/a2001/Animations/Quadrature/Spline/Spline.html">Natural Cubic Spline Quadrature</a> (ok)</li>
-</ol>
-<ul>
-<li>Animation item links found: 1</li>
-</ul>
-</section>
-<section id="animation-items" class="level3">
-<h3 class="anchored" data-anchor-id="animation-items">Animation Items</h3>
-<ol type="1">
-<li><a href="http://localhost:8000/a2001/Animations/Quadrature/Spline/Splineaa.html">Natural Cubic Spline Quadrature</a> (ok)</li>
-</ol>
-<ul>
-<li>Main animated GIF count: 1</li>
-<li>http://localhost:8000/a2001/Animations/Quadrature/Spline/Splineaa.gif</li>
-</ul>
 
 
 
-</section>
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">

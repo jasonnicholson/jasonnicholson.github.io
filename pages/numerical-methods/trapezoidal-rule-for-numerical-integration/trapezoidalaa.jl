@@ -1,57 +1,52 @@
 # trapezoidalaa.jl
-# Trapezoidal Rule animation: single case
+# Trapezoidal Rule animation: legacy-style density refinement
 # Produces: trapezoidalaa.gif
 
 using Plots
 gr()
 
-# --- Parameters ---
-f(x) = exp(-x) * sin(8 * x^(2/3)) + 1
+f(x) = exp(-x) * sin(8 * x^(2 / 3)) + 1
 a, b = 0.0, 2.0
-n = 10   # number of subintervals
+
+n_seq = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16,
+         18, 20, 24, 28, 32, 40, 48, 56, 72, 96, 120]
 
 xlims = (0.0, 2.0)
-ylims = (-0.1, 2.3)
+ylims = (0.0, 2.1)
+xplot = range(a, b, length=800)
 
-title_str = "Trapezoidal Rule: y = e^{-x}sin(8x^{2/3})+1"
+function trapezoid_sum(n)
+    dx = (b - a) / n
+    interior = n > 1 ? sum(f(a + i * dx) for i in 1:n-1) : 0.0
+    return dx * (0.5 * f(a) + interior + 0.5 * f(b))
+end
 
-# --- Subinterval data ---
-dx = (b - a) / n
-xs = [a + i*dx for i in 0:n]
-
-# --- Backdrop ---
-xplot = range(a, b, length=400)
-
-# --- Animation (add one trapezoid per frame) ---
-anim = @animate for frame in 0:n
-    plot(size=(640, 480), xlims=xlims, ylims=ylims,
-         xlabel="x", ylabel="y", title=title_str,
-         legend=false, grid=true, framestyle=:box,
+anim = @animate for n in vcat(0, n_seq)
+    plot(size=(630, 480), xlims=xlims, ylims=ylims,
+         xlabel="", ylabel="", title="Trapezoidal Rule\nNumerical Quadrature",
+         legend=false, grid=false, framestyle=:box,
          background_color=:white)
 
-    # Draw trapezoids added so far
-    for i in 1:frame
-        xl = xs[i]
-        xr = xs[i+1]
-        fl = f(xl)
-        fr = f(xr)
-        # Trapezoid as a filled polygon
-        plot!([xl, xr, xr, xl, xl], [0.0, 0.0, fr, fl, 0.0];
-              seriestype=:shape, fillcolor=:steelblue, fillalpha=0.4,
-              linecolor=:steelblue, lw=1, label="")
-        # Draw the top slanted line
-        plot!([xl, xr], [fl, fr]; color=:steelblue, lw=1.5, label="")
+    if n > 0
+        dx = (b - a) / n
+        for i in 0:n-1
+            xl = a + i * dx
+            xr = xl + dx
+            yl = f(xl)
+            yr = f(xr)
+
+            plot!([xl, xr, xr, xl], [0.0, 0.0, yr, yl];
+                  seriestype=:shape, fillcolor=:lightpink, fillalpha=0.65,
+                  linecolor=:red, lw=0.7)
+            plot!([xl, xr], [yl, yr]; color=:red, lw=0.8)
+        end
+
+        approx = trapezoid_sum(n)
+        annotate!(1.15, 1.88, text("Sample Points = $(n + 1)", :black, 10))
+        annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
     end
 
-    # Draw function curve on top
-    plot!(collect(xplot), f.(collect(xplot)); color=:magenta, lw=2, label="")
-
-    # Annotation
-    if frame > 0
-        interior = frame > 1 ? 2*sum(f(xs[i]) for i in 2:frame) : 0.0
-        sum_val = dx/2 * (f(xs[1]) + interior + f(xs[frame+1]))
-        annotate!(1.0, 2.1, text("n=$frame  Sum≈$(round(sum_val; digits=4))", :black, 10))
-    end
+    plot!(xplot, f.(xplot); color=:magenta, lw=2)
 end
 
 gif(anim, joinpath(@__DIR__, "trapezoidalaa.gif"); fps=2)

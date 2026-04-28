@@ -355,18 +355,14 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#animations" id="toc-animations" class="nav-link active" data-scroll-target="#animations">Animations</a>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
   <ul class="collapse">
-  <li><a href="#case-1-booles-rule-y-e-xsin8x231-n8-subintervals" id="toc-case-1-booles-rule-y-e-xsin8x231-n8-subintervals" class="nav-link" data-scroll-target="#case-1-booles-rule-y-e-xsin8x231-n8-subintervals">Case 1 — Boole’s Rule, <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>, <span class="math inline">\(n=8\)</span> subintervals</a></li>
+  <li><a href="#case-1-composite-booles-rule-fx1e-xsin8x23-on-02" id="toc-case-1-composite-booles-rule-fx1e-xsin8x23-on-02" class="nav-link" data-scroll-target="#case-1-composite-booles-rule-fx1e-xsin8x23-on-02">Case 1 — Composite Boole’s Rule, <span class="math inline">\(f(x)=1+e^{-x}\sin(8x^{2/3})\)</span> on <span class="math inline">\([0,2]\)</span></a></li>
   </ul></li>
   <li><a href="#derivation-notes-planned" id="toc-derivation-notes-planned" class="nav-link" data-scroll-target="#derivation-notes-planned">Derivation Notes (Planned)</a></li>
   <li><a href="#worked-example-planned" id="toc-worked-example-planned" class="nav-link" data-scroll-target="#worked-example-planned">Worked Example (Planned)</a></li>
   <li><a href="#implementation-notes-planned" id="toc-implementation-notes-planned" class="nav-link" data-scroll-target="#implementation-notes-planned">Implementation Notes (Planned)</a></li>
-  <li><a href="#legacy-animation-inventory-stub" id="toc-legacy-animation-inventory-stub" class="nav-link" data-scroll-target="#legacy-animation-inventory-stub">Legacy Animation Inventory (Stub)</a>
-  <ul class="collapse">
-  <li><a href="#animation-portals" id="toc-animation-portals" class="nav-link" data-scroll-target="#animation-portals">Animation Portals</a></li>
-  <li><a href="#animation-items" id="toc-animation-items" class="nav-link" data-scroll-target="#animation-items">Animation Items</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -395,18 +391,25 @@ window.Quarto = {
 
 <p>← <a href="../">Numerical Methods</a></p>
 <p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Composite Boole’s rule applies a quartic interpolant on each block of four subintervals (five nodes). For spacing <span class="math inline">\(h=(b-a)/n\)</span> with <span class="math inline">\(n\)</span> divisible by 4, <span class="math display">\[
+B_n = \frac{2h}{45}\sum_{k=0}^{n/4-1}\left(7f_{4k}+32f_{4k+1}+12f_{4k+2}+32f_{4k+3}+7f_{4k+4}\right).
+\]</span></p>
+<p>The method is exact for polynomials up to degree 5 and has global error <span class="math inline">\(O(h^6)\)</span> on smooth functions, making it the highest-order closed Newton-Cotes rule in this set.</p>
+</section>
 <section id="animations" class="level2">
 <h2 class="anchored" data-anchor-id="animations">Animations</h2>
-<p>Each animation below shows the <strong>Boole’s rule diagram</strong> building up panel by panel over <span class="math inline">\([0, 2]\)</span> for <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>. Each frame adds one new Boole panel (spanning 4 subintervals = 5 nodes); the running sum is annotated. Boole’s rule fits a 4th-degree polynomial through 5 nodes — achieving <span class="math inline">\(O(h^6)\)</span> accuracy.</p>
+<p>Each animation below shows the <strong>Boole’s rule diagram</strong> for <span class="math inline">\(f(x)=1+e^{-x}\sin(8x^{2/3})\)</span> on <span class="math inline">\([0,2]\)</span>. Each frame recomputes the approximation over the full interval with a denser partition where <span class="math inline">\(n\)</span> remains a multiple of 4.</p>
 <p>Julia source scripts that generated these animations are linked under each case.</p>
-<section id="case-1-booles-rule-y-e-xsin8x231-n8-subintervals" class="level3">
-<h3 class="anchored" data-anchor-id="case-1-booles-rule-y-e-xsin8x231-n8-subintervals">Case 1 — Boole’s Rule, <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>, <span class="math inline">\(n=8\)</span> subintervals</h3>
-<p><strong>Behavior:</strong> Each panel uses 5 nodes and the formula <span class="math inline">\(\frac{2h}{45}(7f_0 + 32f_1 + 12f_2 + 32f_3 + 7f_4)\)</span>. Boole’s rule is exact for polynomials up to degree 5, giving <span class="math inline">\(O(h^6)\)</span> accuracy — the highest of the Newton–Cotes family shown here.</p>
+<section id="case-1-composite-booles-rule-fx1e-xsin8x23-on-02" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-composite-booles-rule-fx1e-xsin8x23-on-02">Case 1 — Composite Boole’s Rule, <span class="math inline">\(f(x)=1+e^{-x}\sin(8x^{2/3})\)</span> on <span class="math inline">\([0,2]\)</span></h3>
+<p><strong>Behavior:</strong> Piecewise quartic panels are rebuilt at increasing density, and the approximation converges rapidly with sixth-order global accuracy.</p>
 <p><a href="boolesaa.jl">Julia source</a></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="boolesaa.gif" class="img-fluid figure-img"></p>
-<figcaption>Boole’s Rule animation: 2 quartic panels build over [0,2]; each panel spans 4 sub-intervals fitted by a degree-4 polynomial; running sum annotated each frame</figcaption>
+<figcaption>Boole’s Rule animation over [0,2] with full-interval density refinement: each frame updates piecewise quartic panels and the global approximation</figcaption>
 </figure>
 </div>
 </section>
@@ -422,36 +425,9 @@ window.Quarto = {
 <section id="implementation-notes-planned" class="level2">
 <h2 class="anchored" data-anchor-id="implementation-notes-planned">Implementation Notes (Planned)</h2>
 <p>Implementation details, numerical stability notes, and practical pitfalls will be added.</p>
-</section>
-<section id="legacy-animation-inventory-stub" class="level2">
-<h2 class="anchored" data-anchor-id="legacy-animation-inventory-stub">Legacy Animation Inventory (Stub)</h2>
-<ul>
-<li>Legacy module page: <a href="http://localhost:8000/n2003/BooleRuleMod.html">Boole’s Rule</a> (ok)</li>
-<li>Animation links found in module Animations paragraph: 4</li>
-<li>Unique animation portals: 1</li>
-</ul>
-<section id="animation-portals" class="level3">
-<h3 class="anchored" data-anchor-id="animation-portals">Animation Portals</h3>
-<ol type="1">
-<li><a href="http://localhost:8000/a2001/Animations/Quadrature/Boole/Boole.html">Boole’s Rule</a> (ok)</li>
-</ol>
-<ul>
-<li>Animation item links found: 1</li>
-</ul>
-</section>
-<section id="animation-items" class="level3">
-<h3 class="anchored" data-anchor-id="animation-items">Animation Items</h3>
-<ol type="1">
-<li><a href="http://localhost:8000/a2001/Animations/Quadrature/Boole/Booleaa.html">Boole’s Rule</a> (ok)</li>
-</ol>
-<ul>
-<li>Main animated GIF count: 1</li>
-<li>http://localhost:8000/a2001/Animations/Quadrature/Boole/Booleaa.gif</li>
-</ul>
 
 
 
-</section>
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">

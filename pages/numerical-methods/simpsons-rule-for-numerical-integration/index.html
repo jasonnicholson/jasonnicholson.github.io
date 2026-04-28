@@ -355,18 +355,14 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#animations" id="toc-animations" class="nav-link active" data-scroll-target="#animations">Animations</a>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
   <ul class="collapse">
-  <li><a href="#case-1-simpsons-rule-y-e-xsin8x231-n10-subintervals" id="toc-case-1-simpsons-rule-y-e-xsin8x231-n10-subintervals" class="nav-link" data-scroll-target="#case-1-simpsons-rule-y-e-xsin8x231-n10-subintervals">Case 1 — Simpson’s Rule, <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>, <span class="math inline">\(n=10\)</span> subintervals</a></li>
+  <li><a href="#case-1-composite-simpsons-rule-fxe-xsin8x231-on-02" id="toc-case-1-composite-simpsons-rule-fxe-xsin8x231-on-02" class="nav-link" data-scroll-target="#case-1-composite-simpsons-rule-fxe-xsin8x231-on-02">Case 1 — Composite Simpson’s Rule, <span class="math inline">\(f(x)=e^{-x}\sin(8x^{2/3})+1\)</span> on <span class="math inline">\([0,2]\)</span></a></li>
   </ul></li>
   <li><a href="#derivation-notes-planned" id="toc-derivation-notes-planned" class="nav-link" data-scroll-target="#derivation-notes-planned">Derivation Notes (Planned)</a></li>
   <li><a href="#worked-example-planned" id="toc-worked-example-planned" class="nav-link" data-scroll-target="#worked-example-planned">Worked Example (Planned)</a></li>
   <li><a href="#implementation-notes-planned" id="toc-implementation-notes-planned" class="nav-link" data-scroll-target="#implementation-notes-planned">Implementation Notes (Planned)</a></li>
-  <li><a href="#legacy-animation-inventory-stub" id="toc-legacy-animation-inventory-stub" class="nav-link" data-scroll-target="#legacy-animation-inventory-stub">Legacy Animation Inventory (Stub)</a>
-  <ul class="collapse">
-  <li><a href="#animation-portals" id="toc-animation-portals" class="nav-link" data-scroll-target="#animation-portals">Animation Portals</a></li>
-  <li><a href="#animation-items" id="toc-animation-items" class="nav-link" data-scroll-target="#animation-items">Animation Items</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -395,18 +391,25 @@ window.Quarto = {
 
 <p>← <a href="../">Numerical Methods</a></p>
 <p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Composite Simpson’s rule approximates <span class="math inline">\(\int_a^b f(x)\,dx\)</span> by fitting a quadratic interpolant across each pair of subintervals. With <span class="math inline">\(h=(b-a)/n\)</span> and even <span class="math inline">\(n\)</span>, <span class="math display">\[
+S_n = \frac{h}{3}\left[f(x_0)+f(x_n)+4\sum_{k=1}^{n/2} f(x_{2k-1}) + 2\sum_{k=1}^{n/2-1} f(x_{2k})\right].
+\]</span></p>
+<p>Because the method integrates cubics exactly, the composite error for smooth functions is <span class="math inline">\(O(h^4)\)</span>, typically much smaller than trapezoidal error at the same spacing.</p>
+</section>
 <section id="animations" class="level2">
 <h2 class="anchored" data-anchor-id="animations">Animations</h2>
-<p>Each animation below shows the <strong>Simpson’s rule diagram</strong> building up parabolic panel by panel over <span class="math inline">\([0, 2]\)</span> for <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>. Each frame adds one new parabolic panel (spanning 2 subintervals); the running sum is annotated. Simpson’s rule fits a parabola through 3 consecutive nodes — achieving <span class="math inline">\(O(h^4)\)</span> accuracy.</p>
+<p>Each animation below shows the <strong>Simpson’s rule diagram</strong> over <span class="math inline">\([0,2]\)</span> for <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>. Each frame redraws the entire interval using a denser even partition.</p>
 <p>Julia source scripts that generated these animations are linked under each case.</p>
-<section id="case-1-simpsons-rule-y-e-xsin8x231-n10-subintervals" class="level3">
-<h3 class="anchored" data-anchor-id="case-1-simpsons-rule-y-e-xsin8x231-n10-subintervals">Case 1 — Simpson’s Rule, <span class="math inline">\(y = e^{-x}\sin(8x^{2/3})+1\)</span>, <span class="math inline">\(n=10\)</span> subintervals</h3>
-<p><strong>Behavior:</strong> Each panel uses 3 nodes <span class="math inline">\((x_{2i}, x_{2i+1}, x_{2i+2})\)</span> to fit a parabola. The area under each parabola is <span class="math inline">\(\frac{h}{3}(f_0 + 4f_1 + f_2)\)</span>. The error is <span class="math inline">\(O(h^4)\)</span>, far better than the trapezoidal rule.</p>
+<section id="case-1-composite-simpsons-rule-fxe-xsin8x231-on-02" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-composite-simpsons-rule-fxe-xsin8x231-on-02">Case 1 — Composite Simpson’s Rule, <span class="math inline">\(f(x)=e^{-x}\sin(8x^{2/3})+1\)</span> on <span class="math inline">\([0,2]\)</span></h3>
+<p><strong>Behavior:</strong> Quadratic panels are rebuilt over the full interval as sample density increases, and the approximation converges rapidly with fourth-order global accuracy.</p>
 <p><a href="simpsonsaa.jl">Julia source</a></p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="simpsonsaa.gif" class="img-fluid figure-img"></p>
-<figcaption>Simpson’s Rule animation: 5 parabolic panels build one-by-one over [0,2]; each panel spans 2 sub-intervals with a parabolic top; running sum annotated each frame</figcaption>
+<figcaption>Simpson’s Rule animation over [0,2] with full-interval density refinement: each frame updates piecewise quadratic panels and the global approximation</figcaption>
 </figure>
 </div>
 </section>
@@ -422,36 +425,9 @@ window.Quarto = {
 <section id="implementation-notes-planned" class="level2">
 <h2 class="anchored" data-anchor-id="implementation-notes-planned">Implementation Notes (Planned)</h2>
 <p>Implementation details, numerical stability notes, and practical pitfalls will be added.</p>
-</section>
-<section id="legacy-animation-inventory-stub" class="level2">
-<h2 class="anchored" data-anchor-id="legacy-animation-inventory-stub">Legacy Animation Inventory (Stub)</h2>
-<ul>
-<li>Legacy module page: <a href="http://localhost:8000/n2003/simpsonsrulemod.html">Simpson’s Rule for Numerical Integration</a> (ok)</li>
-<li>Animation links found in module Animations paragraph: 4</li>
-<li>Unique animation portals: 1</li>
-</ul>
-<section id="animation-portals" class="level3">
-<h3 class="anchored" data-anchor-id="animation-portals">Animation Portals</h3>
-<ol type="1">
-<li><a href="http://localhost:8000/a2001/Animations/Quadrature/Simpson/Simpson.html">Simpson’s Rule</a> (ok)</li>
-</ol>
-<ul>
-<li>Animation item links found: 1</li>
-</ul>
-</section>
-<section id="animation-items" class="level3">
-<h3 class="anchored" data-anchor-id="animation-items">Animation Items</h3>
-<ol type="1">
-<li><a href="http://localhost:8000/a2001/Animations/Quadrature/Simpson/Simpsonaa.html">Simpson’s Rule</a> (ok)</li>
-</ol>
-<ul>
-<li>Main animated GIF count: 1</li>
-<li>http://localhost:8000/a2001/Animations/Quadrature/Simpson/Simpsonaa.gif</li>
-</ul>
 
 
 
-</section>
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">

@@ -1,71 +1,74 @@
 # boolesaa.jl
-# Boole's Rule animation: each panel covers 4 subintervals (5 nodes)
+# Boole's Rule animation: full-interval density refinement
 # Produces: boolesaa.gif
 
 using Plots
 gr()
 
-# --- Parameters ---
-f(x) = exp(-x) * sin(8 * x^(2/3)) + 1
+f(x) = exp(-x) * sin(8 * x^(2 / 3)) + 1
 a, b = 0.0, 2.0
-n = 8   # number of subintervals (must be multiple of 4 for Boole's rule)
+
+n_seq = [4, 8, 12, 16, 20, 24, 28, 32, 36, 40,
+         44, 48, 52, 56, 60, 64, 72, 80, 88, 96,
+         104, 112, 120]
 
 xlims = (0.0, 2.0)
-ylims = (-0.1, 2.3)
+ylims = (0.0, 2.1)
+xplot = range(a, b, length=800)
 
-title_str = "Boole's Rule: y = e^{-x}sin(8x^{2/3})+1"
+function poly_coeffs(xs, ys)
+    A = [xs[i]^(j - 1) for i in 1:length(xs), j in 1:length(xs)]
+    return A \ ys
+end
 
-# --- Subinterval data ---
-dx = (b - a) / n
-xs = [a + i*dx for i in 0:n]
-n_panels = n ÷ 4   # number of Boole panels (each spans 4 subintervals)
+eval_poly(c, x) = sum(c[j] * x^(j - 1) for j in eachindex(c))
 
-# --- Backdrop ---
-xplot = range(a, b, length=400)
-
-# --- 4th-order polynomial for a Boole panel [x0..x4] ---
-function quartic_pts(x0, x1, x2, x3, x4)
-    # Use Lagrange interpolation for plotting the polynomial approximation
-    nodes = [x0, x1, x2, x3, x4]
-    ys    = f.(nodes)
-    px = range(x0, x4, length=80)
-    py = map(px) do x
-        sum(ys[i] * prod((x - nodes[j])/(nodes[i]-nodes[j]) for j in 1:5 if j!=i) for i in 1:5)
+function boole_sum(n)
+    dx = (b - a) / n
+    total = 0.0
+    for i in 0:4:n-4
+        x0 = a + i * dx
+        x1 = x0 + dx
+        x2 = x0 + 2 * dx
+        x3 = x0 + 3 * dx
+        x4 = x0 + 4 * dx
+        total += (2 * dx / 45) * (7 * f(x0) + 32 * f(x1) + 12 * f(x2) + 32 * f(x3) + 7 * f(x4))
     end
-    return collect(px), collect(py)
+    return total
 end
 
-# Boole's rule coefficients: (2h/45)(7f0 + 32f1 + 12f2 + 32f3 + 7f4)
-function boole_sum(x0, x1, x2, x3, x4)
-    h = (x4 - x0) / 4
-    return (2h/45) * (7f(x0) + 32f(x1) + 12f(x2) + 32f(x3) + 7f(x4))
-end
-
-# --- Animation (add one Boole panel per frame) ---
-anim = @animate for frame in 0:n_panels
-    plot(size=(640, 480), xlims=xlims, ylims=ylims,
-         xlabel="x", ylabel="y", title=title_str,
-         legend=false, grid=true, framestyle=:box,
+anim = @animate for n in vcat(0, n_seq)
+    plot(size=(630, 480), xlims=xlims, ylims=ylims,
+         xlabel="", ylabel="", title="Boole's Rule\nNumerical Quadrature",
+         legend=false, grid=false, framestyle=:box,
          background_color=:white)
 
-    # Draw filled quartic panels
-    for p in 1:frame
-        i = 4*(p-1)
-        x0, x1, x2, x3, x4 = xs[i+1], xs[i+2], xs[i+3], xs[i+4], xs[i+5]
-        px, py = quartic_pts(x0, x1, x2, x3, x4)
-        plot!(vcat(px, reverse(px)), vcat(py, zeros(length(py)));
-              seriestype=:shape, fillcolor=:mediumpurple, fillalpha=0.4,
-              linecolor=:mediumpurple, lw=1, label="")
+    if n > 0
+        dx = (b - a) / n
+        for i in 0:4:n-4
+            x0 = a + i * dx
+            x1 = x0 + dx
+            x2 = x0 + 2 * dx
+            x3 = x0 + 3 * dx
+            x4 = x0 + 4 * dx
+
+            xs = [x0, x1, x2, x3, x4]
+            ys = [f(x0), f(x1), f(x2), f(x3), f(x4)]
+            c = poly_coeffs(xs, ys)
+
+            xp = range(x0, x4, length=100)
+            yp = [eval_poly(c, x) for x in xp]
+
+            plot!(xp, yp; fillrange=0.0, fillalpha=0.65,
+                  fillcolor=:lightpink, linecolor=:red, lw=0.8)
+        end
+
+        approx = boole_sum(n)
+        annotate!(1.15, 1.88, text("Sample Points = $(n + 1)", :black, 10))
+        annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
     end
 
-    # Draw function curve on top
-    plot!(collect(xplot), f.(collect(xplot)); color=:magenta, lw=2, label="")
-
-    # Annotation
-    if frame > 0
-        sum_val = sum(boole_sum(xs[4*(p-1)+1], xs[4*(p-1)+2], xs[4*(p-1)+3], xs[4*(p-1)+4], xs[4*(p-1)+5]) for p in 1:frame)
-        annotate!(1.0, 2.1, text("panels=$frame  Sum≈$(round(sum_val; digits=4))", :black, 10))
-    end
+    plot!(xplot, f.(xplot); color=:magenta, lw=2)
 end
 
 gif(anim, joinpath(@__DIR__, "boolesaa.gif"); fps=2)

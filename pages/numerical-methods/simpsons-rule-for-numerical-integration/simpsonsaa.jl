@@ -1,76 +1,65 @@
 # simpsonsaa.jl
-# Simpson's Rule animation: parabolic panels build up one pair at a time
+# Simpson's Rule animation: legacy-style density refinement
 # Produces: simpsonsaa.gif
-# Simpson's rule requires even number of subintervals; each panel covers 2 intervals
 
 using Plots
 gr()
 
-# --- Parameters ---
-f(x) = exp(-x) * sin(8 * x^(2/3)) + 1
+f(x) = exp(-x) * sin(8 * x^(2 / 3)) + 1
 a, b = 0.0, 2.0
-n = 10   # number of subintervals (must be even)
+
+n_seq = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20,
+         24, 28, 32, 36, 40, 44, 48, 56, 64, 72,
+         84, 96, 108]
 
 xlims = (0.0, 2.0)
-ylims = (-0.1, 2.3)
+ylims = (0.0, 2.1)
+xplot = range(a, b, length=800)
 
-title_str = "Simpson's Rule: y = e^{-x}sin(8x^{2/3})+1"
-
-# --- Subinterval data ---
-dx = (b - a) / n
-xs = [a + i*dx for i in 0:n]
-n_panels = n ÷ 2   # number of parabolic panels
-
-# --- Backdrop ---
-xplot = range(a, b, length=400)
-
-# --- Parabola for a single panel [x0,x1,x2] ---
-function parabola_pts(x0, x1, x2)
-    # fit y = Ax^2 + Bx + C through (x0,f(x0)), (x1,f(x1)), (x2,f(x2))
-    y0, y1, y2 = f(x0), f(x1), f(x2)
-    # Vandermonde solve (numerically stable enough for plotting)
-    A = (y0/(x0-x1)/(x0-x2) + y1/(x1-x0)/(x1-x2) + y2/(x2-x0)/(x2-x1))
-    B = (-y0*(x1+x2)/((x0-x1)*(x0-x2))
-         -y1*(x0+x2)/((x1-x0)*(x1-x2))
-         -y2*(x0+x1)/((x2-x0)*(x2-x1)))
-    C = (y0*x1*x2/((x0-x1)*(x0-x2))
-         +y1*x0*x2/((x1-x0)*(x1-x2))
-         +y2*x0*x1/((x2-x0)*(x2-x1)))
-    px = range(x0, x2, length=60)
-    py = @. A*px^2 + B*px + C
-    return collect(px), collect(py)
+function poly_coeffs(xs, ys)
+    A = [xs[i]^(j - 1) for i in 1:length(xs), j in 1:length(xs)]
+    return A \ ys
 end
 
-# --- Animation (add one parabolic panel per frame) ---
-anim = @animate for frame in 0:n_panels
-    plot(size=(640, 480), xlims=xlims, ylims=ylims,
-         xlabel="x", ylabel="y", title=title_str,
-         legend=false, grid=true, framestyle=:box,
+eval_poly(c, x) = sum(c[j] * x^(j - 1) for j in eachindex(c))
+
+function simpson_sum(n)
+    dx = (b - a) / n
+    odd_sum = sum(f(a + i * dx) for i in 1:2:n-1)
+    even_sum = n > 2 ? sum(f(a + i * dx) for i in 2:2:n-2) : 0.0
+    return (dx / 3) * (f(a) + f(b) + 4 * odd_sum + 2 * even_sum)
+end
+
+anim = @animate for n in vcat(0, n_seq)
+    plot(size=(630, 480), xlims=xlims, ylims=ylims,
+         xlabel="", ylabel="", title="Simpson's Rule\nNumerical Quadrature",
+         legend=false, grid=false, framestyle=:box,
          background_color=:white)
 
-    # Draw filled parabolic panels
-    for p in 1:frame
-        i = 2*(p-1)
-        x0, x1, x2 = xs[i+1], xs[i+2], xs[i+3]
-        px, py = parabola_pts(x0, x1, x2)
-        # Fill region between parabola and x-axis
-        plot!(vcat(px, reverse(px)), vcat(py, zeros(length(py)));
-              seriestype=:shape, fillcolor=:steelblue, fillalpha=0.4,
-              linecolor=:steelblue, lw=1, label="")
-    end
+    if n > 0
+        dx = (b - a) / n
+        for i in 0:2:n-2
+            x0 = a + i * dx
+            x1 = x0 + dx
+            x2 = x0 + 2 * dx
 
-    # Draw function curve on top
-    plot!(collect(xplot), f.(collect(xplot)); color=:magenta, lw=2, label="")
+            xs = [x0, x1, x2]
+            ys = [f(x0), f(x1), f(x2)]
+            c = poly_coeffs(xs, ys)
 
-    # Annotation: running sum
-    if frame > 0
-        sum_val = 0.0
-        for p in 1:frame
-            i = 2*(p-1)
-            sum_val += (dx/3) * (f(xs[i+1]) + 4*f(xs[i+2]) + f(xs[i+3]))
+            xp = range(x0, x2, length=80)
+            yp = [eval_poly(c, x) for x in xp]
+
+            plot!(xp, yp; fillrange=0.0, fillalpha=0.65,
+                  fillcolor=:lightpink, linecolor=:red, lw=0.8)
         end
-        annotate!(1.0, 2.1, text("panels=$frame  Sum≈$(round(sum_val; digits=4))", :black, 10))
+
+        approx = simpson_sum(n)
+        annotate!(1.15, 1.88, text("Sample Points = $(n + 1)", :black, 10))
+        annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
     end
+
+    plot!(xplot, f.(xplot); color=:magenta, lw=2)
 end
 
 gif(anim, joinpath(@__DIR__, "simpsonsaa.gif"); fps=2)
