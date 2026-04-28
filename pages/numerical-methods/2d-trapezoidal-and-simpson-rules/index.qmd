@@ -1,0 +1,67 @@
+---
+title: "2D Trapezoidal and Simpson Rules"
+bibliography: ../../../references.bib
+---
+
+← [Numerical Methods](../)
+
+Source inspiration: [@mathewsSite].
+
+## Description
+
+This page studies numerical approximation of a rectangular double integral with the
+composite 2D Trapezoidal and 2D Simpson rules. The archived module examples use
+
+$$
+I = \int_0^1 \int_0^1 8e^{-x^2-y^4}\,dy\,dx,
+$$
+
+with surface $z=8e^{-x^2-y^4}$ over $R=\{(x,y):0\le x\le 1,\ 0\le y\le 1\}$.
+
+For a tensor-product grid, the 2D Trapezoidal rule applies endpoint/interior weights
+along each axis and sums weighted samples:
+
+$$
+I_{T} \approx hk\sum_{i=0}^{m}\sum_{j=0}^{n} w_i w_j f(x_i,y_j),
+\qquad
+w_0=w_m=\tfrac{1}{2},\ w_i=1\ (1\le i\le m-1),
+$$
+
+and the 2D Simpson rule uses the product Simpson weights:
+
+$$
+I_{S} \approx \frac{hk}{9}\sum_{i=0}^{m}\sum_{j=0}^{n} a_i a_j f(x_i,y_j),
+\qquad
+a_0=a_m=1,\ a_i=4\ \text{(odd i)},\ a_i=2\ \text{(even i)}.
+$$
+
+The archived snapshot is incomplete for some intermediate image IDs, so these
+animations are reconstructed from the available formula and checkpoint assets.
+
+## Animations
+
+Each animation shows full-domain mesh refinement on $[0,1]\times[0,1]$ for
+$f(x,y)=8e^{-x^2-y^4}$, using the archived benchmark
+$I\approx 5.04756680717$.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 - 2D Trapezoidal Rule, $f(x,y)=8e^{-x^2-y^4}$
+
+**Behavior:** The coarse-to-fine tensor grid updates over the whole square each frame.
+The approximation converges toward the archived reference value, with visible
+second-order error decay under refinement.
+
+[Julia source](trapezoidal2daa.jl)
+
+![2D Trapezoidal animation: surface over [0,1]x[0,1], full-grid refinement, and convergence to the archived benchmark integral](trapezoidal2daa.gif)
+
+### Case 2 - 2D Simpson Rule, $f(x,y)=8e^{-x^2-y^4}$
+
+**Behavior:** Simpson tensor-product weights are recomputed on each refined mesh.
+Compared with trapezoidal refinement, the Simpson estimate reaches high accuracy
+with fewer refinements.
+
+[Julia source](simpson2daa.jl)
+
+![2D Simpson animation: tensor-product Simpson refinement over [0,1]x[0,1] and convergence toward the archived benchmark integral](simpson2daa.gif)
