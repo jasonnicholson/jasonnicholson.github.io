@@ -1001,36 +1001,43 @@
     "text": "Animations\nEach animation below shows the secant diagram for the Secant Method. At each step, a secant line is drawn through the two most recent iterates \\((p_{n-1}, f(p_{n-1}))\\) and \\((p_n, f(p_n))\\); its x-intercept becomes \\(p_{n+1}\\). Unlike Newton’s method, no derivative is required — the slope is approximated from two function evaluations. The method can converge quickly, converge slowly near repeated roots, oscillate while converging, or diverge entirely depending on the function and starting points.\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Fast Convergence, \\(f(x) = 3e^x - 4\\cos(x)\\), \\(p_0 = 1.0\\), \\(p_1 = 0.9\\)\nBehavior: The secant method converges quickly to the root near \\(x \\approx 0.456\\). Both starting points are on the same side of the root and the function is well-behaved, so the secant line immediately produces a good approximation.\nJulia source\n\n\n\nSecant method animation for f(x)=3eˣ−4cos(x): secant line drawn through two iterates, x-intercept converges rapidly to the root near x=0.456\n\n\n\n\nCase 2 — Slow Convergence (Double Root), \\(f(x) = 1 - 10x + 25x^2\\), \\(p_0 = 1.0\\), \\(p_1 = 0.9\\)\nBehavior: The function \\((1-5x)^2\\) has a double root at \\(x = 0.2\\) where \\(f'(0.2) = 0\\). The secant method converges, but slowly — the double root causes the denominator \\(f(p_n) - f(p_{n-1})\\) to shrink, giving small steps that creep toward the root over many iterations.\nJulia source\n\n\n\nSecant method animation for f(x)=(1-5x)²: iterates slowly approach the double root at x=0.2, demonstrating linear convergence behavior\n\n\n\n\nCase 3 — Convergence with Oscillation, \\(f(x) = \\arctan(x)\\), \\(p_0 = 1.35\\), \\(p_1 = 1.30\\)\nBehavior: The secant method converges to the root at \\(x = 0\\), but the iterates oscillate — jumping to the opposite side of the root each step before settling. The relatively flat slope of \\(\\arctan\\) near the starting points causes the secant line to overshoot to negative \\(x\\) on the first step.\nJulia source\n\n\n\nSecant method animation for f(x)=arctan(x) with p0=1.35, p1=1.30: iterates oscillate across x=0 with decreasing amplitude before converging\n\n\n\n\nCase 4 — Convergence (Oscillating Path to Distant Root), \\(f(x) = x^3 - x + 3\\), \\(p_0 = 2.0\\), \\(p_1 = 1.0\\)\nBehavior: The cubic \\(x^3 - x + 3\\) has a real root near \\(x \\approx -1.672\\). Starting from positive values far from the root, the secant iterates wander — including a large positive excursion — before eventually converging. This case illustrates that convergence can occur even when the path is non-monotone and the starting points are far from the root.\nJulia source\n\n\n\nSecant method animation for f(x)=x³−x+3: iterates wander through positive and negative values before converging to the root near x=-1.672\n\n\n\n\nCase 5 — NON Convergence (Diverging to Infinity), \\(f(x) = x e^{-x}\\), \\(p_0 = 1.5\\), \\(p_1 = 2.0\\)\nBehavior: Although \\(f(x) = x e^{-x}\\) has a root at \\(x = 0\\), the secant method diverges with these starting points. The function decreases toward zero for large \\(x\\), so the secant line through points on the decaying tail has a shallow negative slope whose x-intercept falls far to the right — each step pushes the estimate further from the root.\nJulia source\n\n\n\nSecant method animation for f(x)=xe⁻ˣ with p0=1.5, p1=2.0: the secant line’s x-intercept steps progressively further right, demonstrating divergence to infinity\n\n\n\n\nCase 6 — Convergence, \\(f(x) = \\arctan(x)\\), \\(p_0 = 1.60\\), \\(p_1 = 1.50\\)\nBehavior: With slightly larger starting values than Case 3, the method again converges to \\(x = 0\\). Despite a larger first overshoot, subsequent steps quickly close in on the root, illustrating that the secant method converges super-linearly (order \\(\\approx 1.618\\)) when the starting points are in the basin of convergence.\nJulia source\n\n\n\nSecant method animation for f(x)=arctan(x) with p0=1.60, p1=1.50: iterates converge to x=0 after initial overshoot, showing super-linear convergence"
   },
   {
-    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method.html",
-    "href": "pages/numerical-methods/runge-kutta-fehlberg-method.html",
+    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html",
+    "href": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html",
     "title": "Runge-Kutta-Fehlberg Method",
     "section": "",
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
-    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method.html#animation-focus",
-    "href": "pages/numerical-methods/runge-kutta-fehlberg-method.html#animation-focus",
+    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#description",
+    "href": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#description",
     "title": "Runge-Kutta-Fehlberg Method",
-    "section": "Animation Focus",
-    "text": "Animation Focus\nThis page will prioritize intuitive animations that show the algorithm behavior step by step.\n\nPlanned animation ideas\n\nVisual state evolution of the method\nParameter sensitivity controls\nConvergence and failure side-by-side comparison"
+    "section": "Description",
+    "text": "Description\nThe Runge-Kutta-Fehlberg method (RKF45) is an adaptive-step one-step solver for initial value problems. At each step it computes embedded 4th- and 5th-order approximations from the same stage evaluations, estimates local error from their difference, and then adjusts step size to meet a tolerance.\nIf \\(y_4\\) and \\(y_5\\) are the embedded updates, then a practical error estimate is \\(|y_5 - y_4|\\). The next step size is chosen using a scaling rule of the form \\(h_{new} = s h\\) with \\(s \\propto (\\varepsilon/\\text{err})^{1/4}\\), where \\(\\varepsilon\\) is the requested tolerance."
   },
   {
-    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/runge-kutta-fehlberg-method.html#derivation-notes-planned",
+    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#animations",
+    "href": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#animations",
+    "title": "Runge-Kutta-Fehlberg Method",
+    "section": "Animations",
+    "text": "Animations\nThe first animation below reconstructs the legacy Example 1 setup from the Mathews module: \\(y' = 1 + y^2\\), \\(y(0)=0.5\\), on \\([0,1.1]\\). The dashed black curve is the exact solution \\(y(t)=\\tan\\!\\left(t + \\arctan(0.5)\\right)\\).\nThe second animation uses the same IVP shown on the Adams-Bashforth-Moulton, Euler, and Modified Euler pages: \\(y' = 1 - t\\sqrt[3]{y}\\), \\(y(0)=1\\), on \\([0,5]\\), with a dashed high-accuracy reference trajectory from fixed-step RK4 at \\(h=10^{-4}\\).\nBecause the recovered archive did not include legacy RKF animated GIF portals for this topic, this animation is reconstructed from the worked-example equations and plot behavior in the module links/images.\n\nCase 1 - Adaptive RKF45 vs RKF54, \\(y' = 1 + y^2\\), \\(y(0)=0.5\\), \\(t \\in [0,1.1]\\)\nBehavior: Both adaptive traces follow the exact solution well while the curve rapidly steepens near \\(t=1.1\\). The accepted-step distributions differ slightly, reflecting the 4th-order vs 5th-order accepted update choice.\nJulia source\n\n\n\nAdaptive RKF45 and RKF54 trajectories versus exact solution for y’ = 1 + y^2, y(0)=0.5 on [0,1.1]\n\n\n\n\nCase 2 - Adaptive RKF45 vs RKF54, \\(y' = 1 - t\\sqrt[3]{y}\\), \\(y(0)=1\\), \\(t \\in [0,5]\\)\nBehavior: RKF45 and RKF54 closely follow the dashed RK4 reference trajectory, with only small visible differences as adaptive steps tighten through the steeper part of the solution.\nJulia source\n\n\n\nAdaptive RKF45 and RKF54 trajectories versus high-accuracy RK4 reference for y’ = 1 - t cbrt(y), y(0)=1 on [0,5]"
+  },
+  {
+    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#derivation-notes-planned",
+    "href": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#derivation-notes-planned",
     "title": "Runge-Kutta-Fehlberg Method",
     "section": "Derivation Notes (Planned)",
     "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
   },
   {
-    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method.html#worked-example-planned",
-    "href": "pages/numerical-methods/runge-kutta-fehlberg-method.html#worked-example-planned",
+    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#worked-example-planned",
+    "href": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#worked-example-planned",
     "title": "Runge-Kutta-Fehlberg Method",
     "section": "Worked Example (Planned)",
     "text": "Worked Example (Planned)\nA compact numerical example with intermediate steps will be included."
   },
   {
-    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method.html#implementation-notes-planned",
-    "href": "pages/numerical-methods/runge-kutta-fehlberg-method.html#implementation-notes-planned",
+    "objectID": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#implementation-notes-planned",
+    "href": "pages/numerical-methods/runge-kutta-fehlberg-method/index.html#implementation-notes-planned",
     "title": "Runge-Kutta-Fehlberg Method",
     "section": "Implementation Notes (Planned)",
     "text": "Implementation Notes (Planned)\nImplementation details, numerical stability notes, and practical pitfalls will be added."
@@ -1701,13 +1708,6 @@
     "text": "Animations\nEach animation below illustrates Legendre polynomials \\(P_n(x)\\) on \\([-1,1]\\). The first animation reveals \\(P_0\\) through \\(P_5\\) one per frame; the second shows the Legendre series partial sums converging to \\(f(x) = \\cos(\\pi x/2)\\).\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Successive polynomials \\(P_0, P_1, \\ldots, P_5\\)\nProperties: Each \\(P_n\\) is orthogonal to all lower-degree Legendre polynomials on \\([-1,1]\\). \\(P_n(1)=1\\), \\(P_n(-1)=(-1)^n\\), and \\(P_n\\) has exactly \\(n\\) zeros in \\((-1,1)\\). They are computed by the recurrence \\((n+1)P_{n+1} = (2n+1)xP_n - nP_{n-1}\\).\nJulia source\n\n\n\nLegendre polynomials P_0 through P_5 added one per frame on the interval [-1, 1], showing their oscillatory character\n\n\n\n\nCase 2 — Legendre series for \\(f(x) = \\cos(\\pi x/2)\\)\nBehavior: The partial sum \\(S_N(x) = \\sum_{n=0}^{N} c_n P_n(x)\\) with \\(c_n = \\tfrac{2n+1}{2}\\int_{-1}^{1} f(x)P_n(x)\\,dx\\) converges to \\(f\\) as \\(N\\to\\infty\\). Only even-\\(n\\) terms contribute (since \\(f\\) is even). Each added term refines the fit.\nJulia source\n\n\n\nLegendre series partial sums for cos(pi x/2) building up frame by frame, showing convergence to the true function"
   },
   {
-    "objectID": "pages/numerical-methods/legendre-polynomials/index.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/legendre-polynomials/index.html#derivation-notes-planned",
-    "title": "Legendre Polynomials",
-    "section": "Derivation Notes (Planned)",
-    "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
-  },
-  {
     "objectID": "pages/numerical-methods/least-squares-lines/index.html",
     "href": "pages/numerical-methods/least-squares-lines/index.html",
     "title": "Least Squares Lines",
@@ -1852,7 +1852,7 @@
     "href": "pages/numerical-methods/index.html",
     "title": "Numerical Methods",
     "section": "",
-    "text": "I plan to put together short explanations and animations on various numerical methods and math-related topics here. It will take me a long time to put this together totally. So, please be patient.\nThis page was inspired by John H Mathew’s website (Mathew 2000-2019). In 2019, the page was taken down. I tried contacting Cal State Fullerton in 2019 but they did not respond. Fastforward to April-2026, I realized I could pull it back from the Internet Archive (The Wayback Machine) at least partially. Therefore, you will notice that this is inspired from his page."
+    "text": "I plan to put together short explanations and animations on various numerical methods and math-related topics here. It will take me a long time to put this together totally. So, please be patient.\nThis page was inspired by John H Mathew’s website (Mathew 2000-2019). In 2019, the page was taken down. I tried contacting Cal State Fullerton in 2019 but they did not respond. Fastforward to April-2026, I realized I could pull it back from the Internet Archive (The Wayback Machine) at least partially. Therefore, you will notice that this is inspired from his page.\nNote that as of 2026-04-27, I have used AI to generate the new page from Mathew’s old page. I expect there to be a large amount of errors even if the animations look correct. I will be going through the page and fixing the errors as I find them and have time to do so. If you find any errors, please let me know."
   },
   {
     "objectID": "pages/numerical-methods/index.html#the-solution-of-nonlinear-equations-fx-0",
@@ -2023,18 +2023,18 @@
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
+    "objectID": "pages/numerical-methods/hermite-polynomial-interpolation/index.html#description",
+    "href": "pages/numerical-methods/hermite-polynomial-interpolation/index.html#description",
+    "title": "Hermite Polynomial Interpolation",
+    "section": "Description",
+    "text": "Description\nHermite polynomial interpolation extends ordinary node-value interpolation by matching both function values and first derivatives at interpolation nodes. For two endpoints \\(x_0,x_1\\) with \\(h=x_1-x_0\\) and \\(t=(x-x_0)/h\\), the cubic Hermite interpolant is\n\\[\nH(x)=y_0H_{00}(t)+hy_0'H_{10}(t)+y_1H_{01}(t)+hy_1'H_{11}(t),\n\\]\nwhere \\(H_{00},H_{10},H_{01},H_{11}\\) are the standard cubic Hermite basis functions. In piecewise form over many subintervals, this gives a smooth \\(C^1\\) approximation that preserves both value and slope information at each node."
+  },
+  {
     "objectID": "pages/numerical-methods/hermite-polynomial-interpolation/index.html#animations",
     "href": "pages/numerical-methods/hermite-polynomial-interpolation/index.html#animations",
     "title": "Hermite Polynomial Interpolation",
     "section": "Animations",
     "text": "Animations\nThese animations illustrate the cubic Hermite polynomial, which interpolates both function values and first derivatives at the endpoint nodes. Unlike ordinary polynomial interpolation, Hermite interpolation matches the slope at each node, giving a smoother fit.\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Piecewise cubic Hermite for \\(\\sin(x)\\), refining the mesh\nBehavior: Piecewise cubic Hermite interpolation uses \\(n\\) subintervals, each carrying a cubic polynomial that matches \\(f\\) and \\(f'\\) at its two endpoints. Doubling \\(n\\) decreases the maximum error by approximately \\(2^4 = 16\\), consistent with the \\(O(h^4)\\) convergence rate.\nJulia source\n\n\n\nPiecewise cubic Hermite interpolation of sin(x) on 0 to 2pi, showing n=1,2,4,8 intervals; the error shrinks rapidly as the mesh is refined\n\n\n\n\nCase 2 — Hermite basis functions building the interpolant of \\(e^x\\) on \\([0,1]\\)\nBehavior: The four cubic Hermite basis functions \\(H_{00}\\), \\(H_{10}\\), \\(H_{01}\\), \\(H_{11}\\) each carry one degree of freedom (a value or derivative at an endpoint). Their weighted combination \\(H(x) = y_0 H_{00} + h y_0' H_{10} + y_1 H_{01} + h y_1' H_{11}\\) equals the true function at both endpoints and matches the slope there.\nJulia source\n\n\n\nFour Hermite basis function contributions for e^x on [0,1] revealed one at a time and summed to form the complete cubic Hermite interpolant"
-  },
-  {
-    "objectID": "pages/numerical-methods/hermite-polynomial-interpolation/index.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/hermite-polynomial-interpolation/index.html#derivation-notes-planned",
-    "title": "Hermite Polynomial Interpolation",
-    "section": "Derivation Notes (Planned)",
-    "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
   },
   {
     "objectID": "pages/numerical-methods/halleys-method/index.html",
@@ -2429,18 +2429,18 @@
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
+    "objectID": "pages/numerical-methods/cubic-splines/index.html#description",
+    "href": "pages/numerical-methods/cubic-splines/index.html#description",
+    "title": "Cubic Splines",
+    "section": "Description",
+    "text": "Description\nA cubic spline is a piecewise-cubic interpolant built on nodes \\(x_0&lt;\\cdots&lt;x_n\\) so that each panel polynomial \\(S_i(x)\\) interpolates endpoint values and the full spline is globally smooth. The construction enforces continuity of \\(S(x)\\), \\(S'(x)\\), and \\(S''(x)\\) at interior knots.\nFor a natural spline, the boundary conditions are\n\\[\nS''(x_0)=0,\\qquad S''(x_n)=0.\n\\]\nThe unknown second derivatives are found from a tridiagonal linear system, then each cubic panel is reconstructed. For smooth functions, spline interpolation error typically scales like \\(O(h^4)\\) with mesh spacing \\(h\\)."
+  },
+  {
     "objectID": "pages/numerical-methods/cubic-splines/index.html#animations",
     "href": "pages/numerical-methods/cubic-splines/index.html#animations",
     "title": "Cubic Splines",
     "section": "Animations",
     "text": "Animations\nThe animation below shows a natural cubic spline fitted to equally-spaced data from \\(f(x) = \\sin(x)\\) on \\([0, 2\\pi]\\), with the number of nodes increasing. The natural spline satisfies \\(S''(a) = S''(b) = 0\\) at the endpoints.\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Natural cubic spline convergence for \\(\\sin(x)\\)\nBehavior: Adding nodes shrinks the maximum error rapidly. The natural cubic spline converges at \\(O(h^4)\\) for smooth functions, where \\(h\\) is the maximum node spacing. Each frame uses a fully recomputed spline (solving the tridiagonal second-derivative system) for the new set of nodes.\nJulia source\n\n\n\nNatural cubic spline approximating sin(x) on [0, 2pi] with n=3,4,5,6,7,9 nodes; the spline closely tracks the true curve as nodes increase"
-  },
-  {
-    "objectID": "pages/numerical-methods/cubic-splines/index.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/cubic-splines/index.html#derivation-notes-planned",
-    "title": "Cubic Splines",
-    "section": "Derivation Notes (Planned)",
-    "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
   },
   {
     "objectID": "pages/numerical-methods/crank-nicolson-method.html",
@@ -2611,18 +2611,18 @@
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
+    "objectID": "pages/numerical-methods/b-splines/index.html#description",
+    "href": "pages/numerical-methods/b-splines/index.html#description",
+    "title": "B-Splines",
+    "section": "Description",
+    "text": "Description\nA B-spline curve of degree \\(p\\) is expressed as a weighted sum of control points and basis functions:\n\\[\nC(t)=\\sum_i P_i\\,N_{i,p}(t).\n\\]\nThe basis functions are defined recursively by the Cox-de Boor relation over a knot vector. Two key features make B-splines useful in geometric modeling: local support (moving one control point only affects a local region of the curve) and smoothness controlled by degree and knot multiplicity.\nWith a clamped knot vector, the curve interpolates the first and last control points while remaining inside the convex hull of the control polygon."
+  },
+  {
     "objectID": "pages/numerical-methods/b-splines/index.html#animations",
     "href": "pages/numerical-methods/b-splines/index.html#animations",
     "title": "B-Splines",
     "section": "Animations",
     "text": "Animations\nThese animations show two complementary views of cubic B-splines: the smooth curve traced from control points, and the individual basis functions \\(N_{i,4}(t)\\) whose weighted sum defines the curve.\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Cubic B-spline curve traced from 7 control points\nBehavior: A cubic B-spline curve with a clamped knot vector passes through the first and last control points and is smoothly pulled toward the interior control points. The curve is \\(C^2\\)-continuous everywhere. The animation traces the curve parameter \\(t\\) from start to end.\nJulia source\n\n\n\nCubic B-spline curve traced through 7 control points using de Boor’s algorithm; the smooth curve lies within the convex hull of the control polygon\n\n\n\n\nCase 2 — Basis functions \\(N_{1,4}, \\ldots, N_{7,4}\\) and the partition of unity\nBehavior: Each cubic B-spline basis function \\(N_{i,4}(t)\\) is non-negative and has local support over exactly 4 knot spans. Their sum equals 1 everywhere in the domain (partition of unity), which is why the B-spline curve lies within the convex hull of the control polygon.\nJulia source\n\n\n\nSeven cubic B-spline basis functions N_{i,4} revealed one at a time; running sum shown in black approaches 1 as all functions are added"
-  },
-  {
-    "objectID": "pages/numerical-methods/b-splines/index.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/b-splines/index.html#derivation-notes-planned",
-    "title": "B-Splines",
-    "section": "Derivation Notes (Planned)",
-    "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
   },
   {
     "objectID": "pages/numerical-methods/aitken-method-and-steffensen-acceleration/index.html",
@@ -2646,43 +2646,50 @@
     "text": "Animations\nEach animation below shows two synchronized panels for a given function: the top panel traces Newton–Raphson’s tangent-line geometry (one step per frame), and the bottom panel plots \\(\\log_{10}|x_k - p|\\) vs. iteration count for both Newton and Steffensen side by side. Because both panels share the same frame clock, you can directly compare where Newton is geometrically with how fast each method is converging numerically.\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — \\(f(x) = x^3 - 3x + 2\\), double root \\(p = 1\\), \\(x_0 = 2.0\\)\nBehavior: Newton–Raphson converges linearly (slowly) to the double root \\(p = 1\\) of \\(f(x) = (x-1)^2(x+2)\\). At a double root the asymptotic error ratio is \\(\\tfrac{1}{2}\\), so each step only halves the error. Steffensen’s \\(\\Delta^2\\) acceleration restores superlinear convergence, reaching machine precision in a handful of steps.\nJulia source\n\n\n\nTwo-panel animation: top shows Newton tangent-line steps on f(x)=x³−3x+2 approaching the double root p=1 from x₀=2; bottom shows log-error convergence of Newton (slow linear) vs Steffensen (fast).\n\n\n\n\nCase 2 — \\(f(x) = (x^2-2)\\sin(x^2-2)\\), double root \\(p = \\sqrt{2}\\), \\(x_0 = 1.0\\)\nBehavior: The double root \\(p = \\sqrt{2}\\) causes Newton to converge linearly. Steffensen’s acceleration applied to the Newton iterates recovers rapid convergence, dropping to machine precision far sooner.\nJulia source\n\n\n\nTwo-panel animation: top shows Newton tangent-line steps on f(x)=(x²−2)sin(x²−2) approaching double root p=√2 from x₀=1; bottom shows log-error convergence of Newton vs Steffensen.\n\n\n\n\nCase 3 — \\(f(x) = x^6 - 7x^4 + 15x^2 - 9\\), double root \\(p = \\sqrt{3}\\), \\(x_0 = 1.5\\)\nBehavior: \\(f(x) = (x^2-1)(x^2-3)^2\\) has a double root at \\(p = \\sqrt{3} \\approx 1.732\\). Newton’s linear crawl is visible in both the tangent-line panel and the gently sloping error curve; Steffensen converges in only a few Aitken-accelerated steps.\nJulia source\n\n\n\nTwo-panel animation: top shows Newton tangent-line steps on f(x)=x⁶−7x⁴+15x²−9 approaching double root p=√3 from x₀=1.5; bottom shows log-error convergence of Newton vs Steffensen."
   },
   {
-    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method.html",
-    "href": "pages/numerical-methods/adams-bashforth-moulton-method.html",
+    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method/index.html",
+    "href": "pages/numerical-methods/adams-bashforth-moulton-method/index.html",
     "title": "Adams-Bashforth-Moulton Method",
     "section": "",
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
-    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method.html#animation-focus",
-    "href": "pages/numerical-methods/adams-bashforth-moulton-method.html#animation-focus",
+    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#description",
+    "href": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#description",
     "title": "Adams-Bashforth-Moulton Method",
-    "section": "Animation Focus",
-    "text": "Animation Focus\nThis page will prioritize intuitive animations that show the algorithm behavior step by step.\n\nPlanned animation ideas\n\nVisual state evolution of the method\nParameter sensitivity controls\nConvergence and failure side-by-side comparison"
+    "section": "Description",
+    "text": "Description\nThe Adams-Bashforth-Moulton (ABM) method is a predictor-corrector multistep scheme for initial value problems \\(y' = f(t,y)\\). In the 4-step form, an explicit Adams-Bashforth predictor estimates \\(y_{n+1}\\) from recent history, and an implicit Adams-Moulton corrector immediately refines it.\nBecause ABM is not self-starting, initial points are generated with a one-step method (such as RK4). After startup, each new value uses prior function evaluations, giving high accuracy with low per-step cost."
   },
   {
-    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/adams-bashforth-moulton-method.html#derivation-notes-planned",
+    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#animations",
+    "href": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#animations",
+    "title": "Adams-Bashforth-Moulton Method",
+    "section": "Animations",
+    "text": "Animations\nThe animation below reconstructs legacy Example 11 from the Mathews module: \\(y' = 1 - t\\sqrt[3]{y}\\), \\(y(0)=1\\), over \\(0 \\le t \\le 5\\), with the historical \\(n=50\\)-step setup (51 mesh points).\nThe dashed black curve is a high-accuracy reference trajectory computed with fixed-step RK4 at \\(h=10^{-4}\\), since no closed-form exact solution is used for this case.\n\nCase 1 - ABM4 predictor-corrector, \\(y' = 1 - t\\sqrt[3]{y}\\), \\(y(0)=1\\), \\(0 \\le t \\le 5\\)\nBehavior: The ABM trajectory tracks the reference curve closely over the full interval while keeping a smooth and stable descent toward the right endpoint.\nJulia source\n\n\n\nAdams-Bashforth-Moulton predictor-corrector trajectory versus high-accuracy reference for y’ = 1 - t cbrt(y), y(0)=1 on [0,5]"
+  },
+  {
+    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#derivation-notes-planned",
+    "href": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#derivation-notes-planned",
     "title": "Adams-Bashforth-Moulton Method",
     "section": "Derivation Notes (Planned)",
     "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
   },
   {
-    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method.html#worked-example-planned",
-    "href": "pages/numerical-methods/adams-bashforth-moulton-method.html#worked-example-planned",
+    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#worked-example-planned",
+    "href": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#worked-example-planned",
     "title": "Adams-Bashforth-Moulton Method",
     "section": "Worked Example (Planned)",
     "text": "Worked Example (Planned)\nA compact numerical example with intermediate steps will be included."
   },
   {
-    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method.html#implementation-notes-planned",
-    "href": "pages/numerical-methods/adams-bashforth-moulton-method.html#implementation-notes-planned",
+    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#implementation-notes-planned",
+    "href": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#implementation-notes-planned",
     "title": "Adams-Bashforth-Moulton Method",
     "section": "Implementation Notes (Planned)",
     "text": "Implementation Notes (Planned)\nImplementation details, numerical stability notes, and practical pitfalls will be added."
   },
   {
-    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method.html#legacy-animation-inventory-stub",
-    "href": "pages/numerical-methods/adams-bashforth-moulton-method.html#legacy-animation-inventory-stub",
+    "objectID": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#legacy-animation-inventory-stub",
+    "href": "pages/numerical-methods/adams-bashforth-moulton-method/index.html#legacy-animation-inventory-stub",
     "title": "Adams-Bashforth-Moulton Method",
     "section": "Legacy Animation Inventory (Stub)",
     "text": "Legacy Animation Inventory (Stub)\n\nLegacy module page: Adams-Bashforth-Moulton Method (ok)\nAnimation links found in module Animations paragraph: 4\nUnique animation portals: 1\n\n\nAnimation Portals\n\nAdams-Bashforth-Moulton Method (ok)\n\n\nAnimation item links found: 1\n\n\n\nAnimation Items\n\nAdams-Bashforth-Moulton Method (ok)\n\n\nMain animated GIF count: 1\nhttp://localhost:8000/a2001/Animations/OrdinaryDE/Adams1/Adamsaa.gif"
@@ -2807,6 +2814,13 @@
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
+    "objectID": "pages/numerical-methods/aitkens-and-nevilles-interpolation/index.html#description",
+    "href": "pages/numerical-methods/aitkens-and-nevilles-interpolation/index.html#description",
+    "title": "Aitken’s and Neville’s Interpolation",
+    "section": "Description",
+    "text": "Description\nNeville’s interpolation algorithm evaluates the unique degree-\\((n-1)\\) polynomial through data points \\((x_i,y_i)\\) without first converting to expanded polynomial coefficients. It uses a recursive tableau\n\\[\nP_{i,i}(x)=y_i,\n\\qquad\nP_{i,j}(x)=\\frac{(x-x_i)P_{i+1,j}(x)-(x-x_j)P_{i,j-1}(x)}{x_j-x_i},\n\\quad i&lt;j.\n\\]\nThe final interpolated value at a query point \\(x\\) is \\(P_{0,n-1}(x)\\). Aitken’s process is the same recursion viewed as repeated linear interpolation between neighboring approximants; Neville’s table is the standard tabular form used for robust numerical evaluation."
+  },
+  {
     "objectID": "pages/numerical-methods/aitkens-and-nevilles-interpolation/index.html#animations",
     "href": "pages/numerical-methods/aitkens-and-nevilles-interpolation/index.html#animations",
     "title": "Aitken’s and Neville’s Interpolation",
@@ -2814,18 +2828,18 @@
     "text": "Animations\nThe animation below illustrates Neville’s algorithm for polynomial interpolation of \\(f(x) = \\cos(x)\\) at 5 nodes \\(x_0 = 0,\\, \\tfrac{\\pi}{4},\\, \\tfrac{\\pi}{2},\\, \\tfrac{3\\pi}{4},\\, \\pi\\). Each frame adds one node, building successively higher-degree interpolants \\(P_{0,j}(x)\\).\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Neville’s algorithm: degree 0 through 4 for \\(\\cos(x)\\)\nBehavior: Neville’s algorithm builds the degree-\\(n\\) interpolating polynomial by combining two polynomials of degree \\(n-1\\): \\(P_{i,j}(x) = \\tfrac{(x-x_i)P_{i+1,j} - (x-x_j)P_{i,j-1}}{x_j - x_i}\\). Adding each node refines the polynomial. By degree 4 (using all 5 nodes) the interpolant closely matches \\(\\cos(x)\\) on the whole interval.\nJulia source\n\n\n\nNeville algorithm building successive polynomial interpolants of cos(x) from degree 0 constant to degree 4 at 5 nodes at 0, pi/4, pi/2, 3pi/4, pi"
   },
   {
-    "objectID": "pages/numerical-methods/aitkens-and-nevilles-interpolation/index.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/aitkens-and-nevilles-interpolation/index.html#derivation-notes-planned",
-    "title": "Aitken’s and Neville’s Interpolation",
-    "section": "Derivation Notes (Planned)",
-    "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
-  },
-  {
     "objectID": "pages/numerical-methods/bezier-curves/index.html",
     "href": "pages/numerical-methods/bezier-curves/index.html",
     "title": "Bézier Curves",
     "section": "",
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
+  },
+  {
+    "objectID": "pages/numerical-methods/bezier-curves/index.html#description",
+    "href": "pages/numerical-methods/bezier-curves/index.html#description",
+    "title": "Bézier Curves",
+    "section": "Description",
+    "text": "Description\nA Bezier curve of degree \\(n\\) with control points \\(P_0,\\ldots,P_n\\) is defined by the Bernstein polynomial form\n\\[\nB(t)=\\sum_{i=0}^{n}\\binom{n}{i}(1-t)^{n-i}t^iP_i,\\qquad t\\in[0,1].\n\\]\nThe curve starts at \\(P_0\\), ends at \\(P_n\\), and stays inside the convex hull of its control polygon. A numerically stable way to evaluate points on the curve is the de Casteljau algorithm, which repeatedly performs linear interpolation between adjacent points until one point remains."
   },
   {
     "objectID": "pages/numerical-methods/bezier-curves/index.html#animations",
@@ -3122,43 +3136,50 @@
     "text": "Implementation Notes (Planned)\nImplementation details, numerical stability notes, and practical pitfalls will be added."
   },
   {
-    "objectID": "pages/numerical-methods/eulers-method-for-odes.html",
-    "href": "pages/numerical-methods/eulers-method-for-odes.html",
+    "objectID": "pages/numerical-methods/eulers-method-for-odes/index.html",
+    "href": "pages/numerical-methods/eulers-method-for-odes/index.html",
     "title": "Euler’s Method for ODE’s",
     "section": "",
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
-    "objectID": "pages/numerical-methods/eulers-method-for-odes.html#animation-focus",
-    "href": "pages/numerical-methods/eulers-method-for-odes.html#animation-focus",
+    "objectID": "pages/numerical-methods/eulers-method-for-odes/index.html#description",
+    "href": "pages/numerical-methods/eulers-method-for-odes/index.html#description",
     "title": "Euler’s Method for ODE’s",
-    "section": "Animation Focus",
-    "text": "Animation Focus\nThis page will prioritize intuitive animations that show the algorithm behavior step by step.\n\nPlanned animation ideas\n\nVisual state evolution of the method\nParameter sensitivity controls\nConvergence and failure side-by-side comparison"
+    "section": "Description",
+    "text": "Description\nEuler’s method is the simplest one-step numerical solver for an initial value problem \\(y' = f(t,y)\\), \\(y(t_0)=y_0\\). It advances the solution by following the local tangent at each grid point:\n\\[\ny_{n+1} = y_n + h\\,f(t_n,y_n), \\qquad t_{n+1}=t_n+h.\n\\]\nFor smooth problems, Euler has local truncation error \\(O(h^2)\\) and global error \\(O(h)\\), so reducing the step size improves accuracy linearly. The modified Euler (Heun) predictor-corrector method averages endpoint slopes and improves global accuracy to \\(O(h^2)\\)."
   },
   {
-    "objectID": "pages/numerical-methods/eulers-method-for-odes.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/eulers-method-for-odes.html#derivation-notes-planned",
+    "objectID": "pages/numerical-methods/eulers-method-for-odes/index.html#animations",
+    "href": "pages/numerical-methods/eulers-method-for-odes/index.html#animations",
+    "title": "Euler’s Method for ODE’s",
+    "section": "Animations",
+    "text": "Animations\nEach animation below shows the numerical solution trace for the IVP \\(y' = 1 - t\\sqrt[3]{y}\\), \\(y(0)=1\\) on \\(0 \\le t \\le 5\\), using the legacy module’s \\(n=41\\) point setup (\\(h=0.125\\)). Each frame adds one new computed point and segment. The dashed black curve is a high-accuracy reference trajectory computed with fixed-step RK4 at \\(h=10^{-4}\\) and shown for direct visual error comparison.\nLegacy archive note: the original Euleraa.gif and MEuleraa.gif files were missing from the recovered animation folders, so these are reconstructed from the module’s worked-example equations and parameters (Examples 11-12).\n\nCase 1 - Forward Euler, \\(y' = 1 - t\\sqrt[3]{y}\\), \\(y(0)=1\\), \\(0 \\le t \\le 5\\), \\(n=41\\)\nBehavior: Forward Euler accumulates first-order global error and drifts low near \\(t=5\\) relative to the dashed RK4 reference trajectory.\nJulia source\n\n\n\nForward Euler animation for y’ = 1 - t cbrt(y), y(0)=1 over 0 &lt;= t &lt;= 5 using 41 points\n\n\n\n\nCase 2 - Modified Euler (Heun), same IVP and grid\nBehavior: The predictor-corrector slope average reduces drift and stays closer to the dashed RK4 reference trajectory at the right endpoint.\nJulia source\n\n\n\nModified Euler animation for y’ = 1 - t cbrt(y), y(0)=1 over 0 &lt;= t &lt;= 5 using 41 points"
+  },
+  {
+    "objectID": "pages/numerical-methods/eulers-method-for-odes/index.html#derivation-notes-planned",
+    "href": "pages/numerical-methods/eulers-method-for-odes/index.html#derivation-notes-planned",
     "title": "Euler’s Method for ODE’s",
     "section": "Derivation Notes (Planned)",
     "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
   },
   {
-    "objectID": "pages/numerical-methods/eulers-method-for-odes.html#worked-example-planned",
-    "href": "pages/numerical-methods/eulers-method-for-odes.html#worked-example-planned",
+    "objectID": "pages/numerical-methods/eulers-method-for-odes/index.html#worked-example-planned",
+    "href": "pages/numerical-methods/eulers-method-for-odes/index.html#worked-example-planned",
     "title": "Euler’s Method for ODE’s",
     "section": "Worked Example (Planned)",
     "text": "Worked Example (Planned)\nA compact numerical example with intermediate steps will be included."
   },
   {
-    "objectID": "pages/numerical-methods/eulers-method-for-odes.html#implementation-notes-planned",
-    "href": "pages/numerical-methods/eulers-method-for-odes.html#implementation-notes-planned",
+    "objectID": "pages/numerical-methods/eulers-method-for-odes/index.html#implementation-notes-planned",
+    "href": "pages/numerical-methods/eulers-method-for-odes/index.html#implementation-notes-planned",
     "title": "Euler’s Method for ODE’s",
     "section": "Implementation Notes (Planned)",
     "text": "Implementation Notes (Planned)\nImplementation details, numerical stability notes, and practical pitfalls will be added."
   },
   {
-    "objectID": "pages/numerical-methods/eulers-method-for-odes.html#legacy-animation-inventory-stub",
-    "href": "pages/numerical-methods/eulers-method-for-odes.html#legacy-animation-inventory-stub",
+    "objectID": "pages/numerical-methods/eulers-method-for-odes/index.html#legacy-animation-inventory-stub",
+    "href": "pages/numerical-methods/eulers-method-for-odes/index.html#legacy-animation-inventory-stub",
     "title": "Euler’s Method for ODE’s",
     "section": "Legacy Animation Inventory (Stub)",
     "text": "Legacy Animation Inventory (Stub)\n\nLegacy module page: Euler’s Method for ODE’s (ok)\nAnimation links found in module Animations paragraph: 8\nUnique animation portals: 2\n\n\nAnimation Portals\n\nEuler’s Method (ok)\nModified Euler’s Method (ok)\n\n\nAnimation item links found: 2\n\n\n\nAnimation Items\n\nEuler’s Method (ok)\n\n\nMain animated GIF count: 1\nhttp://localhost:8000/a2001/Animations/OrdinaryDE/Euler1/Euleraa.gif\n\n\nModified Euler’s Method (ok)\n\n\nMain animated GIF count: 1\nhttp://localhost:8000/a2001/Animations/OrdinaryDE/MEuler1/MEuleraa.gif"
@@ -4249,18 +4270,18 @@
     "text": "← Numerical Methods\nSource inspiration: (Mathew 2000-2019)."
   },
   {
+    "objectID": "pages/numerical-methods/rational-approximation/index.html#description",
+    "href": "pages/numerical-methods/rational-approximation/index.html#description",
+    "title": "Rational Approximation",
+    "section": "Description",
+    "text": "Description\nRational approximation represents a function by a quotient of polynomials,\n\\[\nR_{m,n}(x)=\\frac{P_m(x)}{Q_n(x)},\\qquad Q_n(x)\\neq 0.\n\\]\nMathews compares three constructions over a fixed interval: interpolation with equally spaced nodes, interpolation with Chebyshev nodes, and a MiniMax (MinMax) construction that spreads error more uniformly. For the MinMax procedure, the goal is to reduce the maximum relative error\n\\[\n\\max_{x\\in[a,b]}\\left|\\frac{f(x)-R(x)}{f(x)}\\right|.\n\\]"
+  },
+  {
     "objectID": "pages/numerical-methods/rational-approximation/index.html#animations",
     "href": "pages/numerical-methods/rational-approximation/index.html#animations",
     "title": "Rational Approximation",
     "section": "Animations",
-    "text": "Animations\nThe animation below compares the diagonal Padé approximant \\(R_{[n/n]}(x)\\) with the Taylor polynomial \\(T_{2n}(x)\\) of equal total degree for \\(f(x) = e^x\\) on \\([-6,6]\\), as the order \\(n\\) increases from 1 to 4.\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Padé \\([n/n]\\) vs Taylor \\(T_{2n}\\) for \\(e^x\\), \\(n=1,\\ldots,4\\)\nBehavior: Both approximations use \\(2n+1\\) parameters. The Taylor polynomial is accurate near \\(x=0\\) but diverges away from the origin. The Padé rational approximant distributes its accuracy more evenly, remaining close to \\(e^x\\) over a much wider interval. For \\(n=4\\) the Padé \\([4/4]\\) tracks \\(e^x\\) well past \\(x=\\pm5\\), where \\(T_8\\) has already diverged.\nJulia source\n\n\n\nPade [n/n] approximant (green) vs Taylor T_{2n} (red dashed) for e^x on [-6,6] for n=1,2,3,4; Pade stays close to the true function far from the origin while Taylor diverges"
-  },
-  {
-    "objectID": "pages/numerical-methods/rational-approximation/index.html#derivation-notes-planned",
-    "href": "pages/numerical-methods/rational-approximation/index.html#derivation-notes-planned",
-    "title": "Rational Approximation",
-    "section": "Derivation Notes (Planned)",
-    "text": "Derivation Notes (Planned)\nShort derivations will be added to explain the core equations and assumptions."
+    "text": "Animations\nThe animation below follows the Mathews-style workflow for \\(f(x)=e^x\\) on \\([-1,1]\\) with a fixed \\([2/2]\\) rational form: (1) equally spaced nodes, (2) Chebyshev nodes, and (3) a MinMax-style relative-error optimization.\nJulia source scripts that generated these animations are linked under each case.\n\nCase 1 — Rational \\([2/2]\\) for \\(e^x\\) on \\([-1,1]\\): equal nodes, Chebyshev nodes, and MinMax\nBehavior: Equally spaced interpolation and Chebyshev interpolation are both exact at their nodes, but the maximum relative error over the interval can differ significantly. The MinMax-style step then adjusts coefficients to reduce \\(\\max |(f-R)/f|\\), producing a flatter, more uniform relative-error profile across \\([-1,1]\\).\nJulia source\n\n\n\nRational [2/2] approximation workflow for exp(x) on [-1,1]: equally spaced-node interpolation, Chebyshev-node interpolation, and MinMax-style relative-error optimization, with function and relative-error panels."
   },
   {
     "objectID": "pages/numerical-methods/riemann-sums/index.html",
