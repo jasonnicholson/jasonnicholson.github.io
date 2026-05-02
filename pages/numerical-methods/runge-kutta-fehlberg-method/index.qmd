@@ -1,0 +1,68 @@
+---
+title: "Runge-Kutta-Fehlberg Method"
+bibliography: ../../../references.bib
+---
+
+← [Numerical Methods](../)
+
+Source inspiration: [@mathewsSite].
+
+## Description
+
+The Runge-Kutta-Fehlberg method (RKF45) is an adaptive-step one-step solver for
+initial value problems. At each step it computes embedded 4th- and 5th-order
+approximations from the same stage evaluations, estimates local error from their
+difference, and then adjusts step size to meet a tolerance.
+
+If $y_4$ and $y_5$ are the embedded updates, then a practical error estimate is
+$|y_5 - y_4|$. The next step size is chosen using a scaling rule of the form
+$h_{new} = s h$ with $s \propto (\varepsilon/\text{err})^{1/4}$, where $\varepsilon$
+is the requested tolerance.
+
+## Animations
+
+The first animation below reconstructs the legacy Example 1 setup from the Mathews module:
+$y' = 1 + y^2$, $y(0)=0.5$, on $[0,1.1]$. The dashed black curve is the exact
+solution
+$y(t)=\tan\!\left(t + \arctan(0.5)\right)$.
+
+The second animation uses the same IVP shown on the Adams-Bashforth-Moulton,
+Euler, and Modified Euler pages:
+$y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, on $[0,5]$, with a dashed high-accuracy
+reference trajectory from fixed-step RK4 at $h=10^{-4}$.
+
+Because the recovered archive did not include legacy RKF animated GIF portals for
+this topic, this animation is reconstructed from the worked-example equations and
+plot behavior in the module links/images.
+
+### Case 1 - Adaptive RKF45 vs RKF54, $y' = 1 + y^2$, $y(0)=0.5$, $t \in [0,1.1]$
+
+**Behavior:** Both adaptive traces follow the exact solution well while the curve
+rapidly steepens near $t=1.1$. The accepted-step distributions differ slightly,
+reflecting the 4th-order vs 5th-order accepted update choice.
+
+[Julia source](rungekuttafehlbergaa.jl)
+
+![Adaptive RKF45 and RKF54 trajectories versus exact solution for y' = 1 + y^2, y(0)=0.5 on [0,1.1]](rungekuttafehlbergaa.gif)
+
+### Case 2 - Adaptive RKF45 vs RKF54, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $t \in [0,5]$
+
+**Behavior:** RKF45 and RKF54 closely follow the dashed RK4 reference trajectory,
+with only small visible differences as adaptive steps tighten through the steeper
+part of the solution.
+
+[Julia source](rungekuttafehlbergbb.jl)
+
+![Adaptive RKF45 and RKF54 trajectories versus high-accuracy RK4 reference for y' = 1 - t cbrt(y), y(0)=1 on [0,5]](rungekuttafehlbergbb.gif)
+
+## Derivation Notes (Planned)
+
+Short derivations will be added to explain the core equations and assumptions.
+
+## Worked Example (Planned)
+
+A compact numerical example with intermediate steps will be included.
+
+## Implementation Notes (Planned)
+
+Implementation details, numerical stability notes, and practical pitfalls will be added.
