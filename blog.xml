@@ -10,7 +10,161 @@
 <atom:link href="https://jasonhnicholson.com/blog.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.9.36</generator>
-<lastBuildDate>Sat, 18 Apr 2026 04:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sun, 03 May 2026 04:00:00 GMT</lastBuildDate>
+<item>
+  <title>Comparing AI Models on MATLAB Code Conversion: Madsen-Reid Results</title>
+  <link>https://jasonhnicholson.com/posts/2026/05/2026-05-03-madsen-reid-model-comparison.html</link>
+  <description><![CDATA[ 
+
+
+
+
+
+
+<p>WIth GitHub Copilot’s recent announcement of “usage billing”, I decided it was important to understand the AI API usage landscape better. I bought some API credits and ran a comparative test across several major AI models to evaluate their capability to convert C++ code (<a href="https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp"><code>Newton_Real.cpp</code></a>) into modern, idiomatic MATLAB code. The prompt tasked each model with vectorizing the code, applying modern MATLAB patterns (like logical indexing), avoiding unnecessary loops, and writing unit tests using <code>matlab.unittest</code>—all while relying purely on native MATLAB capabilities.</p>
+<p>I learned that GitHub Copilot can integrate with APIs directly. It can integrate with Anthroupic, xAI, Google, OpenRouter, OpenAI, Ollama, and Azure.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://jasonhnicholson.com/posts/2026/05/add-models.png" class="img-fluid figure-img"></p>
+<figcaption>GitHub Copilot API Integration</figcaption>
+</figure>
+</div>
+<p>I purchased <a href="https://x.ai/api">Grok API</a>, <a href="https://platform.claude.com/dashboard">Antropic API</a>, <a href="https://aistudio.google.com">Google Gemini API</a>, and then I found <a href="https://openrouter.ai/">OpenRouter</a>. OpenRouter provides access to a wide range of models, including Qwen and Deepseek. I ran the same prompt across all these models and tracked their performance, accuracy, and costs.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The Prompt
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You are an expert MATLAB developer specializing in numerical methods and high-performance scientific computing.</p>
+<p>Convert the following C++ code from <code>Newton_Real.cpp</code> into <strong>modern, idiomatic MATLAB</strong> (R2023a or later style).</p>
+<section id="core-requirements" class="level3">
+<h3 class="anchored" data-anchor-id="core-requirements">Core Requirements:</h3>
+<ul>
+<li>Prioritize <strong>vectorization</strong> and native MATLAB array operations for best performance.</li>
+<li>Use modern MATLAB patterns (anonymous functions, logical indexing, etc.). Avoid unnecessary <code>arrayfun</code> or loops.</li>
+<li>Follow consistent, clear MATLAB naming conventions.</li>
+<li>Include proper input validation with <code>error()</code> and meaningful messages.</li>
+<li>Make the implementation general-purpose, robust, and suitable for integration into larger numerical solvers.</li>
+</ul>
+</section>
+<section id="documentation" class="level3">
+<h3 class="anchored" data-anchor-id="documentation">Documentation:</h3>
+<ul>
+<li>Start with a strong <strong>H1 docstring</strong> (single-line summary right after the function signature).</li>
+<li>Follow with comprehensive documentation including: extended description, syntax, detailed Input/Output arguments, examples, and references.</li>
+</ul>
+</section>
+<section id="deliverables" class="level3">
+<h3 class="anchored" data-anchor-id="deliverables">Deliverables:</h3>
+<ol type="1">
+<li>The main function (recommend name: <code>newtonReal</code>).</li>
+<li>A class-based unit test (<code>NewtonRealTest</code>) using <code>matlab.unittest</code> with good method coverage.</li>
+<li>A separate test script that:
+<ul>
+<li>Generates approximately 200 random polynomials with degrees ranging from 4 to 30.</li>
+<li>Runs the Newton solver on each.</li>
+<li>Reports success rate, average number of iterations, and details of any failures.</li>
+</ul></li>
+</ol>
+<p><strong>Important:</strong> Use only native MATLAB capabilities and standard toolboxes (no external dependencies). Do not suggest command-line calls.</p>
+<p>CPP code is attached.</p>
+</section>
+</div>
+</div>
+</div>
+<p>Here is a summary of the results across the different models, including rough timings and costs.</p>
+<section id="summary-of-results" class="level3">
+<h3 class="anchored" data-anchor-id="summary-of-results">Summary of Results</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: left;">Cost</th>
+<th style="text-align: left;">Estimated Time</th>
+<th style="text-align: left;">Performance &amp; Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Gemini 3.1 Pro Preview</strong></td>
+<td style="text-align: left;">$0.32</td>
+<td style="text-align: left;">~5 mins</td>
+<td style="text-align: left;">Passed tests with 99.5% accuracy. Very fast. Cleverly skipped running tests in one instance to save tokens. The clear leader in cost-effectiveness and speed.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Grok 4.3</strong></td>
+<td style="text-align: left;">$0.72</td>
+<td style="text-align: left;">~12 mins</td>
+<td style="text-align: left;">96.5% success rate. A solid performer for the price. I don’t know that I would recommend this model. A good prompt is definitely required with this model.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Qwen 3.6 Plus</strong></td>
+<td style="text-align: left;">$1.15</td>
+<td style="text-align: left;">~15 mins</td>
+<td style="text-align: left;">Produced correct code and ran successfully.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Deepseek V4 Pro</strong></td>
+<td style="text-align: left;">$2.18</td>
+<td style="text-align: left;">~30 mins</td>
+<td style="text-align: left;">Tests it generated were 100%. Took a bit longer but delivered.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Claude Opus 4.7</strong></td>
+<td style="text-align: left;">$2.78</td>
+<td style="text-align: left;">~14 mins</td>
+<td style="text-align: left;">100% success on random polynomials. Expected cost was $$2.78, so it came in under budget and surprisingly cheaper than Sonnet. I expect closer to $3-10 for this model and am not sure why it was cheaper than Sonnet. Opus is the most accurate but just barely.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Claude Sonnet 4.6</strong></td>
+<td style="text-align: left;">$4.26</td>
+<td style="text-align: left;">~30 mins</td>
+<td style="text-align: left;">Mostly correct (around 99.8% accurate) with a few minor issues. Slower and more expensive than Opus in this test.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>GPT-5.5 Pro</strong></td>
+<td style="text-align: left;">$8.55</td>
+<td style="text-align: left;">30min</td>
+<td style="text-align: left;">Tests ran but it is a very expensive model compared to the rest. I started this task with $16.65 in credit and the model error out at $8.10 left because insufficient tokens. However, tests ran.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="the-budget-tier-under-0.25" class="level3">
+<h3 class="anchored" data-anchor-id="the-budget-tier-under-0.25">The Budget Tier (Under $0.25)</h3>
+<p>I also tested a couple of fast/budget models, but they largely struggled with the complexity of the MATLAB constraints and don’t recommend them at all for a moderately complex code task like this:</p>
+<ul>
+<li><strong>Grok Code Fast 1</strong> ($0.10): Generated code quickly but ignored the prompt’s instruction to use MATLAB tools, calling MATLAB directly instead. Even after repeated testing, it failed to produce a working algorithm, and all tests failed.</li>
+<li><strong>Grok 4.1 Fast Reasoning</strong> ($0.07): Produced terrible code that failed to run.</li>
+</ul>
+</section>
+<section id="conclusion" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion">Conclusion</h3>
+<p>Based on this evaluation, <strong>Gemini 3.1 Pro Preview</strong> stands out as an incredibly cost-effective and fast model. It delivered near-perfect accuracy (99.5%) while keeping costs at just $0.34 and completing the task in under 5 minutes.</p>
+<p>Looking back the media I have consumed about AI, Google’s Gemini was consistently praised for high quality response while remaining cost-effective.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>AI</category>
+  <category>MATLAB</category>
+  <guid>https://jasonhnicholson.com/posts/2026/05/2026-05-03-madsen-reid-model-comparison.html</guid>
+  <pubDate>Sun, 03 May 2026 04:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Running Fork (Windows) on Linux with Wine</title>
   <dc:creator>Jason H. Nicholson</dc:creator>
@@ -9002,26 +9156,6 @@ font-style: inherit;">"Trust-Region-Dogleg Convergence for z^5+z^2-z+1"</span>)<
   <category>system-identification</category>
   <category>controls</category>
   <guid>https://jasonhnicholson.com/posts/2021/07/2021-07-19-neural-networks-controls-and-system-identification.html</guid>
-  <pubDate>Mon, 19 Jul 2021 04:00:00 GMT</pubDate>
-</item>
-<item>
-  <title>System Identification Resources</title>
-  <link>https://jasonhnicholson.com/posts/2021/07/2021-07-19-system-identification-resources.html</link>
-  <description><![CDATA[ 
-
-
-
-
-
-
-<p>This blog post was turned into a page here: <a href="../../../pages/system-identification">System Identification Resources</a></p>
-
-
-
- ]]></description>
-  <category>controls</category>
-  <category>system-identification</category>
-  <guid>https://jasonhnicholson.com/posts/2021/07/2021-07-19-system-identification-resources.html</guid>
   <pubDate>Mon, 19 Jul 2021 04:00:00 GMT</pubDate>
 </item>
 </channel>
