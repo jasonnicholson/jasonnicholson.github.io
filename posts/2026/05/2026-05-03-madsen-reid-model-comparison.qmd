@@ -1,0 +1,71 @@
+---
+title: "Comparing AI Models on MATLAB Code Conversion: Madsen-Reid Results"
+date: 2026-05-03
+categories: [AI, MATLAB]
+tags: [LLM, benchmark, gemini, claude, grok, qwen, deepseek, grok]
+---
+
+WIth GitHub Copilot's recent announcement of "usage billing", I decided it was important to understand the AI API usage landscape better. I bought some API credits and ran a comparative test across several major AI models to evaluate their capability to convert C++ code ([`Newton_Real.cpp`](https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp)) into modern, idiomatic MATLAB code. The prompt tasked each model with vectorizing the code, applying modern MATLAB patterns (like logical indexing), avoiding unnecessary loops, and writing unit tests using `matlab.unittest`—all while relying purely on native MATLAB capabilities.
+
+I learned that GitHub Copilot can integrate with APIs directly. It can integrate with Anthroupic, xAI, Google, OpenRouter, OpenAI, Ollama, and Azure.
+
+![GitHub Copilot API Integration](add-models.png)
+
+I purchased [Grok API](https://x.ai/api), [Antropic API](https://platform.claude.com/dashboard), [Google Gemini API](https://aistudio.google.com), and then I found [OpenRouter](https://openrouter.ai/). OpenRouter provides access to a wide range of models, including Qwen and Deepseek. I ran the same prompt across all these models and tracked their performance, accuracy, and costs.
+
+
+::: {.callout-note collapse="true"}
+## The Prompt
+You are an expert MATLAB developer specializing in numerical methods and high-performance scientific computing.
+
+Convert the following C++ code from `Newton_Real.cpp` into **modern, idiomatic MATLAB** (R2023a or later style).
+
+### Core Requirements:
+- Prioritize **vectorization** and native MATLAB array operations for best performance.
+- Use modern MATLAB patterns (anonymous functions, logical indexing, etc.). Avoid unnecessary `arrayfun` or loops.
+- Follow consistent, clear MATLAB naming conventions.
+- Include proper input validation with `error()` and meaningful messages.
+- Make the implementation general-purpose, robust, and suitable for integration into larger numerical solvers.
+
+### Documentation:
+- Start with a strong **H1 docstring** (single-line summary right after the function signature).
+- Follow with comprehensive documentation including: extended description, syntax, detailed Input/Output arguments, examples, and references.
+
+### Deliverables:
+1. The main function (recommend name: `newtonReal`).
+2. A class-based unit test (`NewtonRealTest`) using `matlab.unittest` with good method coverage.
+3. A separate test script that:
+   - Generates approximately 200 random polynomials with degrees ranging from 4 to 30.
+   - Runs the Newton solver on each.
+   - Reports success rate, average number of iterations, and details of any failures.
+
+**Important:** Use only native MATLAB capabilities and standard toolboxes (no external dependencies). Do not suggest command-line calls.
+
+CPP code is attached.
+:::
+
+Here is a summary of the results across the different models, including rough timings and costs.
+
+### Summary of Results
+
+| Model | Cost | Estimated Time | Performance & Accuracy |
+| :--- | :--- | :--- | :--- |
+| **Gemini 3.1 Pro Preview** | $0.32 | ~5 mins | Passed tests with 99.5% accuracy. Very fast. Cleverly skipped running tests in one instance to save tokens. The clear leader in cost-effectiveness and speed. |
+| **Grok 4.3** | $0.72 | ~12 mins | 96.5% success rate. A solid performer for the price. I don't know that I would recommend this model. A good prompt is definitely required with this model. |
+| **Qwen 3.6 Plus** | $1.15 | ~15 mins | Produced correct code and ran successfully. |
+| **Deepseek V4 Pro** | $2.18 | ~30 mins | Tests it generated were 100%. Took a bit longer but delivered. |
+| **Claude Opus 4.7** | $2.78 | ~14 mins | 100% success on random polynomials. Expected cost was $$2.78, so it came in under budget and surprisingly cheaper than Sonnet. I expect closer to $3-10 for this model and am not sure why it was cheaper than Sonnet. Opus is the most accurate but just barely. |
+| **Claude Sonnet 4.6** | $4.26 | ~30 mins | Mostly correct (around 99.8% accurate) with a few minor issues. Slower and more expensive than Opus in this test. |
+| **GPT-5.5 Pro** | $8.55 | 30min | Tests ran but it is a very expensive model compared to the rest. I started this task with $16.65 in credit and the model error out at $8.10 left because insufficient tokens. However, tests ran. |
+
+### The Budget Tier (Under $0.25)
+I also tested a couple of fast/budget models, but they largely struggled with the complexity of the MATLAB constraints and don't recommend them at all for a moderately complex code task like this:
+
+- **Grok Code Fast 1** ($0.10): Generated code quickly but ignored the prompt's instruction to use MATLAB tools, calling MATLAB directly instead. Even after repeated testing, it failed to produce a working algorithm, and all tests failed.
+- **Grok 4.1 Fast Reasoning** ($0.07): Produced terrible code that failed to run.
+
+### Conclusion
+
+Based on this evaluation, **Gemini 3.1 Pro Preview** stands out as an incredibly cost-effective and fast model. It delivered near-perfect accuracy (99.5%) while keeping costs at just $0.32 and completing the task in under 5 minutes. 
+
+Looking back the media I have consumed about AI, Google's Gemini was consistently praised for high quality response while remaining cost-effective. 
