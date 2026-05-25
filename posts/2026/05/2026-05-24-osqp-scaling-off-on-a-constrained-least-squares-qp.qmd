@@ -1,0 +1,112 @@
+---
+title: "When Turning OSQP Scaling Off Wins on a Constrained Least-Squares QP"
+date: 2026-05-24
+categories: [optimization, matlab]
+tags: [OSQP, ADMM, lsqlin, scaling, quadratic programming]
+---
+
+I recently worked through a constrained least-squares problem where my intuition was wrong: OSQP solved faster and more reliably with internal scaling turned off.
+
+I expected scaling to help ADMM. On this dataset, the opposite happened.
+
+## Problem setup
+
+[Problem Data](https://jasonhnicholson.com/pages/regularizeNd/part-06-constraints-and-mappings.html)
+
+I have data matrices with these dimensions:
+
+- $C \in \mathbb{R}^{3086 \times 1000}$
+- $A \in \mathbb{R}^{1999 \times 1000}$
+- $d \in \mathbb{R}^{3086}$
+- $b \in \mathbb{R}^{1999}$
+
+The optimization is a constrained least-squares problem:
+
+$$
+\min_x \frac{1}{2}\lVert Cx-d \rVert_2^2 \quad \text{s.t.} \quad Ax \le b.
+$$
+
+I tested both QP formulations:
+
+1. Normal-equations form: $P=C^TC$, $q=-C^Td$.
+2. Slack form (recommended for OSQP):
+
+$$
+\min_{x,y} \frac{1}{2} y^T y, \quad \text{s.t.} \quad y = Cx-d, \ Ax \le b.
+$$
+
+## Why this looked numerically difficult
+
+The scales are very different:
+
+- $\lVert C \rVert_\infty \approx 9.93 \times 10^7$
+- $\lVert A \rVert_\infty \approx 2$
+- scale ratio $\lVert C \rVert_\infty / \lVert A \rVert_\infty \approx 4.96 \times 10^7$
+- $\operatorname{condest}(C^TC) \approx 6.96 \times 10^{15}$
+
+So this is a mixed-scale problem with a very ill-conditioned normal-equations matrix.
+
+## Timing comparison against lsqlin
+
+I benchmarked with MATLAB + OSQP C interface using a local script named `qpWork_timing.m` (5-run averages).
+
+### lsqlin baseline
+
+- Wall time: about 53.96 ms
+- Iterations: 8
+- $\lVert Cx-d \rVert_2$: $8.261228 \times 10^0$
+- $\max(Ax-b)$: $-9.411 \times 10^{-9}$
+
+### OSQP (slack form)
+
+- scaling=0, eps=1e-6:
+  - setup about 4.71 ms, solve about 12.39 ms, total about 17.10 ms
+  - solved in all runs
+  - $\lVert Cx-d \rVert_2 = 8.261167 \times 10^0$
+  - $\max(Ax-b) = 8.480 \times 10^{-7}$
+
+- scaling=10, eps=1e-6:
+  - solve about 4357 ms
+  - max-iteration exit in all runs
+  - significantly worse residual quality
+
+- scaling=0, eps=1e-8:
+  - total about 123.01 ms
+  - solved in all runs
+  - tighter feasibility and similar fit
+
+- scaling=10, eps=1e-8:
+  - solve about 8766 ms
+  - max-iteration exit in all runs
+
+## What I think is happening
+
+I do not yet have a complete explanation, but my working hypothesis is:
+
+- OSQP scaling (Ruiz equilibration) is changing the effective ADMM residual balancing in this specific block structure.
+- The slack formulation has a large-$C$ equality block and a small-scale inequality block.
+- For this case, that rescaling seems to move ADMM into a slower path, while no scaling preserves a better trajectory.
+
+So scaling is not "bad" in general. It is just not universally beneficial.
+
+## Practical heuristic for an lsqlin-like OSQP wrapper
+
+For this problem family, a robust strategy is:
+
+1. Use the slack formulation (avoid $P=C^TC$ when possible).
+2. Pilot probe:
+   - run short solves with scaling=0 and scaling=10 (for example 500 iterations, eps=1e-6)
+   - pick the branch with better feasibility score and lower time
+3. Full solve with chosen branch:
+   - adaptive_rho=true
+   - scaled_termination=false
+   - polishing=true
+   - eps=1e-6 for speed, eps=1e-8 for tighter feasibility
+
+This is the direction I plan to use in an lsqlin-like interface built on top of OSQP.
+
+## Takeaway
+
+The surprising result here is simple: for this dataset, ADMM works much better with OSQP scaling off.
+
+It was not intuitive to me either, but the benchmark is clear and repeatable.
