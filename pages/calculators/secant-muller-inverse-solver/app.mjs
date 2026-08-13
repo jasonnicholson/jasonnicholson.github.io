@@ -1,6 +1,7 @@
 import core from "./core.mjs";
 
 const DEFAULT_ROW_COUNT = 20;
+const STATIC_CELLS = new Set(["1:method", "1:step", "2:method"]);
 
 export async function initSecantMullerInverseApp(root, options = {}) {
   const cfg = await loadContract();
@@ -19,16 +20,18 @@ export async function initSecantMullerInverseApp(root, options = {}) {
   for (let i = 1; i <= rowCount; i += 1) {
     tbody.appendChild(buildRow(i));
   }
+  applyStaticCellLocks(tbody);
   refreshMethodHints(tbody);
 
   loadExampleButton?.addEventListener("click", () => {
     fillExampleRows(tbody, targetInput);
     refreshMethodHints(tbody);
-    status.textContent = "Example rows loaded (1-3). Edit y, step size, or method in a row to trigger next-row x.";
+    status.textContent = "Example rows loaded (1-7). Edit y, step size, or method in a row to trigger next-row x.";
   });
 
   clearButton?.addEventListener("click", () => {
     clearRows(tbody);
+    applyStaticCellLocks(tbody);
     refreshMethodHints(tbody);
     status.textContent = "Cleared. Enter x/y points. Secant needs 2 valid points; Muller needs 3.";
   });
@@ -46,6 +49,13 @@ export async function initSecantMullerInverseApp(root, options = {}) {
 
     const rowIndex = Number(rowEl.dataset.row);
     const triggerField = String(input.dataset.field || "").toLowerCase();
+
+    if (isStaticCell(rowIndex, triggerField)) {
+      restoreStaticCell(tbody, rowIndex, triggerField);
+      status.textContent = `Row ${rowIndex} ${triggerField} is fixed by design.`;
+      refreshMethodHints(tbody);
+      return;
+    }
 
     if (!["y", "step", "method"].includes(triggerField)) {
       status.textContent = "Edit accepted (no recompute trigger).";
@@ -233,16 +243,22 @@ function refreshMethodHints(tbody) {
 
     methodSelect.title = `Available with current points -> secant: ${secantReady ? "yes" : "no"} (needs 2), muller: ${mullerReady ? "yes" : "no"} (needs 3)`;
     const finalReady = (selected === "secant" && secantReady) || (selected === "muller" && mullerReady);
-    methodSelect.classList.toggle("smi-method-not-ready", !finalReady);
+    const lockedStaticMethodCell = isStaticCell(rowIndex, "method");
+    methodSelect.classList.toggle("smi-method-not-ready", !finalReady && !lockedStaticMethodCell);
   }
 }
 
 function fillExampleRows(tbody, targetInput) {
-  targetInput.value = "10";
+  targetInput.value = "0";
+  clearRows(tbody);
   const example = [
-    { row: 1, method: "secant", step: "1", x: "2", y: "4" },
-    { row: 2, method: "secant", step: "1", x: "3", y: "9" },
-    { row: 3, method: "muller", step: "1", x: "4", y: "16" }
+    { row: 1, method: "secant", step: "1", x: "1.6", y: "1.0122" },
+    { row: 2, method: "secant", step: "1", x: "1.5", y: "0.9828" },
+    { row: 3, method: "muller", step: "1", x: "-1.8417", y: "-1.0734" },
+    { row: 4, method: "muller", step: "1", x: "-0.5038", y: "-0.4667" },
+    { row: 5, method: "muller", step: "1", x: "0.2463", y: "0.2415" },
+    { row: 6, method: "muller", step: "1", x: "0.02", y: "0.02" },
+    { row: 7, method: "muller", step: "1", x: "-7.703e-04", y: "" }
   ];
 
   for (const item of example) {
@@ -263,6 +279,48 @@ function clearRows(tbody) {
     setCellValue(tbody, rowIndex, "x", "");
     setCellValue(tbody, rowIndex, "y", "");
   }
+}
+
+function applyStaticCellLocks(tbody) {
+  for (const key of STATIC_CELLS) {
+    const [row, field] = key.split(":");
+    const rowIndex = Number(row);
+    restoreStaticCell(tbody, rowIndex, field);
+    const el = getCellInput(tbody, rowIndex, field);
+    if (el instanceof HTMLInputElement) {
+      el.readOnly = true;
+      el.disabled = true;
+      el.classList.add("smi-cell-locked");
+      el.title = "Locked static cell";
+    } else if (el instanceof HTMLSelectElement) {
+      el.disabled = true;
+      el.classList.add("smi-cell-locked");
+      el.title = "Locked static cell";
+    }
+  }
+}
+
+function isStaticCell(rowIndex, field) {
+  return STATIC_CELLS.has(`${rowIndex}:${field}`);
+}
+
+function restoreStaticCell(tbody, rowIndex, field) {
+  if (rowIndex === 1 && field === "method") {
+    setCellValue(tbody, rowIndex, field, "secant");
+    return;
+  }
+  if (rowIndex === 1 && field === "step") {
+    setCellValue(tbody, rowIndex, field, "1");
+    return;
+  }
+  if (rowIndex === 2 && field === "method") {
+    setCellValue(tbody, rowIndex, field, "secant");
+  }
+}
+
+function getCellInput(tbody, rowIndex, field) {
+  const row = tbody.querySelector(`tr[data-row="${rowIndex}"]`);
+  return row?.querySelector(`[data-field="${field}"]`) ?? null;
 }
 
 async function loadContract() {
