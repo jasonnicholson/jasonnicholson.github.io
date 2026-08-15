@@ -12,7 +12,7 @@ quarto publish gh-pages --no-prompt
 If publishing second or more time with a cache, run the following which saves the render time:
 
 ```bash
-quarto publish gh-pages --no-render --no-promp
+quarto publish gh-pages --no-render --no-prompt
 ```
 
 ## Extensions
