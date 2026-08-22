@@ -27,7 +27,7 @@ This extension is used for managing acronyms in the site. For more information, 
 
 This repository includes a custom GitHub Copilot skill for creating a blank Quarto blog post in the correct date-based location.
 
-The skill creates a new file in the format `posts/YYYY/MM/YYYY-MM-DD-<slug>.qmd`, derives the slug from the supplied title, and adds a minimal front matter plus writing scaffold. The skill definition is stored at [.github/skills/new-blank-blog-post/SKILL.md](.github/skills/new-blank-blog-post/SKILL.md).
+The skill creates a new file in the format `posts/YYYY/MM/DD-<slug>.qmd`, derives the slug from the supplied title, and adds a minimal front matter plus writing scaffold. The skill definition is stored at [.github/skills/new-blank-blog-post/SKILL.md](.github/skills/new-blank-blog-post/SKILL.md).
 
 Example usage:
 
@@ -35,7 +35,7 @@ Example usage:
 Follow instructions in #prompt:SKILL.md with these arguments: title "Sphinx Extension Learning"
 ```
 
-This produces a file such as `posts/2026/08/2026-08-21-sphinx-extension-learning.qmd` with the matching title and standard blog post template.
+This produces a file such as `posts/2026/08/21-sphinx-extension-learning.qmd` with the matching title and standard blog post template.
 
 ## Procedure to reduce history on gh-pages branch
 

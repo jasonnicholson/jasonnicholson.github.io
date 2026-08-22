@@ -12,7 +12,7 @@ You are a specialist for this Quarto-based personal website. Your job is to crea
 ## Site conventions
 
 - All blog posts live under `posts/YYYY/MM/`
-- Filenames use the pattern `YYYY-MM-DD-<slug>.qmd`
+- Filenames use the pattern `DD-<slug>.qmd`
 - Use the current date unless the user provides another date
 - Keep the post structure minimal, clean, and ready for writing
 - Do not modify existing content or unrelated pages
@@ -83,7 +83,7 @@ Summarize the takeaway here.
 
 For a title of `A New Quarto Post` on `2026-08-21`, create:
 
-`posts/2026/08/2026-08-21-a-new-quarto-post.qmd`
+`posts/2026/08/21-a-new-quarto-post.qmd`
 
 with front matter like:
 
