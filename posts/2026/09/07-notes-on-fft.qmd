@@ -5,17 +5,18 @@ categories: [MATLAB]
 tags: [fft, MATLAB, signal processing]
 ---
 
-This note provides a practical workflow for computing FFT frequency, magnitude, and phase vectors for double-sided and single-sided spectra, including index formulas for both even and odd `nfft`.
+This note provides a practical workflow for computing FFT frequency, magnitude, and phase vectors for real-valued signals, including index formulas for both even and odd `nfft`.
 
 ## Problem setup
 
 - A vector `x` with length `L`
 - A sample rate `Fs`
+- `x` is real-valued
 
 ## Objectives
 
 - FFT result with chosen `nfft`
-- Double-sided frequency, magnitude, and phase vectors
+- Unshifted FFT-bin frequency, magnitude, and phase vectors
 - Single-sided frequency, magnitude, and phase vectors for even `nfft`
 - Single-sided frequency, magnitude, and phase vectors for odd `nfft`
 
@@ -23,17 +24,17 @@ This note provides a practical workflow for computing FFT frequency, magnitude, 
 
 ### FFT with `nfft`
 
-Choosing `nfft > L` zero-pads the signal in time domain and decreases the frequency-bin spacing. This improves spectral display resolution.
+Choosing `nfft > L` zero-pads the signal in time domain and decreases frequency-bin spacing. This densifies the displayed spectrum but does not increase the true resolving power set by record length and windowing.
 
 ```matlab
 Y = fft(x, nfft);
 ```
 
-### Double-sided spectrum
+### Unshifted FFT-bin spectrum (two-sided content)
 
 #### Frequency
 
-Use frequency resolution $\Delta f = Fs / nfft$.
+Use frequency resolution $\Delta f = Fs / nfft$. This unshifted frequency axis runs from $0$ to $Fs-\Delta f$.
 
 ```matlab
 frequencyResolution = Fs/nfft;
@@ -52,6 +53,16 @@ magnitudeDoubleSided = abs(Y)./L;
 phase = angle(Y);
 ```
 
+### Why some bins are doubled
+
+Key idea: you double only bins that lost a distinct mirror partner.
+
+For real-valued signals, FFT bins satisfy conjugate symmetry: $X[k] = X^*[N-k]$. When forming a single-sided spectrum, negative-frequency bins are omitted. Any positive-frequency bin that had a distinct negative-frequency partner should be doubled to preserve one-sided amplitude.
+
+- Never double DC (first bin), because it is self-paired.
+- For even `nfft`, never double Nyquist (`Fs/2`), because it is also self-paired.
+- Double only bins with a distinct partner on the discarded side.
+
 ### Single-sided spectrum (even `nfft`)
 
 #### Frequency
@@ -63,11 +74,11 @@ frequencyVectorSingleSided_even = (0:nfft/2)*frequencyResolution;
 
 #### Magnitude
 
-Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.
+Apply the mirror-partner rule above: do not multiply DC or Nyquist. Scale only bins `2` through `end-1`.
 
 ```matlab
 magnitudeSingleSided_even = magnitudeDoubleSided(1:nfft/2+1);
-magnitudeSingleSided_even(2:end) = 2*magnitudeSingleSided_even(2:end);
+magnitudeSingleSided_even(2:end-1) = 2*magnitudeSingleSided_even(2:end-1);
 ```
 
 #### Phase
@@ -87,7 +98,7 @@ frequencyVectorSingleSided_odd = (0:(nfft-1)/2)*frequencyResolution;
 
 #### Magnitude
 
-Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.
+Apply the mirror-partner rule above: do not multiply DC. For odd `nfft` there is no Nyquist bin, so scale bins `2` through `end`.
 
 ```matlab
 magnitudeSingleSided_odd = magnitudeDoubleSided(1:(nfft+1)/2);
@@ -122,7 +133,7 @@ nfft_even = 16384;
 Y_even = fft(signal, nfft_even);
 magnitudeDoubleSided_even = abs(Y_even)./L;
 magnitudeSingleSided_even = magnitudeDoubleSided_even(1:nfft_even/2+1);
-magnitudeSingleSided_even(2:end) = 2*magnitudeSingleSided_even(2:end);
+magnitudeSingleSided_even(2:end-1) = 2*magnitudeSingleSided_even(2:end-1);
 frequencyResolution_even = Fs/nfft_even;
 frequencyVectorSingleSided_even = (0:nfft_even/2)*frequencyResolution_even;
 phase_even = angle(Y_even(1:nfft_even/2+1));
@@ -175,6 +186,6 @@ axis tight
 Use this sequence each time:
 
 1. Choose `nfft` and compute `Y = fft(x, nfft)`.
-2. Build double-sided vectors from `Y`.
-3. Build single-sided vectors by selecting half-spectrum and doubling non-DC magnitude terms.
+2. Build unshifted FFT-bin vectors from `Y`.
+3. Build single-sided vectors by selecting half-spectrum and applying correct scaling: for even `nfft`, double bins `2:end-1`; for odd `nfft`, double bins `2:end`.
 4. Use even/odd indexing formulas that match `nfft` parity.
