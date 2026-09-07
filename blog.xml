@@ -21,19 +21,20 @@
 
 
 
-<p>This note provides a practical workflow for computing FFT frequency, magnitude, and phase vectors for double-sided and single-sided spectra, including index formulas for both even and odd <code>nfft</code>.</p>
+<p>This note provides a practical workflow for computing FFT frequency, magnitude, and phase vectors for real-valued signals, including index formulas for both even and odd <code>nfft</code>.</p>
 <section id="problem-setup" class="level2">
 <h2 class="anchored" data-anchor-id="problem-setup">Problem setup</h2>
 <ul>
 <li>A vector <code>x</code> with length <code>L</code></li>
 <li>A sample rate <code>Fs</code></li>
+<li><code>x</code> is real-valued</li>
 </ul>
 </section>
 <section id="objectives" class="level2">
 <h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
 <ul>
 <li>FFT result with chosen <code>nfft</code></li>
-<li>Double-sided frequency, magnitude, and phase vectors</li>
+<li>Unshifted FFT-bin frequency, magnitude, and phase vectors</li>
 <li>Single-sided frequency, magnitude, and phase vectors for even <code>nfft</code></li>
 <li>Single-sided frequency, magnitude, and phase vectors for odd <code>nfft</code></li>
 </ul>
@@ -42,7 +43,7 @@
 <h2 class="anchored" data-anchor-id="method">Method</h2>
 <section id="fft-with-nfft" class="level3">
 <h3 class="anchored" data-anchor-id="fft-with-nfft">FFT with <code>nfft</code></h3>
-<p>Choosing <code>nfft &gt; L</code> zero-pads the signal in time domain and decreases the frequency-bin spacing. This improves spectral display resolution.</p>
+<p>Choosing <code>nfft &gt; L</code> zero-pads the signal in time domain and decreases frequency-bin spacing. This densifies the displayed spectrum but does not increase the true resolving power set by record length and windowing.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">Y</span> <span class="op" style="color: #5E5E5E;
@@ -59,11 +60,11 @@ font-style: inherit;">nfft</span>)<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">;</span></span></code></pre></div></div>
 </section>
-<section id="double-sided-spectrum" class="level3">
-<h3 class="anchored" data-anchor-id="double-sided-spectrum">Double-sided spectrum</h3>
+<section id="unshifted-fft-bin-spectrum-two-sided-content" class="level3">
+<h3 class="anchored" data-anchor-id="unshifted-fft-bin-spectrum-two-sided-content">Unshifted FFT-bin spectrum (two-sided content)</h3>
 <section id="frequency" class="level4">
 <h4 class="anchored" data-anchor-id="frequency">Frequency</h4>
-<p>Use frequency resolution <img src="https://latex.codecogs.com/png.latex?%5CDelta%20f%20=%20Fs%20/%20nfft">.</p>
+<p>Use frequency resolution <img src="https://latex.codecogs.com/png.latex?%5CDelta%20f%20=%20Fs%20/%20nfft">. This unshifted frequency axis runs from <img src="https://latex.codecogs.com/png.latex?0"> to <img src="https://latex.codecogs.com/png.latex?Fs-%5CDelta%20f">.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb2-1"><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">frequencyResolution</span> <span class="op" style="color: #5E5E5E;
@@ -132,6 +133,16 @@ background-color: null;
 font-style: inherit;">;</span></span></code></pre></div></div>
 </section>
 </section>
+<section id="why-some-bins-are-doubled" class="level3">
+<h3 class="anchored" data-anchor-id="why-some-bins-are-doubled">Why some bins are doubled</h3>
+<p>Key idea: you double only bins that lost a distinct mirror partner.</p>
+<p>For real-valued signals, FFT bins satisfy conjugate symmetry: <img src="https://latex.codecogs.com/png.latex?X%5Bk%5D%20=%20X%5E*%5BN-k%5D">. When forming a single-sided spectrum, negative-frequency bins are omitted. Any positive-frequency bin that had a distinct negative-frequency partner should be doubled to preserve one-sided amplitude.</p>
+<ul>
+<li>Never double DC (first bin), because it is self-paired.</li>
+<li>For even <code>nfft</code>, never double Nyquist (<code>Fs/2</code>), because it is also self-paired.</li>
+<li>Double only bins with a distinct partner on the discarded side.</li>
+</ul>
+</section>
 <section id="single-sided-spectrum-even-nfft" class="level3">
 <h3 class="anchored" data-anchor-id="single-sided-spectrum-even-nfft">Single-sided spectrum (even <code>nfft</code>)</h3>
 <section id="frequency-1" class="level4">
@@ -173,7 +184,7 @@ font-style: inherit;">;</span></span></code></pre></div></div>
 </section>
 <section id="magnitude-1" class="level4">
 <h4 class="anchored" data-anchor-id="magnitude-1">Magnitude</h4>
-<p>Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.</p>
+<p>Apply the mirror-partner rule above: do not multiply DC or Nyquist. Scale only bins <code>2</code> through <code>end-1</code>.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb6-1"><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">magnitudeSingleSided_even</span> <span class="op" style="color: #5E5E5E;
@@ -206,7 +217,11 @@ background-color: null;
 font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
-font-style: inherit;">end</span>) <span class="op" style="color: #5E5E5E;
+font-style: inherit;">end</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
 background-color: null;
@@ -221,7 +236,11 @@ background-color: null;
 font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
-font-style: inherit;">end</span>)<span class="op" style="color: #5E5E5E;
+font-style: inherit;">end</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">;</span></span></code></pre></div></div>
 </section>
@@ -299,7 +318,7 @@ font-style: inherit;">;</span></span></code></pre></div></div>
 </section>
 <section id="magnitude-2" class="level4">
 <h4 class="anchored" data-anchor-id="magnitude-2">Magnitude</h4>
-<p>Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.</p>
+<p>Apply the mirror-partner rule above: do not multiply DC. For odd <code>nfft</code> there is no Nyquist bin, so scale bins <code>2</code> through <code>end</code>.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb9-1"><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">magnitudeSingleSided_odd</span> <span class="op" style="color: #5E5E5E;
@@ -615,7 +634,11 @@ background-color: null;
 font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
-font-style: inherit;">end</span>) <span class="op" style="color: #5E5E5E;
+font-style: inherit;">end</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
 background-color: null;
@@ -630,7 +653,11 @@ background-color: null;
 font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
-font-style: inherit;">end</span>)<span class="op" style="color: #5E5E5E;
+font-style: inherit;">end</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">;</span></span>
 <span id="cb12-6"><span class="va" style="color: #111111;
@@ -1044,8 +1071,8 @@ font-style: inherit;">tight</span></span></code></pre></div></div>
 <p>Use this sequence each time:</p>
 <ol type="1">
 <li>Choose <code>nfft</code> and compute <code>Y = fft(x, nfft)</code>.</li>
-<li>Build double-sided vectors from <code>Y</code>.</li>
-<li>Build single-sided vectors by selecting half-spectrum and doubling non-DC magnitude terms.</li>
+<li>Build unshifted FFT-bin vectors from <code>Y</code>.</li>
+<li>Build single-sided vectors by selecting half-spectrum and applying correct scaling: for even <code>nfft</code>, double bins <code>2:end-1</code>; for odd <code>nfft</code>, double bins <code>2:end</code>.</li>
 <li>Use even/odd indexing formulas that match <code>nfft</code> parity.</li>
 </ol>
 

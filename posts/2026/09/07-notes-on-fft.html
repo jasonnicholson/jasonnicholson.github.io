@@ -409,7 +409,8 @@ window.Quarto = {
   <li><a href="#method" id="toc-method" class="nav-link" data-scroll-target="#method">Method</a>
   <ul class="collapse">
   <li><a href="#fft-with-nfft" id="toc-fft-with-nfft" class="nav-link" data-scroll-target="#fft-with-nfft">FFT with <code>nfft</code></a></li>
-  <li><a href="#double-sided-spectrum" id="toc-double-sided-spectrum" class="nav-link" data-scroll-target="#double-sided-spectrum">Double-sided spectrum</a></li>
+  <li><a href="#unshifted-fft-bin-spectrum-two-sided-content" id="toc-unshifted-fft-bin-spectrum-two-sided-content" class="nav-link" data-scroll-target="#unshifted-fft-bin-spectrum-two-sided-content">Unshifted FFT-bin spectrum (two-sided content)</a></li>
+  <li><a href="#why-some-bins-are-doubled" id="toc-why-some-bins-are-doubled" class="nav-link" data-scroll-target="#why-some-bins-are-doubled">Why some bins are doubled</a></li>
   <li><a href="#single-sided-spectrum-even-nfft" id="toc-single-sided-spectrum-even-nfft" class="nav-link" data-scroll-target="#single-sided-spectrum-even-nfft">Single-sided spectrum (even <code>nfft</code>)</a></li>
   <li><a href="#single-sided-spectrum-odd-nfft" id="toc-single-sided-spectrum-odd-nfft" class="nav-link" data-scroll-target="#single-sided-spectrum-odd-nfft">Single-sided spectrum (odd <code>nfft</code>)</a></li>
   </ul></li>
@@ -430,19 +431,20 @@ window.Quarto = {
 
 
 
-<p>This note provides a practical workflow for computing FFT frequency, magnitude, and phase vectors for double-sided and single-sided spectra, including index formulas for both even and odd <code>nfft</code>.</p>
+<p>This note provides a practical workflow for computing FFT frequency, magnitude, and phase vectors for real-valued signals, including index formulas for both even and odd <code>nfft</code>.</p>
 <section id="problem-setup" class="level2">
 <h2 class="anchored" data-anchor-id="problem-setup">Problem setup</h2>
 <ul>
 <li>A vector <code>x</code> with length <code>L</code></li>
 <li>A sample rate <code>Fs</code></li>
+<li><code>x</code> is real-valued</li>
 </ul>
 </section>
 <section id="objectives" class="level2">
 <h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
 <ul>
 <li>FFT result with chosen <code>nfft</code></li>
-<li>Double-sided frequency, magnitude, and phase vectors</li>
+<li>Unshifted FFT-bin frequency, magnitude, and phase vectors</li>
 <li>Single-sided frequency, magnitude, and phase vectors for even <code>nfft</code></li>
 <li>Single-sided frequency, magnitude, and phase vectors for odd <code>nfft</code></li>
 </ul>
@@ -451,14 +453,14 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="method">Method</h2>
 <section id="fft-with-nfft" class="level3">
 <h3 class="anchored" data-anchor-id="fft-with-nfft">FFT with <code>nfft</code></h3>
-<p>Choosing <code>nfft &gt; L</code> zero-pads the signal in time domain and decreases the frequency-bin spacing. This improves spectral display resolution.</p>
+<p>Choosing <code>nfft &gt; L</code> zero-pads the signal in time domain and decreases frequency-bin spacing. This densifies the displayed spectrum but does not increase the true resolving power set by record length and windowing.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">Y</span> <span class="op">=</span> <span class="va">fft</span>(<span class="va">x</span><span class="op">,</span> <span class="va">nfft</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="double-sided-spectrum" class="level3">
-<h3 class="anchored" data-anchor-id="double-sided-spectrum">Double-sided spectrum</h3>
+<section id="unshifted-fft-bin-spectrum-two-sided-content" class="level3">
+<h3 class="anchored" data-anchor-id="unshifted-fft-bin-spectrum-two-sided-content">Unshifted FFT-bin spectrum (two-sided content)</h3>
 <section id="frequency" class="level4">
 <h4 class="anchored" data-anchor-id="frequency">Frequency</h4>
-<p>Use frequency resolution <span class="math inline">\(\Delta f = Fs / nfft\)</span>.</p>
+<p>Use frequency resolution <span class="math inline">\(\Delta f = Fs / nfft\)</span>. This unshifted frequency axis runs from <span class="math inline">\(0\)</span> to <span class="math inline">\(Fs-\Delta f\)</span>.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">frequencyResolution</span> <span class="op">=</span> <span class="va">Fs</span><span class="op">/</span><span class="va">nfft</span><span class="op">;</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">frequencyVectorDoubleSided</span> <span class="op">=</span> (<span class="fl">0</span><span class="op">:</span><span class="va">nfft</span><span class="op">-</span><span class="fl">1</span>)<span class="op">*</span><span class="va">frequencyResolution</span><span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
@@ -471,6 +473,16 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="va">phase</span> <span class="op">=</span> <span class="va">angle</span>(<span class="va">Y</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 </section>
+<section id="why-some-bins-are-doubled" class="level3">
+<h3 class="anchored" data-anchor-id="why-some-bins-are-doubled">Why some bins are doubled</h3>
+<p>Key idea: you double only bins that lost a distinct mirror partner.</p>
+<p>For real-valued signals, FFT bins satisfy conjugate symmetry: <span class="math inline">\(X[k] = X^*[N-k]\)</span>. When forming a single-sided spectrum, negative-frequency bins are omitted. Any positive-frequency bin that had a distinct negative-frequency partner should be doubled to preserve one-sided amplitude.</p>
+<ul>
+<li>Never double DC (first bin), because it is self-paired.</li>
+<li>For even <code>nfft</code>, never double Nyquist (<code>Fs/2</code>), because it is also self-paired.</li>
+<li>Double only bins with a distinct partner on the discarded side.</li>
+</ul>
+</section>
 <section id="single-sided-spectrum-even-nfft" class="level3">
 <h3 class="anchored" data-anchor-id="single-sided-spectrum-even-nfft">Single-sided spectrum (even <code>nfft</code>)</h3>
 <section id="frequency-1" class="level4">
@@ -480,9 +492,9 @@ window.Quarto = {
 </section>
 <section id="magnitude-1" class="level4">
 <h4 class="anchored" data-anchor-id="magnitude-1">Magnitude</h4>
-<p>Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.</p>
+<p>Apply the mirror-partner rule above: do not multiply DC or Nyquist. Scale only bins <code>2</code> through <code>end-1</code>.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_even</span> <span class="op">=</span> <span class="va">magnitudeDoubleSided</span>(<span class="fl">1</span><span class="op">:</span><span class="va">nfft</span><span class="op">/</span><span class="fl">2</span><span class="op">+</span><span class="fl">1</span>)<span class="op">;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>) <span class="op">=</span> <span class="fl">2</span><span class="op">*</span><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>) <span class="op">=</span> <span class="fl">2</span><span class="op">*</span><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="phase-1" class="level4">
 <h4 class="anchored" data-anchor-id="phase-1">Phase</h4>
@@ -498,7 +510,7 @@ window.Quarto = {
 </section>
 <section id="magnitude-2" class="level4">
 <h4 class="anchored" data-anchor-id="magnitude-2">Magnitude</h4>
-<p>Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.</p>
+<p>Apply the mirror-partner rule above: do not multiply DC. For odd <code>nfft</code> there is no Nyquist bin, so scale bins <code>2</code> through <code>end</code>.</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_odd</span> <span class="op">=</span> <span class="va">magnitudeDoubleSided</span>(<span class="fl">1</span><span class="op">:</span>(<span class="va">nfft</span><span class="op">+</span><span class="fl">1</span>)<span class="op">/</span><span class="fl">2</span>)<span class="op">;</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_odd</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>) <span class="op">=</span> <span class="fl">2</span><span class="op">*</span><span class="va">magnitudeSingleSided_odd</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>)<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
@@ -525,7 +537,7 @@ window.Quarto = {
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="va">Y_even</span> <span class="op">=</span> <span class="va">fft</span>(<span class="va">signal</span><span class="op">,</span> <span class="va">nfft_even</span>)<span class="op">;</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeDoubleSided_even</span> <span class="op">=</span> <span class="va">abs</span>(<span class="va">Y_even</span>)<span class="op">./</span><span class="va">L</span><span class="op">;</span></span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_even</span> <span class="op">=</span> <span class="va">magnitudeDoubleSided_even</span>(<span class="fl">1</span><span class="op">:</span><span class="va">nfft_even</span><span class="op">/</span><span class="fl">2</span><span class="op">+</span><span class="fl">1</span>)<span class="op">;</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>) <span class="op">=</span> <span class="fl">2</span><span class="op">*</span><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span>)<span class="op">;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>) <span class="op">=</span> <span class="fl">2</span><span class="op">*</span><span class="va">magnitudeSingleSided_even</span>(<span class="fl">2</span><span class="op">:</span><span class="kw">end</span><span class="op">-</span><span class="fl">1</span>)<span class="op">;</span></span>
 <span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="va">frequencyResolution_even</span> <span class="op">=</span> <span class="va">Fs</span><span class="op">/</span><span class="va">nfft_even</span><span class="op">;</span></span>
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="va">frequencyVectorSingleSided_even</span> <span class="op">=</span> (<span class="fl">0</span><span class="op">:</span><span class="va">nfft_even</span><span class="op">/</span><span class="fl">2</span>)<span class="op">*</span><span class="va">frequencyResolution_even</span><span class="op">;</span></span>
 <span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="va">phase_even</span> <span class="op">=</span> <span class="va">angle</span>(<span class="va">Y_even</span>(<span class="fl">1</span><span class="op">:</span><span class="va">nfft_even</span><span class="op">/</span><span class="fl">2</span><span class="op">+</span><span class="fl">1</span>))<span class="op">;</span></span>
@@ -585,8 +597,8 @@ window.Quarto = {
 <p>Use this sequence each time:</p>
 <ol type="1">
 <li>Choose <code>nfft</code> and compute <code>Y = fft(x, nfft)</code>.</li>
-<li>Build double-sided vectors from <code>Y</code>.</li>
-<li>Build single-sided vectors by selecting half-spectrum and doubling non-DC magnitude terms.</li>
+<li>Build unshifted FFT-bin vectors from <code>Y</code>.</li>
+<li>Build single-sided vectors by selecting half-spectrum and applying correct scaling: for even <code>nfft</code>, double bins <code>2:end-1</code>; for odd <code>nfft</code>, double bins <code>2:end</code>.</li>
 <li>Use even/odd indexing formulas that match <code>nfft</code> parity.</li>
 </ol>
 
