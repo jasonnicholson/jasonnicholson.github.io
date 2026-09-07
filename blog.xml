@@ -10,7 +10,1053 @@
 <atom:link href="https://jasonhnicholson.com/blog.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.10.18</generator>
-<lastBuildDate>Sat, 05 Sep 2026 04:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 07 Sep 2026 04:00:00 GMT</lastBuildDate>
+<item>
+  <title>Notes on FFT</title>
+  <link>https://jasonhnicholson.com/posts/2026/09/07-notes-on-fft.html</link>
+  <description><![CDATA[ 
+
+
+
+
+
+
+<p>This note provides a practical workflow for computing FFT frequency, magnitude, and phase vectors for double-sided and single-sided spectra, including index formulas for both even and odd <code>nfft</code>.</p>
+<section id="problem-setup" class="level2">
+<h2 class="anchored" data-anchor-id="problem-setup">Problem setup</h2>
+<ul>
+<li>A vector <code>x</code> with length <code>L</code></li>
+<li>A sample rate <code>Fs</code></li>
+</ul>
+</section>
+<section id="objectives" class="level2">
+<h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
+<ul>
+<li>FFT result with chosen <code>nfft</code></li>
+<li>Double-sided frequency, magnitude, and phase vectors</li>
+<li>Single-sided frequency, magnitude, and phase vectors for even <code>nfft</code></li>
+<li>Single-sided frequency, magnitude, and phase vectors for odd <code>nfft</code></li>
+</ul>
+</section>
+<section id="method" class="level2">
+<h2 class="anchored" data-anchor-id="method">Method</h2>
+<section id="fft-with-nfft" class="level3">
+<h3 class="anchored" data-anchor-id="fft-with-nfft">FFT with <code>nfft</code></h3>
+<p>Choosing <code>nfft &gt; L</code> zero-pads the signal in time domain and decreases the frequency-bin spacing. This improves spectral display resolution.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb1-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">fft</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">x</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+<section id="double-sided-spectrum" class="level3">
+<h3 class="anchored" data-anchor-id="double-sided-spectrum">Double-sided spectrum</h3>
+<section id="frequency" class="level4">
+<h4 class="anchored" data-anchor-id="frequency">Frequency</h4>
+<p>Use frequency resolution <img src="https://latex.codecogs.com/png.latex?%5CDelta%20f%20=%20Fs%20/%20nfft">.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb2-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Fs</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb2-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorDoubleSided</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+<section id="magnitude" class="level4">
+<h4 class="anchored" data-anchor-id="magnitude">Magnitude</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb3-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeDoubleSided</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">abs</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">./</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">L</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+<section id="phase" class="level4">
+<h4 class="anchored" data-anchor-id="phase">Phase</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb4-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">phase</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">angle</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+</section>
+<section id="single-sided-spectrum-even-nfft" class="level3">
+<h3 class="anchored" data-anchor-id="single-sided-spectrum-even-nfft">Single-sided spectrum (even <code>nfft</code>)</h3>
+<section id="frequency-1" class="level4">
+<h4 class="anchored" data-anchor-id="frequency-1">Frequency</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb5-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Fs</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb5-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+<section id="magnitude-1" class="level4">
+<h4 class="anchored" data-anchor-id="magnitude-1">Magnitude</h4>
+<p>Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb6-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeDoubleSided</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb6-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_even</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_even</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+<section id="phase-1" class="level4">
+<h4 class="anchored" data-anchor-id="phase-1">Phase</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb7-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">phase_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">angle</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+</section>
+<section id="single-sided-spectrum-odd-nfft" class="level3">
+<h3 class="anchored" data-anchor-id="single-sided-spectrum-odd-nfft">Single-sided spectrum (odd <code>nfft</code>)</h3>
+<section id="frequency-2" class="level4">
+<h4 class="anchored" data-anchor-id="frequency-2">Frequency</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb8-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Fs</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb8-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+<section id="magnitude-2" class="level4">
+<h4 class="anchored" data-anchor-id="magnitude-2">Magnitude</h4>
+<p>Do not multiply the first element by 2 because it is the DC (mean) term. Scale the remaining terms by 2 to account for the omitted negative-frequency half.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb9-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeDoubleSided</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb9-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_odd</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_odd</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+<section id="phase-2" class="level4">
+<h4 class="anchored" data-anchor-id="phase-2">Phase</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb10-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">phase_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">angle</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>))<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+</section>
+</section>
+</section>
+<section id="example" class="level2">
+<h2 class="anchored" data-anchor-id="example">Example</h2>
+<p>This example uses a signal with non-zero mean, one low-frequency sinusoid, and one high-frequency sinusoid.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb11-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">clc</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">clear</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">close</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">all</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb11-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Fs</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2001</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span> <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">% Hz</span></span>
+<span id="cb11-3"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">time</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Fs</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb11-4"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signalMean</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb11-5"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signalLowFrequencyComponent</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">sin</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">pi</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">time</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">45</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">180</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">pi</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb11-6"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signalHighFrequencyComponent</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">cos</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">pi</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">94</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">time</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">pi</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">180</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb11-7"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signal</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signalMean</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signalLowFrequencyComponent</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signalHighFrequencyComponent</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb11-8"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">L</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">length</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signal</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span></code></pre></div></div>
+<section id="even-nfft-calculations" class="level3">
+<h3 class="anchored" data-anchor-id="even-nfft-calculations">Even <code>nfft</code> calculations</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb12-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">16384</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">fft</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signal</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_even</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-3"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeDoubleSided_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">abs</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y_even</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">./</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">L</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-4"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeDoubleSided_even</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-5"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_even</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_even</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-6"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Fs</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-7"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-8"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">phase_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">angle</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y_even</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>))<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb12-9"></span>
+<span id="cb12-10"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">figure</span></span>
+<span id="cb12-11"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">subplot</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb12-12"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">semilogy</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_even</span>)</span>
+<span id="cb12-13"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">xlabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Frequency [Hz]'</span>)</span>
+<span id="cb12-14"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ylabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Magnitude [-]'</span>)</span>
+<span id="cb12-15"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">axis</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">tight</span></span>
+<span id="cb12-16"></span>
+<span id="cb12-17"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">subplot</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb12-18"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">plot</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">phase_even</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">180</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">pi</span>)</span>
+<span id="cb12-19"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">xlabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Frequency [Hz]'</span>)</span>
+<span id="cb12-20"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ylabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Phase [deg]'</span>)</span>
+<span id="cb12-21"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">axis</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">tight</span></span></code></pre></div></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://jasonhnicholson.com/posts/2026/09/figure01.png" class="img-fluid figure-img"></p>
+<figcaption>Even nfft spectrum</figcaption>
+</figure>
+</div>
+</section>
+<section id="odd-nfft-calculations" class="level3">
+<h3 class="anchored" data-anchor-id="odd-nfft-calculations">Odd <code>nfft</code> calculations</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode matlab code-with-copy"><code class="sourceCode matlab"><span id="cb13-1"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_even</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-2"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">fft</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">signal</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_odd</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-3"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeDoubleSided_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">abs</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y_odd</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">./</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">L</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-4"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeDoubleSided_odd</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-5"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_odd</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_odd</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">end</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-6"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Fs</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-7"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyResolution_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-8"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">phase_odd</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">angle</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">Y_odd</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">nfft_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>))<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">;</span></span>
+<span id="cb13-9"></span>
+<span id="cb13-10"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">figure</span></span>
+<span id="cb13-11"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">subplot</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb13-12"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">semilogy</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">magnitudeSingleSided_odd</span>)</span>
+<span id="cb13-13"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">xlabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Frequency [Hz]'</span>)</span>
+<span id="cb13-14"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ylabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Magnitude [-]'</span>)</span>
+<span id="cb13-15"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">axis</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">tight</span></span>
+<span id="cb13-16"></span>
+<span id="cb13-17"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">subplot</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb13-18"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">plot</span>(<span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">frequencyVectorSingleSided_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">,</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">phase_odd</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">180</span><span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">pi</span>)</span>
+<span id="cb13-19"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">xlabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Frequency [Hz]'</span>)</span>
+<span id="cb13-20"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">ylabel</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Phase [deg]'</span>)</span>
+<span id="cb13-21"><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">axis</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">tight</span></span></code></pre></div></div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://jasonhnicholson.com/posts/2026/09/figure02.png" class="img-fluid figure-img"></p>
+<figcaption>Odd nfft spectrum</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<p>Use this sequence each time:</p>
+<ol type="1">
+<li>Choose <code>nfft</code> and compute <code>Y = fft(x, nfft)</code>.</li>
+<li>Build double-sided vectors from <code>Y</code>.</li>
+<li>Build single-sided vectors by selecting half-spectrum and doubling non-DC magnitude terms.</li>
+<li>Use even/odd indexing formulas that match <code>nfft</code> parity.</li>
+</ol>
+
+
+</section>
+
+ ]]></description>
+  <category>MATLAB</category>
+  <guid>https://jasonhnicholson.com/posts/2026/09/07-notes-on-fft.html</guid>
+  <pubDate>Mon, 07 Sep 2026 04:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Learning Python as an Experienced Programmer</title>
   <link>https://jasonhnicholson.com/posts/2026/09/05-learning-python-as-an-experience-programmer.html</link>
@@ -208,6 +1254,9 @@ font-style: inherit;">2</span></span></code></pre></div></div>
 <h2 class="anchored" data-anchor-id="recommended-reading">Recommended Reading</h2>
 <ul>
 <li><a href="https://learnxinyminutes.com/python/">Learn X in Y minutes</a> A single runnable page containing entire language syntax with rapid commentary for experienced programmers.</li>
+<li><a href="https://docs.python.org/3/library/index.html">Python Standard Library</a></li>
+<li><a href="https://docs.python.org/3/reference/index.html">The Python Language Reference</a></li>
+<li><a href="https://docs.python.org/3/howto/index.html">Python HOWTOs</a></li>
 </ul>
 
 
@@ -3070,178 +4119,6 @@ font-style: inherit;">"Newton-Raphson Convergence for z^5+z^2-z+1 with Fixed-Poi
   <guid>https://jasonhnicholson.com/posts/2026/08/21-newton-step-driven-by-fixed-point-theorem.html</guid>
   <pubDate>Fri, 21 Aug 2026 04:00:00 GMT</pubDate>
   <media:content url="https://jasonhnicholson.com/posts/2026/08/figure_01.png" medium="image" type="image/png" height="94" width="144"/>
-</item>
-<item>
-  <title>Sphinx Extension Learning</title>
-  <link>https://jasonhnicholson.com/posts/2026/08/23-sphinx-extension-learning.html</link>
-  <description><![CDATA[ 
-
-
-
-
-
-
-<p>This article is an aggregation of my notes about writing a Sphinx extension.</p>
-<section id="definitions" class="level2">
-<h2 class="anchored" data-anchor-id="definitions">Definitions</h2>
-<ul>
-<li><p><strong>builder</strong>: A class (inheriting from Builder) that takes parsed documents and performs an action on them. Normally, builders translate the documents to an output format, but it is also possible to use builders that check for broken links or coverage information.</p></li>
-<li><p><strong>directive</strong>: A rStructuredText markup element that allows marking a block of content with special meaning. Directes are supplied not only by docutils, but Sphinx and custom extension can add their own. The basic directive syntax looks like this:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode rst code-with-copy"><code class="sourceCode rest"><span id="cb1-1"><span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">.. directive-name:: </span>argument ...</span>
-<span id="cb1-2">  <span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">:option-name:</span> option-value</span>
-<span id="cb1-3"></span>
-<span id="cb1-4">  Content of the directive.</span></code></pre></div></div></li>
-<li><p><strong>domain</strong>: A domain is a collection of markup (reStructuredText directives and roles) to describe and link to objects belonging together, e.g.&nbsp;elements of a programming language. Directive and role names in a domain have names like <code>domain:name</code>, e.g.&nbsp;<code>py:function</code>. Having domains means that there are no namin problems when one set of documentation wants to refer to e.g.&nbsp;C++ and Python classes. It also means that extensions that support the documentation of whole new languages are much easier to write.</p></li>
-<li><p><strong>environment</strong>: A structure where information about all documents under the root is saved, and used for cross-referencing. The environment is pickled after the parsing stage, so that successive runs only need to read and parse new and changed documents.</p></li>
-<li><p><strong>role</strong>: A reStructuredText markup element that allows marking a piece of text. Like directives, roles are extensible. The basic syntax looks like this:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode rst code-with-copy"><code class="sourceCode rest"><span id="cb2-1"><span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">:rolename:</span><span class="dv" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">`content`</span></span></code></pre></div></div></li>
-</ul>
-</section>
-<section id="linting-sphinx-in-vs-code" class="level2">
-<h2 class="anchored" data-anchor-id="linting-sphinx-in-vs-code">Linting Sphinx in VS Code</h2>
-<section id="configure-vs-code-for-sphinx-aware-linting" class="level3">
-<h3 class="anchored" data-anchor-id="configure-vs-code-for-sphinx-aware-linting">Configure VS Code for Sphinx-aware linting</h3>
-<p>For a project with custom Sphinx directives/roles, the right setup is: - Use Esbonio, not the generic reStructuredText linters. - Point Esbonio at the same Python environment that runs your Sphinx build. - Keep the generic linters disabled for this project.</p>
-<p>My project already registers custom extensions in <code>conf.py</code>, and the directive is implemented in <code>custom.py</code>. That is exactly the kind of setup plain RST lint tools cannot understand.</p>
-</section>
-<section id="recommended-vs-code-settings" class="level3">
-<h3 class="anchored" data-anchor-id="recommended-vs-code-settings">Recommended VS Code settings</h3>
-<p><code>doc8</code>, <code>rstcheck</code>, and <code>rst-lint</code> are generic linters that do not load your Sphinx app, so they cannot understand custom directives or roles. Disable them for this workspace.</p>
-<p>Use settings like these in <code>settings.json</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">{</span></span>
-<span id="cb3-2">  <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">"restructuredtext.linter.disabledLinters"</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">[</span></span>
-<span id="cb3-3">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"doc8"</span><span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-4">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"rstcheck"</span><span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-5">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"rst-lint"</span></span>
-<span id="cb3-6">  <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">]</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-7">  <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">"esbonio.sphinx.pythonCommand"</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">[</span></span>
-<span id="cb3-8">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"${workspaceFolder}/.venv/bin/python"</span></span>
-<span id="cb3-9">  <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">]</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-10">  <span class="dt" style="color: #AD0000;
-background-color: null;
-font-style: inherit;">"esbonio.sphinx.buildArguments"</span><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">[</span></span>
-<span id="cb3-11">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"sphinx-build"</span><span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-12">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"-M"</span><span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-13">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"html"</span><span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-14">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"docs/source"</span><span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">,</span></span>
-<span id="cb3-15">    <span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"docs/build"</span></span>
-<span id="cb3-16">  <span class="ot" style="color: #003B4F;
-background-color: null;
-font-style: inherit;">]</span></span>
-<span id="cb3-17"><span class="fu" style="color: #4758AB;
-background-color: null;
-font-style: inherit;">}</span></span></code></pre></div></div>
-</section>
-<section id="install-the-right-extensions" class="level3">
-<h3 class="anchored" data-anchor-id="install-the-right-extensions">Install the right extensions</h3>
-<ul>
-<li>Install the VS Code extension: <code>swyddfa.esbonio</code></li>
-<li>Keep the Python extension enabled so Esbonio can locate the interpreter</li>
-</ul>
-<hr>
-</section>
-<section id="why-this-is-the-correct-fix" class="level3">
-<h3 class="anchored" data-anchor-id="why-this-is-the-correct-fix">Why this is the correct fix</h3>
-<p>Generic linters parse raw reStructuredText and only know built-in docutils directives. They do not load your Sphinx app and therefore cannot understand custom entries such as:</p>
-<ul>
-<li><code>.. todo::</code></li>
-<li><code>.. somecustomdirective::</code></li>
-<li>roles added with <code>app.add_role(...)</code></li>
-</ul>
-<p>Esbonio does run a Sphinx process and loads the project config, so it sees the registration from <code>conf.py</code> and the extension logic in <code>custom.py</code>. That is why it can validate custom directives and roles correctly.</p>
-<hr>
-</section>
-<section id="important-rule" class="level3">
-<h3 class="anchored" data-anchor-id="important-rule">Important rule</h3>
-<p>Do not use <code>ignore-directives</code> for custom Sphinx directives if your goal is correct linting.<br>
-Instead: - register the directive in Sphinx, - point Esbonio to the project Python environment, - disable the generic doc8/rstcheck/rst-lint linters for this workspace.</p>
-<p>This is the clean Sphinx-native approach.</p>
-</section>
-</section>
-<section id="notes-on-building-a-sphinx-extension" class="level2">
-<h2 class="anchored" data-anchor-id="notes-on-building-a-sphinx-extension">Notes on building a Sphinx extension</h2>
-<ul>
-<li>Creating a custom builder is likely a great idea to lint/check source code documentation. Inputs, Outputs, examples, and other things could be checked for consistency and correctness.</li>
-<li>Tie into the event system is key. Need to dig in here.</li>
-<li>docutils is the base library for Sphinx, so it is important to understand the docutils vocubulary. Sphinx is based on this vocabulary, but adds its own concepts (like builders, domains, and environments).</li>
-<li>I don’t get configuring builder yet. https://www.sphinx-doc.org/en/master/development/howtos/builders.html</li>
-<li>Any defined config values should begin with the plugin name. This avoids collisions with other extensions. For example, if your extension is called <code>myext</code>, then config values should be named like <code>myext_somevalue</code>.</li>
-<li></li>
-</ul>
-
-
-</section>
-
- ]]></description>
-  <category>documentation</category>
-  <category>code</category>
-  <guid>https://jasonhnicholson.com/posts/2026/08/23-sphinx-extension-learning.html</guid>
-  <pubDate>Fri, 21 Aug 2026 04:00:00 GMT</pubDate>
 </item>
 <item>
   <title>Reference to World’s Toughest Mudder 2016: A Cautionary Tale</title>
