@@ -319,10 +319,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | The row-sum condition is presented as necessary for fixed-point convergence | verified | open |
-| F2 | Minor | Page match | Case 2 Behavior describes the geometry wrongly | unverified | open |
-| F3 | Minor | Page match | Case 1 start is not "between the two curves" | unverified | open |
-| F4 | Minor | Page match | "\|g'(x*)\| ≈ 0" is scalar notation that this 2D page does not define | unverified | open |
+| F1 | Misleading | Page match | The row-sum condition is presented as necessary for fixed-point convergence | verified | fixed — [fix record](../fixes/nonlinear-systems.md) |
+| F2 | Minor | Page match | Case 2 Behavior describes the geometry wrongly | unverified | fixed — [fix record](../fixes/nonlinear-systems.md) |
+| F3 | Minor | Page match | Case 1 start is not "between the two curves" | unverified | fixed — [fix record](../fixes/nonlinear-systems.md) |
+| F4 | Minor | Page match | "\|g'(x*)\| ≈ 0" is scalar notation that this 2D page does not define | unverified | fixed — [fix record](../fixes/nonlinear-systems.md) |
 
 ### Secant Method — `secant-method` · [round-1 report](../secant-method.md)
 
