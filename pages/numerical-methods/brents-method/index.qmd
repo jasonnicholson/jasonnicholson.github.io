@@ -11,11 +11,11 @@ Source inspiration: [@mathewsSite].
 
 **Brent's method**, developed by Richard Brent in 1971 based on earlier work by van Wijngaarden, Zonneveld, and Dijkstra (1963), Wilkinson (1967), Dekker (1969), and others, is a hybrid root-finding algorithm that guarantees convergence while achieving fast (superlinear) convergence whenever possible. It requires only that the function $f$ be continuous on $[a, b]$ with $f(a)$ and $f(b)$ of opposite sign — no derivatives are needed.
 
-The method maintains a bracket $[a, b]$ that always contains a root, and intelligently selects among three sub-methods at each step:
+The method maintains a bracket that always contains a root, and intelligently selects among three sub-methods at each step:
 
-1. **Inverse quadratic interpolation** — fits a quadratic through the three most recent points $(a, f(a))$, $(b, f(b))$, $(c, f(c))$ and uses the $x$-intercept of that quadratic. Converges superlinearly near a simple root.
-2. **Secant method (regula falsi)** — uses a chord through the two most recent points as a fallback when inverse quadratic interpolation cannot be used.
-3. **Bisection** — used as a safeguard whenever neither of the above produces a sufficiently good step; guarantees the bracket shrinks by at least half.
+1. **Inverse quadratic interpolation** — fits a quadratic through the three points $(a, f(a))$, $(b, f(b))$, $(c, f(c))$ and uses the $x$-intercept of that quadratic. Converges superlinearly near a simple root.
+2. **Secant method (regula falsi)** — uses the chord through $(a, f(a))$ and $(b, f(b))$ as a fallback when inverse quadratic interpolation cannot be used (only two distinct points, $a = c$).
+3. **Bisection** — used as a safeguard whenever interpolation is not making enough progress; guarantees the bracket shrinks by at least half.
 
 ### State Variables
 
@@ -23,7 +23,7 @@ At a typical step, Brent's method tracks three points — $a$, $b$, $c$ — sati
 
 $$f(b) \cdot f(c) \leq 0, \qquad |f(b)| \leq |f(c)|$$
 
-so that $b$ is the **current best approximation** to the root and $a$ is the previous value of $b$. The root is guaranteed to lie in either $[b, c]$ or $[a, b]$.
+so that $b$ is the **current best approximation** to the root and the root always lies between $b$ and $c$. The third point $a$ is the previous value of $b$ (or coincides with $c$) and supplies the extra point for interpolation.
 
 ### Inverse Quadratic Interpolation Formula
 
@@ -31,17 +31,17 @@ Given function values $y_a = f(a)$, $y_b = f(b)$, $y_c = f(c)$, the next estimat
 
 $$s = \frac{y_b \, y_c}{(y_a - y_b)(y_a - y_c)}\,a + \frac{y_a \, y_c}{(y_b - y_a)(y_b - y_c)}\,b + \frac{y_a \, y_b}{(y_c - y_a)(y_c - y_b)}\,c$$
 
-This step is accepted only if $s$ falls inside the current bracket and the method is making adequate progress; otherwise bisection or secant is used instead.
+This step is accepted only if $s$ falls inside the current bracket and the method is making adequate progress; otherwise a bisection step is taken instead.
 
 ### Secant Method Formula
 
-When only two distinct function values are available (or IQI is rejected), the method falls back to the secant step:
+When only two distinct points are available ($a = c$), the method uses the secant step instead of IQI:
 
 $$s = b - f(b) \cdot \frac{b - a}{f(b) - f(a)}$$
 
 ### Convergence
 
-- **Guaranteed**: At worst, the method halves the bracket at every other step (like bisection), ensuring $O(2^{-n})$ convergence.
+- **Guaranteed**: Brent's method always keeps the root bracketed and converges. Its safeguards take a bisection instead of an interpolation step that would not stay within about three quarters of the way from $b$ to $c$, or that is not smaller than half the step before last. This does not make it at least as fast as bisection: for the very flat $f(x) = x^9$ on $[-1, 2]$ it needs 96 function evaluations to shrink the bracket below $10^{-10}$, where bisection needs 37.
 - **Fast case**: When IQI applies consistently near a simple root, convergence is superlinear with order approximately 1.839 (the positive real root of $t^3 = t^2 + t + 1$).
 - **Robustness**: Unlike the secant method or IQI alone, Brent's method cannot fail to converge as long as the initial bracket is valid and $f$ is continuous.
 
@@ -57,23 +57,23 @@ $$s = b - f(b) \cdot \frac{b - a}{f(b) - f(a)}$$
 
 ## Animations
 
-Each animation below shows the **bracket-narrowing diagram** for Brent's method. The shaded region marks the current bracket $[a, b]$ known to contain a root. The red dot tracks $b$, the best current approximation (the endpoint with the smallest $|f|$ value). The step annotation indicates which sub-method — Bisection, Secant, or IQI — was selected at that iteration.
+Each animation below shows the **bracket-narrowing diagram** for Brent's method. The shaded region marks the current bracket between $b$ and $c$, known to contain a root. The red dot tracks $b$, the best current approximation (the endpoint with the smallest $|f|$ value). The step annotation indicates which sub-method — Bisection, Secant, or IQI — was selected at that iteration; "Min step" marks a step shorter than the tolerance ($\approx 5\times10^{-11}$), which the method replaces by a step of that minimum length.
 
 Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Polynomial root, $f(x) = 4x^3 - 16x^2 + 17x - 4$, $[a_0, b_0] = [0, 1]$
 
-**Behavior:** $f(0) = -4 < 0$ and $f(1) = 1 > 0$, so the IVT guarantees a root in $[0, 1]$. The true root is $x^* \approx 0.3268$. Brent's method begins with secant steps and quickly switches to IQI, converging superlinearly. This illustrates the method's efficiency near a simple root — far fewer iterations than bisection or regula falsi would require.
+**Behavior:** $f(0) = -4 < 0$ and $f(1) = 1 > 0$, so the IVT guarantees a root in $[0, 1]$. The true root is $x^* \approx 0.3285$. Brent's method takes 8 steps: secant, bisection, IQI, secant, IQI, secant, secant, IQI. At step 3 the IQI point $0.2276$ has the larger $|f|$, so it becomes the other end of the bracket and $b$ stays at $0.4$. After the bisection at step 2 every step is an interpolation step, and at steps 5–8 the error in $b$ falls to $3.2\times10^{-4}$, $5.5\times10^{-6}$, $2.7\times10^{-9}$ and $4.0\times10^{-19}$: at step 8 $b$ is the double-precision number nearest the root, and $f(b)$ evaluates to exactly 0. To get within $10^{-10}$ of the root on $[0, 1]$, bisection needs 32 iterations and regula falsi 24.
 
 [Julia source](brentsaa.jl)
 
-![Brent's Method on f(x)=4x³−16x²+17x−4: bracket narrows from [0,1] to the root at x≈0.3268, with step labels showing bisection, secant, and IQI selections](brentsaa.gif)
+![Brent's Method on f(x)=4x³−16x²+17x−4: bracket narrows from [0,1] to the root at x≈0.3285 in 8 steps, with step labels showing bisection, secant, and IQI selections](brentsaa.gif)
 
 ### Case 2 — Transcendental equation, $f(x) = \tan(x) - 2x$, $[a_0, b_0] = [0.5, 1.5]$
 
-**Behavior:** The non-trivial root of $\tan(x) = 2x$ lies at $x^* \approx 1.1656$. $f(0.5) = \tan(0.5) - 1 \approx -0.454 < 0$ and $f(1.5) = \tan(1.5) - 3 \approx 11.1 > 0$. Brent's method converges in a handful of steps, while the Regula Falsi method requires ≈ 243 iterations on this same interval — because $f(1.5)$ is so large that the chord always lands near $x = 0.5$, leaving the right endpoint stationary. Brent's safeguards against exactly this pathology.
+**Behavior:** The non-trivial root of $\tan(x) = 2x$ lies at $x^* \approx 1.1656$. $f(0.5) = \tan(0.5) - 1 \approx -0.454 < 0$ and $f(1.5) = \tan(1.5) - 3 \approx 11.1 > 0$. Brent's method takes 10 steps: secant, two bisections, then secant, IQI, secant, secant, IQI, secant and a final minimum step, which leaves the root inside a bracket of width $5\times10^{-11}$ with $b \approx 1.1655611852$ at one end. The bisection at step 3 moves the right end of the bracket off $x = 1.5$, to $1.2598$. Regula Falsi, by contrast, needs 165 iterations to get within $10^{-10}$ of the root on this same interval: $f$ is convex here, so every chord lands left of the root, the right endpoint stays at $1.5$, and the error eventually shrinks only by a factor of about 0.87 per iteration.
 
 [Julia source](brentsbb.jl)
 
-![Brent's Method on f(x)=tan(x)−2x: bracket narrows from [0.5,1.5] to the root at x≈1.1656, converging in a few steps despite the function blowing up near the π/2 asymptote](brentsbb.gif)
+![Brent's Method on f(x)=tan(x)−2x: bracket narrows from [0.5,1.5] to the root at x≈1.1656, converging in 10 steps despite the function blowing up near the π/2 asymptote](brentsbb.gif)
 

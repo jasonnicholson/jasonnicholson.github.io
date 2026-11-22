@@ -213,13 +213,13 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Case 1 root is quoted as 0.3268; the true root is 0.32854 | verified | open |
-| F2 | Error | Page match | Case 1 Behavior misstates the sequence of steps | verified | open |
-| F3 | Error | Page match | The Description says a rejected IQI step falls back to the secant step | verified | open |
-| F4 | Misleading | Implementation | The scripts run a modified Wikipedia pseudocode variant, not Brent's algorithm, and its step labels differ from Brent's | verified | open |
-| F5 | Misleading | Page match | The Description's convergence guarantee is false | verified | open |
-| F6 | Minor | Page match | Case 2's comparison with regula falsi: "≈ 243 iterations" cannot be reproduced, and "chord always lands near x = 0.5" is wrong | unverified | open |
-| F7 | Minor | Page match | The Description mixes two incompatible labelings of a, b, c | unverified | open |
+| F1 | Error | Page match | Case 1 root is quoted as 0.3268; the true root is 0.32854 | verified | fixed — [fix record](../fixes/brents-method.md) |
+| F2 | Error | Page match | Case 1 Behavior misstates the sequence of steps | verified | fixed — [fix record](../fixes/brents-method.md) |
+| F3 | Error | Page match | The Description says a rejected IQI step falls back to the secant step | verified | fixed — [fix record](../fixes/brents-method.md) |
+| F4 | Misleading | Implementation | The scripts run a modified Wikipedia pseudocode variant, not Brent's algorithm, and its step labels differ from Brent's | verified | fixed — [fix record](../fixes/brents-method.md) |
+| F5 | Misleading | Page match | The Description's convergence guarantee is false | verified | fixed — [fix record](../fixes/brents-method.md) |
+| F6 | Minor | Page match | Case 2's comparison with regula falsi: "≈ 243 iterations" cannot be reproduced, and "chord always lands near x = 0.5" is wrong | unverified | fixed — [fix record](../fixes/brents-method.md) |
+| F7 | Minor | Page match | The Description mixes two incompatible labelings of a, b, c | unverified | fixed — [fix record](../fixes/brents-method.md) |
 
 ### Broyden's Method — `broydens-method` · [round-1 report](../broydens-method.md)
 
