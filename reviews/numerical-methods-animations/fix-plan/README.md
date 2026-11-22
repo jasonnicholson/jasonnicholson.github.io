@@ -153,6 +153,16 @@ These apply when fixing from `reviews/numerical-methods-animations-r3`. Where th
 - Move it on Accelerated Newton, Aitken-Steffensen, Aitken/Neville, Bézier, Broyden, Catenary, Cubic Splines, Halley, Hermite, Monte Carlo π, Nonlinear Systems, Numerical Differentiation, Tangent Parabola and 2D Trapezoidal/Simpson.
 - On pages with no round-3 findings, the move is the only change.
 
+## Round 4 decisions (Jason, 2026-11-22)
+
+These apply when fixing from `reviews/numerical-methods-animations-r4`. They take precedence over earlier decisions. D1–D8, R2-A, R2-B, R2-D, R3-A, R3-B and R3-D still apply. R3-C (Muller parked) is lifted.
+
+**R4-A — Muller F1: tighten the window.** Make Case 1's central claim visible in every frame: none of the parabolas reaches the x-axis, and the vertex marker shows. Zoom each frame around the current triple, as the review suggests: x in [min(q) − δ, max(q) + δ], with the y-range scaled to max |f(q)|. Keep the true values in labels.
+
+**R4-B — Muller F2: accept the review's suggestion.** Add one sentence to Case 1 saying that Mathews' own program handles the complex case differently, and what his iterates do. Compute the rule and the iterates before writing them. The review's draft is: "it drops the square root, giving p₃ = p₂ − 2f(p₂)/b … iterates 1.1091, 1.4944, 1.0558, 0.9965, … oscillate around 1". Keep the page's own rule; do not animate Mathews' rule.
+
+**R4-C — Aitken-Steffensen F1: fix it by naming the reference.** The final Steffensen error is 5.7 × 10⁻¹⁶ against the true √2, and 6.7 × 10⁻¹⁶ (three units in the last place) against the rounded double fl(√2). Say which one the page quotes, or give both with their references. Make the Behavior text, the alt text and any value the frames print agree.
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
