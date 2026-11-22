@@ -50,7 +50,8 @@ anim = @animate for n in n_intervals_list
     plot(size=(700, 500),
          xlims=(0.0, 2π), ylims=(-1.4, 1.4),
          xlabel="x", ylabel="y",
-         title="Piecewise Cubic Hermite for sin(x) — $n interval$(n==1 ? "" : "s")  (max err ≈ $(round(err, sigdigits=3)))",
+         # Short title so the 3-significant-figure error fits in the 700-px frame
+         title="Cubic Hermite for sin(x), n = $n  (max err ≈ $(round(err, sigdigits=3)))",
          legend=:topright, grid=true, framestyle=:box,
          background_color=:white)
 

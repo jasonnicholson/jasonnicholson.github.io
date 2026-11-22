@@ -388,9 +388,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | The "doubling n cuts the error by ≈16" claim is contradicted by the frames shown | verified | open |
-| F2 | Minor | Implementation | The Case 1 frame titles are cut off and hide the error value | unverified | open |
-| F3 | Minor | Implementation | Case 2 y-limits clip the first two stages, so the basis-function behaviour the page describes is hidden | unverified | open |
+| F1 | Misleading | Page match | The "doubling n cuts the error by ≈16" claim is contradicted by the frames shown | verified | fixed — [fix record](../fixes/hermite-polynomial-interpolation.md) |
+| F2 | Minor | Implementation | The Case 1 frame titles are cut off and hide the error value | unverified | fixed — [fix record](../fixes/hermite-polynomial-interpolation.md) |
+| F3 | Minor | Implementation | Case 2 y-limits clip the first two stages, so the basis-function behaviour the page describes is hidden | unverified | fixed — [fix record](../fixes/hermite-polynomial-interpolation.md) |
 
 ### Least Squares Lines — `least-squares-lines` · [round-1 report](../least-squares-lines.md)
 

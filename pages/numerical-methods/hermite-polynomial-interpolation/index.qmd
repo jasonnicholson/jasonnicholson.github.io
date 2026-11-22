@@ -25,17 +25,17 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Piecewise cubic Hermite for $\sin(x)$, refining the mesh
 
-**Behavior:** Piecewise cubic Hermite interpolation uses $n$ subintervals, each carrying a cubic polynomial that matches $f$ and $f'$ at its two endpoints. Doubling $n$ decreases the maximum error by approximately $2^4 = 16$, consistent with the $O(h^4)$ convergence rate.
+**Behavior:** Piecewise cubic Hermite interpolation uses $n$ subintervals, each carrying a cubic polynomial that matches $f$ and $f'$ at its two endpoints. The maximum errors in the four frames are 0.425, 0.215, 0.0108 and 0.000906, so the doublings shown divide the error by about 2.0, 19.9 and 11.9. For smooth $f$ the error is $O(h^4)$, but these coarse meshes are not yet in the asymptotic range; the ratio approaches $2^4 = 16$ only on finer meshes (15.0 for $n = 8 \to 16$, 15.7 for $16 \to 32$, 15.9 for $32 \to 64$).
 
 [Julia source](hermitepolyaa.jl)
 
-![Piecewise cubic Hermite interpolation of sin(x) on 0 to 2pi, showing n=1,2,4,8 intervals; the error shrinks rapidly as the mesh is refined](hermitepolyaa.gif)
+![Piecewise cubic Hermite interpolation of sin(x) on 0 to 2pi, showing n=1,2,4,8 intervals; the maximum error falls from 0.425 at n=1 to 0.000906 at n=8](hermitepolyaa.gif)
 
 ### Case 2 — Hermite basis functions building the interpolant of $e^x$ on $[0,1]$
 
-**Behavior:** The four cubic Hermite basis functions $H_{00}$, $H_{10}$, $H_{01}$, $H_{11}$ each carry one degree of freedom (a value or derivative at an endpoint). Their weighted combination $H(x) = y_0 H_{00} + h y_0' H_{10} + y_1 H_{01} + h y_1' H_{11}$ equals the true function at both endpoints and matches the slope there.
+**Behavior:** The four cubic Hermite basis functions $H_{00}$, $H_{10}$, $H_{01}$, $H_{11}$ each carry one degree of freedom (a value or derivative at an endpoint). Their weighted combination $H(x) = y_0 H_{00} + h y_0' H_{10} + y_1 H_{01} + h y_1' H_{11}$ equals the true function at both endpoints and matches the slope there. The frames add the weighted terms one at a time and draw the running sum; the first two partial sums fall to 0 with zero slope at $x = 1$, because $H_{00}$ and $H_{10}$ have zero value and zero slope there.
 
 [Julia source](hermitepolybb.jl)
 
-![Four Hermite basis function contributions for e^x on [0,1] revealed one at a time and summed to form the complete cubic Hermite interpolant](hermitepolybb.gif)
+![Running sum of the four weighted Hermite basis terms for e^x on [0,1], adding one term per frame until it forms the complete cubic Hermite interpolant](hermitepolybb.gif)
 

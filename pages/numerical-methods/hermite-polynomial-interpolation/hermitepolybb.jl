@@ -37,7 +37,8 @@ stages = [
 
 anim = @animate for (label, cumulative, clr, lbl) in stages
     plot(size=(700, 500),
-         xlims=(a, b), ylims=(0.8, 3.0),
+         # Lower limit below 0 so the first two partial sums, which fall to 0 at x = 1, stay in view
+         xlims=(a, b), ylims=(-0.2, 3.0),
          xlabel="x", ylabel="y",
          title="Hermite basis: $label",
          legend=:topleft, grid=true, framestyle=:box,
