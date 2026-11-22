@@ -341,8 +341,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Aitken's scheme is described as "the same recursion" as Neville's; it is a different recursion | verified | open |
-| F2 | Misleading | Page match | The "degree 4" interpolant is the same cubic as degree 3; adding the fifth node changes nothing | verified | open |
+| F1 | Error | Page match | Aitken's scheme is described as "the same recursion" as Neville's; it is a different recursion | verified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
+| F2 | Misleading | Page match | The "degree 4" interpolant is the same cubic as degree 3; adding the fifth node changes nothing | verified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
 
 ### B-Splines — `b-splines` · [round-1 report](../b-splines.md)
 

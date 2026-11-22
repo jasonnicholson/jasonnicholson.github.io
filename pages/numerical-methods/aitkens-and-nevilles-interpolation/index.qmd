@@ -18,19 +18,19 @@ P_{i,j}(x)=\frac{(x-x_i)P_{i+1,j}(x)-(x-x_j)P_{i,j-1}(x)}{x_j-x_i},
 \quad i<j.
 $$
 
-The final interpolated value at a query point $x$ is $P_{0,n-1}(x)$. Aitken's process is the same recursion viewed as repeated linear interpolation between neighboring approximants; Neville's table is the standard tabular form used for robust numerical evaluation.
+The final interpolated value at a query point $x$ is $P_{0,n-1}(x)$. Aitken's scheme is a different arrangement of the same idea, repeated linear interpolation. At stage $k$ it combines the interpolant on $x_0,\dots,x_{k-1}$ with the interpolant on $x_0,\dots,x_{k-2},x_j$, so every entry in a column shares the same leading nodes, whereas Neville's scheme combines interpolants on neighbouring runs of consecutive nodes. The intermediate entries differ, but both schemes end with the same interpolated value. The animation below uses Neville's scheme.
 
 ## Animations
 
-The animation below illustrates **Neville's algorithm** for polynomial interpolation of $f(x) = \cos(x)$ at 5 nodes $x_0 = 0,\, \tfrac{\pi}{4},\, \tfrac{\pi}{2},\, \tfrac{3\pi}{4},\, \pi$. Each frame adds one node, building successively higher-degree interpolants $P_{0,j}(x)$.
+The animation below illustrates **Neville's algorithm** for polynomial interpolation of $f(x) = \cos(x)$ at 5 nodes $x_0 = 0,\, \tfrac{\pi}{4},\, \tfrac{\pi}{2},\, \tfrac{3\pi}{4},\, \pi$. Each frame adds one node and shows $P_{0,j}(x)$, the interpolant of degree at most $j$ through the first $j+1$ nodes, for $j=0,\dots,4$.
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Neville's algorithm: degree 0 through 4 for $\cos(x)$
+### Case 1 — Neville's algorithm: $P_{0,0}$ through $P_{0,4}$ for $\cos(x)$
 
-**Behavior:** Neville's algorithm builds the degree-$n$ interpolating polynomial by combining two polynomials of degree $n-1$: $P_{i,j}(x) = \tfrac{(x-x_i)P_{i+1,j} - (x-x_j)P_{i,j-1}}{x_j - x_i}$. Adding each node refines the polynomial. By degree 4 (using all 5 nodes) the interpolant closely matches $\cos(x)$ on the whole interval.
+**Behavior:** Neville's algorithm builds the degree-$n$ interpolating polynomial by combining two polynomials of degree $n-1$: $P_{i,j}(x) = \tfrac{(x-x_i)P_{i+1,j} - (x-x_j)P_{i,j-1}}{x_j - x_i}$. Adding a node does not always reduce the error: the largest error $|P_{0,j}(x)-\cos x|$ on $[0,\pi]$ falls from 2.00 at $j=0$ to 0.90 at $j=1$, rises to 1.66 at $j=2$, then drops to $8.1\times10^{-3}$ at $j=3$. With these symmetric nodes the cubic $P_{0,3}$ already passes through $(\pi,-1)$, because $\cos$ is odd about $\pi/2$, so the fifth node leaves the polynomial unchanged: $P_{0,4}=P_{0,3}$, and the last two frames show the same curve.
 
 [Julia source](nevilleaa.jl)
 
-![Neville algorithm building successive polynomial interpolants of cos(x) from degree 0 constant to degree 4 at 5 nodes at 0, pi/4, pi/2, 3pi/4, pi](nevilleaa.gif)
+![Neville algorithm building successive polynomial interpolants of cos(x) at nodes 0, pi/4, pi/2, 3pi/4, pi, from the degree-0 constant to the five-node interpolant P_{0,4}, which is the same cubic as P_{0,3}](nevilleaa.gif)
 
