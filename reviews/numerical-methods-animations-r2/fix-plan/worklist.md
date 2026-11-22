@@ -109,8 +109,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "each frame" claims do not hold for the first frame | unverified | open |
-| F2 | Minor | Fidelity | the sample points and panel boundaries are not drawn, so the panels the page describes cannot be seen in most frames | unverified | open |
+| F1 | Minor | Page match | "each frame" claims do not hold for the first frame | unverified | fixed — [fix record](../fixes/simpsons-rule-for-numerical-integration.md) |
+| F2 | Minor | Fidelity | the sample points and panel boundaries are not drawn, so the panels the page describes cannot be seen in most frames | unverified | fixed — [fix record](../fixes/simpsons-rule-for-numerical-integration.md) |
 
 ### Trapezoidal Rule for Numerical Integration — `trapezoidal-rule-for-numerical-integration` · [round-2 report](../trapezoidal-rule-for-numerical-integration.md)
 
