@@ -30,7 +30,7 @@ cases = SeriesCase[
     SeriesCase("m07", "Maclaurin", raw"\sin(x)", "sin(x)", x -> sin(x), 0.0, (-3pi, 3pi), (-1.5, 1.5), 12),
     SeriesCase("m08", "Maclaurin", raw"\cos(x)", "cos(x)", x -> cos(x), 0.0, (-3pi, 3pi), (-1.5, 1.5), 12),
     SeriesCase("m09", "Maclaurin", raw"\tan(x)", "tan(x)", x -> tan(x), 0.0, (-pi, pi), (-6.0, 6.0), 11),
-    SeriesCase("m10", "Maclaurin", raw"e^{-x^2/2}", "exp(-x^2/2)", x -> exp(-x^2 / 2), 0.0, (-2.0, 3.0), (-1.0, 1.2), 12),
+    SeriesCase("m10", "Maclaurin", raw"e^{x}", "exp(x)", x -> exp(x), 0.0, (-2.0, 3.0), (-2.0, 21.0), 12),
     SeriesCase("m11", "Maclaurin", raw"e^{-x}\cos(x)", "exp(-x)*cos(x)", x -> exp(-x) * cos(x), 0.0, (-2.0, 4.0), (-4.0, 4.0), 12),
     SeriesCase("m12", "Maclaurin", raw"\cosh(x)", "cosh(x)", x -> cosh(x), 0.0, (-4.0, 4.0), (-1.0, 30.0), 12),
     SeriesCase("m13", "Maclaurin", raw"\arctan(x)", "atan(x)", x -> atan(x), 0.0, (-2.0, 2.0), (-2.0, 2.0), 12),
@@ -48,11 +48,11 @@ cases = SeriesCase[
     SeriesCase("t05", "Taylor", raw"\log(x)", "log(x)", x -> log(x), 2.0, (-0.5, 4.1), (-4.0, 2.0), 10),
     SeriesCase("t06", "Taylor", raw"\sin(x)", "sin(x)", x -> sin(x), pi / 4, (-7pi / 4, 9pi / 4), (-1.5, 1.5), 10),
     SeriesCase("t07", "Taylor", raw"\cos(x)", "cos(x)", x -> cos(x), pi / 3, (-5pi / 3, 7pi / 3), (-1.5, 1.5), 10),
-    SeriesCase("t08", "Taylor", raw"\Gamma(x)", "gamma(x)", x -> gamma(x), 2.0, (-0.2, 5.2), (-2.0, 30.0), 8),
-    SeriesCase("t09", "Taylor", raw"\Gamma(x)", "gamma(x)", x -> gamma(x), 3.0, (-0.2, 5.2), (-2.0, 30.0), 8),
-    SeriesCase("t10", "Taylor", raw"\Gamma(x)", "gamma(x)", x -> gamma(x), 4.0, (-0.2, 5.2), (-2.0, 40.0), 8),
-    SeriesCase("t11", "Taylor", raw"J_0(x)", "besselj(0,x)", x -> besselj(0, x), 10.0, (0.0, 22.0), (-1.2, 1.2), 8),
-    SeriesCase("t12", "Taylor", raw"J_1(x)", "besselj(1,x)", x -> besselj(1, x), 5.0, (0.0, 22.0), (-1.2, 1.2), 8),
+    SeriesCase("t08", "Taylor", raw"\Gamma(x)", "gamma(x)", x -> gamma(x), 1.0, (-0.2, 5.2), (-2.0, 30.0), 8),
+    SeriesCase("t09", "Taylor", raw"\Gamma(x)", "gamma(x)", x -> gamma(x), 2.0, (-0.2, 5.2), (-2.0, 30.0), 8),
+    SeriesCase("t10", "Taylor", raw"\Gamma(x)", "gamma(x)", x -> gamma(x), 3.0, (-0.2, 5.2), (-2.0, 40.0), 8),
+    SeriesCase("t11", "Taylor", raw"Y_0(x)", "bessely(0,x)", x -> bessely(0, x), 10.0, (0.0, 22.0), (-1.2, 1.2), 8),
+    SeriesCase("t12", "Taylor", raw"Y_0(x)", "bessely(0,x)", x -> bessely(0, x), 5.0, (0.0, 22.0), (-1.2, 1.2), 8),
     SeriesCase("t13", "Taylor", raw"Y_0(x)", "bessely(0,x)", x -> bessely(0, x), 2.0, (0.0, 22.0), (-1.2, 1.2), 8)
 ]
 
@@ -213,7 +213,7 @@ const taylor_family = Dict(
     "t04" => (:log, 0), "t05" => (:log, 0),
     "t06" => (:sin, 0), "t07" => (:cos, 0),
     "t08" => (:gamma, 0), "t09" => (:gamma, 0), "t10" => (:gamma, 0),
-    "t11" => (:besselj, 0), "t12" => (:besselj, 1), "t13" => (:bessely, 0),
+    "t11" => (:bessely, 0), "t12" => (:bessely, 0), "t13" => (:bessely, 0),
 )
 
 function taylor_case_coeffs(case::SeriesCase)
@@ -278,9 +278,8 @@ function maclaurin_coeffs(case::SeriesCase)
             end
         end
     elseif case.id == "m10"
-        for m in 0:div(n, 2)
-            k = 2m
-            a[k + 1] = (isodd(m) ? -1.0 : 1.0) / (2.0^m * factorial(m))
+        for k in 0:n
+            a[k + 1] = 1.0 / factorial(k)
         end
     elseif case.id == "m11"
         z = complex(-1.0, 1.0)
@@ -343,9 +342,27 @@ function partial_sum(coeffs::Vector{Float64}, c::Float64, x::Float64, n::Int)
     return s
 end
 
+# Break the f(x) line between adjacent samples that jump from beyond one y-limit to beyond
+# the other (a pole lies between them), so no vertical segment is drawn through the pole.
+function break_at_poles(x::Vector{Float64}, y::Vector{Float64}, ylims::Tuple{Float64, Float64})
+    lo, hi = ylims
+    xs, ys = Float64[], Float64[]
+    for i in eachindex(x)
+        if i > 1 && isfinite(y[i - 1]) && isfinite(y[i]) &&
+           ((y[i - 1] > hi && y[i] < lo) || (y[i - 1] < lo && y[i] > hi))
+            push!(xs, (x[i - 1] + x[i]) / 2)
+            push!(ys, NaN)
+        end
+        push!(xs, x[i])
+        push!(ys, y[i])
+    end
+    return xs, ys
+end
+
 function render_case(case::SeriesCase)
     xplot = collect(range(case.xlims[1], case.xlims[2], length=900))
     ytrue = [safe_eval(case.f, x) for x in xplot]
+    xtrue, ytrue_plot = break_at_poles(xplot, ytrue, case.ylims)
 
     coeffs = case.family == "Maclaurin" ? maclaurin_coeffs(case) : taylor_case_coeffs(case)
 
@@ -366,7 +383,7 @@ function render_case(case::SeriesCase)
                  legend=:topleft, grid=true, framestyle=:box,
                  background_color=:white)
 
-        plot!(p, xplot, ytrue; color=:magenta, lw=2.4, label="f(x)")
+        plot!(p, xtrue, ytrue_plot; color=:magenta, lw=2.4, label="f(x)")
         plot!(p, xplot, y_prev; color=:gray55, lw=1.6, alpha=0.65, label="previous order")
         plot!(p, xplot, y_cur; color=:steelblue, lw=2.4, alpha=1.0, label="current order")
 

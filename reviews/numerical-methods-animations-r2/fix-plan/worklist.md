@@ -15,10 +15,10 @@ Generated from the round-2 page reports in this folder. One row per finding, gro
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | M10 swaps Mathews' $e^x$ for $e^{-x^2/2}$ and so repeats M17 | unverified | open |
-| F2 | Minor | Fidelity | T08–T10 move the Gamma centres from Mathews' 1, 2, 3 to 2, 3, 4 | unverified | open |
-| F3 | Minor | Fidelity | T11 and T12 swap Mathews' $Y_0$ about 10 and about 5 for $J_0$ about 10 and $J_1$ about 5 | unverified | open |
-| F4 | Minor | Implementation | the target function is drawn as a connected line through its poles | unverified | open |
+| F1 | Minor | Fidelity | M10 swaps Mathews' $e^x$ for $e^{-x^2/2}$ and so repeats M17 | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
+| F2 | Minor | Fidelity | T08–T10 move the Gamma centres from Mathews' 1, 2, 3 to 2, 3, 4 | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
+| F3 | Minor | Fidelity | T11 and T12 swap Mathews' $Y_0$ about 10 and about 5 for $J_0$ about 10 and $J_1$ about 5 | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
+| F4 | Minor | Implementation | the target function is drawn as a connected line through its poles | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
 
 ### Padé Approximation — `pade-approximation` · [round-2 report](../pade-approximation.md)
 
