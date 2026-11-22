@@ -32,13 +32,13 @@ Generated from the round-2 page reports in this folder. One row per finding, gro
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 19 is listed as a case where "f is drawn on a wider interval", and several alt texts say f is drawn on the whole window where f is undefined on part of it | unverified | open |
+| F1 | Minor | Page match | Case 19 is listed as a case where "f is drawn on a wider interval", and several alt texts say f is drawn on the whole window where f is undefined on part of it | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
 
 ### Newton Interpolation Polynomial — `newton-interpolation-polynomial` · [round-2 report](../newton-interpolation-polynomial.md)
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | node interval for Case 01 (and likely 02, 03, 07) differs from Mathews' | unverified | open |
+| F1 | Minor | Fidelity | node interval for Case 01 (and likely 02, 03, 07) differs from Mathews' | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
 
 ## WP-C
 

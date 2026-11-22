@@ -14,19 +14,28 @@ struct InterpCase
     xlims::Tuple{Float64, Float64}
     node_span::Tuple{Float64, Float64}
     has_span::Bool
+    pole::Float64      # pole of f inside the window (NaN if none)
+    legend::Symbol
 end
 
-with_span(id, label, f, xlims, span) = InterpCase(id, label, f, xlims, span, true)
-auto_span(id, label, f, xlims) = InterpCase(id, label, f, xlims, (0.0, 0.0), false)
+with_span(id, label, f, xlims, span; pole=NaN, legend=:topleft) =
+    InterpCase(id, label, f, xlims, span, true, pole, legend)
+auto_span(id, label, f, xlims) = InterpCase(id, label, f, xlims, (0.0, 0.0), false, NaN, :topleft)
 
 cases = InterpCase[
-    with_span("01", "1/(1-x)", x -> 1 / (1 - x), (-1.6, 0.9), (-1.6, 0.9)),
-    with_span("02", "1/(1+x)", x -> 1 / (1 + x), (-0.9, 1.6), (-0.9, 1.6)),
-    with_span("03", "1/(1-x)^2", x -> 1 / (1 - x)^2, (-1.6, 0.9), (-1.6, 0.9)),
+    # Cases 01-03 and 07 use Mathews' plot windows, which run past the
+    # singularity of f at x = 1 (x = -1 in Case 02).
+    # Nodes: 01 as in his animation; 02 mirrors 01; 03 as 01; 07 as in his
+    # static example linked to animation 7.
+    # For 01-03 (pole given) the y-limits come from f on the node interval,
+    # and f is broken at the pole and left to run off the window.
+    with_span("01", "1/(1-x)", x -> 1 / (1 - x), (-1.6, 1.5), (-1.5, 0.9); pole=1.0),
+    with_span("02", "1/(1+x)", x -> 1 / (1 + x), (-1.5, 1.6), (-0.9, 1.5); pole=-1.0, legend=:topright),
+    with_span("03", "1/(1-x)^2", x -> 1 / (1 - x)^2, (-1.6, 1.5), (-1.5, 0.9); pole=1.0),
     with_span("04", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 2.0)),
     with_span("05", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 8.0)),
     with_span("06", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 10.0)),
-    with_span("07", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), (-1.6, 0.9), (-1.6, 0.9)),
+    with_span("07", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), (-1.6, 1.5), (-1.5, 0.95)),
     with_span("08", "1/(1+10x^2)", x -> 1 / (1 + 10x^2), (-1.5, 1.5), (-1.0, 1.0)),
     with_span("09", "log(x)", x -> log(x), (-0.5, 4.1), (0.02, 2.0)),
     with_span("10", "log(x)", x -> log(x), (-0.5, 4.1), (0.02, 4.0)),
@@ -168,7 +177,10 @@ function render_case(case::InterpCase)
     y_hi = [barycentric_eval(x, xs_hi, ys_hi, w_hi) for x in xplot]
 
     # Include the node values of every frame so that every node is drawn.
-    ylims_f = robust_ylims(ytrue)
+    has_pole = !isnan(case.pole)
+    ylims_f = has_pole ?
+        robust_ylims([safe_eval(case.f, x) for x in range(span[1], span[2], length=1000)]) :
+        robust_ylims(ytrue)
     ys_all = vcat([equal_nodes(case.f, span, n)[2] for n in n_nodes_seq]...)
     ynode = [y for y in ys_all if isfinite(y)]
     if isempty(ynode)
@@ -180,6 +192,13 @@ function render_case(case::InterpCase)
         ylims = (lo - m, hi + m)
     end
     ytrue_clip = [isfinite(y) ? clamp(y, ylims[1], ylims[2]) : NaN for y in ytrue]
+    xf, yf = xplot, ytrue_clip
+    if has_pole
+        # Unclamped f with a NaN point at the pole, so the curve breaks there
+        # instead of drawing a segment along the window edge or across the pole.
+        xf = sort(vcat(xplot, case.pole))
+        yf = [x == case.pole ? NaN : safe_eval(case.f, x) for x in xf]
+    end
     # Small x-margin so that nodes at the ends of the window are drawn whole.
     xpad = 0.02 * (case.xlims[2] - case.xlims[1])
     xaxis = (case.xlims[1] - xpad, case.xlims[2] + xpad)
@@ -195,10 +214,10 @@ function render_case(case::InterpCase)
                      xlims=xaxis, ylims=ylims,
                      xlabel="x", ylabel="y",
                      title="Interpolation Case $(case.id): f(x) = $(case.formula_label), degree $(n_nodes - 1)",
-                     legend=:topleft, grid=true, framestyle=:box,
+                     legend=case.legend, grid=true, framestyle=:box,
                      background_color=:white)
 
-        plot!(pplot, xplot, ytrue_clip; color=:magenta, lw=2.5, label="f(x)")
+        plot!(pplot, xf, yf; color=:magenta, lw=2.5, label="f(x)")
         plot!(pplot, xplot, yinterp; color=:steelblue, lw=2.2, label="interpolant")
         scatter!(pplot, xs, ys_nodes; color=:red, ms=4.5, label="nodes")
 
