@@ -167,6 +167,20 @@ These apply when fixing from `reviews/numerical-methods-animations-r4`. They tak
 - The round-4 notes on Cases 14, 18, 19, 21 and 23 stay (Jason: keep).
 - The Laurent pole lines in Cases 12 and 22–24 stay as they are (Jason: leave).
 
+## Round 5 decisions (Jason, 2026-11-22)
+
+These apply when fixing from `reviews/numerical-methods-animations-r5`. They take precedence over earlier decisions.
+
+- **R5-A — Muller Case 2: fix the window.** Do as R4-A did for Case 1: zoom each frame on the current points so the parabola and the step stay visible in every frame. Keep true values in the labels.
+- **R5-B — Secant Case 3: fix.** Frame 7 labels p₈ = 0, a double-precision zero (the exact value is about −7.6e-48). Frames 8–10 repeat the picture with iterates the method never computed. Remove the false frames and labels, and make the label say that the zero is a double-precision result.
+- **R5-C — Padé poles drawn as finite spikes (Cases 22–27): leave.** Jason judged them fine. Mark the finding `deferred` (owner decision).
+- **R5-D — Aitken/Neville: add Mathews' Example 3 as a new case and keep the cos x case.** Example 3 is eˣ at nodes 1 + i/4 with x̂ = 1.8. Read it from the archive and compute everything. The new case gets its own script, GIF, heading, Behavior paragraph, alt text, source link and embed, following the page's conventions. Update the page's archive sentence to match.
+- **R5-E — Fixed-Point Cases 4 and 5 order: leave.** Mark the finding `deferred` (owner decision).
+- **R5-F — Fix the two items the review recorded but did not count:**
+  - **Maclaurin "Video Animations" sentence:** correct the claim that `abs` (and sign) are "discontinuous". abs is continuous. The non-smoothness is at x = 0, a branch point with an infinite derivative for √|x|·sign(x), so the radius about 0.5 is 0.5. Keep the paragraph's conclusion, which is right.
+  - **Laurent pole lines in Cases 12 and 22–24:** break the f curve at each pole so no false vertical line is drawn, as round 3 did for Lagrange Case 14. Regenerate only those GIFs; the others must stay byte-identical. This supersedes the "leave" in R4-D.
+- **The other round-5 Minor findings are fixed as reported:** Runge-Kutta-Fehlberg, Nonlinear Systems, Broyden and the Maclaurin M03 alt text.
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
