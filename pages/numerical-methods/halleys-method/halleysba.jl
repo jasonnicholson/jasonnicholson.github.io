@@ -50,10 +50,14 @@ anim = @animate for frame in 0:n_iters
     fpv    = fp(x_cur)
     fppv   = fpp(x_cur)
 
-    # Osculating parabola
-    parabola(x) = fv + fpv*(x - x_cur) + 0.5*fppv*(x - x_cur)^2
-    plot!(xplot, clamp.(parabola.(xplot), ylims[1], ylims[2]);
-          color=:darkorange, lw=1.5, ls=:dash, label="osculatory parabola")
+    # Osculating hyperbola H(x) = (f + a₁(x-xₙ)) / (1 + b₁(x-xₙ)), matching f, f', f'' at xₙ.
+    # Its x-intercept is exactly the Halley iterate xₙ₊₁ (the Taylor parabola's root is not).
+    b1 = -fppv / (2*fpv)
+    a1 = fpv + fv*b1
+    # Draw only the branch through xₙ (NaN beyond the pole at xₙ - 1/b₁)
+    hyperbola(x) = (d = 1 + b1*(x - x_cur); d > 0 ? (fv + a1*(x - x_cur)) / d : NaN)
+    plot!(xplot, hyperbola.(xplot); color=:darkorange, lw=1.5, ls=:dash,
+          label="osculating hyperbola (Halley)")
 
     # Tangent line (Newton)
     tangent(x) = fv + fpv*(x - x_cur)

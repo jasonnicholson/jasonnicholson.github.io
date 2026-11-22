@@ -264,11 +264,11 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Description says Halley's iterate is the root of the osculating Taylor parabola; it is not | verified | open |
-| F2 | Error | Implementation | The animations present the Taylor parabola as Halley's construction, but the Halley iterate is not its intercept (in Case 1b the parabola coincides with f) | verified | open |
-| F3 | Error | Page match | Case 2 says the parabola "visibly corrects the Newton overshoot"; Newton does not overshoot and nothing is visibly corrected | verified | open |
-| F4 | Minor | Page match | Animations intro describes all three animations as tangent + parabola with a "blue dotted" tangent; Case 1a has no parabola and a dashed tangent | unverified | open |
-| F5 | Minor | Page match | Case 1b cites $g'''(x^*)$ and $g''(x^*)$ without defining g | unverified | open |
+| F1 | Error | Page match | Description says Halley's iterate is the root of the osculating Taylor parabola; it is not | verified | fixed — [fix record](../fixes/halleys-method.md) |
+| F2 | Error | Implementation | The animations present the Taylor parabola as Halley's construction, but the Halley iterate is not its intercept (in Case 1b the parabola coincides with f) | verified | fixed — [fix record](../fixes/halleys-method.md) |
+| F3 | Error | Page match | Case 2 says the parabola "visibly corrects the Newton overshoot"; Newton does not overshoot and nothing is visibly corrected | verified | fixed — [fix record](../fixes/halleys-method.md) |
+| F4 | Minor | Page match | Animations intro describes all three animations as tangent + parabola with a "blue dotted" tangent; Case 1a has no parabola and a dashed tangent | unverified | fixed — [fix record](../fixes/halleys-method.md) |
+| F5 | Minor | Page match | Case 1b cites $g'''(x^*)$ and $g''(x^*)$ without defining g | unverified | fixed — [fix record](../fixes/halleys-method.md) |
 
 ### Improved Newton Method — `improved-newton-method` · [round-1 report](../improved-newton-method.md)
 
