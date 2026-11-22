@@ -1,5 +1,6 @@
 # tangparabaa.jl
-# Tangent Parabola animation: secant parabola of f(x) = cos(x) centered at x₀ = π/4
+# Tangent Parabola animation: secant parabola of f(x) = sin(x) centered at x₀ = 1
+# (Mathews' running example, Figures 1–3 and Table 1 of the Tangent Parabola module)
 # As h → 0, the secant parabola (Newton polynomial through x₀-h, x₀, x₀+h) converges
 # to the tangent parabola (degree-2 Taylor polynomial at x₀)
 # Produces: tangparabaa.gif
@@ -7,12 +8,12 @@
 using Plots
 gr()
 
-f(x)   = cos(x)
-df(x)  = -sin(x)
-d2f(x) = -cos(x)
+f(x)   = sin(x)
+df(x)  = cos(x)
+d2f(x) = -sin(x)
 
-x0  = π / 4
-x_plot = collect(range(x0 - 1.5, x0 + 1.5, length=500))
+x0  = 1.0
+x_plot = collect(range(0, π, length=500))   # Mathews' plot window [0, π]
 
 # Second-order Taylor polynomial (tangent parabola) at x0
 T2(x) = f(x0) + df(x0) * (x - x0) + 0.5 * d2f(x0) * (x - x0)^2
@@ -29,8 +30,9 @@ function newton_parabola(x, h)
     return y1 + d01 * (x - x1) + d012 * (x - x1) * (x - x2)
 end
 
-# h values: from 1.0 down to near 0 (log-spaced), then hold the tangent parabola
-h_vals_log = exp.(range(log(1.0), log(0.01), length=18))
+# h values: from 1.0 down to 0.01 (log-spaced, 17 values = 10^(-k/8), k = 0..16, so that
+# Mathews' Figure 1 and Figure 2 step sizes h = 0.1 and h = 0.01 are frames), then hold the tangent parabola
+h_vals_log = exp.(range(log(1.0), log(0.01), length=17))
 h_vals     = vcat(h_vals_log, fill(0.0, 5))   # last 5 frames show true tangent parabola
 
 T2_vals    = T2.(x_plot)
@@ -50,13 +52,13 @@ anim = @animate for h in h_vals
     end
 
     plot(size=(700, 500),
-         xlims=(x0 - 1.5, x0 + 1.5), ylims=(-0.5, 1.3),
+         xlims=(0, π), ylims=(-0.2, 1.15),
          xlabel="x", ylabel="y",
          title=ttl,
-         legend=:topright, grid=true, framestyle=:box,
+         legend=:bottom, grid=true, framestyle=:box,
          background_color=:white)
 
-    plot!(x_plot, f.(x_plot);  color=:blue, lw=2, label="f(x) = cos(x)")
+    plot!(x_plot, f.(x_plot);  color=:blue, lw=2, label="f(x) = sin(x)")
     plot!(x_plot, P_vals;      color=p_clr, lw=2, linestyle=:dash, label=p_lbl)
     plot!(x_plot, T2_vals;     color=:darkgreen, lw=1.5, linestyle=:dot,
           label="Tangent parabola T₂(x)")

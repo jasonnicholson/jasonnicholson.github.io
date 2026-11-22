@@ -339,8 +339,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the example function and centre differ from Mathews, and the page gives no reason | unverified | open |
-| F2 | Minor | Fidelity | the archive's animated examples (tangent cubic and degree-6 tangent polynomial) are silently dropped | unverified | open |
+| F1 | Minor | Fidelity | the example function and centre differ from Mathews, and the page gives no reason | unverified | fixed — [fix record](../fixes/the-tangent-parabola.md) |
+| F2 | Minor | Fidelity | the archive's animated examples (tangent cubic and degree-6 tangent polynomial) are silently dropped | unverified | fixed — [fix record](../fixes/the-tangent-parabola.md) |
 
 ## WP-G
 
