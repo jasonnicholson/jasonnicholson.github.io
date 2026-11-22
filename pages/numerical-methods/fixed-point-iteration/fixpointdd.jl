@@ -1,5 +1,5 @@
 # fixpointdd.jl
-# Fixed Point Iteration animation: g(x) = x^2/4 + x/2, x0 = 1.5
+# Fixed Point Iteration animation: g(x) = x^2/4 + x/2, x0 = 1.95 (Mathews' Example 8)
 # Starts below the repelling fixed point x* = 2 (g'(2) = 3/2 > 1): the staircase walks away
 # from x* = 2 and converges monotonically to the other fixed point x = 0 (g'(0) = 1/2)
 # Produces: fixpointdd.gif
@@ -9,13 +9,13 @@ gr()
 
 # --- Parameters ---
 g(x) = x^2 / 4 + x / 2
-x0 = 1.5
-n_iters = 8   # iterates decrease from 1.5 to x_8 = 0.0684, all inside the window
+x0 = 1.95
+n_iters = 16   # iterates decrease from 1.95 to x_16 = 0.0193, all inside the window
 
 xlims = (0.0, 4.0)
 ylims = (0.0, 4.0)
 
-title_str = "Fixed Point Iteration: g(x) = x²/4 + x/2, x₀ = 1.5"
+title_str = "Fixed Point Iteration: g(x) = x²/4 + x/2, x₀ = 1.95"
 
 # --- Pre-compute iterates ---
 # xs holds the true iterates. Every g evaluation, cobweb vertex and label uses them;

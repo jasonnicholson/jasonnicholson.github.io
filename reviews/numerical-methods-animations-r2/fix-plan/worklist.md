@@ -201,8 +201,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Cases 4–6 start far from x = 2, which weakens Mathews' "local divergence" demonstration and pushes Case 5 off-scale after 3 steps | unverified | open |
-| F2 | Minor | Page match | Case 3 derives g'(2) = −½ from "strictly decreasing", which does not follow | unverified | open |
+| F1 | Minor | Fidelity | Cases 4–6 start far from x = 2, which weakens Mathews' "local divergence" demonstration and pushes Case 5 off-scale after 3 steps | unverified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
+| F2 | Minor | Page match | Case 3 derives g'(2) = −½ from "strictly decreasing", which does not follow | unverified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
 
 ### Graeffe's Method — `graeffes-method` · [round-2 report](../graeffes-method.md)
 
@@ -237,8 +237,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation / Page match | Case 2's first frame does not draw the parabola as far as the axis crossing that gives the next iterate | unverified | open |
-| F2 | Minor | Implementation | Case 3's vertical scale makes the parabola and its crossing nearly unreadable | unverified | open |
+| F1 | Minor | Implementation / Page match | Case 2's first frame does not draw the parabola as far as the axis crossing that gives the next iterate | unverified | fixed — [fix record](../fixes/mullers-method.md) |
+| F2 | Minor | Implementation | Case 3's vertical scale makes the parabola and its crossing nearly unreadable | unverified | fixed — [fix record](../fixes/mullers-method.md) |
 
 ### Newton-Raphson Method — `newton-raphson-method` · [round-2 report](../newton-raphson-method.md)
 

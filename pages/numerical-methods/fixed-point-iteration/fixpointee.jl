@@ -1,8 +1,8 @@
 # fixpointee.jl
-# Fixed Point Iteration animation: g(x) = x^2/4 + x/2, x0 = 2.5
+# Fixed Point Iteration animation: g(x) = x^2/4 + x/2, x0 = 2.03 (Mathews' Example 7)
 # Divergent case starting above the fixed point x* = 2
 # |g'(2)| = 3/2 > 1, staircase walks rightward away from fixed point and diverges;
-# x_3 = 4.5544 already leaves the window, so x_3 and x_4 are shown off-scale
+# x_1 ... x_9 = 3.7534 all stay inside the window (x_10 = 5.3986 would leave it)
 # Produces: fixpointee.gif
 
 using Plots
@@ -10,13 +10,13 @@ gr()
 
 # --- Parameters ---
 g(x) = x^2 / 4 + x / 2
-x0 = 2.5
-n_iters = 4   # x_3 = 4.5544 and x_4 = 7.4628 are off-scale
+x0 = 2.03
+n_iters = 9   # x_9 = 3.7534 is the last iterate inside the window
 
 xlims = (0.0, 4.0)
 ylims = (0.0, 4.0)
 
-title_str = "Fixed Point Iteration: g(x) = x²/4 + x/2, x₀ = 2.5"
+title_str = "Fixed Point Iteration: g(x) = x²/4 + x/2, x₀ = 2.03"
 
 # --- Pre-compute iterates ---
 # xs holds the true iterates. Every g evaluation, cobweb vertex and label uses them;

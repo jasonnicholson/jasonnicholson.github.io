@@ -1,5 +1,5 @@
 # fixpointff.jl
-# Fixed Point Iteration animation: g(x) = -x^2/4 - x/2 + 4, x0 = 1.5
+# Fixed Point Iteration animation: g(x) = -x^2/4 - x/2 + 4, x0 = 1.97 (Mathews' Example 9)
 # Oscillating, does not converge: g'(2) = -3/2, |g'(2)| > 1 so x* = 2 repels and the
 # staircase moves away from it, alternating sides; the orbit stays bounded and settles
 # onto an attracting 4-cycle ~ {4.25, -2.64, 3.58, -0.99}
@@ -10,17 +10,17 @@ gr()
 
 # --- Parameters ---
 g(x) = -x^2 / 4 - x / 2 + 4
-x0 = 1.5
-n_iters = 16
+x0 = 1.97
+n_iters = 32   # by x_29 ... x_32 the orbit is within 0.004 of the 4-cycle
 
-# window holds the whole true orbit (it stays in [-2.641, 4.250]). Nothing is drawn where
+# window holds the whole true orbit (it stays in [-2.639, 4.250]). Nothing is drawn where
 # x > -3.3125 and y < -3.3125: the min of g on the window is g(4.5) = -3.3125, y = x is
-# below -3.3125 only for x < -3.3125, and the orbit's min is -2.641. So the legend goes
+# below -3.3125 only for x < -3.3125, and the orbit's min is -2.639. So the legend goes
 # bottom-right.
 xlims = (-4.5, 4.5)
 ylims = (-4.5, 4.5)
 
-title_str = "Fixed Point Iteration: g(x) = −x²/4 − x/2 + 4, x₀ = 1.5"
+title_str = "Fixed Point Iteration: g(x) = −x²/4 − x/2 + 4, x₀ = 1.97"
 
 # --- Pre-compute iterates ---
 # xs holds the true iterates. Every g evaluation, cobweb vertex and label uses them;
@@ -54,6 +54,7 @@ anim = @animate for frame in 0:n_iters
         xlabel      = "x",
         ylabel      = "y",
         title       = title_str,
+        titlefontsize = 13,   # the full title with x₀ = 1.97 is clipped at the default size
         legend      = :bottomright,
         grid        = true,
         framestyle  = :box,
