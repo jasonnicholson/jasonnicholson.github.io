@@ -163,6 +163,10 @@ These apply when fixing from `reviews/numerical-methods-animations-r4`. They tak
 
 **R4-C — Aitken-Steffensen F1: fix it by naming the reference.** The final Steffensen error is 5.7 × 10⁻¹⁶ against the true √2, and 6.7 × 10⁻¹⁶ (three units in the last place) against the rounded double fl(√2). Say which one the page quotes, or give both with their references. Make the Behavior text, the alt text and any value the frames print agree.
 
+**R4-D — Newton Interpolation divided-differences case: switch to Mathews' Example 1** (decided after the round-4 fix run). The case drawn by `newtpolyaa.jl` uses Mathews' Example 1 (cos x on [0, 1], nodes k/5) instead of the page's own cos x with nodes kπ/3 on [0, 2π]. The function, interval and nodes are read from the archive and computed before they go on the page. The heading, Behavior, alt text and GIF title follow the new run. The round-4 sentence explaining the departure is replaced.
+- The round-4 notes on Cases 14, 18, 19, 21 and 23 stay (Jason: keep).
+- The Laurent pole lines in Cases 12 and 22–24 stay as they are (Jason: leave).
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
