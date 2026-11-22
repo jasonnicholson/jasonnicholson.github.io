@@ -172,7 +172,7 @@ No findings in round 5.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "Linear (when it converges)" for fixed-point iteration | unverified | open |
+| F1 | Minor | Page match | "Linear (when it converges)" for fixed-point iteration | unverified | fixed — [fix record](../fixes/nonlinear-systems.md) |
 
 ### Secant Method — `secant-method` · [round-5 report](../secant-method.md)
 
