@@ -31,7 +31,7 @@ cases = ChebyCase[
     with_span("04", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 2.0)),
     with_span("05", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 8.0)),
     with_span("06", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 10.0)),
-    with_span("07", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), (-1.6, 1.5), (-1.6, 0.9)),
+    with_span("07", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), (-1.6, 1.5), (-1.5, 0.95)),
     with_span("08", "1/(1+10x^2)", x -> 1 / (1 + 10x^2), (-1.5, 1.5), (-1.0, 1.0); max_order=31),
     with_span("09", "log(x)", x -> log(x), (-0.5, 4.1), (0.02, 2.0)),
     with_span("10", "log(x)", x -> log(x), (-0.5, 4.1), (0.02, 4.0)),

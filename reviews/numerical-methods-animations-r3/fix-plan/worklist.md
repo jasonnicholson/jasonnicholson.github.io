@@ -227,7 +227,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Case 07 approximation interval differs from Mathews' example (Fidelity, Minor) | unverified | open |
+| F1 | Minor | Fidelity | Case 07 approximation interval differs from Mathews' example (Fidelity, Minor) | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
 
 ### Cubic Splines — `cubic-splines` · [round-3 report](../cubic-splines.md)
 
