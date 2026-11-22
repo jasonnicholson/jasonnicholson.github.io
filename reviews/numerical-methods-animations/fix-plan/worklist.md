@@ -422,9 +422,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Implementation | The "MinMax" approximant is not the minimax approximant; the search stalls at 8.846e-5 while the true minimax relative error is 8.680e-5 | verified | open |
-| F2 | Misleading | Implementation (picture) | Relative-error panel's y-range (0 to 0.01) is about 60–115× the errors, so the error profiles the page discusses are invisible | verified | open |
-| F3 | Minor | Implementation (picture) | Frame 3 marks the Chebyshev nodes as "nodes" although the MinMax approximant does not interpolate there | unverified | open |
+| F1 | Misleading | Implementation | The "MinMax" approximant is not the minimax approximant; the search stalls at 8.846e-5 while the true minimax relative error is 8.680e-5 | verified | fixed — [fix record](../fixes/rational-approximation.md) |
+| F2 | Misleading | Implementation (picture) | Relative-error panel's y-range (0 to 0.01) is about 60–115× the errors, so the error profiles the page discusses are invisible | verified | fixed — [fix record](../fixes/rational-approximation.md) |
+| F3 | Minor | Implementation (picture) | Frame 3 marks the Chebyshev nodes as "nodes" although the MinMax approximant does not interpolate there | unverified | fixed — [fix record](../fixes/rational-approximation.md) |
 
 ### The Tangent Parabola — `the-tangent-parabola` · [round-1 report](../the-tangent-parabola.md)
 
