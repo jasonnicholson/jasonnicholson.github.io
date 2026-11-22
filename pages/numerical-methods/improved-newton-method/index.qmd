@@ -7,9 +7,21 @@ bibliography: ../../../references.bib
 
 Source inspiration:  [@mathewsSite].
 
+## Description
+
+For smooth $f$, when Newton-Raphson, $x_{n+1} = x_n - f(x_n)/f'(x_n)$, converges to a root, it does so quadratically if the root is simple but only linearly if the root has multiplicity $m \ge 2$.
+Mathews compares three improvements for multiple roots:
+
+- **Method A (accelerated Newton)** uses the known multiplicity $m$: $x_{n+1} = x_n - m\,f(x_n)/f'(x_n)$.
+- **Method B (modified Newton)** applies Newton's method to $u = f/f'$, which has a simple root where $f$ has a multiple one: $x_{n+1} = x_n - \dfrac{f(x_n)\,f'(x_n)}{f'(x_n)^2 - f(x_n)\,f''(x_n)}$.
+- **Method C (adaptive Newton)** does not need $m$. It computes $x_{n,m} = x_n - m\,f(x_n)/f'(x_n)$, starting from the Newton step $m = 1$, increases $m$ while $|f(x_{n,m+1})| < |f(x_{n,m})|$, and takes the last such point as $x_{n+1}$.
+
+Started close enough to a multiple root, Methods A and B converge to it quadratically. The animations show standard Newton and Method A; Case 5 also discusses Methods B and C.
+
 ## Animations
 
-Each animation below shows the **tangent-line diagram** for Newton-type iterations on functions with multiple roots.
+Each animation below traces a Newton-type iteration: Cases 1–4 use functions with a multiple root at $x = 1$, and Case 5 uses $\arctan x$, which has a simple root at $x = 0$.
+For standard Newton (Cases 1, 3, 5) each drawn line is the tangent at $x_n$; for Method A (Cases 2, 4) it is the line of slope $f'(x_n)/m$.
 At each iterate $x_n$, the line connecting $(x_n, f(x_n))$ to the next iterate's x-intercept traces the convergence path.
 Standard Newton-Raphson degrades to linear convergence at multiple roots; Method A (accelerated) restores quadratic convergence by multiplying the Newton step by the root's multiplicity $m$.
 
@@ -48,7 +60,7 @@ For a triple root this is $2/3$, meaning each iterate only reduces the error by 
 ### Case 4 — Method A (accelerated, $m=3$), quadratic convergence, $f(x) = x^4 - x^3 - 3x^2 + 5x - 2$, $x_0 = 1.3$
 
 **Behavior:** Method A with $m = 3$ (the correct multiplicity) restores quadratic convergence at the triple root.
-The convergence is dramatic compared to Case 3 — the iterate reaches $x \approx 1$ in just a couple of steps.
+The convergence is dramatic compared to Case 3: the animated iterates are $1.3$, $1.008824$, $1.000009$ and then $x_3$, which is within $10^{-11}$ of the root (labelled 1.0).
 This illustrates the core advantage of the improved methods: knowing $m$ unlocks quadratic convergence regardless of root order.
 
 [Julia source](newtonimpdd.jl)
@@ -61,9 +73,10 @@ This illustrates the core advantage of the improved methods: knowing $m$ unlocks
 
 **Behavior:** $f(x) = \arctan(x)$ has a simple root at $x^* = 0$.
 Newton-Raphson converges only when $|x_0| < x_c \approx 1.3917$; starting at $x_0 = 1.4$ — just outside that radius — each tangent line overshoots further than the previous iterate, and the iterates escape toward $\pm\infty$.
-Note that Methods A, B, and C **do not fix this case** — they are designed to restore quadratic convergence at multiple roots, not to handle divergence caused by a flat-tailed function.
-Method C searches for $m = 1, 2, 3, \ldots$ such that $|x_{n,m} - p| < |x_{n,m-1} - p|$, but for $\arctan$ at $x_0 = 1.4$ the $m=1$ step already overshoots to $x_1 \approx -1.41$, and larger $m$ moves further away — the search never succeeds.
-This is a cautionary example showing that even the improved methods have limits: they address multiplicity, not general global-convergence failures.
+Method A with the correct multiplicity ($m = 1$ for this simple root) is standard Newton, so it **does not fix this case**.
+Method B (Newton's method applied to $u = f/f' = (1+x^2)\arctan x$) does: $u$ is increasing and convex for $x > 0$, so from $x_0 = 1.4$ its iterates decrease monotonically to the root ($0.6316$, $0.1712$, $0.00625$, $3.25 \times 10^{-7}$, …).
+Method C does not fix it: for $\arctan$ the $m = 1$ step always crosses to the other side of $0$ ($x_{1,1} \approx -1.41$ here) and $m = 2$ lands farther out ($x_{1,2} \approx -4.23$, with larger $|f|$), so C keeps $m = 1$ at every step and diverges exactly as standard Newton does.
+This is a cautionary example: Methods A and C are designed for multiplicity and do not repair a global-convergence failure like this one.
 
 [Julia source](newtonimpee.jl)
 

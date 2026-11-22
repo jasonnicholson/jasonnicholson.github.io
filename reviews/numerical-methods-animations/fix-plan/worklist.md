@@ -274,12 +274,12 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | Method A (m=3) frames show floating-point noise as iterates: x₃ and x₄ are wrong, and x₄ jumps away from the root | verified | open |
-| F2 | Error | Page match | "Methods A, B, and C do not fix this case" is false for Method B | verified | open |
-| F3 | Minor | Implementation | Method A (m=2) frame for x₄ shows 0.999999, a roundoff artefact | unverified | open |
-| F4 | Minor | Page match | Intro describes every case as a "tangent-line diagram … on functions with multiple roots" | unverified | open |
-| F5 | Minor | Page match | Methods B and C are cited but never defined, and Method C's stated test uses the unknown root p | unverified | open |
-| F6 | Minor | Implementation | Titles cut off in the triple-root animations | unverified | open |
+| F1 | Error | Implementation | Method A (m=3) frames show floating-point noise as iterates: x₃ and x₄ are wrong, and x₄ jumps away from the root | verified | fixed — [fix record](../fixes/improved-newton-method.md) |
+| F2 | Error | Page match | "Methods A, B, and C do not fix this case" is false for Method B | verified | fixed — [fix record](../fixes/improved-newton-method.md) |
+| F3 | Minor | Implementation | Method A (m=2) frame for x₄ shows 0.999999, a roundoff artefact | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
+| F4 | Minor | Page match | Intro describes every case as a "tangent-line diagram … on functions with multiple roots" | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
+| F5 | Minor | Page match | Methods B and C are cited but never defined, and Method C's stated test uses the unknown root p | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
+| F6 | Minor | Implementation | Titles cut off in the triple-root animations | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
 
 ### Damped Newton with Acceleration (Madsen-Reid Method) — `madsen-reid-method` · [round-1 report](../madsen-reid-method.md)
 

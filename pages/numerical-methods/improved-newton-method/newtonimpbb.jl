@@ -9,12 +9,14 @@ using Plots
 gr()
 
 # --- Functions ---
-f(x)  = x^3 - 3x + 2
-fp(x) = 3x^2 - 3
+# Factored forms: the expanded x^3 - 3x + 2 loses all accuracy to cancellation near the
+# double root (Float64 gives f(1 + 1.3e-10) = 2.2e-16 instead of 5.1e-20).
+f(x)  = (x - 1)^2 * (x + 2)
+fp(x) = 3 * (x - 1) * (x + 1)
 
 # --- Parameters ---
 x0      = 1.3
-n_iters = 5
+n_iters = 3   # x3 is within 1.4e-10 of the root; a 4th step would land on x = 1 exactly, then 0/0
 m       = 2   # multiplicity of the root
 
 xlims = (0.6, 1.8)
