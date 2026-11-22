@@ -28,6 +28,11 @@ The whole effort is finished after a full independent re-review (`/review-animat
   - Leave the "(Planned)" and legacy-inventory stubs alone.
 - **Shared code moves together.** The two copies of `lagnewt_animations_all.jl` must stay byte-identical. The three series scripts (Maclaurin, Padé, Laurent) should use one vetted exact-coefficient routine.
 - **Keep changes to the page.** A fix touches only its own page folder, apart from the section index and orphan files named in the decisions. The global Julia environment (Plots 1.41.2, SpecialFunctions 2.9.2) is not changed.
+- **The legacy Mathews archive is a reference, not the ground truth.** The fix and re-review runs happen on a machine that has the archive the pages were built from; the round-1 review did not.
+  - Fixers use it to learn what each example was meant to be: the function, parameters, step size and behaviour Mathews showed.
+  - Anything taken from it is computed before it goes on a page.
+  - Where the archive and the mathematics disagree, the page follows the mathematics and says so where it matters.
+  - From round 2 on, re-reviews also report departures from the archive that matter to a reader, as findings of kind Fidelity.
 - **Regenerating GIFs is now intended.** Run each fixed script from its own folder, so that `@__DIR__` overwrites the committed GIF. Afterwards, check with `git status` that only the expected GIFs changed.
 
 ## Decisions (defaults the director will use)
@@ -52,6 +57,7 @@ The whole effort is finished after a full independent re-review (`/review-animat
 
   Taylor order 4 has about the same limit as RK4.
 - Add one sentence noting that coarser steps become unstable once the solution flattens.
+- Check Mathews' own example in the legacy archive for the step size he used. If he used a coarse step, the default still applies. Say on the page, in a sentence, that the coarser step goes unstable.
 - **Alternative:** keep the coarse steps and make the instability the point of each animation, rewriting the text accordingly.
 
 **D3 — Orphan files.**
@@ -80,7 +86,7 @@ The whole effort is finished after a full independent re-review (`/review-animat
 - Make one commit per page, and one per shared work package where shared code changes.
 - The director commits. Subagents never do.
 - Nothing is pushed.
-- The pre-existing uncommitted edit to `.github/agents/animation-page.agent.md` is not part of this work and is never staged.
+- Any uncommitted change already in the working tree when a run starts is not part of this work and is never staged.
 
 ## Work packages and order
 
@@ -102,6 +108,22 @@ The run order:
 3. Everything else, in parallel, with the pattern-setters' wording and code handed to the rest of their package.
 4. Section-index links (D4).
 5. Full-section render.
+
+## Running on another machine
+
+These prompts were written on one machine and will be run on another: the one with the legacy archive. The director checks each of these in its Phase 0 and stops if one fails.
+
+1. **Branch.** Fetch and check out `fix/numerical-methods-animations` from `origin`. It carries the round-1 report, this plan and both commands (`.claude/commands/fix-animations.md`, `.claude/commands/review-animations.md`).
+2. **Git LFS.** The GIFs are LFS-tracked. Run `git lfs pull` if the checkout has pointer files instead of GIFs; `file <gif>` should report GIF image data.
+3. **Julia.** The global environment must load Plots and SpecialFunctions. The committed GIFs were made with Plots 1.41.2 and SpecialFunctions 2.9.2.
+   - The director regenerates a few unchanged scripts in scratch and compares decoded frames with the committed GIFs.
+   - Identical frames with different bytes are fine.
+   - If the frames differ, it stops and asks before regenerating anything, since every touched GIF would change for reasons unrelated to the fix.
+4. **Python for independent checks.** A Python with numpy, scipy, sympy and mpmath is needed. The director finds one, or makes a throwaway virtual environment in scratch.
+5. **Quarto** to render the pages. It was 1.8.26 here.
+6. **The legacy archive.** It was at `/home/jason/Desktop/math-fullerton/baseline/mathews/n2003/` per `.github/agents/animation-page.agent.md`. If it is elsewhere, tell the director the path.
+
+The evidence scripts under `reviews/numerical-methods-animations/evidence/` were run from a scratch folder on the first machine. Their paths need adjusting before they can be re-run.
 
 ## Records
 

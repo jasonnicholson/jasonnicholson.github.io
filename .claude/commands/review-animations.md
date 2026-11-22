@@ -42,7 +42,13 @@ Topic pages that are still flat `.qmd` files have no animations and are out of s
 
 Mathematics is the ground truth: what the named method produces for the stated problem, computed independently. Everything in the repository is a claim to be tested against that. Script comments and header lines are claims. Page text is a claim. A script that runs cleanly and a GIF that looks plausible are not evidence of correctness, which is exactly the trap Jason is warning his own readers about.
 
-The legacy Mathews archive the authoring agents used is not on this machine, so fidelity to the original animations is not being checked and nobody should stall looking for it.
+The legacy Mathews archive the authoring agents used may be on the machine where this runs. Its location is in `.github/agents/animation-page.agent.md` (`/home/jason/Desktop/math-fullerton/baseline/mathews/n2003/` when that brief was written). Look for it once, record in the README whether it was found, and do not stall if it is not there.
+
+When the archive is present, give each reviewer the location of their topic in it. Reviewers may use it to learn what each example was meant to be: the intended function, interval, starting values, step size and behaviour. It is not ground truth. Anything taken from it is a claim to be computed, and a page that departs from the archive in order to be mathematically right is correct.
+
+A real departure that matters to a reader is reported as a finding of kind **Fidelity**, alongside Implementation and Page match. Examples are a different example function from the one Mathews used, or a case the archive has that the page silently drops. Fidelity findings go through the same severities and the same independent check as any other finding. They are listed separately in the README so that Jason can decide them as a group.
+
+The round-1 review ran without the archive, so fidelity was not checked in that round.
 
 ## Phase 1: prepare the evidence yourself
 
@@ -51,6 +57,8 @@ This phase is mechanical and you should do it directly with a script of your own
 **Never run a script where it lives.** Every script writes its GIFs next to itself through `@__DIR__`, so running one inside its page folder overwrites committed, LFS-tracked GIFs. Copy the `.jl` files to `$WORK/<slug>/regen/` and run the copies. The output then lands in scratch.
 
 **Julia environment.** The scripts run against Jason's global Julia environment with a plain `julia <script>.jl`. Beyond the standard library they use only Plots, plus SpecialFunctions in the six `*_all.jl` scripts, and the global environment provides both (Plots 1.41.2 and SpecialFunctions 2.9.2 when this was written). In that environment, scratch copies of the six `*_all.jl` scripts and a single-GIF script reproduced all 173 of their committed GIFs byte for byte.
+
+The GIFs are tracked with Git LFS. Before anything else, confirm that the committed GIFs are real image data (`file <gif>` reports GIF image data) and not LFS pointer text. If they are pointers, run `git lfs pull`. Find a Python with numpy, scipy, sympy and mpmath for the reviewers' independent computations and give its path in every brief. If none exists, create a throwaway virtual environment in scratch, never in the repo, and say so in the report.
 
 Check that both packages load before you start. If one does not, say so in the report and leave the global environment alone, since changing it is Jason's call. To keep going, create a throwaway environment in scratch and put it behind the global one on the load path:
 
@@ -65,7 +73,7 @@ A warm run takes about 3 seconds for a single-GIF script and 15 to 20 seconds fo
 
 **Compare decoded frames, not just bytes.** Identical bytes prove the committed GIF is what the committed script produces. Different bytes prove nothing on their own: the same script under slightly different package versions produced files that differed in size but had identical frames. So when bytes differ, compare frame hashes before drawing any conclusion.
 
-**Looking at frames.** An image viewer shows only the first frame of a GIF, and this machine has no system ffmpeg or ImageMagick. Plots bundles ffmpeg, and this works:
+**Looking at frames.** An image viewer shows only the first frame of a GIF. The machine may have no system ffmpeg or ImageMagick, but Plots bundles ffmpeg, and this works:
 
 ```julia
 # usage: julia giftools.jl <gif> <outdir>
@@ -169,6 +177,14 @@ A stated number is wrong when it disagrees with the true value at the precision 
 
 Leave out claims about history and attribution, and the placeholder and legacy-inventory sections.
 
+### If you have the legacy archive
+
+Your brief may give you the location of this topic in the legacy Mathews archive the page was built from. If it does, read its pages as text and its graph-sized images, and use them to learn what each example was meant to be: the function, interval, starting values, step size and behaviour.
+
+The archive is not ground truth. Anything you take from it is a claim to compute. A page that departs from it in order to be mathematically right is correct.
+
+A departure that matters to a reader is a finding of kind **Fidelity**. Examples are a different example function from Mathews' with no reason given, or an archive case the page silently drops. Report it with the same severities and the same evidence as any other finding. Say in your report whether you consulted the archive.
+
 ### What is not a finding
 
 Code style, naming, performance, choice of colours, a valid formulation that differs from the textbook's, suggestions for better teaching, and content the page does not yet have. A cosmetic issue becomes a finding only when it makes the animation misleading or unreadable. Padding the report with these makes the real errors harder to find.
@@ -179,7 +195,7 @@ Write your full report to the file named in your brief, and send back only a sho
 
 The report has three parts.
 
-1. **Findings.** For each one: whether it concerns the implementation or the page match; a severity; the exact location (file and line, or the page text quoted); what is there now; what is true instead; how you know, with the command you ran and the numbers it gave; and the specific correction you suggest. Use three severities. *Error* means something is false or computed wrongly. *Misleading* means it is defensible in a narrow sense but a reader would come away with the wrong idea. *Minor* means it is real but of little consequence.
+1. **Findings.** For each one: whether it concerns the implementation, the page match, or fidelity to the legacy archive; a severity; the exact location (file and line, or the page text quoted); what is there now; what is true instead; how you know, with the command you ran and the numbers it gave; and the specific correction you suggest. Use three severities. *Error* means something is false or computed wrongly. *Misleading* means it is defensible in a narrow sense but a reader would come away with the wrong idea. *Minor* means it is real but of little consequence.
 2. **The claim ledger**, complete, with a verdict for every entry including the ones that passed: confirmed, wrong, or could not determine.
 3. **Implementation checks.** For each script, what you established about the four points above and the evidence, including the numbers from your independent computation set beside the script's.
 

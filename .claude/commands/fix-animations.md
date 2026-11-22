@@ -31,7 +31,21 @@ Read the arguments as follows:
   - For a later round, first generate a worklist of the same shape in `$REPORT/fix-plan/worklist.md` from that round's page reports.
 - **`.github/agents/animation-page.agent.md`:** the conventions the pages were built with. Fixes keep them.
 
-The legacy Mathews archive is not on this machine. Do not look for it.
+- **The legacy Mathews archive**, which the pages were built from, may be on the machine where this runs. Its location is given in `.github/agents/animation-page.agent.md` (`/home/jason/Desktop/math-fullerton/baseline/mathews/n2003/` when that brief was written); look there, and ask Jason if it is not found. See "Using the legacy archive" below.
+
+## Using the legacy archive
+
+The round-1 review was done without the archive, so it did not check fidelity to the original animations. When the archive is present:
+
+- **What it is for.** It is a reference for what each example was meant to be: the intended function, interval, starting values, step size and the behaviour Mathews' own animation showed. Use it to choose between valid fixes. Two examples:
+  - Under D2, when deciding a step size, see what step Mathews used.
+  - When a quoted root is wrong, see which root the example was about.
+- **What it is not.** It is not ground truth. A number or statement taken from the archive is a claim like any other and is computed before it goes on a page; the archive can contain errors, and the AI agents' misreadings of it are part of what went wrong in the first place.
+- **Fidelity is not a reason to undo a correct fix.** Where the archive and a correct fix disagree, follow the mathematics and note the difference in the fix record. For example, if Mathews used a step size that is unstable for his own problem, a correct page says so rather than copying it silently.
+- **How to read it.** Read the archive's HTML as text first (strip the tags). Its animated GIFs can be inspected with the same frame tools as the site's own GIFs. Only graph-sized images are worth viewing.
+- **What to record.** Note in each fix record whether the archive was consulted for that page and what it showed.
+
+If the archive is not available, proceed without it and say so in `fixes/README.md`.
 
 ## Why this matters, and the trap to avoid
 
@@ -41,28 +55,37 @@ A fixer who rewrites those sentences from memory or intuition makes the same mis
 
 ## Ground rules
 
-- **Branch.** Work on `fix/numerical-methods-animations`. Create it from the current branch if it does not exist. Never push.
+- **Branch.** Work on `fix/numerical-methods-animations`. The branch exists on `origin` and carries the round-1 report and this prompt. Fetch it and check it out, tracking `origin`, rather than creating a new branch. Do not push unless Jason asks.
 - **Only you commit.** Subagents never run state-changing git commands.
-- **Never stage `.github/agents/animation-page.agent.md`.** It has an uncommitted edit that is not part of this work. Stage paths explicitly and never use `git add -A` or `git commit -a`.
+- **Leave pre-existing changes alone.** Any uncommitted change already in the working tree when the run starts is not part of this work and is never staged. Stage paths explicitly and never use `git add -A` or `git commit -a`.
 - **Changes stay on their page.** A fixer changes only its own page folder: `index.qmd`, its `.jl` scripts and its GIFs. The exceptions are the section index (decision D4) and the orphan files named in decision D3, which you handle yourself.
 - **Shared scripts move together.** The two copies of `lagnewt_animations_all.jl` stay byte-identical, and one fixer owns both pages (WP-B). The series scripts of WP-A follow the order in the plan: the pattern-setter's vetted coefficient routine is handed to the other two.
 - **Regenerate GIFs in place.** Once a script is fixed, run it from its own folder with plain `julia <script>.jl`, so that `@__DIR__` overwrites the committed GIFs. Afterwards, check `git status -- pages/numerical-methods/<slug>` to confirm that only the expected files changed.
   - Experiments and instrumented copies still go in the scratch folder, never in the repo.
-- **Leave the Julia environment alone.** Scripts run against the global environment (Plots 1.41.2, SpecialFunctions 2.9.2).
+- **Leave the Julia environment alone.** Scripts run against the global Julia environment with plain `julia <script>.jl`.
+  - The committed GIFs were made with Plots 1.41.2 and SpecialFunctions 2.9.2. Phase 0 checks that this machine reproduces them.
   - A fix must not add a package dependency to a script.
-  - Independent checks may use `/usr/bin/python3`, which has numpy, scipy, sympy and mpmath.
+- **Python for independent checks.** Find a Python with numpy, scipy, sympy and mpmath in Phase 0 and give its path to every subagent.
+  - On the machine where the review ran this was `/usr/bin/python3`.
+  - If none exists, create a throwaway virtual environment in the scratch folder, never in the repo, and tell Jason you did.
 - **Concurrency.** At most 20 subagents run at once. Pages are disjoint folders, so fixers on different pages can run in parallel. Never run two fixers on the same page, and never run anything on a WP-B page while the WP-B fixer is working.
 
 ## Phase 0: set up
 
 1. Read the fix plan, the decisions and the worklist.
 2. Check the branch and record `git status --porcelain` as the baseline.
-3. Check that Plots and SpecialFunctions load. If they don't, stop and tell Jason; do not repair the environment.
-4. For each page in scope, collect:
+3. **Check the GIFs and the Julia environment.**
+   - The GIFs are tracked with Git LFS. Confirm that the committed GIFs are real image data (`file <gif>` reports GIF image data) and not LFS pointer text. If they are pointers, run `git lfs pull`. If LFS is not installed, stop and tell Jason.
+   - Check that Plots and SpecialFunctions load, and record their versions. If they don't load, stop and tell Jason; do not repair the environment.
+   - Check that this machine reproduces the committed GIFs. Copy two or three unchanged scripts into scratch, including one table-driven `*_all.jl`, run the copies, and compare their GIFs with the committed ones by bytes, then by decoded frame hashes if the bytes differ.
+   - **If the frames differ, stop and tell Jason.** Regenerating on this machine would then change every GIF a fix touches in ways unrelated to the fix, and the version difference is his call. Identical frames with different bytes are fine.
+4. **Find a Python for independent checks** (see Ground rules).
+5. **Look for the legacy archive** (see "Using the legacy archive") and record whether it was found.
+6. For each page in scope, collect:
    - its findings from `$REPORT/<slug>.md`, with severity, kind, location and the independent-check note;
    - its inventory items;
    - its work package.
-5. Make a scratch working folder `$WORK` outside the repository, using the session scratchpad.
+7. Make a scratch working folder `$WORK` outside the repository, using the session scratchpad.
 
 ## Phase 1: pilot
 
@@ -88,6 +111,8 @@ If any of these went wrong, fix the brief and redo the affected pilot pages. The
 Give each page to a fresh fixer subagent. The fixer starts with nothing but your brief, so the brief must carry:
 
 - the page folder and scratch folder;
+- the path of the Python to use for independent checks;
+- where the page's topic lives in the legacy archive, if the archive was found, together with the "Using the legacy archive" section;
 - the page's findings, copied in full from the review, including each independent-check note;
 - the inventory items, if any;
 - the decisions that apply, quoted from the plan;
@@ -105,7 +130,7 @@ For each page, give a fresh checker subagent three things:
 
 - the page's original findings, exactly as given to the fixer;
 - the `git diff` of the page folder against the branch's base;
-- the path to the page and its scratch folder.
+- the path to the page and its scratch folder, and the path of the Python to use.
 
 **Do not give the checker the fixer's record or reasoning.** A checker shown a persuasive explanation tends to agree with it. Give it the **Resolution check standard** section below in full.
 
@@ -143,7 +168,7 @@ Shared-code packages (WP-A, WP-B) may be committed as one commit covering their 
    - counts by outcome and severity;
    - anything a decision default had to settle that Jason may want to revisit;
    - the commits made.
-3. Confirm with `git status` that nothing is left unstaged in `pages/numerical-methods/` and that `.github/agents/animation-page.agent.md` was never staged.
+3. Confirm with `git status` that nothing is left unstaged in `pages/numerical-methods/` and that no change that predated the run was staged.
 4. Tell Jason briefly:
    - what was fixed;
    - what is open;
@@ -152,7 +177,7 @@ Shared-code packages (WP-A, WP-B) may be committed as one commit covering their 
 
 ## Looking at frames
 
-An image viewer shows only the first frame of a GIF, and this machine has no system ffmpeg or ImageMagick. Plots bundles ffmpeg, and this works:
+An image viewer shows only the first frame of a GIF. The machine may have no system ffmpeg or ImageMagick, but Plots bundles ffmpeg, and this works:
 
 ```julia
 # usage: julia giftools.jl <gif> <outdir>
@@ -181,7 +206,9 @@ You are correcting one page of a public teaching site about numerical methods: i
 
 ### Before you change anything
 
-For each finding, reproduce it yourself, using an instrumented copy of the script in your scratch folder and an independent computation (sympy, mpmath or scipy via `/usr/bin/python3`, or your own Julia code).
+For each finding, reproduce it yourself, using an instrumented copy of the script in your scratch folder and an independent computation (sympy, mpmath or scipy via the Python named in your brief, or your own Julia code).
+
+If your brief points you to the topic in the legacy Mathews archive, use it to learn what the example was meant to be: the intended function, parameters, step size and behaviour. Treat what you find there as a claim. Compute it before it goes on the page, and never undo a correct fix to match it. Note in your record what the archive showed.
 
 - If the finding holds, fix it.
 - If it does not hold, change nothing for it. Record it as `not reproduced`, with your evidence.
@@ -252,6 +279,9 @@ Write your fix record to the path in your brief, with these sections:
 ## Scripts and GIFs
 - Scripts changed; GIFs regenerated; frames viewed and what was checked in them
 - git status of the page folder after regeneration
+
+## Legacy archive
+(consulted or not; what it showed for this topic; any difference from the fixed page and why the page follows the mathematics)
 
 ## Notes
 (decision ambiguities, anything outside your page you noticed but did not touch)
