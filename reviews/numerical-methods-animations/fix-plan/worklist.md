@@ -233,11 +233,11 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Case A root is quoted as 1.3688; the true root is 1.36523 | verified | open |
-| F2 | Error | Page match | Case A says the left endpoint a = −1 stays fixed, but a moves and b = 2 is the fixed endpoint | verified | open |
-| F3 | Error | Page match | Case B gets the one-sided behaviour backwards: a = 0 does not stay fixed, the points approach from the left, and the bracket shrinks from the left | verified | open |
-| F4 | Minor | Implementation | A script comment says regula falsi is "slower than bisection"; on this problem it is faster | unverified | open |
-| F5 | Minor | Page match | Each frame's secant joins the previous bracket's endpoints, but the frame marks and shades the updated bracket | unverified | open |
+| F1 | Error | Page match | Case A root is quoted as 1.3688; the true root is 1.36523 | verified | fixed — [fix record](../fixes/false-position-or-regula-falsi-method.md) |
+| F2 | Error | Page match | Case A says the left endpoint a = −1 stays fixed, but a moves and b = 2 is the fixed endpoint | verified | fixed — [fix record](../fixes/false-position-or-regula-falsi-method.md) |
+| F3 | Error | Page match | Case B gets the one-sided behaviour backwards: a = 0 does not stay fixed, the points approach from the left, and the bracket shrinks from the left | verified | fixed — [fix record](../fixes/false-position-or-regula-falsi-method.md) |
+| F4 | Minor | Implementation | A script comment says regula falsi is "slower than bisection"; on this problem it is faster | unverified | fixed — [fix record](../fixes/false-position-or-regula-falsi-method.md) |
+| F5 | Minor | Page match | Each frame's secant joins the previous bracket's endpoints, but the frame marks and shades the updated bracket | unverified | fixed — [fix record](../fixes/false-position-or-regula-falsi-method.md) |
 
 ### Fixed Point Iteration — `fixed-point-iteration` · [round-1 report](../fixed-point-iteration.md)
 
