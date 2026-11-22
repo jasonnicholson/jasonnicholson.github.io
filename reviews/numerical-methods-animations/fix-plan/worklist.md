@@ -133,7 +133,7 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | "fourth-order global accuracy" is false for this integrand; the measured order is 5/3 | verified | open |
+| F1 | Error | Page match | "fourth-order global accuracy" is false for this integrand; the measured order is 5/3 | verified | fixed — [fix record](../fixes/simpsons-rule-for-numerical-integration.md) |
 
 ### Trapezoidal Rule for Numerical Integration — `trapezoidal-rule-for-numerical-integration` · [round-1 report](../trapezoidal-rule-for-numerical-integration.md)
 
