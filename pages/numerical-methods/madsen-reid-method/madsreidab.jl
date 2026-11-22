@@ -23,6 +23,7 @@ title_str = "Madsen-Reid (double root): P(x) = (x−1)²(x+2)"
 # Future Team ApS, 2002, https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp).
 # a = coefficients, leading first (a[1] here is a[0] in the C++). Only the loop
 # for the first root is run; deflation and the closed-form quadratic are not.
+# One line departs from the reference: see the fz0 comment in the loop.
 const MAXITER = 50
 
 # |P(z)|² and P(z) by the reference's real-coefficient Horner scheme
@@ -91,7 +92,7 @@ function newton_real_iterates(coeff, z_start, r0_start)
         else
             dz = complex((real(fz) * real(fz1) + imag(fz) * imag(fz1)) / u,
                          (imag(fz) * real(fz1) - real(fz) * imag(fz1)) / u)
-            # which stage are we on (fz0 is the value stored from the last step)
+            # which stage are we on (fz0 is P' at the previous iterate)
             fwz = fz0 - fz1
             wz  = z0 - z
             f2  = (real(fwz) * real(fwz) + imag(fwz) * imag(fwz)) /
@@ -105,7 +106,9 @@ function newton_real_iterates(coeff, z_start, r0_start)
             r0 = r * 5.0
         end
         z0 = z
-        f0 = f; fz0 = fz
+        # The one departure from newton_real, which stores fz0 = fz (P, not P'):
+        # Madsen & Reid's test (2.9) needs P'(z_{k-1}) - P'(z_k), so store P'.
+        f0 = f; fz0 = fz1
         zN = z0 - dz
         kind, k, nhalf, rounding = :plain, 1, 0, 0
         while true                                  # iter2:

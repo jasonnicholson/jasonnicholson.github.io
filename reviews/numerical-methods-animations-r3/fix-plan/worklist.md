@@ -179,7 +179,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | The slow Stage-2 example at x0 = -0.7 is caused by the reference's substitute w, and the page says that substitution makes no difference | verified | open |
+| F1 | Misleading | Page match | The slow Stage-2 example at x0 = -0.7 is caused by the reference's substitute w, and the page says that substitution makes no difference | verified | fixed — [fix record](../fixes/madsen-reid-method.md) |
 
 ### Muller's Method — `mullers-method` · [round-3 report](../mullers-method.md)
 
