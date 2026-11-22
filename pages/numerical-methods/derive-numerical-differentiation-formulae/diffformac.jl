@@ -44,7 +44,7 @@ anim = @animate for h in hs
         legend=:topright,
         size=(760, 460),
         background_color=:white,
-        title="Second-derivative formulas on [0, pi]  |  h = $(h)",
+        title="Second-derivative formulas on [2h, pi-2h]  |  h = $(h)",
     )
 
     plot!(xinner, y3; color=:steelblue3, lw=2, ls=:dash, label="3-point d2")

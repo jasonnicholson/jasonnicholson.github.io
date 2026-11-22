@@ -348,8 +348,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation / Page match | Case 2: the green "five-point estimate" line is never visible; the true tangent covers it in every frame | unverified | open |
-| F2 | Minor | Page match | Case 3: "over [0, π]" claims, but the stencil curves and the reported maximum errors cover only [2h, π−2h] | unverified | open |
+| F1 | Minor | Implementation / Page match | Case 2: the green "five-point estimate" line is never visible; the true tangent covers it in every frame | unverified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
+| F2 | Minor | Page match | Case 3: "over [0, π]" claims, but the stencil curves and the reported maximum errors cover only [2h, π−2h] | unverified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
 
 ### Numerical Differentiation — `numerical-differentiation` · [round-2 report](../numerical-differentiation.md)
 

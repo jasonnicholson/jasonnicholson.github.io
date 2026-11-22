@@ -52,9 +52,11 @@ anim = @animate for h in hs
     )
 
     scatter!(xs, ys; color=:darkorange3, ms=6, label="five-point stencil")
+    # Draw the tangent first and wider, so the five-point line (drawn last) stays
+    # visible lying on it; the two slopes differ by at most |err5| = 1.92e-4.
+    plot!(line_x, lt; color=:crimson, lw=5, label="true tangent")
     plot!(line_x, l3; color=:steelblue3, lw=1.8, ls=:dash, label="three-point estimate")
     plot!(line_x, l5; color=:darkgreen, lw=2, label="five-point estimate")
-    plot!(line_x, lt; color=:crimson, lw=2, label="true tangent")
 
     annotate!(
         0.08,
