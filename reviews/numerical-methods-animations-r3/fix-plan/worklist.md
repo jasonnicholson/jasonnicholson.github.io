@@ -167,7 +167,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Trade-offs). Minor | unverified | open |
+| F1 | Minor | Page match | Trade-offs). Minor | unverified | fixed — [fix record](../fixes/halleys-method.md) |
 
 ### Improved Newton Method — `improved-newton-method` · [round-3 report](../improved-newton-method.md)
 
