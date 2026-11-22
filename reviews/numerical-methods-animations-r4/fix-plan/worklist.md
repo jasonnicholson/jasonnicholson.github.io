@@ -183,8 +183,8 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | In Case 1, the window is too coarse to show the case's central claim from frame 3 onward | unverified | open |
-| F2 | Minor | Fidelity | Case 1 reuses Mathews' Example 1 but replaces his complex-case rule without saying so | unverified | open |
+| F1 | Minor | Page match | In Case 1, the window is too coarse to show the case's central claim from frame 3 onward | unverified | fixed — [fix record](../fixes/mullers-method.md) |
+| F2 | Minor | Fidelity | Case 1 reuses Mathews' Example 1 but replaces his complex-case rule without saying so | unverified | fixed — [fix record](../fixes/mullers-method.md) |
 
 ### Newton-Raphson Method — `newton-raphson-method` · [round-4 report](../newton-raphson-method.md)
 
