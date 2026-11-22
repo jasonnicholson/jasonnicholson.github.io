@@ -6,12 +6,17 @@ Generated from the round-5 page reports in this folder. One row per finding, gro
 
 ### Laurent Series — `laurent-series` · [round-5 report](../laurent-series.md)
 
-No findings in round 5.
+No findings in round 5. F1 below is decision R5-F, not a round-5 finding.
+
+| ID | Severity | Kind | Finding | Check | Status |
+|---|---|---|---|---|---|
+| F1 | Minor | Implementation | (R5-F) vertical lines drawn at the poles in Cases 12 and 22–24 | owner decision | open |
 
 ### Maclaurin and Taylor Series — `maclaurin-and-taylor-series` · [round-5 report](../maclaurin-and-taylor-series.md)
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
+| F1 | Minor | Page match | (R5-F) "Video Animations" sentence on abs | owner decision | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
 | F2 | Minor | Page match | alt text), Minor: M03 alt text reads as a different function | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
 
 ### Padé Approximation — `pade-approximation` · [round-5 report](../pade-approximation.md)
@@ -162,7 +167,7 @@ No findings in round 5.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | Case 2's later frames show no visible parabola or step | unverified | open |
+| F1 | Minor | Implementation | Case 2's later frames show no visible parabola or step | unverified | fixed — [fix record](../fixes/mullers-method.md) |
 
 ### Newton-Raphson Method — `newton-raphson-method` · [round-5 report](../newton-raphson-method.md)
 
