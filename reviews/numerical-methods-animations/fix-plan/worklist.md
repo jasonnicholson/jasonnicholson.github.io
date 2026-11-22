@@ -110,10 +110,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | "Lower/Upper Riemann Sum" scripts use the endpoint min/max, not the inf/sup on each subinterval | verified | open |
-| F2 | Error | Page match | Cases 3 and 4 claim the sums are lower/upper bounds; the plotted values are not | verified | open |
-| F3 | Misleading | Page match | "rises toward the integral" / "squeeze": the frame sequence is not monotone | verified | open |
-| F4 | Minor | Implementation | "Sample Points = n" in the Lower/Upper GIFs counts subintervals, not sample points | unverified | open |
+| F1 | Error | Implementation | "Lower/Upper Riemann Sum" scripts use the endpoint min/max, not the inf/sup on each subinterval | verified | fixed — [fix record](../fixes/riemann-sums.md) |
+| F2 | Error | Page match | Cases 3 and 4 claim the sums are lower/upper bounds; the plotted values are not | verified | fixed — [fix record](../fixes/riemann-sums.md) |
+| F3 | Misleading | Page match | "rises toward the integral" / "squeeze": the frame sequence is not monotone | verified | fixed — [fix record](../fixes/riemann-sums.md) |
+| F4 | Minor | Implementation | "Sample Points = n" in the Lower/Upper GIFs counts subintervals, not sample points | unverified | fixed — [fix record](../fixes/riemann-sums.md) |
 
 ### Romberg Integration — `romberg-integration` · [round-1 report](../romberg-integration.md)
 

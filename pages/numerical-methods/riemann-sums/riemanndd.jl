@@ -3,6 +3,7 @@
 # Produces: riemanndd.gif
 
 using Plots
+using Printf
 gr()
 
 f(x) = exp(-x) * sin(8 * x^(2 / 3)) + 1
@@ -15,9 +16,33 @@ xlims = (0.0, 2.0)
 ylims = (0.0, 2.1)
 xplot = range(a, b, length=800)
 
+# f'(x) for x > 0 (f' grows without bound as x -> 0+)
+fp(x) = exp(-x) * ((16 / 3) * x^(-1 / 3) * cos(8 * x^(2 / 3)) - sin(8 * x^(2 / 3)))
+
+# Interior critical points of f in (a, b): sign changes of f' on a fine grid, refined by bisection
+function critical_points()
+    xs = range(a, b, length=20001)[2:end]
+    cps = Float64[]
+    for k in 1:length(xs)-1
+        lo, hi = xs[k], xs[k+1]
+        if sign(fp(lo)) != sign(fp(hi))
+            for _ in 1:60
+                mid = (lo + hi) / 2
+                sign(fp(mid)) == sign(fp(lo)) ? (lo = mid) : (hi = mid)
+            end
+            push!(cps, (lo + hi) / 2)
+        end
+    end
+    return cps
+end
+crit = critical_points()
+
+# Maximum of f on [xl, xr]: attained at an endpoint or at an interior critical point
+fmax(xl, xr) = maximum(f(x) for x in vcat(xl, xr, filter(c -> xl < c < xr, crit)))
+
 function upper_sum(n)
     dx = (b - a) / n
-    return dx * sum(max(f(a + (i - 1) * dx), f(a + i * dx)) for i in 1:n)
+    return dx * sum(fmax(a + (i - 1) * dx, a + i * dx) for i in 1:n)
 end
 
 anim = @animate for n in vcat(0, n_seq)
@@ -33,15 +58,15 @@ anim = @animate for n in vcat(0, n_seq)
         for i in 1:n
             xl = a + (i - 1) * dx
             xr = xl + dx
-            h = max(f(xl), f(xr))
+            h = fmax(xl, xr)
             plot!([xl, xr, xr, xl, xl], [0.0, 0.0, h, h, 0.0];
                   seriestype=:shape, fillcolor=:lightpink, fillalpha=0.65,
                   linecolor=:red, lw=0.7)
         end
 
         approx = upper_sum(n)
-        annotate!(1.15, 1.88, text("Sample Points = $n", :black, 10))
-        annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
+        annotate!(1.15, 1.88, text("Subintervals = $n", :black, 10))
+        annotate!(1.15, 1.74, text("Approximation = " * @sprintf("%.6f", approx), :black, 10))
     end
 end
 
