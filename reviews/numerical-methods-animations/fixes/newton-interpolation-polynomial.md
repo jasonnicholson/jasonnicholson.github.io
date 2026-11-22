@@ -260,3 +260,11 @@ This re-check covers the fixer's second pass: Case 12/13 sentences and alt text,
 - Still pre-existing and outside this fix: the Newton page's alt texts read "…from the legacy function-and-interval list", including Cases 12 and 13, which carry no note there. The Newton page points readers to the Lagrange page for the case details.
 
 **Final status:** committed
+
+## D3 (orphan files), applied by the director
+
+- Deleted `newtpolybb.jl`/`.gif` (resolves F4) and, on the Lagrange page, the unlinked `lagrangeaa.jl`.
+- Added the verified `newtpolyaa` case after Case 29, using the block proposed above unchanged. Scoped the page's counts to Cases 01–29: "Cases 01–29 below intentionally reuse…", "Cases 01–29 each show…", and "[Julia source for Cases 01–29]". Replaced "a divided-difference example is to be added" with a pointer to the new last case.
+- Independent check (`d3/check/resolution.md`): F4 resolved; orphan inventory resolved; newtpolyaa.jl really builds the divided-difference table and its GIF reproduces byte for byte; all seven coefficients match sympy exactly; 'degrees 1 to 4 leave the plot' holds; degree-6 max error is 0.007116. A stale '29 animations' count was found and fixed, then re-checked. The checker's optional nit about the source-link label was also applied.
+
+**F4 final status:** fixed (D3)

@@ -50,7 +50,7 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 | F1 | Error | Implementation | Roundoff in the barycentric evaluation draws spurious vertical bars in lagnewt04 (degree 15) and lagnewt29 (degrees 13, 15) | verified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
 | F2 | Error | Page match | "increases polynomial degree one step at a time" is false after degree 5 | verified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
 | F3 | Minor | Page match | The linked "Newton" source never forms divided differences; it evaluates barycentric Lagrange | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
-| F4 | Minor | Implementation | newtpolybb.gif titles every frame "Runge Phenomenon", but frames 0–9 show extrapolation, not Runge oscillation (orphan file) | unverified | deferred (handled by D3) — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F4 | Minor | Implementation | newtpolybb.gif titles every frame "Runge Phenomenon", but frames 0–9 show extrapolation, not Runge oscillation (orphan file) | unverified | fixed (D3: file deleted) — [fix record](../fixes/newton-interpolation-polynomial.md) |
 
 ## WP-C quadrature (non-smooth integrand)
 
@@ -459,6 +459,6 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | Item | Page | Status |
 |---|---|---|
-| `lagrangeaa.jl` is not linked from the page and its GIF is not committed | `lagrange-polynomial-interpolation-and-approximation` | open |
-| `newtpolyaa.jl`/`.gif` and `newtpolybb.jl`/`.gif` are on disk but not linked or embedded | `newton-interpolation-polynomial` | open |
+| `lagrangeaa.jl` is not linked from the page and its GIF is not committed | `lagrange-polynomial-interpolation-and-approximation` | fixed (D3: deleted) |
+| `newtpolyaa.jl`/`.gif` and `newtpolybb.jl`/`.gif` are on disk but not linked or embedded | `newton-interpolation-polynomial` | fixed (D3: newtpolyaa linked as a verified case; newtpolybb deleted) |
 | Section index links `milne-simpsons-method/`, `predictor-corrector-methods/`, `shooting-methods-for-odes/` point to folders that do not exist (pages are flat `.qmd`) | `pages/numerical-methods/index.qmd` | open |
