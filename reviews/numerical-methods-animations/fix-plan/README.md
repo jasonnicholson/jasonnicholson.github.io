@@ -133,6 +133,26 @@ The page cites this implementation as "Madsen's method as implemented by Vesterm
 
 **R2-D — Euler "Modified Euler": switch to the midpoint method.** This follows Mathews. The update is y_{k+1} = y_k + h·f(t_k + h/2, y_k + (h/2)·f(t_k, y_k)). Retitle the case and the GIF "Modified Euler (midpoint)", and fix the Description and numbers. Mathews' printed Example 12 values are the check.
 
+## Round 3 decisions (Jason, 2026-11-22)
+
+These apply when fixing from `reviews/numerical-methods-animations-r3`. Where they conflict with earlier decisions, they take precedence. D1–D8 and R2-A, R2-B and R2-D still apply.
+
+**R3-A — Madsen-Reid: correct the stage-test line.** This amends R2-C. The scripts keep porting `newton_real` faithfully, with one exception: after each step, store the derivative at the previous iterate (`fz0 = fz1`), not the function value (`fz0 = fz`).
+- **Why:** Madsen & Reid's test (2.9) uses f′(z_{k−1}) − f′(z_k) (AERE-R 7986, 1975, p. 5). Their Fortran sets `FOZ=F1Z` at label 150, under the comment `FOZ=F'(ZO)`. Vestermark's current solver (version 8 of his Practical Implementation paper, October 2026) also stores the derivative.
+- **Nothing else changes.** Add no factor-2 margin and no Stage-2 check that |f| decreases.
+- **The page** says in one sentence that the scripts follow `newton_real` except for this line, and why, citing `madsenReid1975`. Remove the text saying the scripts copy the reference's w.
+- **Numbers:** recompute every stage sequence and number from the corrected scripts, including the x₀ = −0.7 example in §1. Under the correct test that run takes 5 steps.
+- **Quadratic convergence at multiple roots:** state it as holding while the iteration stays in Stage 1. At a double root Madsen's test quantity tends to exactly 1, so whether the run stays in Stage 1 depends on the run; describe what each run actually does.
+
+**R3-B — Fidelity findings: fix them.** Apply the R2-A rule to all of them except Muller F2 (R3-C).
+- A "not animated here" sentence must be checked against every example in the module, not just the ones that look relevant.
+
+**R3-C — Muller: parked.** Jason will look at Case 1 himself. Both Muller findings concern Case 1, so leave the page untouched this round and mark F1 and F2 `deferred`.
+
+**R3-D — Where the "not animated here" sentence goes.** On every page that has one, it goes in the Animations introduction, before Case 1, as a statement about the source, as on Improved Newton, Least-Squares Polynomials, Rational Approximation and Richardson.
+- Move it on Accelerated Newton, Aitken-Steffensen, Aitken/Neville, Bézier, Broyden, Catenary, Cubic Splines, Halley, Hermite, Monte Carlo π, Nonlinear Systems, Numerical Differentiation, Tangent Parabola and 2D Trapezoidal/Simpson.
+- On pages with no round-3 findings, the move is the only change.
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
