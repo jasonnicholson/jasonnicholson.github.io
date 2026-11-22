@@ -3,6 +3,7 @@
 # Produces: richexaa.gif
 
 using Plots
+using Printf
 gr()
 
 f(x) = exp(-x) * sin(x)
@@ -50,7 +51,7 @@ anim = @animate for h in hs
     annotate!(
         0.14,
         -0.88,
-        text("max|error D3| ≈ $(round(err3; digits=6))   max|error D5| ≈ $(round(err5; digits=6))", 10, :left, :black),
+        text(@sprintf("max|error D3| ≈ %.2e   max|error D5| ≈ %.2e", err3, err5), 10, :left, :black),
     )
 end
 

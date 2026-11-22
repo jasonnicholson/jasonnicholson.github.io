@@ -453,7 +453,7 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Implementation | Case 1 error annotation rounds the D5 error to "≈ 0.0" in 5 of 9 frames | verified | open |
+| F1 | Misleading | Implementation | Case 1 error annotation rounds the D5 error to "≈ 0.0" in 5 of 9 frames | verified | fixed — [fix record](../fixes/richardson-extrapolation.md) |
 
 ## Inventory items
 
