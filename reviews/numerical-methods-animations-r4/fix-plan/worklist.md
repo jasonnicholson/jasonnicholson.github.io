@@ -52,7 +52,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the later "largest pointwise gap" is not at the peak, as the text implies | unverified | open |
+| F1 | Minor | Page match | the later "largest pointwise gap" is not at the peak, as the text implies | unverified | fixed — [fix record](../fixes/cubic-spline-quadrature.md) |
 
 ### Gauss-Legendre Quadrature — `gauss-legendre-quadrature` · [round-4 report](../gauss-legendre-quadrature.md)
 
