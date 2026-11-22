@@ -56,10 +56,20 @@ The whole effort is finished after a full independent re-review (`/review-animat
   | ABM4 PECE | 1.285 | 0.031 | 161 |
 
   Taylor order 4 has about the same limit as RK4.
-- Add one sentence saying exactly what is computed: for steps longer than about h*, h·|∂f/∂y| exceeds the method's stability limit before t = 5, so from then on errors are amplified instead of damped. Just above h* this affects only the last steps. At the old step it starts at a computed time t. (The earlier wording here, "coarser steps become unstable once the solution flattens", is false and must not be used: for large h the onset comes before the solution flattens.)
-- Check Mathews' own example in the legacy archive for the step size he used. If he used a coarse step, the default still applies. Say on the page, in a sentence, that the coarser step goes unstable.
+  These limits are **linear, frozen-coefficient bounds**: they say where h·|∂f/∂y| leaves the method's linear stability region for the local linearisation, not whether the nonlinear run goes wrong.
+- **The stability sentence.** It states only what is computed, in two parts:
+  1. **The bound.** For h above h*, h·|∂f/∂y| passes the method's linear stability limit before t = 5. Give the computed crossing time for the step shown. For large h the crossing comes well before the solution flattens: for RK4 at h = 1 it is t ≈ 2.79, where y′ ≈ −0.61.
+  2. **The consequence, from the run itself.** Say what the computed solution then does: its error at t = 5, whether it oscillates, overshoots or stays accurate. Never infer this from the bound.
+- **Why the consequence must be computed.** Crossing the bound does not by itself mean that errors grow, and the outcome depends on the method:
+  - ABM4 PECE runs at m = 100–150 cross h* = 0.0311 and still end accurate;
+  - Taylor order 3 behaves the same way over part of the range;
+  - just above h* the crossing affects only the last few steps and is usually invisible.
+- **Do not use either of the earlier wordings.** Both are false for these pages:
+  - "coarser steps become unstable once the solution flattens";
+  - "from then on errors are amplified instead of damped".
+- Check Mathews' own example in the legacy archive for the step size he used.
 - **Alternative:** keep the coarse steps and make the instability the point of each animation, rewriting the text accordingly.
-- **Superseded for round 2 by R2-B below.**
+- **Superseded for round 2 by R2-B below,** which replaces the single step with Mathews' step-refinement sweep. The stability-sentence rule above still applies to every frame and sentence of that sweep.
 
 **D3 — Orphan files.**
 - **Default:**
@@ -109,7 +119,7 @@ These apply when fixing from `reviews/numerical-methods-animations-r2`. Where th
 **R2-B — ODE animations: do what Mathews did.** On Euler (both cases), Runge-Kutta, Taylor (both orders) and Adams-Bashforth-Moulton:
 - Replace the single fixed-step trajectory with Mathews' **step-refinement sweep**. Each frame is a full run over [0, 5] with m subintervals, labelled with m and the computed y(5).
 - Take the m sequence from the page's own legacy GIF in `a2001/Animations/OrdinaryDE/` (for example Euler m = 10…130, Modified Euler 12…120, RK4 12…150). Reproduce Mathews' printed y(5) values as the check.
-- Coarse m goes unstable and fine m converges. The text describes exactly that, with computed numbers and the corrected D2 stability sentence.
+- Coarse m goes unstable and fine m converges. The text describes exactly that, with computed numbers and the D2 stability sentence (bound and computed consequence stated separately).
 - Keep the exact-solution reference curve.
 
 **R2-C — Madsen-Reid: follow Jason's reference implementation.** The page's method is Vestermark's `newton_real` (Future Team ApS, 2002), downloadable at <https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp>. That file, not the 1975 Madsen–Reid report, is the reference for the scripts and the page. Fixers read it from the URL; it carries a restrictive licence, so do not copy it into the repository. Port its iteration faithfully:
