@@ -321,7 +321,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Mathews' "polynomial wiggle" example (Example 7) and the wide extrapolation view (Example 6) are dropped without a word, yet the Description asserts both effect | unverified | open |
+| F1 | Minor | Fidelity | Mathews' "polynomial wiggle" example (Example 7) and the wide extrapolation view (Example 6) are dropped without a word, yet the Description asserts both effect | unverified | fixed — [fix record](../fixes/least-squares-polynomials.md) |
 
 ### Legendre Polynomials — `legendre-polynomials` · [round-2 report](../legendre-polynomials.md)
 
