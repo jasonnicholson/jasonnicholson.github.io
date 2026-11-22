@@ -190,8 +190,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | the frames cannot show the Broyden steps or the superlinear convergence that the text and alt text attribute to them | verified | open |
-| F2 | Minor | Fidelity | the example system is not Mathews' system, and the page gives no reason | unverified | open |
+| F1 | Misleading | Page match | the frames cannot show the Broyden steps or the superlinear convergence that the text and alt text attribute to them | verified | fixed — [fix record](../fixes/broydens-method.md) |
+| F2 | Minor | Fidelity | the example system is not Mathews' system, and the page gives no reason | unverified | fixed — [fix record](../fixes/broydens-method.md) |
 
 ### False Position or Regula Falsi Method — `false-position-or-regula-falsi-method` · [round-2 report](../false-position-or-regula-falsi-method.md)
 
