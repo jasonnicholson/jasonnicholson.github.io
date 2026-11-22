@@ -286,8 +286,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | c is called the "sag parameter" | unverified | open |
-| F2 | Minor | Fidelity | the archive's worked examples are dropped without a note | unverified | open |
+| F1 | Minor | Page match | c is called the "sag parameter" | unverified | fixed — [fix record](../fixes/catenary.md) |
+| F2 | Minor | Fidelity | the archive's worked examples are dropped without a note | unverified | fixed — [fix record](../fixes/catenary.md) |
 
 ### Chebyshev Approximation Polynomial — `chebyshev-approximation-polynomial` · [round-2 report](../chebyshev-approximation-polynomial.md)
 
