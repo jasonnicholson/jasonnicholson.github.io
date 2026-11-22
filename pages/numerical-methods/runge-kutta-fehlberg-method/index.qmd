@@ -14,10 +14,11 @@ initial value problems. At each step it computes embedded 4th- and 5th-order
 approximations from the same stage evaluations, estimates local error from their
 difference, and then adjusts step size to meet a tolerance.
 
-If $y_4$ and $y_5$ are the embedded updates, then a practical error estimate is
-$|y_5 - y_4|$. The next step size is chosen using a scaling rule of the form
-$h_{new} = s h$ with $s \propto (\varepsilon/\text{err})^{1/4}$, where $\varepsilon$
-is the requested tolerance.
+If $y_4$ and $y_5$ are the embedded updates, then $|y_5 - y_4|$ estimates the
+local error of $y_4$. It shrinks like $h^5$, so $|y_5 - y_4|/h$ is an error per unit
+step that shrinks like $h^4$. A step is accepted when $|y_5 - y_4|/h \le \varepsilon$,
+where $\varepsilon$ is the requested tolerance, and the next step size is
+$h_{new} = s h$ with $s = 0.84\,(\varepsilon h/|y_5 - y_4|)^{1/4}$.
 
 ## Animations
 
@@ -37,19 +38,35 @@ plot behavior in the module links/images.
 
 ### Case 1 - Adaptive RKF45 vs RKF54, $y' = 1 + y^2$, $y(0)=0.5$, $t \in [0,1.1]$
 
-**Behavior:** Both adaptive traces follow the exact solution well while the curve
-rapidly steepens near $t=1.1$. The accepted-step distributions differ slightly,
-reflecting the 4th-order vs 5th-order accepted update choice.
+**Behavior:** Both adaptive traces follow the exact solution to within a relative
+error of $3.3\times10^{-5}$ all the way to $y(1.1)=139.88$, just short of the pole of
+$\tan$ at $t=1.1071$; the logarithmic $y$-axis keeps the whole run in view. The step
+shrinks from $0.136$ near $t=0.1$ to $5\times10^{-5}$ near $t=1.1$, so 187 of the 259
+computed points lie in $t \ge 1.05$ and the marker slows as it nears the pole (each
+frame adds up to four accepted steps). RKF45 and RKF54 share the error estimate and the
+step rule, so their steps agree to within $0.05\%$ and the curves coincide (blue
+over magenta). They differ only in whether $y_4$ or $y_5$ is carried forward, and
+RKF54 ends closer to the exact value: errors $3.2\times10^{-3}$ against
+$4.5\times10^{-3}$ at $t=1.1$.
 
 [Julia source](rungekuttafehlbergaa.jl)
 
-![Adaptive RKF45 and RKF54 trajectories versus exact solution for y' = 1 + y^2, y(0)=0.5 on [0,1.1]](rungekuttafehlbergaa.gif)
+![Adaptive RKF45 and RKF54 trajectories versus exact solution for y' = 1 + y^2, y(0)=0.5 on [0,1.1], with y on a logarithmic axis](rungekuttafehlbergaa.gif)
 
 ### Case 2 - Adaptive RKF45 vs RKF54, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $t \in [0,5]$
 
-**Behavior:** RKF45 and RKF54 closely follow the dashed RK4 reference trajectory,
-with only small visible differences as adaptive steps tighten through the steeper
-part of the solution.
+**Behavior:** RKF45 and RKF54 match the dashed reference to within $7\times10^{-7}$
+at every accepted point. The controller takes the maximum step $h=0.25$ over the hump
+($0.1 \le t \le 1.35$) and keeps $h$ between $0.189$ and $0.25$ until $t \approx 2.4$,
+past the steepest point ($y'=-0.930$ at $t=2.19$). It then cuts the step as the
+solution bends into its flat tail: below $0.04$ from $t=3$ on, and the smallest step
+it chooses is $0.027$, near $t=3.27$. The corners visible on the hump are the straight
+segments drawn between accepted points $0.25$ apart (up to $0.0091$ below the curve,
+near $t=0.48$), not integration error. These steps are set by the tolerance, not by
+stability: $\partial f/\partial y=-t/(3y^{2/3})$ reaches $-41.3$ at $t=5$, so for fixed
+steps longer than about $h=0.0732$, $h\,|\partial f/\partial y|$ would exceed the 4th-order
+RKF update's stability limit $3.02$ before $t=5$, while every accepted step here keeps
+$h\,|\partial f/\partial y|$ below $1.3$.
 
 [Julia source](rungekuttafehlbergbb.jl)
 

@@ -160,10 +160,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Case 2 "Behavior" puts the step tightening in the wrong place, and says the wrong thing causes the visible differences | verified | open |
-| F2 | Misleading | Page match | Case 1: the RKF45 and RKF54 runs are the same to about 6 digits, and the RKF45 trace cannot be seen | verified | open |
-| F3 | Misleading | Implementation (picture) | Case 1: the second half of the GIF is a frozen frame because the y-window stops at 20 while the solution reaches 139.9 | verified | open |
-| F4 | Minor | Page match / Implementation | the step-size rule pairs the per-step error with the exponent that belongs to the per-unit-step error | unverified | open |
+| F1 | Error | Page match | Case 2 "Behavior" puts the step tightening in the wrong place, and says the wrong thing causes the visible differences | verified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
+| F2 | Misleading | Page match | Case 1: the RKF45 and RKF54 runs are the same to about 6 digits, and the RKF45 trace cannot be seen | verified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
+| F3 | Misleading | Implementation (picture) | Case 1: the second half of the GIF is a frozen frame because the y-window stops at 20 while the solution reaches 139.9 | verified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
+| F4 | Minor | Page match / Implementation | the step-size rule pairs the per-step error with the exponent that belongs to the per-unit-step error | unverified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
 
 ### Runge-Kutta Method — `runge-kutta-method` · [round-1 report](../runge-kutta-method.md)
 

@@ -49,16 +49,17 @@ function rkf_integrate(f, t0, tf, y0; h0=0.1, tol=1e-6, mode=:rkf45, hmin=1e-6, 
         y4 = y + 25k1 / 216 + 1408k3 / 2565 + 2197k4 / 4104 - k5 / 5
         y5 = y + 16k1 / 135 + 6656k3 / 12825 + 28561k4 / 56430 - 9k5 / 50 + 2k6 / 55
 
-        err = abs(y5 - y4)
+        err = abs(y5 - y4)   # local error estimate for y4; scales like h^5
 
-        if err <= tol || h <= hmin
+        # RKF rule: tolerance per unit step, accept if err/h <= tol, s = 0.84*(tol*h/err)^(1/4)
+        if err <= tol * h || h <= hmin
             t += h
             y = mode == :rkf45 ? y4 : y5
             push!(ts, t)
             push!(ys, y)
         end
 
-        s = err == 0.0 ? 2.0 : 0.84 * (tol / err)^(1 / 4)
+        s = err == 0.0 ? 2.0 : 0.84 * (tol * h / err)^(1 / 4)
         h = clamp(s * h, hmin, hmax)
     end
 
@@ -74,7 +75,7 @@ ts45, ys45 = rkf_integrate(f, t0, tf, y0; h0=0.1, tol=tol, mode=:rkf45)
 ts54, ys54 = rkf_integrate(f, t0, tf, y0; h0=0.1, tol=tol, mode=:rkf54)
 ts_ref, ys_ref = rk4_reference(f, t0, tf, y0, 1e-4)
 
-xlims = (0.0, 5.0)
+xlims = (-0.1, 5.1)   # small margins so the end point (5, 0.0081) is not clipped
 ylims = (-0.1, 1.55)
 
 n_frames = max(length(ts45), length(ts54))
@@ -97,13 +98,14 @@ anim = @animate for frame in 1:n_frames
     )
 
     plot!(ts_ref, ys_ref; color=:black, ls=:dash, lw=2.0, label="Reference (RK4 h=1e-4)")
-    plot!(ts45[1:n45], ys45[1:n45]; color=:magenta, lw=2.2, label="RKF45")
-    plot!(ts54[1:n54], ys54[1:n54]; color=:royalblue, lw=2.2, label="RKF54")
+    # RKF45 drawn wide underneath so it stays visible where RKF54 lies on top of it
+    plot!(ts45[1:n45], ys45[1:n45]; color=:magenta, lw=5, label="RKF45")
+    plot!(ts54[1:n54], ys54[1:n54]; color=:royalblue, lw=2, label="RKF54")
 
-    scatter!([ts45[n45]], [ys45[n45]]; color=:magenta, ms=4, label="")
+    scatter!([ts45[n45]], [ys45[n45]]; color=:magenta, ms=7, label="")
     scatter!([ts54[n54]], [ys54[n54]]; color=:royalblue, ms=4, label="")
 end
 
-gif(anim, joinpath(@__DIR__, "rungekuttafehlbergbb.gif"); fps=2)
+gif(anim, joinpath(@__DIR__, "rungekuttafehlbergbb.gif"); fps=3)
 println("Saved: rungekuttafehlbergbb.gif")
 println("Accepted points: RKF45=$(length(ts45)), RKF54=$(length(ts54))")
