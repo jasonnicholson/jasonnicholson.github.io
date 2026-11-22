@@ -58,8 +58,8 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | The wireframe overlay hides the coloured surface of f, so neither GIF shows the surface | unverified | open |
-| F2 | Minor | Page match | The Simpson GIF draws the same piecewise-bilinear facets as the Trapezoidal GIF; only the title differs | unverified | open |
+| F1 | Minor | Implementation | The wireframe overlay hides the coloured surface of f, so neither GIF shows the surface | unverified | fixed — [fix record](../fixes/2d-trapezoidal-and-simpson-rules.md) |
+| F2 | Minor | Page match | The Simpson GIF draws the same piecewise-bilinear facets as the Trapezoidal GIF; only the title differs | unverified | fixed — [fix record](../fixes/2d-trapezoidal-and-simpson-rules.md) |
 
 ### Adaptive Simpson's Rule — `adaptive-simpsons-rule` · [round-1 report](../adaptive-simpsons-rule.md)
 

@@ -39,13 +39,25 @@ function trapezoid2d(n)
     return x, y, hx * hy * s
 end
 
+# Grid lines of the piecewise-bilinear interpolant (whose integral is I_T):
+# straight segments between nodes along every x = x_i and y = y_j, separated by NaN.
+function gridlines(xg, yg)
+    X = Float64[]; Y = Float64[]; Z = Float64[]
+    for xi in xg
+        append!(X, fill(xi, length(yg)), [NaN]); append!(Y, yg, [NaN]); append!(Z, f.(xi, yg), [NaN])
+    end
+    for yj in yg
+        append!(X, xg, [NaN]); append!(Y, fill(yj, length(xg)), [NaN]); append!(Z, f.(xg, yj), [NaN])
+    end
+    return X, Y, Z
+end
+
 xf = range(xlims[1], xlims[2], length=90)
 yf = range(ylims[1], ylims[2], length=90)
 Zf = [f(x, y) for y in yf, x in xf]
 
 anim = @animate for n in n_seq
     xg, yg, approx = trapezoid2d(n)
-    Zg = [f(x, y) for y in yg, x in xg]
     err = abs(approx - true_val)
 
     plt = surface(xf, yf, Zf;
@@ -63,11 +75,12 @@ anim = @animate for n in n_seq
         title="2D Trapezoidal Rule on [0,1] x [0,1]\nmesh = $(n)x$(n),  I_T = $(round(approx; digits=9)),  |error| = $(round(err; digits=9))"
     )
 
-    surface!(plt, xg, yg, Zg;
-        st=:wireframe,
+    # Lines only (a :wireframe series is filled opaque by GR and hides the surface).
+    X, Y, Z = gridlines(xg, yg)
+    plot!(plt, X, Y, Z;
+        seriestype=:path3d,
         linecolor=:black,
         linewidth=1.05,
-        fillalpha=0.0,
         label=""
     )
 end
