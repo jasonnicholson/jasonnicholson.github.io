@@ -266,9 +266,9 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the last frame's title says "degree 4" but the curve is the cubic the page describes | unverified | open |
-| F2 | Minor | Page match | the j = 2 error the page quotes (1.66 at x = π) falls outside the plotted window | unverified | open |
-| F3 | Minor | Fidelity | the only example is not one of Mathews' examples, and no reason is given | unverified | open |
+| F1 | Minor | Page match | the last frame's title says "degree 4" but the curve is the cubic the page describes | unverified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
+| F2 | Minor | Page match | the j = 2 error the page quotes (1.66 at x = π) falls outside the plotted window | unverified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
+| F3 | Minor | Fidelity | the only example is not one of Mathews' examples, and no reason is given | unverified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
 
 ### B-Splines — `b-splines` · [round-2 report](../b-splines.md)
 
