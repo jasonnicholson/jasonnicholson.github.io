@@ -1,0 +1,10 @@
+# Verification: booles-rule
+## A1 — confirmed
+- What I checked: I independently re-implemented composite Boole (same weights 2h/45·(7,32,12,32,7) as boolesaa.jl) in mpmath at 40 digits. I computed the exact integral of f(x)=1+e^{-x}sin(8x^{2/3}) on [0,2] two ways (substituting x=t^3 to remove the endpoint singularity, and plain quad), which agree to 40 digits: I = 2.0162797196170963279. Then I measured the error and the observed order for every n in the script's n_seq, plus n=16..4096 by doubling. As a control I ran the same code on the smooth g(x)=1+e^{-x}sin(8x).
+- Evidence: verify/conv.py -> verify/conv.out; verify/smooth.py -> verify/smooth.out.
+  - Animation's integrand: local order is 3.1 at n=4..12, then about 1.62-1.67 from n=16 to 120. A least-squares slope over n=16..120 gives 1.660. Doubling n=128..4096 gives a steady order of 1.667 = 5/3. Errors: n=16 gives -8.95e-3, n=120 gives -3.19e-4. The last frame of the animation is still wrong in the 4th significant figure (B_120 = 2.015961 against I = 2.016280).
+  - Cause: near 0, sin(8x^{2/3}) ≈ 8x^{2/3}, so f is not smooth at the endpoint x=0 (f' blows up). For an x^α endpoint term, closed Newton-Cotes error is O(h^{1+α}) = O(h^{5/3}).
+  - Control: the smooth g gives orders 6.47, 6.12, 6.03, 6.01, which confirms the implementation and that O(h^6) holds only for smooth integrands.
+  - Committed frame_023.png shows "Sample Points = 113, Approximation = 2.015922", which matches my B_112 = 2.01592229. The GIF shows these same slowly converging values.
+- Severity: Error is fair. "converges rapidly with sixth-order global accuracy" is false for the function this case animates: the observed order is about 1.67, not 6. Line 17 does state O(h^6) "on smooth functions", which is correct in general. But line 28 applies the claim directly to this non-smooth integrand, so it is false as written, not just misleading.
+- Correction to the allegation (if any): None needed. One detail to add: the precise rate is 5/3 (about 1.67), caused by the x^{2/3} endpoint singularity at x=0. The first few frames (n=4 to 12) show apparent order about 3 before the asymptotic rate takes over.

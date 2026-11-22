@@ -1,0 +1,6 @@
+# Verification: derive-numerical-differentiation-formulae
+## A1 — confirmed
+- What I checked: read diffformac.jl in full; grepped it for `x0` and `1.0`; viewed committed frame diffformac/frame_001.png (all frames come from the same plot code, only h changes).
+- Evidence: verify/a1_grep.txt — no `x0` and no `1.0` anywhere in diffformac.jl. The script evaluates d2_3 and d2_5 at every point of `xinner = range(2h, pi-2h, length=700)` and plots them as curves against f''(x) = -2e^{-x}cos x on [0, pi]; the plotted error is the max over that interval. Frame 1 title reads "Second-derivative formulas on [0, pi] | h = 0.35", with no marker, point or annotation at x = 1. index.qmd line 36 reads "### Case 3 - second derivative formulas at $x_0=1$".
+- Severity: Error is fair in the strict sense (the heading states something about the animation that is false: nothing in it is evaluated at or tied to x0 = 1). Impact is low, because the body text on line 38 and the alt text on line 42 correctly say "over [0, pi]", so a careful reader gets the right picture. The heading looks like it was copied from Cases 1–2, which really do use x0 = 1.
+- Correction to the allegation (if any): none. Line number 36 is correct. Small addition: the curves stop at [2h, pi-2h], not the full [0, pi], so the stencils are only plotted on that inner interval.

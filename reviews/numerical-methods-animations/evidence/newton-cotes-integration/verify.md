@@ -1,0 +1,10 @@
+# Verification: newton-cotes-integration
+## A1 — confirmed with correction
+- What I checked: (1) Exact degree of precision of each closed Newton-Cotes panel rule, found with rational arithmetic by integrating x^d on [0,1] until the rule fails. (2) Observed composite convergence orders at the same spacing h (n = 24..1536 subintervals, divisible by 1-4) on a smooth integrand exp(-x)sin(8x)+1 on [0,2], against a 40-digit mpmath reference. (3) The same run on the page's own integrand.
+- Evidence: verify/a1_check.py (run with /usr/bin/python3).
+  - Degree of precision: trapezoid 1, Simpson 1/3 **3**, Simpson 3/8 **3**, Boole 5. Simpson 1/3 is exact for cubics, so the 3/8 rule gains no degree of precision over it.
+  - Observed orders on the smooth integrand: trapezoid 2.00, Simpson 1/3 4.00, Simpson 3/8 4.00, Boole 6.00.
+  - At the same h (n=1536), the error is 8.68e-12 for Simpson 1/3 and 1.95e-11 for Simpson 3/8. That ratio of 2.25 matches the error constants (3/80 per 3h panel against 1/90 per 2h panel). So at equal spacing the 3/8 rule is the *less* accurate of the two.
+- Severity: Misleading is fair. Line 43 ("cubics, giving a higher-order piecewise fit") is literally true of the interpolant's degree. But a reader takes it to mean a better rule than Simpson 1/3, which is false in order and in error constant. Line 61 ("increases algebraic order by fitting higher-degree interpolants per panel") is false as a general statement for the 2→3 step. Even-degree closed rules gain one extra degree, so the orders run 1, 3, 3, 5 (degree of precision) and 2, 4, 4, 6 (convergence), not one step up per degree.
+- Correction to the allegation: line 13 on its own is accurate. It labels the *interpolant* degrees (1, 2, 3, 4) and claims nothing about order, so it only contributes context. The substantive problems are lines 43 and 61.
+- Aside (not part of A1): the page's integrand exp(-x)sin(8x^{2/3})+1 is not smooth at x=0. On it, all four rules converge at the same order, about 1.67 (verify/a1_check.py output). So line 61's "higher-order rules reduce truncation error for smooth functions" does not apply to the function the animations actually use.

@@ -1,0 +1,14 @@
+# Verification: secant-method
+
+## A1 — confirmed
+- What I checked: the root of f(x)=3e^x-4cos(x) at 200-digit precision (mpmath findroot), the secant iterates from p0=1.0, p1=0.9, and the committed frames 1 and 9 of secantmethodaa.
+- Evidence: verify/check.py. Root r = 0.254850059029 and f(0.456) = 1.142, so 0.456 is not a root. Iterates: p2 = 0.455751 (error 0.201), p3 = 0.3207 (0.066), p4 = 0.2638 (0.0089), p5 = 0.25529 (4.4e-4), p6 = 0.254853 (3.1e-6), p7 (1.1e-9), p8 (2.7e-15). Frame 1 labels the red diamond "p2 = 0.45575", and the curve visibly crosses zero near 0.25. Frame 9 labels "p10 = 0.25485". The page has mistaken the first secant iterate p2 for the root. The first step cuts the error only from 0.645 to 0.201, a factor of about 3, with f(p2) ≈ 1.14, so "the secant line immediately produces a good approximation" overstates it. Rapid convergence only sets in from about p4 onward.
+- Severity: Error is fair. The page states the root's value wrongly, at line 18 and again in the alt text at line 22.
+- Correction to the allegation: none. The line numbers (18, 22) are correct. The rest of the line-18 claim holds: both starting points are on the same side (right) of the root, and convergence is fast overall.
+
+## A2 — confirmed
+- What I checked: the asymptotic convergence order of the secant method on f(x)=atan(x), p0=1.60, p1=1.50, to the root at 0, using 200-digit iterates. I also checked the theory and the 6 committed frames of secantmethodff.
+- Theory: atan is odd, so f''(0)=0 and the usual secant error constant f''/(2f') vanishes. Taking the next term, e_{n+1} ≈ (f'''(0)/(6f'(0))) e_n e_{n-1}(e_n+e_{n-1}) ≈ -(1/3) e_n e_{n-1}^2. The order p then solves p^2 = p + 2, giving p = 2, not the golden ratio 1.618.
+- Evidence: verify/check.py. Iterates are -1.842, -0.0975, 0.0762, -5.24e-5, 1.01e-7, -9.2e-17, 3.1e-31, -8.9e-64, 2.9e-125, -7.8e-252. Successive order estimates are 3.33, 1.60, 2.25, 1.89, 2.06, which oscillate down toward 2. The ratio e_{n+1}/(e_n e_{n-1}^2) is 0.33259, 0.33269, 0.333333, 0.333333 …, which is exactly the predicted 1/3 and confirms order 2. Frames: the 6 frames show p2 to p7, with labels rounded to 5 decimals: -1.84246, -0.09748, 0.07619, -5.0e-5, 0.0, -0.0. The last two read 0.0 and -0.0, so no rate of convergence can be read from the animation, let alone 1.618. The step p3 → p4 (|e| from 0.097 to 0.076) is barely any progress, which also cuts against "subsequent steps quickly close in".
+- Severity: Misleading is fair. 1.618 is the textbook generic order for a simple root with f''(r) ≠ 0, so the sentence is defensible as a general statement. But it is presented as what this case illustrates, and for this case the order is 2 and the frames show no rate.
+- Correction to the allegation: none needed. The same order-2 behaviour also applies to Case 3 (same function), but the page makes no order claim there.

@@ -1,0 +1,10 @@
+# Verification: simpsons-3-8-rule-for-numerical-integration
+## A1 — confirmed
+- What I checked: Using mpmath at 40 digits, I computed the reference integral I = ∫_0^2 (e^{-x} sin(8x^{2/3}) + 1) dx. I got it two ways, by direct quadrature and by the substitution x=t^3, which removes the singularity; both give I = 2.0162797196170963279. I then evaluated the composite 3/8 rule (the same formula as `simpson38_sum` in the script) for the animation's n sequence and for n = 3·2^k up to 12288. From these I measured the observed order log2(e_n/e_{2n}). As a control I ran the same rule on the smooth integrand e^{-x} sin(8x)+1.
+- Evidence: verify/conv.py, with output in verify/conv.out.
+  - Across the animation's own frames (n=3..120) the error falls from 0.132 to 4.69e-4. The overall observed order is 1.53, and from n=60 to n=120 it is 1.69.
+  - Under halving the order is 2.51, 2.33, 1.83, 1.70, 1.68, 1.67, ..., 1.6667 at n=12288. It converges to 5/3 = 1+α, as expected for an x^{2/3} singularity at x=0: f(x) - 1 ≈ 8x^{2/3} near 0, so f' is unbounded there.
+  - The smooth control gives orders 4.10, 4.03, 4.006, 4.002, which shows the implementation is correct and the drop in order comes from the integrand.
+  - In the final committed frame (frame_024.png) the text reads "Approximation = 2.01581". That matches my S_120 = 2.0158104, whose error is -4.7e-4. Halving the error at this stage takes about 1.5x more points, not the ~1.19x that fourth order would need.
+- Severity: Error is fair. The sentence is about this specific animation ("The approximation converges ... with fourth-order global error"), and for this integrand that statement is false. The order is 5/3, not 4. Line 17 qualifies O(h^4) with "for smooth integrands" and is correct as written. However, the page never says that the integrand it shows is not smooth at x=0, which makes line 28 misleading as well as wrong.
+- Correction to the allegation (if any): None needed. The line number (28) and the quoted text are accurate. The measured asymptotic order is 5/3 ≈ 1.67, and across the frames actually shown it is about 1.5 to 1.7.
