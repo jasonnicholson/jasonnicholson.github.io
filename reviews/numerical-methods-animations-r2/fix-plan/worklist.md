@@ -24,7 +24,7 @@ Generated from the round-2 page reports in this folder. One row per finding, gro
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | The Description gives the wrong reason why high-order Padé approximants are hard to compute (page match, Minor) | unverified | open |
+| F1 | Minor | Page match | The Description gives the wrong reason why high-order Padé approximants are hard to compute (page match, Minor) | unverified | fixed — [fix record](../fixes/pade-approximation.md) |
 
 ## WP-B
 
