@@ -204,7 +204,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the page says the archive's examples are only tableaux, but Examples 3–5 also plot successive Neville interpolants | unverified | open |
+| F1 | Minor | Fidelity | the page says the archive's examples are only tableaux, but Examples 3–5 also plot successive Neville interpolants | unverified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
 
 ### B-Splines — `b-splines` · [round-4 report](../b-splines.md)
 
