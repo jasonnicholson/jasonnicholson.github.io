@@ -86,9 +86,9 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity / Page match | legacy note falsely says the archive lacks a Simpson's 3/8 GIF | unverified | open |
-| F2 | Minor | Fidelity / Page match | cases 2–4 draw no sample points or panel boundaries, so the panel structure the text describes is not visible | unverified | open |
-| F3 | Minor | Page match | the final frames put Simpson's 1/3 rule last in accuracy, the opposite of the page's comparison | unverified | open |
+| F1 | Minor | Fidelity / Page match | legacy note falsely says the archive lacks a Simpson's 3/8 GIF | unverified | fixed — [fix record](../fixes/newton-cotes-integration.md) |
+| F2 | Minor | Fidelity / Page match | cases 2–4 draw no sample points or panel boundaries, so the panel structure the text describes is not visible | unverified | fixed — [fix record](../fixes/newton-cotes-integration.md) |
+| F3 | Minor | Page match | the final frames put Simpson's 1/3 rule last in accuracy, the opposite of the page's comparison | unverified | fixed — [fix record](../fixes/newton-cotes-integration.md) |
 
 ### Riemann Sums — `riemann-sums` · [round-2 report](../riemann-sums.md)
 
