@@ -250,7 +250,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | The page does not mention Mathews' Example 8 | unverified | open |
+| F1 | Minor | Fidelity | The page does not mention Mathews' Example 8 | unverified | fixed — [fix record](../fixes/least-squares-polynomials.md) |
 
 ### Legendre Polynomials — `legendre-polynomials` · [round-3 report](../legendre-polynomials.md)
 
