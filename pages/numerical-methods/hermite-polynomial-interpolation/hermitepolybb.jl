@@ -27,7 +27,7 @@ term2 = @. h * dy0 * H10(t_vals)
 term3 = @. y1    * H01(t_vals)
 term4 = @. h * dy1 * H11(t_vals)
 
-# Frames: show basis functions one at a time, then cumulative sum
+# Frames: add one weighted basis term per frame and draw only the running sum
 stages = [
     ("y₀ · H₀₀(t)", term1,                       :blue,   "y₀·H₀₀"),
     ("+ h·y₀' · H₁₀(t)", term1 .+ term2,         :red,    "…+h·y₀'·H₁₀"),
@@ -48,7 +48,7 @@ anim = @animate for (label, cumulative, clr, lbl) in stages
           linestyle=:dot, label="f(x) = eˣ")
     plot!(collect(x_vals), cumulative; color=clr, lw=2.5, label=lbl)
 
-    # Endpoint markers with slope arrows
+    # Endpoint markers (values only; the slopes are not drawn)
     scatter!([a, b], [y0, y1]; color=:black, ms=7, label="endpoints")
 end
 
