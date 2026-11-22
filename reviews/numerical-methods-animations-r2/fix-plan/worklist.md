@@ -138,8 +138,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | there is no "Modified Euler page" | unverified | open |
-| F2 | Minor | Fidelity | Mathews' second RKF example (Examples 6/7) is dropped without comment, and the provenance sentence sits under the wrong case | unverified | open |
+| F1 | Minor | Page match | there is no "Modified Euler page" | unverified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
+| F2 | Minor | Fidelity | Mathews' second RKF example (Examples 6/7) is dropped without comment, and the provenance sentence sits under the wrong case | unverified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
 
 ### Runge-Kutta Method — `runge-kutta-method` · [round-2 report](../runge-kutta-method.md)
 
