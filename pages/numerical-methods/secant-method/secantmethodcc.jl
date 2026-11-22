@@ -5,6 +5,7 @@
 # Produces: secantmethodcc.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Parameters ---
@@ -30,6 +31,9 @@ for i in 2:n_iters+1
         ps[i+1] = ps[i] - f(ps[i]) * (ps[i] - ps[i-1]) / denom
     end
 end
+
+# Legend value: 5 decimals, or scientific notation once |x| < 1e-3 so small iterates do not print as 0.0.
+fmt_p(x) = x == 0 ? "0" : abs(x) >= 1e-3 ? @sprintf("%.5f", x) : @sprintf("%.2e", x)
 
 # --- Backdrop ---
 xplot = range(xlims[1], xlims[2], length=400)
@@ -87,7 +91,7 @@ anim = @animate for frame in 1:n_iters
             plot!([pc, pc], [0.0, f(pc)];
                   color=:steelblue, lw=1, ls=:dash, label="")
             scatter!([pc], [0.0]; color=:red, ms=8, marker=:diamond,
-                     label="p$(frame+1) = $(round(pc; digits=5))")
+                     label="p$(frame+1) = $(fmt_p(pc))")
         end
     end
 

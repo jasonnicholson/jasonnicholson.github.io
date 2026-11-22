@@ -257,8 +257,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | script comment), Minor | unverified | open |
-| F2 | Minor | Implementation | legend), Minor | unverified | open |
+| F1 | Minor | Implementation | script comment), Minor | unverified | fixed — [fix record](../fixes/secant-method.md) |
+| F2 | Minor | Implementation | legend), Minor | unverified | fixed — [fix record](../fixes/secant-method.md) |
 
 ## WP-F
 

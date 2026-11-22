@@ -5,6 +5,7 @@
 # Produces: secantmethodbb.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Parameters ---
@@ -83,7 +84,7 @@ anim = @animate for frame in 1:n_iters
             plot!([pc, pc], [0.0, clamp(f(pc), ylims[1], ylims[2])];
                   color=:steelblue, lw=1, ls=:dash, label="")
             scatter!([pc], [0.0]; color=:red, ms=8, marker=:diamond,
-                     label="p$(frame+1) = $(round(pc; digits=5))")
+                     label=@sprintf("p%d = %.8f", frame+1, pc))
         end
     end
 
