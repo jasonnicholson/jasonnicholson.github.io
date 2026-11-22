@@ -151,7 +151,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the legacy animations varied the number of subintervals, but the new ones show a single, well-resolved run | unverified | open |
+| F1 | Minor | Fidelity | the legacy animations varied the number of subintervals, but the new ones show a single, well-resolved run | unverified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
 
 ## WP-E
 
