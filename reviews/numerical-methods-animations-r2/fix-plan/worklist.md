@@ -363,5 +363,5 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | The legacy module's animated scenarios (Examples 8 to 10) are not represented, and the page does not say so | unverified | open |
+| F1 | Minor | Fidelity | The legacy module's animated scenarios (Examples 8 to 10) are not represented, and the page does not say so | unverified | fixed — [fix record](../fixes/richardson-extrapolation.md) |
 
