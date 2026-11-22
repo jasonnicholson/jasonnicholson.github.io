@@ -297,11 +297,11 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | Case 1 is not Muller's method: every step has complex roots and the script silently keeps only the real part | verified | open |
-| F2 | Error | Page match | "the next iterate is found where the parabola crosses the x-axis" is false for Case 1 | verified | open |
-| F3 | Error | Page match | Convergence order "≈ 1.84" is the simple-root order; at these double roots it is ≈ 1.23 | verified | open |
-| F4 | Minor | Page match | Case 3 heading says "double root near x = 2" | unverified | open |
-| F5 | Minor | Implementation | Case 1 first frame shows only two of the three points | unverified | open |
+| F1 | Error | Implementation | Case 1 is not Muller's method: every step has complex roots and the script silently keeps only the real part | verified | fixed — [fix record](../fixes/mullers-method.md) |
+| F2 | Error | Page match | "the next iterate is found where the parabola crosses the x-axis" is false for Case 1 | verified | fixed — [fix record](../fixes/mullers-method.md) |
+| F3 | Error | Page match | Convergence order "≈ 1.84" is the simple-root order; at these double roots it is ≈ 1.23 | verified | fixed — [fix record](../fixes/mullers-method.md) |
+| F4 | Minor | Page match | Case 3 heading says "double root near x = 2" | unverified | fixed — [fix record](../fixes/mullers-method.md) |
+| F5 | Minor | Implementation | Case 1 first frame shows only two of the three points | unverified | fixed — [fix record](../fixes/mullers-method.md) |
 
 ### Newton-Raphson Method — `newton-raphson-method` · [round-1 report](../newton-raphson-method.md)
 

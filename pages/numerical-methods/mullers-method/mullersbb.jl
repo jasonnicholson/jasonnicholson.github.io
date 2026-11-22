@@ -18,6 +18,10 @@ ylims = (-0.2, 2.2)
 title_str = "Muller's Method: f(x) = sin(x²-2)·(x²-2)"
 
 # --- Muller's method step ---
+# Parabola through the three points: P(x) = f2 + b (x - p2) + d (x - p2)^2.
+# Its discriminant is positive at every step for these starting values, so the
+# real root nearest p2 is Muller's next iterate; a negative discriminant
+# (complex next iterate) is reported as an error rather than silently dropped.
 function muller_step(p0, p1, p2, f)
     f0, f1, f2 = f(p0), f(p1), f(p2)
     h0 = p1 - p0
@@ -26,9 +30,11 @@ function muller_step(p0, p1, p2, f)
     δ1 = (f2 - f1) / h1
     d = (δ1 - δ0) / (h1 + h0)
     b = δ1 + h1 * d
-    D = sqrt(complex(b^2 - 4 * f2 * d))
+    disc = b^2 - 4 * f2 * d
+    disc < 0 && error("Muller step has complex roots (discriminant = $disc)")
+    D = sqrt(disc)
     E = abs(b + D) >= abs(b - D) ? b + D : b - D
-    return real(p2 - 2 * f2 / E)
+    return p2 - 2 * f2 / E
 end
 
 # --- Lagrange parabola through 3 points ---

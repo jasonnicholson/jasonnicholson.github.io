@@ -1,7 +1,7 @@
 # mullerscc.jl
 # Muller's Method animation: Example 3
 # f(x) = x^6 - 7x^4 + 15x^2 - 9 = (x^2-1)(x^2-3)^2
-# Double root at p = sqrt(3) ≈ 1.7321 (near x=2 as stated in problem)
+# Double root at p = sqrt(3) ≈ 1.7321 (Mathews' problem statement says "near x = 2")
 # Starting values: p0=1.3, p1=1.4, p2=1.5
 # Produces: mullerscc.gif
 
@@ -19,6 +19,10 @@ ylims = (-12.0, 20.0)
 title_str = "Muller's Method: f(x) = x⁶ - 7x⁴ + 15x² - 9"
 
 # --- Muller's method step ---
+# Parabola through the three points: P(x) = f2 + b (x - p2) + d (x - p2)^2.
+# Its discriminant is positive at every step for these starting values, so the
+# real root nearest p2 is Muller's next iterate; a negative discriminant
+# (complex next iterate) is reported as an error rather than silently dropped.
 function muller_step(p0, p1, p2, f)
     f0, f1, f2 = f(p0), f(p1), f(p2)
     h0 = p1 - p0
@@ -27,9 +31,11 @@ function muller_step(p0, p1, p2, f)
     δ1 = (f2 - f1) / h1
     d = (δ1 - δ0) / (h1 + h0)
     b = δ1 + h1 * d
-    D = sqrt(complex(b^2 - 4 * f2 * d))
+    disc = b^2 - 4 * f2 * d
+    disc < 0 && error("Muller step has complex roots (discriminant = $disc)")
+    D = sqrt(disc)
     E = abs(b + D) >= abs(b - D) ? b + D : b - D
-    return real(p2 - 2 * f2 / E)
+    return p2 - 2 * f2 / E
 end
 
 # --- Lagrange parabola through 3 points ---
