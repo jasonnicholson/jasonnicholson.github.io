@@ -153,8 +153,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Heun does not end closer to the reference at t = 5; it ends about 9.5× farther away than Euler | verified | open |
-| F2 | Misleading | Page match | Euler does not "drift low near t=5"; it runs high over the hump and then goes unstable, ending in a spike and a negative value | verified | open |
+| F1 | Error | Page match | Heun does not end closer to the reference at t = 5; it ends about 9.5× farther away than Euler | verified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
+| F2 | Misleading | Page match | Euler does not "drift low near t=5"; it runs high over the hump and then goes unstable, ending in a spike and a negative value | verified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
 
 ### Runge-Kutta-Fehlberg Method — `runge-kutta-fehlberg-method` · [round-1 report](../runge-kutta-fehlberg-method.md)
 

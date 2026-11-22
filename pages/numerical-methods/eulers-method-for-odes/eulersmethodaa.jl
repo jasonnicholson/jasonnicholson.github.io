@@ -28,8 +28,9 @@ end
 
 t0 = 0.0
 tf = 5.0
-n_pts = 41
-n_steps = n_pts - 1
+n_steps = 200   # h = 0.025 keeps h*|df/dy| below the stability limit 2 up to t = 5 (|df/dy| reaches 41.3)
+n_pts = n_steps + 1
+stride = 5      # each frame adds `stride` steps (0.125 in t)
 h = (tf - t0) / n_steps
 h_ref = 1e-4
 
@@ -42,11 +43,11 @@ for i in 1:n_steps
     ys[i + 1] = ys[i] + h * f(ts[i], ys[i])
 end
 
-xlims = (t0, tf)
+xlims = (t0 - 0.1, tf + 0.1)   # small margins so the end point at t = 5 is not clipped
 ylims = (-0.1, 1.55)
-title_str = "Euler Method: y' = 1 - t*cbrt(y), y(0)=1, n=41"
+title_str = "Euler Method, h = 0.025: y' = 1 - t*cbrt(y), y(0)=1"
 
-anim = @animate for frame in 1:n_pts
+anim = @animate for frame in 1:stride:n_pts
     plot(
         size=(640, 480),
         xlims=xlims,
