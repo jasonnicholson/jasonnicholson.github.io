@@ -1,6 +1,6 @@
 # secantmethodee.jl
 # Secant Method animation: NON Convergence — Diverging to Infinity
-# f(x) = x * exp(-x), p0=1.5, p1=2.0, n=16
+# f(x) = x * exp(-x), p0=1.5, p1=2.0, n=9
 # Root at x=0; method diverges with these starting points
 # Produces: secantmethodee.gif
 
@@ -11,7 +11,7 @@ gr()
 f(x) = x * exp(-x)
 p0   = 1.5
 p1   = 2.0
-n_iters = 16
+n_iters = 9   # frame 9 shows p10 ≈ 10.57, the first iterate past the window
 
 xlims = (0.0, 10.1)
 ylims = (0.0, 0.4)
@@ -66,7 +66,7 @@ end
 anim = @animate for frame in 1:n_iters
     plot(size=(600,600), xlims=xlims, ylims=ylims,
          xlabel="x", ylabel="y", title=title_str,
-         legend=:topleft, grid=true, framestyle=:box,
+         legend=:topright, grid=true, framestyle=:box,
          background_color=:white)
 
     hline!([0.0]; color=:black, lw=1, label="")
@@ -105,10 +105,11 @@ anim = @animate for frame in 1:n_iters
                 scatter!([pc], [0.0]; color=:red, ms=8, marker=:diamond,
                          label="p$(frame+1) = $(round(pc; digits=3))")
             elseif isfinite(pc)
-                annotate!(xlims[2]*0.5, ylims[2]*0.85,
-                          text("p$(frame+1) → $(round(pc; digits=1)) (off chart)", :red, 9))
-                scatter!([xlims[2]], [0.0]; color=:red, ms=8, marker=:diamond,
-                         label="p$(frame+1) → ∞")
+                annotate!(xlims[2]*0.7, ylims[2]*0.5,
+                          text("p$(frame+1) = $(round(pc; digits=2)) (off chart)", :red, 9))
+                scatter!([xlims[2]], [0.0]; markercolor=:white, markerstrokecolor=:red,
+                         markerstrokewidth=2, ms=8, marker=:diamond,
+                         label="p$(frame+1) = $(round(pc; digits=2)) (off chart, marker at edge)")
             end
         end
         scatter!([pa], [fa]; color=:blue, ms=6, label="p$(frame-1)")
@@ -117,10 +118,10 @@ anim = @animate for frame in 1:n_iters
         fa = f(pa)
         scatter!([pa], [fa]; color=:blue, ms=6, label="p$(frame-1)")
         annotate!(xlims[2]*0.5, ylims[2]*0.85,
-                  text("p$frame = $(round(pb; digits=1)) (diverged)", :red, 9))
+                  text("p$frame = $(round(pb; digits=2)) (off chart)", :red, 9))
     else
         annotate!(xlims[2]*0.5, ylims[2]*0.7,
-                  text("Method diverged", :red, 12))
+                  text("Iterates off chart", :red, 12))
     end
 end
 

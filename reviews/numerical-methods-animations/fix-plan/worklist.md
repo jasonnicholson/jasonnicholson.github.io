@@ -328,12 +328,12 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Case 1 gives the wrong root (0.456 is the first iterate p2, not the root) | verified | open |
-| F2 | Misleading | Page match | Case 6 says it illustrates order ≈ 1.618, but for arctan at its root the order is 2 | verified | open |
-| F3 | Minor | Page match | Case 2 gives a backwards reason for the slow convergence | unverified | open |
-| F4 | Minor | Implementation | Case 4 draws p3 and p9 at a clamped y = −5, off the secant line that is supposed to pass through them | unverified | open |
-| F5 | Minor | Implementation | Case 5 labels p10 as "→ ∞" and shows six empty "Method diverged" frames, although the iterates only creep right by about 0.75 per step | unverified | open |
-| F6 | Minor | Implementation | Case 4 script header gives the root as −1.6724 | unverified | open |
+| F1 | Error | Page match | Case 1 gives the wrong root (0.456 is the first iterate p2, not the root) | verified | fixed — [fix record](../fixes/secant-method.md) |
+| F2 | Misleading | Page match | Case 6 says it illustrates order ≈ 1.618, but for arctan at its root the order is 2 | verified | fixed — [fix record](../fixes/secant-method.md) |
+| F3 | Minor | Page match | Case 2 gives a backwards reason for the slow convergence | unverified | fixed — [fix record](../fixes/secant-method.md) |
+| F4 | Minor | Implementation | Case 4 draws p3 and p9 at a clamped y = −5, off the secant line that is supposed to pass through them | unverified | fixed — [fix record](../fixes/secant-method.md) |
+| F5 | Minor | Implementation | Case 5 labels p10 as "→ ∞" and shows six empty "Method diverged" frames, although the iterates only creep right by about 0.75 per step | unverified | fixed — [fix record](../fixes/secant-method.md) |
+| F6 | Minor | Implementation | Case 4 script header gives the root as −1.6724 | unverified | fixed — [fix record](../fixes/secant-method.md) |
 
 ## WP-F interpolation and approximation
 
