@@ -49,6 +49,13 @@ end
 tref, yref = rk4(50_000)
 yex5 = yref[end]
 
+# Reference values at the nodes of an m-step run: RK4 with k = cld(50000, m) substeps per node (at least 50000 steps)
+function refnodes(m)
+    k = cld(50_000, m)
+    _, yr = rk4(m * k)
+    return yr[1:k:end]
+end
+
 # --- Euler stability limit on the negative real axis: |1 + z| <= 1 exactly for -2 <= z <= 0 ---
 zlim = 2.0
 
@@ -66,6 +73,8 @@ anim = @animate for m in ms
     all(ylims[1] .< ys .< ylims[2]) || error("m = $m leaves the plot window")
     h   = (T - t0) / m
     ton = onset(h)
+    err  = ys .- refnodes(m)                 # error at every node of the run
+    imax = argmax(abs.(err))
 
     plot(size=(640, 480), xlims=xlims, ylims=ylims,
          xlabel="t", ylabel="y",
@@ -82,8 +91,9 @@ anim = @animate for m in ms
 
     stab_txt = ton === nothing ? "h·|∂f/∂y| < 2 up to t = 5" :
                                  @sprintf("h·|∂f/∂y| > 2 from t ≈ %.2f", ton)
-    annotate!(0.05, 0.62, text(@sprintf("y(5) = %.7f", ys[end]), :black, 10, :left))
-    annotate!(0.05, 0.50, text(@sprintf("error = %+.1e", ys[end] - yex5), :black, 10, :left))
+    annotate!(0.05, 0.73, text(@sprintf("y(5) = %.7f", ys[end]), :black, 10, :left))
+    annotate!(0.05, 0.61, text(@sprintf("error at t = 5: %+.1e", err[end]), :black, 10, :left))
+    annotate!(0.05, 0.49, text(@sprintf("max |error| = %.1e at t = %.2f", abs(err[imax]), ts[imax]), :black, 10, :left))
     annotate!(0.05, 0.38, text(@sprintf("reference y(5) = %.7f", yex5), :gray40, 9, :left))
     annotate!(0.05, 0.27, text(stab_txt, :gray40, 9, :left))
 end

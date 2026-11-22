@@ -102,8 +102,8 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | the error in y(5) is presented as the accuracy measure, but here it is roughly 10⁴ times smaller than the global error and hides the difference between the two  | verified | open |
-| F2 | Minor | Page match | Case 2 says only m = 12–20 zig-zag, but m = 24 (and slightly m = 28) also zig-zag in the last steps | unverified | open |
+| F1 | Misleading | Page match | the error in y(5) is presented as the accuracy measure, but here it is roughly 10⁴ times smaller than the global error and hides the difference between the two  | verified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
+| F2 | Minor | Page match | Case 2 says only m = 12–20 zig-zag, but m = 24 (and slightly m = 28) also zig-zag in the last steps | unverified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
 
 ### Runge-Kutta-Fehlberg Method — `runge-kutta-fehlberg-method` · [round-3 report](../runge-kutta-fehlberg-method.md)
 
