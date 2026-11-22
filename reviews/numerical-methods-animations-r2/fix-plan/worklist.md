@@ -57,7 +57,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity / Page match | also affects the page match) — Minor — node markers and panel boundaries dropped, so the "panels" cannot be seen after the first few frames | unverified | open |
+| F1 | Minor | Fidelity / Page match | also affects the page match) — Minor — node markers and panel boundaries dropped, so the "panels" cannot be seen after the first few frames | unverified | fixed — [fix record](../fixes/booles-rule.md) |
 
 ### Cubic Spline Quadrature — `cubic-spline-quadrature` · [round-2 report](../cubic-spline-quadrature.md)
 
