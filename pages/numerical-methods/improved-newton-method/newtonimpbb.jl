@@ -10,7 +10,7 @@ gr()
 
 # --- Functions ---
 # Factored forms: the expanded x^3 - 3x + 2 loses all accuracy to cancellation near the
-# double root (Float64 gives f(1 + 1.3e-10) = 2.2e-16 instead of 5.1e-20).
+# double root (Float64 gives f(1 + 1.3e-10) = 0.0 instead of 5.1e-20).
 f(x)  = (x - 1)^2 * (x + 2)
 fp(x) = 3 * (x - 1) * (x + 1)
 

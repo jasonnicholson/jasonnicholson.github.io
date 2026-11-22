@@ -222,8 +222,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | ): wrong number in a script comment about cancellation | unverified | open |
-| F2 | Minor | Fidelity | ): Mathews' Example 3 and the B/C comparisons are not carried over | unverified | open |
+| F1 | Minor | Implementation | ): wrong number in a script comment about cancellation | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
+| F2 | Minor | Fidelity | ): Mathews' Example 3 and the B/C comparisons are not carried over | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
 
 ### Damped Newton with Acceleration (Madsen-Reid Method) — `madsen-reid-method` · [round-2 report](../madsen-reid-method.md)
 
