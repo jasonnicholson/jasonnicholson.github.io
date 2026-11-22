@@ -280,7 +280,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | neither case comes from Mathews, and his worked examples are dropped without a note | unverified | open |
+| F1 | Minor | Fidelity | neither case comes from Mathews, and his worked examples are dropped without a note | unverified | fixed — [fix record](../fixes/bezier-curves.md) |
 
 ### Catenary — `catenary` · [round-2 report](../catenary.md)
 

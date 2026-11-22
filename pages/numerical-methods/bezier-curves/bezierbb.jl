@@ -1,12 +1,13 @@
 # bezierbb.jl
-# Bézier Curve animation: de Casteljau for an S-shaped cubic Bézier
-# Control points: P0=(0,0), P1=(0,2), P2=(4,0), P3=(4,2)
+# Bézier Curve animation: de Casteljau for a cubic Bézier
+# Control points (Mathews, Bézier Curve module, Example 4): P0=(2,2), P1=(0,1), P2=(3,-1), P3=(4,1)
+# Same endpoints as Example 3 (bezieraa.jl) with each handle twice as far from its endpoint
 # Produces: bezierbb.gif
 
 using Plots
 gr()
 
-P = [[0.0, 0.0], [0.0, 2.0], [4.0, 0.0], [4.0, 2.0]]
+P = [[2.0, 2.0], [0.0, 1.0], [3.0, -1.0], [4.0, 1.0]]
 
 function decasteljau_point(pts, t)
     pts_cur = deepcopy(pts)
@@ -33,9 +34,9 @@ anim = @animate for (frame_idx, t) in enumerate(t_anim)
     L3 = [(1 - t) .* L2[i] .+ t .* L2[i + 1] for i in 1:1]
 
     plot(size=(700, 550),
-         xlims=(-0.3, 4.3), ylims=(-0.3, 2.3),
+         xlims=(-0.3, 4.3), ylims=(-1.3, 2.3),
          xlabel="x", ylabel="y",
-         title="Bézier Curve (S-shape) — de Casteljau  (t = $(round(t, digits=2)))",
+         title="Bézier Curve (Example 4) — de Casteljau  (t = $(round(t, digits=2)))",
          legend=:outerright, grid=true, framestyle=:box,
          background_color=:white)
 
