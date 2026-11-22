@@ -131,8 +131,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Fidelity | Mathews' "Modified Euler" is the midpoint method, but the page runs Heun and says it reconstructed Example 12 | verified | open |
-| F2 | Misleading | Fidelity | the legacy animations exist and show a step-refinement sweep, but the page says they are missing and animates a single fine step | verified | open |
+| F1 | Misleading | Fidelity | Mathews' "Modified Euler" is the midpoint method, but the page runs Heun and says it reconstructed Example 12 | verified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
+| F2 | Misleading | Fidelity | the legacy animations exist and show a step-refinement sweep, but the page says they are missing and animates a single fine step | verified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
 
 ### Runge-Kutta-Fehlberg Method — `runge-kutta-fehlberg-method` · [round-2 report](../runge-kutta-fehlberg-method.md)
 
