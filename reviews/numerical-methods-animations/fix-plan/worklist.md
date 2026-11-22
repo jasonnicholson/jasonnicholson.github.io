@@ -139,7 +139,7 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Stated $O(h^2)$ convergence is false for this integrand; the measured order is $5/3$ | verified | open |
+| F1 | Error | Page match | Stated $O(h^2)$ convergence is false for this integrand; the measured order is $5/3$ | verified | fixed — [fix record](../fixes/trapezoidal-rule-for-numerical-integration.md) |
 
 ## WP-D ODE step size and stability
 
