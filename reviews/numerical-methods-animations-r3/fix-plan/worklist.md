@@ -281,5 +281,5 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation / Page match | Case 1 approximations and max-error annotation cover [h, pi-h], while the title and alt text say [0, pi] (Page match / implementation display, Minor) | unverified | open |
+| F1 | Minor | Implementation / Page match | Case 1 approximations and max-error annotation cover [h, pi-h], while the title and alt text say [0, pi] (Page match / implementation display, Minor) | unverified | fixed — [fix record](../fixes/richardson-extrapolation.md) |
 
