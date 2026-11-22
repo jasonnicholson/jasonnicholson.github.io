@@ -8,8 +8,8 @@ Generated from the round-2 page reports in this folder. One row per finding, gro
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | Taylor polynomials are clamped onto the plot border and drawn along the frame edge. Minor | unverified | open |
-| F2 | Minor | Page match | "analytic at x0 ⇒ principal part is zero" is stated without the annulus qualifier, and the page contradicts it later. Minor | unverified | open |
+| F1 | Minor | Implementation | Taylor polynomials are clamped onto the plot border and drawn along the frame edge. Minor | unverified | fixed — [fix record](../fixes/laurent-series.md) |
+| F2 | Minor | Page match | "analytic at x0 ⇒ principal part is zero" is stated without the annulus qualifier, and the page contradicts it later. Minor | unverified | fixed — [fix record](../fixes/laurent-series.md) |
 
 ### Maclaurin and Taylor Series — `maclaurin-and-taylor-series` · [round-2 report](../maclaurin-and-taylor-series.md)
 

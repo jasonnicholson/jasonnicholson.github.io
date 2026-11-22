@@ -326,8 +326,9 @@ end
 
 function render_case(case::LaurentCase)
     xplot = collect(range(case.xlims[1], case.xlims[2], length=900))
+    # Values are not clamped to ylims: the plot clips at the axis limits, so a curve that
+    # leaves the window is drawn leaving it, not running along the frame edge.
     ytrue = [safe_eval(case.f, x) for x in xplot]
-    ytrue = [isfinite(y) ? clamp(y, case.ylims[1], case.ylims[2]) : NaN for y in ytrue]
 
     coeffs = series_coeffs(case)
     yc = safe_eval(case.f, case.c)
@@ -343,7 +344,6 @@ function render_case(case::LaurentCase)
             # degree-n Taylor polynomial.
             ylaur[i] = poly_eval_asc(coeffs[1:(n + 1)], z)
         end
-        ylaur = [isfinite(y) ? clamp(y, case.ylims[1], case.ylims[2]) : NaN for y in ylaur]
 
         pplot = plot(size=(700, 520),
                      xlims=case.xlims, ylims=case.ylims,
