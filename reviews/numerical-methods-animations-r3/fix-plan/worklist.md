@@ -270,8 +270,8 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | The page calls $e^{-x}\sin x$ "the legacy test function", but the legacy module has no test function | unverified | open |
-| F2 | Minor | Page match | "Each animation ... visualizes one derived stencil formula" does not describe Cases 2 and 3 | unverified | open |
+| F1 | Minor | Fidelity | The page calls $e^{-x}\sin x$ "the legacy test function", but the legacy module has no test function | unverified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
+| F2 | Minor | Page match | "Each animation ... visualizes one derived stencil formula" does not describe Cases 2 and 3 | unverified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
 
 ### Numerical Differentiation — `numerical-differentiation` · [round-3 report](../numerical-differentiation.md)
 
