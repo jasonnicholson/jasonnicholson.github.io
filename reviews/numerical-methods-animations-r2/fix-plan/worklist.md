@@ -159,9 +159,9 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 1 shows its "slow linear convergence" only in the legend; frames 6–13 are visually unchanged | unverified | open |
-| F2 | Minor | Page match | Case 3's "tangent lines" cannot be told apart from the curve h(x) | unverified | open |
-| F3 | Minor | Fidelity | archive Examples 1(a), 3, 5 and 6 are left out without comment, including every case with multiplicity other than 2 | unverified | open |
+| F1 | Minor | Page match | Case 1 shows its "slow linear convergence" only in the legend; frames 6–13 are visually unchanged | unverified | fixed — [fix record](../fixes/accelerated-and-modified-newton-raphson.md) |
+| F2 | Minor | Page match | Case 3's "tangent lines" cannot be told apart from the curve h(x) | unverified | fixed — [fix record](../fixes/accelerated-and-modified-newton-raphson.md) |
+| F3 | Minor | Fidelity | archive Examples 1(a), 3, 5 and 6 are left out without comment, including every case with multiplicity other than 2 | unverified | fixed — [fix record](../fixes/accelerated-and-modified-newton-raphson.md) |
 
 ### Aitken's Method & Steffensen's Acceleration — `aitken-method-and-steffensen-acceleration` · [round-2 report](../aitken-method-and-steffensen-acceleration.md)
 

@@ -59,8 +59,9 @@ anim = @animate for frame in 0:n_iters
         xn  = xs[k]
         xn1 = xs[k+1]
         hn  = h_plot(xn)
-        # Tangent line from (xn, h(xn)) to (xn1, 0)
-        plot!([xn, xn1], [hn, 0.0]; color=:steelblue, lw=1.5, label="")
+        # Tangent line from (xn, h(xn)) to (xn1, 0); dashed black so it stands out
+        # where it lies almost on the nearly straight curve h
+        plot!([xn, xn1], [hn, 0.0]; color=:black, lw=1.5, ls=:dash, label="")
         hn1 = h_plot(xn1)
         plot!([xn1, xn1], [0.0, hn1]; color=:steelblue, lw=1.5, label="")
     end
