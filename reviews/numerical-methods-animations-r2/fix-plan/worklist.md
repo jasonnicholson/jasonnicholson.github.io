@@ -46,8 +46,8 @@ Generated from the round-2 page reports in this folder. One row per finding, gro
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the Simpson formula leaves out its evenness condition, and h, k, m, n are never defined | unverified | open |
-| F2 | Minor | Fidelity | "The archived module examples use …" overstates the archive, and Example 7 is dropped without comment | unverified | open |
+| F1 | Minor | Page match | the Simpson formula leaves out its evenness condition, and h, k, m, n are never defined | unverified | fixed — [fix record](../fixes/2d-trapezoidal-and-simpson-rules.md) |
+| F2 | Minor | Fidelity | "The archived module examples use …" overstates the archive, and Example 7 is dropped without comment | unverified | fixed — [fix record](../fixes/2d-trapezoidal-and-simpson-rules.md) |
 
 ### Adaptive Simpson's Rule — `adaptive-simpsons-rule` · [round-2 report](../adaptive-simpsons-rule.md)
 
