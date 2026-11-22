@@ -327,7 +327,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Case 2 uses cos(pi x/2) instead of either of Mathews' Legendre-series functions, with no reason given | unverified | open |
+| F1 | Minor | Fidelity | Case 2 uses cos(pi x/2) instead of either of Mathews' Legendre-series functions, with no reason given | unverified | fixed — [fix record](../fixes/legendre-polynomials.md) |
 
 ### Rational Approximation — `rational-approximation` · [round-2 report](../rational-approximation.md)
 

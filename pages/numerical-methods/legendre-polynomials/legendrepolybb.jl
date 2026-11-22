@@ -1,6 +1,7 @@
 # legendrepolybb.jl
-# Legendre Polynomial animation: partial-sum Legendre series approximation of cos(πx/2)
-# Adds one Legendre term per frame (odd-n coefficients are zero, so S_1, S_3, S_5, S_7 equal S_0, S_2, S_4, S_6), showing convergence on [-1, 1]
+# Legendre Polynomial animation: partial-sum Legendre series approximation of exp(x)cos(πx/2)
+# (the function of Mathews' Example 8(b)). Adds one Legendre term per frame; f is neither even
+# nor odd, and every coefficient c_0 ... c_8 is nonzero. Shows convergence on [-1, 1]
 # Produces: legendrepolybb.gif
 
 using Plots
@@ -40,7 +41,7 @@ function legendre_coeff(f, n; npts=20)
     return (2n + 1) / 2 * integral
 end
 
-f(x) = cos(π * x / 2)
+f(x) = exp(x) * cos(π * x / 2)
 
 x = range(-1.0, 1.0, length=500)
 fx = f.(x)
@@ -60,11 +61,11 @@ anim = @animate for n in 0:n_max
     plot(size=(700, 500),
          xlims=(-1.0, 1.0), ylims=(-1.3, 1.3),
          xlabel="x", ylabel="y",
-         title="Legendre Series for cos(πx/2) — S_$n(x)  (max err = $(round(err, sigdigits=3)))",
-         legend=:topright, grid=true, framestyle=:box,
+         title="Legendre Series for exp(x)cos(πx/2) — S_$n(x)  (max err = $(round(err, sigdigits=3)))",
+         titlefontsize=12, legend=:bottomright, grid=true, framestyle=:box,
          background_color=:white)
 
-    plot!(collect(x), fx; color=:blue, lw=2, label="f(x) = cos(πx/2)")
+    plot!(collect(x), fx; color=:blue, lw=2, label="f(x) = exp(x)cos(πx/2)")
     plot!(collect(x), S;  color=:red,  lw=2, linestyle=:dash,
           label="S_$n(x)")
 end
