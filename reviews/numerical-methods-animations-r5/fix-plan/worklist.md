@@ -98,7 +98,7 @@ No findings in round 5.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | The Description's step-size rule leaves out the $h_{max}=0.25$ cap, which is binding in Case 2 | unverified | open |
+| F1 | Minor | Page match | The Description's step-size rule leaves out the $h_{max}=0.25$ cap, which is binding in Case 2 | unverified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
 
 ### Runge-Kutta Method — `runge-kutta-method` · [round-5 report](../runge-kutta-method.md)
 
