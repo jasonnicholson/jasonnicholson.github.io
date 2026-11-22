@@ -83,8 +83,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "stabilizes rapidly" hides the slow algebraic convergence caused by the x^(2/3) term | verified | open |
-| F2 | Minor | Page match | "Each frame increases the quadrature order" does not hold for the first three frames | unverified | open |
+| F1 | Misleading | Page match | "stabilizes rapidly" hides the slow algebraic convergence caused by the x^(2/3) term | verified | fixed — [fix record](../fixes/gauss-legendre-quadrature.md) |
+| F2 | Minor | Page match | "Each frame increases the quadrature order" does not hold for the first three frames | unverified | fixed — [fix record](../fixes/gauss-legendre-quadrature.md) |
 
 ### Midpoint Rule — `midpoint-rule` · [round-1 report](../midpoint-rule.md)
 
