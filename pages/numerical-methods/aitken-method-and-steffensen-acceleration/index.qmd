@@ -17,7 +17,7 @@ $$
 \lim_{k \to \infty} \frac{|x_{k+1} - p|}{|x_k - p|} = \frac{m - 1}{m}
 $$
 
-For a double root ($m = 2$) the ratio is $\tfrac{1}{2}$, meaning each Newton step only halves the error — hundreds of iterations may be needed to reach machine precision.
+For a double root ($m = 2$) the ratio is $\tfrac{1}{2}$, meaning each Newton step only halves the error, so about 50 iterations are needed to reduce an error of order 1 to $10^{-16}$ ($2^{-53} \approx 1.1 \times 10^{-16}$). In double precision, rounding in $f$ near a double root can stop progress earlier: for the expanded polynomials of Cases 1 and 3 below, $f$ evaluates to exactly 0 after 28 and 25 Newton steps, at errors of $1.5 \times 10^{-9}$ and $2.6 \times 10^{-10}$.
 
 ### Aitken's $\Delta^2$ Process
 
@@ -61,25 +61,25 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — $f(x) = x^3 - 3x + 2$, double root $p = 1$, $x_0 = 2.0$
 
-**Behavior:** Newton–Raphson converges linearly (slowly) to the double root $p = 1$ of $f(x) = (x-1)^2(x+2)$. At a double root the asymptotic error ratio is $\tfrac{1}{2}$, so each step only halves the error. Steffensen's $\Delta^2$ acceleration restores superlinear convergence, reaching machine precision in a handful of steps.
+**Behavior:** Newton–Raphson converges linearly (slowly) to the double root $p = 1$ of $f(x) = (x-1)^2(x+2)$. At a double root the asymptotic error ratio is $\tfrac{1}{2}$, so each step only halves the error. Steffensen's acceleration brings the error to $6.6 \times 10^{-9}$ in 3 steps (errors $1$, $5.7 \times 10^{-2}$, $2.8 \times 10^{-4}$, $6.6 \times 10^{-9}$), while plain Newton is still at $3.1 \times 10^{-7}$ after 22 steps. It cannot go further in double precision: at $S_3$ the expanded polynomial $x^3 - 3x + 2$ evaluates to exactly 0, so the $\Delta^2$ denominator is 0 and the animation stops the Steffensen sequence there.
 
 [Julia source](aitkenab.jl)
 
-![Two-panel animation: top shows Newton tangent-line steps on f(x)=x³−3x+2 approaching the double root p=1 from x₀=2; bottom shows log-error convergence of Newton (slow linear) vs Steffensen (fast).](aitkenab.gif)
+![Two-panel animation: top shows Newton tangent-line steps on f(x)=x³−3x+2 approaching the double root p=1 from x₀=2; bottom shows log-error convergence of Newton (slow, linear) vs Steffensen (fast, stopping after 3 steps at error 6.6×10⁻⁹).](aitkenab.gif)
 
 ### Case 2 — $f(x) = (x^2-2)\sin(x^2-2)$, double root $p = \sqrt{2}$, $x_0 = 1.0$
 
-**Behavior:** The double root $p = \sqrt{2}$ causes Newton to converge linearly. Steffensen's acceleration applied to the Newton iterates recovers rapid convergence, dropping to machine precision far sooner.
+**Behavior:** The double root $p = \sqrt{2}$ causes Newton to converge linearly. Steffensen's method (Aitken's formula applied to two Newton steps, restarted from each accelerated value) recovers rapid convergence: its error reaches $6.7 \times 10^{-16}$ after 4 steps (8 Newton steps), while plain Newton is still at $4.7 \times 10^{-8}$ after 22. The sequence stops at $S_4$ because $|f'(S_4)|$ is below the script's $10^{-14}$ cutoff.
 
 [Julia source](aitkencd.jl)
 
-![Two-panel animation: top shows Newton tangent-line steps on f(x)=(x²−2)sin(x²−2) approaching double root p=√2 from x₀=1; bottom shows log-error convergence of Newton vs Steffensen.](aitkencd.gif)
+![Two-panel animation: top shows Newton tangent-line steps on f(x)=(x²−2)sin(x²−2) approaching double root p=√2 from x₀=1; bottom shows log-error convergence of Newton vs Steffensen, which reaches error 6.7×10⁻¹⁶ after 4 steps.](aitkencd.gif)
 
 ### Case 3 — $f(x) = x^6 - 7x^4 + 15x^2 - 9$, double root $p = \sqrt{3}$, $x_0 = 1.5$
 
-**Behavior:** $f(x) = (x^2-1)(x^2-3)^2$ has a double root at $p = \sqrt{3} \approx 1.732$. Newton's linear crawl is visible in both the tangent-line panel and the gently sloping error curve; Steffensen converges in only a few Aitken-accelerated steps.
+**Behavior:** $f(x) = (x^2-1)(x^2-3)^2$ has a double root at $p = \sqrt{3} \approx 1.732$. Newton's linear crawl is visible in both the tangent-line panel and the gently sloping error curve; Steffensen reduces the error to $2.8 \times 10^{-8}$ in 3 steps, then stalls: near the double root the polynomial's values (of order $10^{-14}$) are comparable to the rounding error of evaluating $x^6 - 7x^4 + 15x^2 - 9$ in double precision, so steps 4–6 give errors of $5.4 \times 10^{-8}$, $2.1 \times 10^{-8}$ and $1.5 \times 10^{-8}$, about where plain Newton is after 22 steps ($2.4 \times 10^{-8}$). In exact arithmetic step 4 would reach $4.4 \times 10^{-16}$.
 
 [Julia source](aitkenef.jl)
 
-![Two-panel animation: top shows Newton tangent-line steps on f(x)=x⁶−7x⁴+15x²−9 approaching double root p=√3 from x₀=1.5; bottom shows log-error convergence of Newton vs Steffensen.](aitkenef.gif)
+![Two-panel animation: top shows Newton tangent-line steps on f(x)=x⁶−7x⁴+15x²−9 approaching double root p=√3 from x₀=1.5; bottom shows log-error convergence of Newton vs Steffensen, which levels off at a few times 10⁻⁸ after 3 steps.](aitkenef.gif)
 

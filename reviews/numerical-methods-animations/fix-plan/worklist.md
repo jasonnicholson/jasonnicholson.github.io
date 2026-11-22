@@ -196,10 +196,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Case 1: Steffensen does not reach machine precision; it stalls at 6.6e-9 | verified | open |
-| F2 | Misleading | Page match | Case 3: Steffensen stalls near 1e-8 and its error goes back up; the page says it "converges in only a few steps" | verified | open |
-| F3 | Minor | Page match | Newton at a double root does not need "hundreds" of iterations and cannot reach machine precision in double precision | unverified | open |
-| F4 | Minor | Page match | Case 2 wording suggests Δ² is applied to the plotted Newton iterates | unverified | open |
+| F1 | Error | Page match | Case 1: Steffensen does not reach machine precision; it stalls at 6.6e-9 | verified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F2 | Misleading | Page match | Case 3: Steffensen stalls near 1e-8 and its error goes back up; the page says it "converges in only a few steps" | verified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F3 | Minor | Page match | Newton at a double root does not need "hundreds" of iterations and cannot reach machine precision in double precision | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F4 | Minor | Page match | Case 2 wording suggests Δ² is applied to the plotted Newton iterates | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
 
 ### Bisection Method — `bisection-method` · [round-1 report](../bisection-method.md)
 

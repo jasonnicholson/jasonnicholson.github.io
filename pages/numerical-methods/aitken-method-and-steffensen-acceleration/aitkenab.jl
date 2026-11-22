@@ -29,18 +29,24 @@ for i in 1:n_total
 end
 
 # ── Steffensen iterates ───────────────────────────────────────────────────────
+# If a guard fires, the sequence stops there: only computed steps are kept
+# and drawn (no padding with copies). Here, in Float64, f(S_3) = x^3-3x+2
+# rounds to exactly 0, so q1 = q2 = S_3 and the Δ² denominator is 0.
 n_steff = 7
 xS = Vector{Float64}(undef, n_steff + 1)
 xS[1] = x0
+n_done = n_steff          # Steffensen steps actually computed
+stop_reason = ""
 for i in 1:n_steff
     q1 = xS[i] - f(xS[i]) / df(xS[i])
     q2 = q1    - f(q1)    / df(q1)
     denom = q2 - 2*q1 + xS[i]
     if abs(denom) < 1e-15
-        xS[i+1:end] .= xS[i]; break
+        global n_done = i - 1; global stop_reason = "Δ² denominator = 0"; break
     end
     xS[i+1] = xS[i] - (q1 - xS[i])^2 / denom
 end
+xS = xS[1:n_done+1]
 
 # ── Tangent-line cobweb path (Newton) ────────────────────────────────────────
 path_x = [xN[1]]; path_y = [0.0]
@@ -61,7 +67,7 @@ xplot = range(xlims_curve[1], xlims_curve[2], length=500)
 # ── Animation ────────────────────────────────────────────────────────────────
 anim = @animate for frame in 0:n_total
 
-    nS = min(frame, n_steff)
+    nS = min(frame, n_done)
 
     # — Top panel: Newton tangent-line path + Steffensen iterates —
     p1 = plot(size=(680, 420), xlims=xlims_curve, ylims=ylims_curve,
@@ -82,7 +88,10 @@ anim = @animate for frame in 0:n_total
              label="Newton x_$(frame) = $(round(x_cur; digits=6))")
     # Steffensen iterates accumulated on x-axis
     scatter!(p1, xS[1:nS+1], zeros(nS+1); color=:red, ms=7,
-             markershape=:diamond, label="Steffensen ($(nS) steps)")
+             markershape=:diamond,
+             label=(frame > n_done && !isempty(stop_reason)) ?
+                   "Steffensen ($(n_done) steps; stopped: $(stop_reason))" :
+                   "Steffensen ($(nS) steps)")
     if nS > 0
         xs_cur = xS[nS + 1]
         annotate!(p1, xs_cur, 0.25,
