@@ -129,7 +129,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 2's final Steffensen error is measured against the rounded root, not √2 | unverified | open |
+| F1 | Minor | Page match | Case 2's final Steffensen error is measured against the rounded root, not √2 | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
 
 ### Bisection Method — `bisection-method` · [round-3 report](../bisection-method.md)
 
