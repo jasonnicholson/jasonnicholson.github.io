@@ -8,7 +8,7 @@ Generated from the round-3 page reports in this folder. One row per finding, gro
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | In cases 03 and 06 the frames show the opposite of "diverges beyond it" | verified | open |
+| F1 | Misleading | Page match | In cases 03 and 06 the frames show the opposite of "diverges beyond it" | verified | fixed — [fix record](../fixes/laurent-series.md) |
 
 ### Maclaurin and Taylor Series — `maclaurin-and-taylor-series` · [round-3 report](../maclaurin-and-taylor-series.md)
 
