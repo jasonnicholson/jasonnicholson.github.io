@@ -348,10 +348,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "local support over exactly 4 knot spans" is false for the clamped basis the animation shows | verified | open |
-| F2 | Misleading | Page match | Description uses subscript = degree, Animations use subscript = order | verified | open |
-| F3 | Minor | Page match | Case 1 alt text says "traced through 7 control points using de Boor's algorithm" | unverified | open |
-| F4 | Minor | Implementation | bsplineaa.jl comments misdescribe the animation and the knot vector | unverified | open |
+| F1 | Misleading | Page match | "local support over exactly 4 knot spans" is false for the clamped basis the animation shows | verified | fixed — [fix record](../fixes/b-splines.md) |
+| F2 | Misleading | Page match | Description uses subscript = degree, Animations use subscript = order | verified | fixed — [fix record](../fixes/b-splines.md) |
+| F3 | Minor | Page match | Case 1 alt text says "traced through 7 control points using de Boor's algorithm" | unverified | fixed — [fix record](../fixes/b-splines.md) |
+| F4 | Minor | Implementation | bsplineaa.jl comments misdescribe the animation and the knot vector | unverified | fixed — [fix record](../fixes/b-splines.md) |
 
 ### Bézier Curves — `bezier-curves` · [round-1 report](../bezier-curves.md)
 
