@@ -301,7 +301,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the archive's worked examples (including the clamped spline) are replaced by a new example, and the page gives no reason | unverified | open |
+| F1 | Minor | Fidelity | the archive's worked examples (including the clamped spline) are replaced by a new example, and the page gives no reason | unverified | fixed — [fix record](../fixes/cubic-splines.md) |
 
 ### Hermite Polynomial Interpolation — `hermite-polynomial-interpolation` · [round-2 report](../hermite-polynomial-interpolation.md)
 
