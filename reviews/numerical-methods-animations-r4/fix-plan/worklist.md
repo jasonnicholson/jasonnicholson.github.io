@@ -159,7 +159,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "Diagnostic signature of two roots of equal magnitude" claims more than is true | unverified | open |
+| F1 | Minor | Page match | "Diagnostic signature of two roots of equal magnitude" claims more than is true | unverified | fixed — [fix record](../fixes/graeffes-method.md) |
 
 ### Halley's Method — `halleys-method` · [round-4 report](../halleys-method.md)
 
