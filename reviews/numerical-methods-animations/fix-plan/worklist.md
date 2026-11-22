@@ -461,4 +461,4 @@ No findings in round 1. Nothing to fix; included in the re-review.
 |---|---|---|
 | `lagrangeaa.jl` is not linked from the page and its GIF is not committed | `lagrange-polynomial-interpolation-and-approximation` | fixed (D3: deleted) |
 | `newtpolyaa.jl`/`.gif` and `newtpolybb.jl`/`.gif` are on disk but not linked or embedded | `newton-interpolation-polynomial` | fixed (D3: newtpolyaa linked as a verified case; newtpolybb deleted) |
-| Section index links `milne-simpsons-method/`, `predictor-corrector-methods/`, `shooting-methods-for-odes/` point to folders that do not exist (pages are flat `.qmd`) | `pages/numerical-methods/index.qmd` | open |
+| Section index links `milne-simpsons-method/`, `predictor-corrector-methods/`, `shooting-methods-for-odes/` point to folders that do not exist (pages are flat `.qmd`) | `pages/numerical-methods/index.qmd` | fixed (D4, commit 188e4bd) |
