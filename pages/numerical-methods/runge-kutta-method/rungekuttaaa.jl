@@ -71,14 +71,15 @@ anim = @animate for m in ms
          background_color=:white)
 
     if ton !== nothing
-        vspan!([ton, T]; color=:red, alpha=0.10, lw=0, label="h·|∂f/∂y| > $(round(zlim; digits=3))")
+        vspan!([ton, T]; color=:red, alpha=0.10, lw=0, label="h·|∂f/∂y| > $(round(zlim; digits=3)) on reference")
     end
     plot!(tref, yref; color=:gray70, lw=4, label="reference solution")
     plot!(ts, ys; color=:magenta, lw=2, marker=:circle, ms=2.5, msw=0, label="RK4, m = $m")
     scatter!([ts[end]], [ys[end]]; color=:red, ms=5, msw=0, label="")
 
-    stab_txt = ton === nothing ? "h·|∂f/∂y| < $(round(zlim; digits=3)) up to t = 5" :
-                                 @sprintf("h·|∂f/∂y| > %.3f from t ≈ %.2f", zlim, ton)
+    # The criterion is evaluated along the reference solution, not along the plotted run
+    stab_txt = ton === nothing ? "on reference: h·|∂f/∂y| < $(round(zlim; digits=3)) up to t = 5" :
+                                 @sprintf("on reference: h·|∂f/∂y| > %.3f from t ≈ %.2f", zlim, ton)
     annotate!(2.35, 1.22, text(@sprintf("y(5) = %.7f", ys[end]), :black, 10, :left))
     annotate!(2.35, 1.10, text(@sprintf("error = %+.1e", ys[end] - yex5), :black, 10, :left))
     annotate!(2.35, 0.98, text(@sprintf("reference y(5) = %.7f", yex5), :gray40, 9, :left))

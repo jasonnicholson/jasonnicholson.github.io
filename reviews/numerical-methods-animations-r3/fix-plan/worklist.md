@@ -113,7 +113,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | what the diagram shows — Minor | unverified | open |
+| F1 | Minor | Page match | what the diagram shows — Minor | unverified | fixed — [fix record](../fixes/runge-kutta-method.md) |
 
 ### Taylor Series Method for ODE's — `taylor-series-method-for-odes` · [round-3 report](../taylor-series-method-for-odes.md)
 
