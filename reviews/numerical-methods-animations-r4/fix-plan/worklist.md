@@ -118,7 +118,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | The stated mechanism for Mathews' differing values is not reproduced | unverified | open |
+| F1 | Minor | Page match | The stated mechanism for Mathews' differing values is not reproduced | unverified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
 
 ## WP-E
 
