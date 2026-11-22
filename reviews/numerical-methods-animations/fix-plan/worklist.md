@@ -406,10 +406,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | Intermediate frames are truncations of the final polynomial, not least-squares fits, yet are presented as "construction of the least-squares polynomial fit" | verified | open |
-| F2 | Minor | Implementation / Page match | Coefficients are hard-coded rather than computed; the quintic RMS stated on the page is not what the script computes | unverified | open |
-| F3 | Minor | Page match | Case 1 residual pattern misdescribed | unverified | open |
-| F4 | Minor | Implementation | RMS annotation labels are cut off at the left edge in every frame | unverified | open |
+| F1 | Misleading | Page match | Intermediate frames are truncations of the final polynomial, not least-squares fits, yet are presented as "construction of the least-squares polynomial fit" | verified | fixed — [fix record](../fixes/least-squares-polynomials.md) |
+| F2 | Minor | Implementation / Page match | Coefficients are hard-coded rather than computed; the quintic RMS stated on the page is not what the script computes | unverified | fixed — [fix record](../fixes/least-squares-polynomials.md) |
+| F3 | Minor | Page match | Case 1 residual pattern misdescribed | unverified | fixed — [fix record](../fixes/least-squares-polynomials.md) |
+| F4 | Minor | Implementation | RMS annotation labels are cut off at the left edge in every frame | unverified | fixed — [fix record](../fixes/least-squares-polynomials.md) |
 
 ### Legendre Polynomials — `legendre-polynomials` · [round-1 report](../legendre-polynomials.md)
 
