@@ -42,9 +42,9 @@ cases = InterpCase[
     with_span("11", "log(1+x)", x -> log(1 + x), (-1.5, 1.5), (-0.98, 1.0)),
     auto_span("12", "sin(x)", x -> sin(x), (-3pi, 3pi)),
     auto_span("13", "cos(x)", x -> cos(x), (-3pi, 3pi)),
-    # Nodes on [-3, 3], not [-pi, pi]: 5 equally spaced nodes on [-pi, pi]
-    # would land on the poles at +-pi/2.
-    with_span("14", "tan(x)", x -> tan(x), (-pi, pi), (-3.0, 3.0); poles=[-pi/2, pi/2]),
+    # Nodes on [-1.45, 1.45], between the poles at +-pi/2, as in Mathews'
+    # static example linked to animation 14 (window [-pi, pi]).
+    with_span("14", "tan(x)", x -> tan(x), (-pi, pi), (-1.45, 1.45); poles=[-pi/2, pi/2]),
     auto_span("15", "exp(x)", x -> exp(x), (-2.0, 3.0)),
     auto_span("16", "cos(x)*exp(-x)", x -> cos(x) * exp(-x), (-2.0, 4.0)),
     auto_span("17", "cosh(x)", x -> cosh(x), (-4.0, 4.0)),

@@ -24,15 +24,15 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | unexplained identical "degree 1" and "degree 2" frames in Cases 14, 18, 19, 21 and 23 | unverified | open |
-| F2 | Minor | Fidelity | Case 14 nodes depart from the archive's tan x example without a stated reason | unverified | open |
+| F1 | Minor | Page match | unexplained identical "degree 1" and "degree 2" frames in Cases 14, 18, 19, 21 and 23 | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
+| F2 | Minor | Fidelity | Case 14 nodes depart from the archive's tan x example without a stated reason | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
 
 ### Newton Interpolation Polynomial — `newton-interpolation-polynomial` · [round-4 report](../newton-interpolation-polynomial.md)
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Cases 01–29 on this page do not say which function or interval they show | unverified | open |
-| F2 | Minor | Fidelity | the divided-differences case uses a different interval and nodes from Mathews' Newton example, and the page gives no reason | unverified | open |
+| F1 | Minor | Page match | Cases 01–29 on this page do not say which function or interval they show | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F2 | Minor | Fidelity | the divided-differences case uses a different interval and nodes from Mathews' Newton example, and the page gives no reason | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
 
 ## WP-C
 
