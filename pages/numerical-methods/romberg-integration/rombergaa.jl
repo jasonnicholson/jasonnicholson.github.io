@@ -8,6 +8,8 @@ gr()
 
 f(x) = 1 + exp(-x) * sin(8 * x^(2 / 3))
 a, b = 0.0, 2.0
+# Reference integral (mpmath, 40 digits, after the substitution x = t^3, which makes the integrand smooth)
+I_ref = 2.0162797196170963
 
 m_seq = [2, 3, 5, 9, 17, 33, 65, 129]
 n_levels = length(m_seq)
@@ -62,13 +64,15 @@ anim = @animate for frame in 0:n_levels
               legend=false, background_color=:white,
               title="Romberg Table")
 
-    annotate!(p2, 0.02, 0.95, text("k   m        R[k,1]       ...      R[k,k]", :black, 8, :left))
+    # Only the first (trapezoid) and diagonal columns fit in this panel; the error column
+    # shows how far the diagonal estimate still is from the reference integral.
+    annotate!(p2, 0.02, 0.95, text("k   m        R[k,1]       R[k,k]      R[k,k] - I", :black, 8, :left))
     for k in 1:frame
-        row_vals = join([@sprintf("%.6f", R[k, j]) for j in 1:k], "  ")
-        line = @sprintf("%d   %-3d  %s", k, m_seq[k], row_vals)
+        line = @sprintf("%d   %-3d  %.6f   %.6f   %+.1e", k, m_seq[k], R[k, 1], R[k, k], R[k, k] - I_ref)
         y = 0.90 - 0.09 * k
         annotate!(p2, 0.02, y, text(line, :black, 8, :left))
     end
+    annotate!(p2, 0.02, 0.04, text(@sprintf("I = %.6f", I_ref), :black, 8, :left))
 
     plot(p1, p2; layout=@layout([a{0.68w} b{0.32w}]), size=(920, 480))
 end

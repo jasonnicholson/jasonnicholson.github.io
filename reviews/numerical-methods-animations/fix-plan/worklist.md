@@ -119,9 +119,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | The animated integrand defeats Romberg acceleration, but the page presents it as showing rapid diagonal convergence | verified | open |
-| F2 | Minor | Page match | "The diagonal entry $R_{k,k}$ provides the best estimate at that stage" is false at stages k=2 and k=3 | unverified | open |
-| F3 | Minor | Implementation | Romberg Table panel truncates the rows, so the triangle and the diagonal column are never visible | unverified | open |
+| F1 | Misleading | Page match | The animated integrand defeats Romberg acceleration, but the page presents it as showing rapid diagonal convergence | verified | fixed — [fix record](../fixes/romberg-integration.md) |
+| F2 | Minor | Page match | "The diagonal entry $R_{k,k}$ provides the best estimate at that stage" is false at stages k=2 and k=3 | unverified | fixed — [fix record](../fixes/romberg-integration.md) |
+| F3 | Minor | Implementation | Romberg Table panel truncates the rows, so the triangle and the diagonal column are never visible | unverified | fixed — [fix record](../fixes/romberg-integration.md) |
 
 ### Simpson's 3/8 Rule for Numerical Integration — `simpsons-3-8-rule-for-numerical-integration` · [round-1 report](../simpsons-3-8-rule-for-numerical-integration.md)
 

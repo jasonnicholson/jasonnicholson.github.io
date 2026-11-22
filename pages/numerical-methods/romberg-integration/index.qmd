@@ -18,7 +18,7 @@ $$
 R_{k,j}=R_{k,j-1}+\frac{R_{k,j-1}-R_{k-1,j-1}}{4^{j-1}-1}, \qquad j=2,\dots,k.
 $$
 
-This builds a triangular table whose diagonal entries converge quickly for smooth integrands, often outperforming raw trapezoidal refinement for the same function evaluations.
+For smooth $f$ ($f\in C^{2j}[a,b]$ for column $j$), the trapezoidal error expands in even powers of $h$, $T_n-I=c_1h^2+c_2h^4+\cdots$; each extrapolation removes the leading term, so column $j$ has error $O(h^{2j})$. This builds a triangular table whose diagonal entries converge quickly for smooth integrands, often outperforming raw trapezoidal refinement for the same function evaluations.
 
 ## Animations
 
@@ -30,11 +30,11 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Romberg Table Construction, $f(x)=1+e^{-x}\sin(8x^{2/3})$, $[0,2]$
 
-**Behavior:** Each frame adds one Romberg row from a denser trapezoidal partition and then applies Richardson extrapolation across the row. The diagonal entry $R_{k,k}$ provides the best estimate at that stage.
+**Behavior:** Each frame adds one Romberg row from a denser trapezoidal partition and then applies Richardson extrapolation across the row. The diagonal entry $R_{k,k}$ is the table's estimate at each stage; it is the most accurate entry in its row from $m=9$ on, but at $m=3$ and $m=5$ it is the least accurate. Its error is not monotone: $|R_{k,k}-I|$ is $1.6\times10^{-3}$ at $m=2$, then $0.47$, $0.46$, $0.046$, $8.1\times10^{-3}$, $2.8\times10^{-3}$, $8.7\times10^{-4}$, $2.7\times10^{-4}$; the one-panel value at $m=2$, $f(0)+f(2)=2.017925$, is close only by coincidence. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error of every column, the diagonal included, shrinks like $O(h^{5/3})$ rather than $O(h^{2j})$: halving $h$ divides the diagonal error by about 3.18 (from 64 to 128 subintervals), tending to $2^{5/3}\approx 3.17$, so extrapolation lowers the error only by a constant factor (about 4.4 against the trapezoid column at 129 sample points). The last frame's $R_{8,8}=2.016007$ is still $2.7\times10^{-4}$ below $I\approx 2.016280$.
 
 [Julia source](rombergaa.jl)
 
-![Romberg integration animation over [0,2]: trapezoidal panels refine globally while the Romberg table fills row by row and diagonal estimates converge](rombergaa.gif)
+![Romberg integration animation over [0,2]: trapezoidal panels refine globally while the Romberg table adds one row per frame, listing R[k,1], R[k,k] and the diagonal's error R[k,k] - I, which is still -2.7e-04 at 129 sample points](rombergaa.gif)
 
 
 ## Derivation Notes (Planned)
