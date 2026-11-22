@@ -65,9 +65,9 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | The page's 15ε criterion does not produce the refinement shown; the animation follows a factor-1 test that keeps the coarse S(a,b) | verified | open |
-| F2 | Misleading | Page match | The animation never shows where the nodes are, so the claimed nonuniform concentration cannot be seen | verified | open |
-| F3 | Minor | Implementation | The script runs no adaptive algorithm: `tol` is only a label and the node sets are hard-coded | unverified | open |
+| F1 | Misleading | Page match | The page's 15ε criterion does not produce the refinement shown; the animation follows a factor-1 test that keeps the coarse S(a,b) | verified | fixed — [fix record](../fixes/adaptive-simpsons-rule.md) |
+| F2 | Misleading | Page match | The animation never shows where the nodes are, so the claimed nonuniform concentration cannot be seen | verified | fixed — [fix record](../fixes/adaptive-simpsons-rule.md) |
+| F3 | Minor | Implementation | The script runs no adaptive algorithm: `tol` is only a label and the node sets are hard-coded | unverified | fixed — [fix record](../fixes/adaptive-simpsons-rule.md) |
 
 ### Boole's Rule — `booles-rule` · [round-1 report](../booles-rule.md)
 
