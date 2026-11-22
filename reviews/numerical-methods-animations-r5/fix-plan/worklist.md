@@ -10,7 +10,7 @@ No findings in round 5. F1 below is decision R5-F, not a round-5 finding.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | (R5-F) vertical lines drawn at the poles in Cases 12 and 22–24 | owner decision | open |
+| F1 | Minor | Implementation | (R5-F) vertical lines drawn at the poles in Cases 12 and 22–24 | owner decision | fixed — [fix record](../fixes/laurent-series.md) |
 
 ### Maclaurin and Taylor Series — `maclaurin-and-taylor-series` · [round-5 report](../maclaurin-and-taylor-series.md)
 

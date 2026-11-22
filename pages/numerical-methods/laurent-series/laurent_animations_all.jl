@@ -15,7 +15,11 @@ struct LaurentCase
     xlims::Tuple{Float64, Float64}
     ylims::Tuple{Float64, Float64}
     max_order::Int
+    poles::Vector{Float64}  # poles of f inside the window (empty if none)
 end
+
+LaurentCase(id, label, f, c, xlims, ylims, max_order) =
+    LaurentCase(id, label, f, c, xlims, ylims, max_order, Float64[])
 
 cases = LaurentCase[
     LaurentCase("01", "sqrt(x)", x -> sqrt(x), 1.0, (0.0, 10.5), (0.0, 3.5), 10),
@@ -29,7 +33,7 @@ cases = LaurentCase[
     LaurentCase("09", "cos(x)", x -> cos(x), 0.0, (-3pi, 3pi), (-1.5, 1.5), 10),
     LaurentCase("10", "sin(x)", x -> sin(x), pi / 4, (-7pi / 4, 9pi / 4), (-1.5, 1.5), 10),
     LaurentCase("11", "cos(x)", x -> cos(x), pi / 3, (-5pi / 3, 7pi / 3), (-1.5, 1.5), 10),
-    LaurentCase("12", "tan(x)", x -> tan(x), 0.0, (-pi, pi), (-10.0, 10.0), 8),
+    LaurentCase("12", "tan(x)", x -> tan(x), 0.0, (-pi, pi), (-10.0, 10.0), 8, [-pi / 2, pi / 2]),
     LaurentCase("13", "exp(x)", x -> exp(x), 0.0, (-2.0, 3.0), (-1.0, 22.0), 10),
     LaurentCase("14", "exp(-x)*cos(x)", x -> exp(-x) * cos(x), 0.0, (-2.0, 4.0), (-4.0, 4.0), 10),
     LaurentCase("15", "cosh(x)", x -> cosh(x), 0.0, (-4.0, 4.0), (-1.0, 30.0), 10),
@@ -39,9 +43,9 @@ cases = LaurentCase[
     LaurentCase("19", "besselj(1,x)", x -> besselj(1, x), 0.0, (-10.2, 10.2), (-1.5, 1.5), 10),
     LaurentCase("20", "normal_pdf(x)", x -> exp(-x^2 / 2) / sqrt(2pi), 0.0, (-3.0, 3.0), (-0.05, 0.45), 10),
     LaurentCase("21", "normal_cdf(x)", x -> 0.5 + 0.5 * erf(x / sqrt(2.0)), 0.0, (-3.0, 3.0), (-0.1, 1.1), 10),
-    LaurentCase("22", "gamma(x)", x -> gamma(x), 1.0, (-0.2, 5.2), (-10.0, 35.0), 8),
-    LaurentCase("23", "gamma(x)", x -> gamma(x), 2.0, (-0.2, 5.2), (-10.0, 35.0), 8),
-    LaurentCase("24", "gamma(x)", x -> gamma(x), 3.0, (-0.2, 5.2), (-10.0, 45.0), 8),
+    LaurentCase("22", "gamma(x)", x -> gamma(x), 1.0, (-0.2, 5.2), (-10.0, 35.0), 8, [0.0]),
+    LaurentCase("23", "gamma(x)", x -> gamma(x), 2.0, (-0.2, 5.2), (-10.0, 35.0), 8, [0.0]),
+    LaurentCase("24", "gamma(x)", x -> gamma(x), 3.0, (-0.2, 5.2), (-10.0, 45.0), 8, [0.0]),
     LaurentCase("25", "bessely(0,x)", x -> bessely(0, x), 10.0, (0.0, 22.0), (-2.0, 2.0), 8),
     LaurentCase("26", "bessely(0,x)", x -> bessely(0, x), 5.0, (0.0, 22.0), (-2.0, 2.0), 8),
     LaurentCase("27", "bessely(0,x)", x -> bessely(0, x), 2.0, (0.0, 22.0), (-2.0, 2.0), 8),
@@ -328,7 +332,10 @@ function render_case(case::LaurentCase)
     xplot = collect(range(case.xlims[1], case.xlims[2], length=900))
     # Values are not clamped to ylims: the plot clips at the axis limits, so a curve that
     # leaves the window is drawn leaving it, not running along the frame edge.
-    ytrue = [safe_eval(case.f, x) for x in xplot]
+    # f gets a NaN point at each pole, so its curve breaks there instead of drawing a
+    # segment across the pole from one branch to the other.
+    xf = sort(vcat(xplot, case.poles))
+    ytrue = [x in case.poles ? NaN : safe_eval(case.f, x) for x in xf]
 
     coeffs = series_coeffs(case)
     yc = safe_eval(case.f, case.c)
@@ -352,7 +359,7 @@ function render_case(case::LaurentCase)
                      legend=:topleft, grid=true, framestyle=:box,
                      background_color=:white)
 
-        plot!(pplot, xplot, ytrue; color=:magenta, lw=2.5, label="y = f(x)")
+        plot!(pplot, xf, ytrue; color=:magenta, lw=2.5, label="y = f(x)")
           plot!(pplot, xplot, ylaur; color=:steelblue, lw=2.1,
               label="Laurent = Taylor, N = $(n)")
 
