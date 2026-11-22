@@ -16,7 +16,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | in Case 01, off-scale values are clamped onto the y = 0 border, so a diverging approximant is drawn as if it were 0 | unverified | open |
+| F1 | Minor | Implementation | in Case 01, off-scale values are clamped onto the y = 0 border, so a diverging approximant is drawn as if it were 0 | unverified | fixed — [fix record](../fixes/pade-approximation.md) |
 
 ## WP-B
 

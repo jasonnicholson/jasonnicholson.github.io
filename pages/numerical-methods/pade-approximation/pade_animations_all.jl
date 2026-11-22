@@ -21,8 +21,8 @@ end
 
 cases = PadeCase[
     # Mathews cases 1..27
-    PadeCase("01", raw"\sqrt{x}", "sqrt(x)", x -> sqrt(x), 1.0, (0.0, 10.5), (0.0, 3.5), 10),
-    PadeCase("02", raw"\sqrt{x}", "sqrt(x)", x -> sqrt(x), 4.0, (0.0, 10.5), (0.0, 3.5), 10),
+    PadeCase("01", raw"\sqrt{x}", "sqrt(x)", x -> sqrt(x), 1.0, (0.0, 10.5), (-0.5, 3.5), 10),
+    PadeCase("02", raw"\sqrt{x}", "sqrt(x)", x -> sqrt(x), 4.0, (0.0, 10.5), (-0.5, 3.5), 10),
     PadeCase("03", raw"\sqrt{x}", "sqrt(x)", x -> sqrt(x), 5.0, (0.0, 10.5), (0.0, 3.5), 10),
     PadeCase("04", raw"\frac{1}{\sqrt{1-x}}", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), 0.0, (-1.5, 1.5), (-1.0, 6.0), 10),
     PadeCase("05", raw"\log(x)", "log(x)", x -> log(x), 1.0, (-0.5, 4.1), (-6.0, 2.0), 10),
