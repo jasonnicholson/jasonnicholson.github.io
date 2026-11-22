@@ -20,7 +20,7 @@ The animations below follow the legacy style by increasing point density over th
 
 ## Animations
 
-Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different closed Newton-Cotes construction while sample density increases frame by frame.
+Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different closed Newton-Cotes construction while sample density increases frame by frame. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error of all four rules shrinks like $O(h^{5/3})$ rather than $O(h^2)$, $O(h^4)$, $O(h^4)$ and $O(h^6)$: halving $h$ (from 24 to 48 subintervals) divides it by about 3.14, 3.38, 3.55 and 3.15 for the trapezoidal, Simpson's $1/3$, Simpson's $3/8$ and Boole's rules, tending to $2^{5/3}\approx 3.17$ for each, instead of 4, 16, 16 and 64. So at equal $h$ the higher-degree rules gain only a constant factor over the trapezoidal rule here, not extra powers of $h$.
 
 ### Case 1 — Composite Trapezoidal Rule
 
@@ -40,7 +40,7 @@ Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different cl
 
 ### Case 3 — Composite Simpson's 3/8 Rule
 
-**Behavior:** Triplets of subintervals are approximated by cubics, giving a higher-order piecewise fit to the curve.
+**Behavior:** Triplets of subintervals are approximated by cubics. This is a higher-degree piecewise fit than Simpson's $1/3$ rule, but not a higher-order rule: both have degree of precision 3 (see Derivation Notes). On this integrand its error at the same $h$ is larger, about 1.25 times Simpson's $1/3$ error as $h$ shrinks.
 
 [Julia source](newtoncotescc.jl)
 
@@ -58,6 +58,6 @@ Legacy note: the archive is incomplete for some quadrature assets (notably Simps
 
 ## Derivation Notes
 
-The closed Newton-Cotes family on equally spaced nodes increases algebraic order by fitting higher-degree interpolants per panel. Higher-order rules reduce truncation error for smooth functions, but can become less robust for very high degree on wide panels.
+The four closed Newton-Cotes rules fit interpolants of degree 1, 2, 3 and 4 per panel, but their degrees of precision are 1, 3, 3 and 5: the rules with an even number of subintervals per panel (Simpson's $1/3$, Boole) are exact for one degree more than their interpolant. For smooth $f$ ($C^2$, $C^4$, $C^4$ and $C^6$ on $[a,b]$ respectively) the composite errors are therefore $O(h^2)$, $O(h^4)$, $O(h^4)$ and $O(h^6)$. Simpson's $3/8$ rule is thus not higher order than Simpson's $1/3$ rule, and its composite error constant is larger: $|E|=\tfrac{1}{80}(b-a)h^4|f^{(4)}(\xi)|$ against $\tfrac{1}{180}(b-a)h^4|f^{(4)}(\xi)|$ for some $\xi\in[a,b]$. Rules of very high degree on wide panels can become less robust.
 
 

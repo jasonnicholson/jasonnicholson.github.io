@@ -103,8 +103,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "Higher degree ⇒ higher algebraic order" is false at the Simpson 1/3 → 3/8 step | verified | open |
-| F2 | Minor | Page match | The page does not say its integrand is non-smooth at x = 0, which removes the order advantage of the higher-degree rules | unverified | open |
+| F1 | Misleading | Page match | "Higher degree ⇒ higher algebraic order" is false at the Simpson 1/3 → 3/8 step | verified | fixed — [fix record](../fixes/newton-cotes-integration.md) |
+| F2 | Minor | Page match | The page does not say its integrand is non-smooth at x = 0, which removes the order advantage of the higher-degree rules | unverified | fixed — [fix record](../fixes/newton-cotes-integration.md) |
 
 ### Riemann Sums — `riemann-sums` · [round-1 report](../riemann-sums.md)
 
