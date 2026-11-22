@@ -130,9 +130,11 @@ Consulted: `n2003/RungeKuttaMod.html` and Links `_lnk_11.html` and `_lnk_12.html
 
 **(c) Sentence used** (adapt the method's limit, the old h, and the computed numbers):
 
-> Steps longer than about $h=0.0675$ become unstable once the solution flattens toward the nullcline, because $\partial f/\partial y=-t/(3y^{2/3})$ grows to $-41.3$ at $t=5$ and RK4 is stable only while $h\,|\partial f/\partial y|<2.785$: with $h=0.25$ ($n=20$) the computed values turn upward after $t=3.25$ and end at $y(5)\approx0.289$.
+> For steps longer than about $h=0.0675$, $h\,|\partial f/\partial y|$ exceeds RK4's stability limit $2.785$ before $t=5$ (because $\partial f/\partial y=-t/(3y^{2/3})$ reaches $-41.3$ at $t=5$), and from then on errors are amplified instead of damped; just above $h=0.0675$ this affects only the last steps, but at $h=0.25$ ($n=20$) it starts at $t\approx3.34$ and the computed values turn upward after $t=3.25$ and end at $y(5)\approx0.289$.
 
-For another method, replace the threshold h (−z*/41.2554, from `py/limits.py`: Euler/Heun 0.0485, Taylor 3 0.0609), "RK4" and "2.785" (Euler/Heun: 2; Taylor 3: 2.513), the old h and n, the t after which the old trace turns, and the old final value. Compute all of these on that page; they differ by method.
+(Round 3 wording; it replaces the round-1 and round-2 versions. Compute the old step's onset by solving h·|J(t)| = L along the exact solution, as in `py/round3.py`, and describe the old trace's behaviour from its computed values.)
+
+For another method, replace the threshold h (−z*/41.2554, from `py/limits.py`: Euler/Heun 0.0485, Taylor 3 0.0609), "RK4" and "2.785" (Euler/Heun: 2; Taylor 3: 2.513), the old h and n, the onset time for the old h, the t after which the old trace turns, and the old final value. Compute all of these on that page; they differ by method.
 
 **(d) What Mathews' archive used.**
 - **This page.** Mathews' RK4 animation (`a2001/Animations/OrdinaryDE/RungeKutta1/RungeKuttaaa.gif`) does not use one step. It sweeps m = 12 … 150 subintervals on [0,5], showing the whole solution and the printed y(5) for each m. m = 20 (h = 0.25), the old page's choice, is one of the unstable frames. Its printed y(5) values reproduce exactly with plain RK4 (see Legacy archive). The other pages should check their own topic's archive GIF the same way (extract frames, read the m and y(5) labels, reproduce them).
@@ -236,3 +238,33 @@ I re-checked against the updated diff. Two things changed since the first check:
 - New problems: none. The axis change only adds margins and the plotted data are unchanged. The new sentence's number is verified above.
 
 **Final status:** committed
+
+## Round 3 (director)
+
+The director reopened the page under `patterns/d2wording.md`. The round-2 sentence overstated in two ways:
+- **"Once the solution flattens" is false for large h.** At h = 1 the onset is t = 2.7856, where y′ = −0.6084, so the solution is still falling steeply (`py/round3.py`).
+- **"Become unstable" suggests a visible blow-up.** Just above h* nothing visible happens. For n = 74 (h = 0.06757) the onset is t = 4.9987, so only the last step is affected, and the max error is 1.8e-5 (`py/analysis.py`).
+
+- **Change:** text only, in index.qmd Behavior. The second half of the sentence was replaced with:
+  > For steps longer than about $h=0.0675$, $h\,|\partial f/\partial y|$ exceeds RK4's stability limit $2.785$ before $t=5$ (because $\partial f/\partial y=-t/(3y^{2/3})$ reaches $-41.3$ at $t=5$), and from then on errors are amplified instead of damped; just above $h=0.0675$ this affects only the last steps, but at $h=0.25$ ($n=20$) it starts at $t\approx3.34$ and the computed values turn upward after $t=3.25$ and end at $y(5)\approx0.289$.
+
+  No script or GIF change.
+- **Ledger for the new or changed claims** (command: `cd $FIX/py && /usr/bin/python3 -I round3.py`, output in `round3.out`):
+
+| Claim | Check → result | Confirmed |
+|---|---|---|
+| threshold "about $h=0.0675$" | 2.7852936/41.2554 = 0.067513 (`py/limits.py`, `py/analysis.py`) | yes |
+| "exceeds … $2.785$ before $t=5$" for h above it | \|J\| increases on all of [0,5] (`py/analysis.py`), so h\|J(5)\| > 2.785 implies the crossing happens at some t < 5 | yes |
+| "reaches $-41.3$ at $t=5$" | J(5) = −41.2554 (`py/analysis.py`) | yes |
+| "from then on errors are amplified instead of damped" | linear stability with J frozen at each point. The only real root of R′(z) is −1.596, so R decreases on (−∞, −1.596). Hence R(z) > R(z*) = 1 for every z < z*; numerically min R on [−20, z*) = 1.0000000009. Because \|J\| keeps growing, h\|J\| stays beyond the limit once past it | yes |
+| "just above $h=0.0675$ this affects only the last steps" | n = 74 (h = 0.06757): onset t = 4.9987, so only the last step (4.932 → 5) is affected; max error 1.8e-5 (`py/analysis.py`) | yes |
+| "at $h=0.25$ … it starts at $t\approx3.34$" | `round3.py`: onset t = 3.3416 for h = 0.25 (`py/analysis.py` earlier gave 3.342) | yes |
+| "turn upward after $t=3.25$", "$y(5)\approx0.289$" | unchanged from round 1: n = 20 values 3.25: 0.0500, 3.5: 0.0975; y(5) = 0.2891074 (`py/analysis.py`). The onset at 3.34 lies inside the step 3.25 → 3.5, where the upturn first appears | yes |
+
+- **D2 pattern:** sentence (c) above now uses this wording.
+- **git:** text-only change in `index.qmd`. No git state changes were made.
+
+
+## Follow-up after commit (director)
+
+A sibling page's fixer (Taylor method) found that the committed stability sentence still overstated: "once the solution flattens" is false for large h (at h = 1 the onset is t ≈ 2.79, where y′ ≈ −0.61), and "become unstable" overstates what happens just above h*. The fixer rewrote the sentence (see "Round 3 (director)" above). The same checker re-checked it independently and confirmed every claim: h* = 0.06751; |∂f/∂y| increases monotonically, so the limit is crossed once before t = 5 and stays crossed; h = 0.07 crosses at t = 4.94 and n = 70–74 show no visible effect; at h = 0.25 the crossing is at t = 3.3416, and the values turn upward between t = 3.25 and 3.5 and end at 0.289107. No new problems. Only index.qmd changed.
