@@ -9,17 +9,17 @@ Source inspiration: [@mathewsSite].
 
 ## Animations
 
-Each animation below shows the **RK4 solution trace** building step by step for the IVP $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$ over $[0,5]$. Each frame adds one new solution point; the connecting curve reveals the numerical trajectory. RK4 computes four slope estimates ($k_1, k_2, k_3, k_4$) per step and takes a weighted average — giving $O(h^4)$ local accuracy.
+Each animation below shows the **RK4 solution trace** building step by step for the IVP $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$ over $[0,5]$. Each frame adds four RK4 steps (0.25 in $t$); the connecting curve passes through every computed point. RK4 computes four slope estimates ($k_1, k_2, k_3, k_4$) per step and takes a weighted average — for smooth $f$ this gives $O(h^5)$ local truncation error and $O(h^4)$ global error.
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — RK4, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $n=20$ steps
+### Case 1 — RK4, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $n=80$ steps ($h=0.0625$)
 
-**Behavior:** The solution starts at $y(0)=1$ and the right-hand side $f(t,y)=1-t\sqrt[3]{y}$ pulls $y$ toward the fixed curve where $y=1/t^3$. RK4 tracks this with fourth-order accuracy even with the relatively coarse step size $h=0.25$.
+**Behavior:** The solution starts at $y(0)=1$ and the right-hand side $f(t,y)=1-t\sqrt[3]{y}$ pulls $y$ toward the nullcline $y=1/t^3$ (where $y'=0$). With $h=0.0625$ the RK4 values stay within $1.3\times10^{-5}$ of the exact solution and give $y(5)\approx0.0081267$ against the exact $0.0081199$. Steps longer than about $h=0.0675$ become unstable once the solution flattens toward the nullcline, because $\partial f/\partial y=-t/(3y^{2/3})$ grows to $-41.3$ at $t=5$ and RK4 is stable only while $h\,|\partial f/\partial y|<2.785$: with $h=0.25$ ($n=20$) the computed values turn upward after $t=3.25$ and end at $y(5)\approx0.289$.
 
 [Julia source](rungekuttaaa.jl)
 
-![RK4 animation: numerical solution trace builds from left to right for y' = 1 - t·y^(1/3) with y(0)=1; each frame adds one RK4 step](rungekuttaaa.gif)
+![RK4 animation with step h = 0.0625: the numerical solution of y' = 1 - t·y^(1/3), y(0)=1 builds from left to right, four RK4 steps per frame, rising to about 1.45 near t = 0.9 and then falling smoothly toward y ≈ 0.0081 at t = 5](rungekuttaaa.gif)
 
 ## Derivation Notes (Planned)
 

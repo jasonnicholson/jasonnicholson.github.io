@@ -169,9 +169,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | With h = 0.25, RK4 is unstable from about t = 3.25, so the second half of the animated trajectory is a numerical artifact | verified | open |
-| F2 | Error | Page match | "RK4 tracks this with fourth-order accuracy even with the relatively coarse step size h=0.25" is false for the animation shown | verified | open |
-| F3 | Minor | Page match | "giving $O(h^4)$ local accuracy" states the wrong error kind | unverified | open |
+| F1 | Error | Implementation | With h = 0.25, RK4 is unstable from about t = 3.25, so the second half of the animated trajectory is a numerical artifact | verified | fixed — [fix record](../fixes/runge-kutta-method.md) |
+| F2 | Error | Page match | "RK4 tracks this with fourth-order accuracy even with the relatively coarse step size h=0.25" is false for the animation shown | verified | fixed — [fix record](../fixes/runge-kutta-method.md) |
+| F3 | Minor | Page match | "giving $O(h^4)$ local accuracy" states the wrong error kind | unverified | fixed — [fix record](../fixes/runge-kutta-method.md) |
 
 ### Taylor Series Method for ODE's — `taylor-series-method-for-odes` · [round-1 report](../taylor-series-method-for-odes.md)
 
