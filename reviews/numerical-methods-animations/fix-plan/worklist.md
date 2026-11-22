@@ -357,8 +357,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | The traced blue curve is not in step with the red point and never reaches P3 | verified | open |
-| F2 | Misleading | Implementation | The legend covers a control point in both GIFs, and in Case 2 it also covers the final curve point at P3 | verified | open |
+| F1 | Error | Implementation | The traced blue curve is not in step with the red point and never reaches P3 | verified | fixed — [fix record](../fixes/bezier-curves.md) |
+| F2 | Misleading | Implementation | The legend covers a control point in both GIFs, and in Case 2 it also covers the final curve point at P3 | verified | fixed — [fix record](../fixes/bezier-curves.md) |
 
 ### Catenary — `catenary` · [round-1 report](../catenary.md)
 
