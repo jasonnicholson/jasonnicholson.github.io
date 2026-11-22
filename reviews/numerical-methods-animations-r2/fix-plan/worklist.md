@@ -215,8 +215,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match |  | unverified | open |
-| F2 | Minor | Fidelity |  | unverified | open |
+| F1 | Minor | Page match |  | unverified | fixed — [fix record](../fixes/halleys-method.md) |
+| F2 | Minor | Fidelity |  | unverified | fixed — [fix record](../fixes/halleys-method.md) |
 
 ### Improved Newton Method — `improved-newton-method` · [round-2 report](../improved-newton-method.md)
 
