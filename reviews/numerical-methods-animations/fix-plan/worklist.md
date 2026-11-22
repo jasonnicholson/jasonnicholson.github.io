@@ -285,13 +285,13 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | The "acceleration" the page names the method after is not implemented; r0 is only a cap that never activates | verified | open |
-| F2 | Error | Page match | Case 2 claims damping, acceleration and faster-than-linear convergence; the animation shows plain linear Newton with no damping | verified | open |
-| F3 | Error | Page match | Wrong explanation of why Newton slows at a multiple root | verified | open |
-| F4 | Minor | Page match | "The star markers show the exact root(s)": Cases 1 and 2 have no root markers | unverified | open |
-| F5 | Minor | Page match | Case 1 implies damping in the first frames; there is none | unverified | open |
-| F6 | Minor | Page match | Case 3: not every orange segment is an alterdirection escape, and the path is not curved | unverified | open |
-| F7 | Minor | Implementation / Page match | alterdirection is accepted unchecked; in the real scripts it is a reversal, not a 53° rotation | unverified | open |
+| F1 | Error | Implementation | The "acceleration" the page names the method after is not implemented; r0 is only a cap that never activates | verified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F2 | Error | Page match | Case 2 claims damping, acceleration and faster-than-linear convergence; the animation shows plain linear Newton with no damping | verified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F3 | Error | Page match | Wrong explanation of why Newton slows at a multiple root | verified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F4 | Minor | Page match | "The star markers show the exact root(s)": Cases 1 and 2 have no root markers | unverified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F5 | Minor | Page match | Case 1 implies damping in the first frames; there is none | unverified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F6 | Minor | Page match | Case 3: not every orange segment is an alterdirection escape, and the path is not curved | unverified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F7 | Minor | Implementation / Page match | alterdirection is accepted unchecked; in the real scripts it is a reversal, not a 53° rotation | unverified | fixed — [fix record](../fixes/madsen-reid-method.md) |
 
 ### Muller's Method — `mullers-method` · [round-1 report](../mullers-method.md)
 

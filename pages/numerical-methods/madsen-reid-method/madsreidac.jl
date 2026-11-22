@@ -20,9 +20,9 @@ function alterdirection(dz::ComplexF64, m::Float64)::ComplexF64
 end
 
 # ── Compute iterates in ℂ ─────────────────────────────────────────────────────
-function mr_complex_iterates(f, fp, z0::ComplexF64, r0_init::Float64, n_iters::Int)
+function mr_complex_iterates(f, fp, z0::ComplexF64, r0_init::Float64, n_iters::Int, n_deg::Int)
     zs     = [z0]
-    labels = Symbol[]
+    labels = Symbol[]          # :newton, :multi  or  :damped
 
     z  = z0
     r0 = r0_init
@@ -43,13 +43,22 @@ function mr_complex_iterates(f, fp, z0::ComplexF64, r0_init::Float64, n_iters::I
         if r > r0
             dz = alterdirection(dz, r0 / r)
         end
-        r0 = r * 5.0
+        r0 = r * 5.0                   # cap for next step: 5× this Newton step
 
         z_new    = z - dz
         fn_sq    = abs2(f(z_new))
 
         if fn_sq < f_sq
-            push!(labels, :newton)
+            # multiple steps in the same direction: try z - 2Δz, ..., z - n_deg·Δz
+            # while |f|² keeps decreasing, and keep the last improving point
+            k = 1
+            for p in 2:n_deg
+                z_try = z - p * dz
+                ft_sq = abs2(f(z_try))
+                ft_sq < fn_sq || break
+                z_new, fn_sq, k = z_try, ft_sq, p
+            end
+            push!(labels, k == 1 ? :newton : :multi)
         else
             push!(labels, :damped)
             improved = false
@@ -62,7 +71,7 @@ function mr_complex_iterates(f, fp, z0::ComplexF64, r0_init::Float64, n_iters::I
                     break
                 end
             end
-            if !improved
+            if !improved               # accepted without a descent test
                 dz    = alterdirection(dz, 1.0)
                 z_new = z - dz
             end
@@ -77,7 +86,7 @@ end
 
 z0     = complex(1.0, 0.0)
 r0_init = 5.0                  # 2.5 * startpoint([1,0,4]) = 2.5 * 2
-zs, labels = mr_complex_iterates(f, fp, z0, r0_init, 25)
+zs, labels = mr_complex_iterates(f, fp, z0, r0_init, 25, 2)   # degree n = 2
 n_frames = length(zs) - 1
 
 println("Iterates:")
@@ -124,7 +133,7 @@ anim = @animate for frame in 0:n_frames
     # Path so far
     if frame ≥ 1
         for k in 1:frame
-            col = (k ≤ length(labels) && labels[k] == :damped) ? :orange : :steelblue
+            col = labels[k] == :damped ? :orange : labels[k] == :multi ? :seagreen : :steelblue
             plot!([real(zs[k]), real(zs[k+1])],
                   [imag(zs[k]), imag(zs[k+1])];
                   color=col, lw=1.5, label="")

@@ -13,6 +13,7 @@ fp(x) = 3x^2 - 3
 # ── Parameters ────────────────────────────────────────────────────────────────
 x0      = 3.0
 n_iters = 8
+n_deg   = 3                   # degree of P: longest multi-step is n_deg·Δx
 
 xlims = (-0.5, 3.5)
 ylims = (-5.0, 22.0)
@@ -20,15 +21,17 @@ title_str = "Madsen-Reid (simple root): P(x) = x³ − 3x − 1"
 
 # ── Madsen-Reid helpers ───────────────────────────────────────────────────────
 function alterdirection(dz::Float64, m::Float64)
-    # Rotate by ~53° and scale by m  (real-axis version: imaginary part is 0
-    # so the direction change just flips sign of step and scales)
-    return dz * m * (-0.6)          # simplified: negate + scale (keeps real axis)
+    # The real algorithm rotates the step by 53.13° (factor 0.6 + 0.8i), which
+    # leaves the real axis. A real-axis animation cannot show that, so stop
+    # loudly instead of faking it (this branch is not reached for this case).
+    error("alterdirection needs a complex step; not representable on the real axis")
 end
 
 # ── Compute iterates + step classification ────────────────────────────────────
-function mr_iterates(f, fp, x0, n_iters)
+function mr_iterates(f, fp, x0, n_iters, n_deg)
     xs     = [Float64(x0)]
-    labels = Symbol[]          # :newton  or  :damped
+    labels = Symbol[]          # :newton, :multi  or  :damped
+    xt     = Float64[]         # Newton point x - Δx of each step (tangent intercept)
 
     x  = Float64(x0)
     r0 = 2.5 * abs(x0)        # initial step-size limit
@@ -45,13 +48,23 @@ function mr_iterates(f, fp, x0, n_iters)
         if r > r0                     # limit step radius
             dz = dz * (r0 / r)
         end
-        r0 = r * 5.0                  # acceleration: allow 5× next time
+        r0 = r * 5.0                  # cap for next step: 5× this Newton step
+        push!(xt, x - dz)
 
         x_new  = x - dz
         fn_sq  = f(x_new)^2
 
         if fn_sq < f_sq
-            push!(labels, :newton)    # pure Newton – Stage 2
+            # multiple steps in the same direction: try x - 2Δx, ..., x - n_deg·Δx
+            # while |P|² keeps decreasing, and keep the last improving point
+            k = 1
+            for p in 2:n_deg
+                x_try  = x - p * dz
+                ft_sq  = f(x_try)^2
+                ft_sq < fn_sq || break
+                x_new, fn_sq, k = x_try, ft_sq, p
+            end
+            push!(labels, k == 1 ? :newton : :multi)   # Stage 2  /  Stage 1 multi-step
         else
             push!(labels, :damped)    # backtrack  – Stage 1
             improved = false
@@ -74,10 +87,10 @@ function mr_iterates(f, fp, x0, n_iters)
         push!(xs, x)
         abs(f(x)) < 1e-10 && break
     end
-    return xs, labels
+    return xs, labels, xt
 end
 
-xs, labels = mr_iterates(f, fp, x0, n_iters)
+xs, labels, xt = mr_iterates(f, fp, x0, n_iters, n_deg)
 n_frames   = length(xs) - 1
 
 # ── Animation ─────────────────────────────────────────────────────────────────
@@ -93,10 +106,16 @@ anim = @animate for frame in 0:n_frames
     plot!(xplot, f.(xplot); color=:magenta, lw=2, label="P(x)")
 
     for k in 1:frame
-        col = (k ≤ length(labels) && labels[k] == :damped) ? :orange : :steelblue
+        col = labels[k] == :damped ? :orange : labels[k] == :multi ? :seagreen : :steelblue
         xn  = xs[k]
         xn1 = xs[k+1]
-        plot!([xn, xn1], [f(xn), 0.0]; color=col, lw=1.5, label="")
+        if labels[k] == :multi
+            # tangent line down to the Newton point, then along the axis to x - kΔx
+            plot!([xn, xt[k]], [f(xn), 0.0]; color=col, lw=1.5, label="")
+            plot!([xt[k], xn1], [0.0, 0.0]; color=col, lw=3, label="")
+        else
+            plot!([xn, xn1], [f(xn), 0.0]; color=col, lw=1.5, label="")
+        end
         plot!([xn1, xn1], [0.0, f(xn1)]; color=col, lw=1.5, label="")
     end
 
@@ -106,6 +125,7 @@ anim = @animate for frame in 0:n_frames
 
     # legend entries for step types
     plot!(Float64[], Float64[]; color=:steelblue, lw=2, label="Stage 2 – Newton")
+    plot!(Float64[], Float64[]; color=:seagreen,  lw=2, label="Stage 1 – multi-step kΔx")
     plot!(Float64[], Float64[]; color=:orange,    lw=2, label="Stage 1 – Damped")
 end
 
