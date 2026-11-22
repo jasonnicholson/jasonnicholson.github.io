@@ -127,7 +127,7 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | "fourth-order global error" and "converges rapidly" are false for this integrand; the measured order is 5/3 | verified | open |
+| F1 | Error | Page match | "fourth-order global error" and "converges rapidly" are false for this integrand; the measured order is 5/3 | verified | fixed — [fix record](../fixes/simpsons-3-8-rule-for-numerical-integration.md) |
 
 ### Simpson's Rule for Numerical Integration — `simpsons-rule-for-numerical-integration` · [round-1 report](../simpsons-rule-for-numerical-integration.md)
 
