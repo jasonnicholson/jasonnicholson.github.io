@@ -65,55 +65,145 @@ function binom_real(alpha::Float64, k::Int)
     return p / factorial(k)
 end
 
-function series_coeffs_fit(f::Function, c::Float64, n::Int, xlims::Tuple{Float64, Float64})
-    need = n + 1
-    q = max(n + 6, 14)
-    tgrid = collect(-q:q)
-
-    local_scale = max(1.0, abs(c))
-    h_by_local = 0.01 * local_scale
-    left_room = c - xlims[1]
-    right_room = xlims[2] - c
-    h_by_bounds = 0.45 * min(left_room, right_room) / max(q, 1)
-    h = max(1e-5, min(h_by_local, h_by_bounds))
-
-    if left_room <= 1e-8
-        tgrid = collect(0:(2q))
-    elseif right_room <= 1e-8
-        tgrid = collect((-2q):0)
-    end
-
-    xs = c .+ h .* tgrid
-    ys = [safe_eval(f, x) for x in xs]
-
-    keep = [i for i in eachindex(ys) if isfinite(ys[i])]
-    if length(keep) < need
-        for _ in 1:6
-            h *= 0.5
-            xs = c .+ h .* tgrid
-            ys = [safe_eval(f, x) for x in xs]
-            keep = [i for i in eachindex(ys) if isfinite(ys[i])]
-            length(keep) >= need && break
+# Exact Taylor coefficients, correctly rounded to Float64 (same routine as the Padé page).
+# Self-contained: needs only SpecialFunctions (gamma, digamma, besselj, bessely on BigFloat).
+#
+# taylor_coeffs_exact(family, c, n; nu=0, alpha=0.5, prec=256) returns a[k+1] = f^(k)(c)/k!
+# for k = 0..n, about the Float64 point c taken exactly (BigFloat(c)), computed in
+# `prec`-bit BigFloat and then rounded once to Float64.
+#
+# family   f(x)                 formula used for f^(k)(c)/k!
+# :power   x^alpha  (c > 0)     binom(alpha, k) * c^(alpha - k)          (:sqrt = alpha 1/2)
+# :log     log(x)   (c > 0)     log(c); (-1)^(k-1) / (k c^k)
+# :exp     exp(x)               exp(c) / k!
+# :sin     sin(x)               (sin c, cos c, -sin c, -cos c)[k mod 4] / k!
+# :cos     cos(x)               (cos c, -sin c, -cos c, sin c)[k mod 4] / k!
+# :gamma   Gamma(x) (c > 0)
+#          Gamma(c+z) = Gamma(c) exp(sum_m l_m z^m), l_1 = digamma(c),
+#          l_m = (-1)^m zeta(m, c) / m (m >= 2, Hurwitz zeta); the exponential is
+#          expanded with k g_k = sum_{j=1..k} j l_j g_{k-j}.
+# :besselj J_nu(x), integer nu (any real c; c < 0 via J_nu(-x) = (-1)^nu J_nu(x))
+# :bessely Y_nu(x), integer nu (c > 0)
+#          Z_nu^(k)(c) = 2^-k sum_{j=0..k} (-1)^j binom(k,j) Z_{nu-k+2j}(c),
+#          with Z_{-m} = (-1)^m Z_m; Z_m(c) from MPFR (jn / yn).
+# Bernoulli numbers B_0..B_N as exact rationals (sum_{j=0}^{m} binom(m+1,j) B_j = 0).
+function _bernoulli_numbers(N::Int)
+    B = Vector{Rational{BigInt}}(undef, N + 1)
+    B[1] = 1 // 1
+    for m in 1:N
+        s = big(0) // 1
+        for j in 0:(m - 1)
+            s += binomial(big(m + 1), big(j)) * B[j + 1]
         end
+        B[m + 1] = -s / (m + 1)
     end
+    return B
+end
 
-    if length(keep) < need
-        coeffs = zeros(Float64, n + 1)
-        v0 = safe_eval(f, c)
-        coeffs[1] = isfinite(v0) ? v0 : 0.0
-        return coeffs
+# Hurwitz zeta(s, a) for integer s >= 2 and BigFloat a > 0, by Euler-Maclaurin summation.
+# Shift to A = a + N >= 100 + 2s and use 60 Bernoulli terms; each tail term shrinks by a
+# factor of at most ((s + 120) / (2 pi A))^2 < 0.04, so the truncation error is far below
+# 2^-256 relative.
+function _hurwitz_zeta(s::Int, a::BigFloat)
+    s >= 2 || error("_hurwitz_zeta: s must be >= 2")
+    a > 0 || error("_hurwitz_zeta: a must be > 0")
+    N = max(0, ceil(Int, 100 + 2s - a))
+    total = zero(BigFloat)
+    for j in 0:(N - 1)
+        total += (a + j)^(-s)
     end
-
-    tt = [tgrid[i] for i in keep]
-    yy = [ys[i] for i in keep]
-    A = [t^k for t in tt, k in 0:n]
-    a = A \ yy
-
-    coeffs = zeros(Float64, n + 1)
-    for k in 0:n
-        coeffs[k + 1] = a[k + 1] / (h^k)
+    A = a + N
+    total += A^(1 - s) / (s - 1) + A^(-s) / 2
+    K = 60
+    B = _bernoulli_numbers(2K)
+    rising = BigFloat(s)            # s (s+1) ... (s+2k-2)
+    fact = BigFloat(2)              # (2k)!
+    for k in 1:K
+        if k > 1
+            rising *= (s + 2k - 3) * (s + 2k - 2)
+            fact *= (2k - 1) * (2k)
+        end
+        total += BigFloat(B[2k + 1]) / fact * rising * A^(-s - 2k + 1)
     end
-    return coeffs
+    return total
+end
+
+function _bessel_big(kind::Symbol, m::Int, x::BigFloat)
+    sgn = (m < 0 && isodd(m)) ? -1 : 1        # Z_{-m} = (-1)^m Z_m
+    mm = abs(m)
+    if kind === :besselj
+        if x < 0                               # J_m(-x) = (-1)^m J_m(x)
+            return sgn * (isodd(mm) ? -1 : 1) * besselj(mm, -x)
+        end
+        return sgn * besselj(mm, x)
+    else
+        x > 0 || error("bessely needs c > 0")
+        return sgn * bessely(mm, x)
+    end
+end
+
+function taylor_coeffs_exact(family::Symbol, c::Float64, n::Int;
+                             nu::Int=0, alpha::Float64=0.5, prec::Int=256)
+    n >= 0 || error("order n must be >= 0")
+    a = setprecision(BigFloat, prec) do
+        cb = BigFloat(c)                       # the Float64 c, exactly
+        ab = Vector{BigFloat}(undef, n + 1)
+        if family === :power || family === :sqrt
+            al = family === :sqrt ? BigFloat(1) / 2 : BigFloat(alpha)
+            cb > 0 || error("x^alpha needs c > 0")
+            bin = one(BigFloat)
+            for k in 0:n
+                k > 0 && (bin *= (al - (k - 1)) / k)
+                ab[k + 1] = bin * cb^(al - k)
+            end
+        elseif family === :log
+            cb > 0 || error("log needs c > 0")
+            ab[1] = log(cb)
+            for k in 1:n
+                ab[k + 1] = (isodd(k) ? 1 : -1) / (k * cb^k)
+            end
+        elseif family === :exp
+            e = exp(cb)
+            for k in 0:n
+                ab[k + 1] = e / factorial(big(k))
+            end
+        elseif family === :sin || family === :cos
+            s, co = sin(cb), cos(cb)
+            cyc = family === :sin ? (s, co, -s, -co) : (co, -s, -co, s)
+            for k in 0:n
+                ab[k + 1] = cyc[mod(k, 4) + 1] / factorial(big(k))
+            end
+        elseif family === :gamma
+            (cb <= 0 && isinteger(cb)) && error("Gamma has a pole at c = $c")
+            cb > 0 || error("this routine handles Gamma about c > 0 only")
+            l = Vector{BigFloat}(undef, n)     # log-Gamma coefficients l_1..l_n
+            n >= 1 && (l[1] = digamma(cb))
+            for m in 2:n
+                l[m] = (iseven(m) ? 1 : -1) * _hurwitz_zeta(m, cb) / m
+            end
+            ab[1] = gamma(cb)
+            for k in 1:n
+                s = zero(BigFloat)
+                for j in 1:k
+                    s += j * l[j] * ab[k - j + 1]
+                end
+                ab[k + 1] = s / k
+            end
+        elseif family === :besselj || family === :bessely
+            for k in 0:n
+                s = zero(BigFloat)
+                for j in 0:k
+                    s += (isodd(j) ? -1 : 1) * binomial(big(k), big(j)) *
+                         _bessel_big(family, nu - k + 2j, cb)
+                end
+                ab[k + 1] = s / (BigFloat(2)^k * factorial(big(k)))
+            end
+        else
+            error("taylor_coeffs_exact: unknown family $(family)")
+        end
+        Float64.(ab)                           # one correct rounding per coefficient
+    end
+    return a
 end
 
 function series_coeffs(case::LaurentCase)
@@ -217,9 +307,13 @@ function series_coeffs(case::LaurentCase)
             a[k + 1] = c0 * ((-1.0)^m) / (2.0^m * factorial(m) * (2m + 1))
         end
         return a
+    elseif lbl == "gamma(x)"
+        return taylor_coeffs_exact(:gamma, c, n)
+    elseif lbl == "bessely(0,x)"
+        return taylor_coeffs_exact(:bessely, c, n; nu=0)
     end
 
-    return series_coeffs_fit(case.f, c, n, case.xlims)
+    error("no Taylor coefficients for $(lbl) about $(c)")
 end
 
 function poly_eval_asc(coeffs::Vector{Float64}, z::Float64)
@@ -240,13 +334,13 @@ function render_case(case::LaurentCase)
     anim = Animation()
 
     for n in 1:case.max_order
-        exps = -n:n
         ylaur = Vector{Float64}(undef, length(xplot))
 
         for i in eachindex(xplot)
             z = xplot[i] - case.c
-            # For these reused Padé centers, f is regular at x0, so the
-            # principal part vanishes and negative-power Laurent terms are zero.
+            # Every case's f is analytic at x0, so the principal part vanishes
+            # (a_k = 0 for k < 0) and the truncation sum_{k=-n}^{n} is the
+            # degree-n Taylor polynomial.
             ylaur[i] = poly_eval_asc(coeffs[1:(n + 1)], z)
         end
         ylaur = [isfinite(y) ? clamp(y, case.ylims[1], case.ylims[2]) : NaN for y in ylaur]
@@ -260,7 +354,7 @@ function render_case(case::LaurentCase)
 
         plot!(pplot, xplot, ytrue; color=:magenta, lw=2.5, label="y = f(x)")
           plot!(pplot, xplot, ylaur; color=:steelblue, lw=2.1,
-              label="Laurent orders $(first(exps))..$(last(exps))")
+              label="Laurent = Taylor, N = $(n)")
 
         vline!(pplot, [case.c]; color=:gray50, lw=1.0, ls=:dash, label="")
 

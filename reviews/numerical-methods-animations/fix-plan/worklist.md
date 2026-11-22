@@ -10,8 +10,8 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | The "two-sided" Laurent truncation is just the degree-N Taylor polynomial in every case; negative-power terms are never computed and no case has a principal part | verified | open |
-| F2 | Minor | Implementation | Fitted coefficients for the Γ and Y₀ cases (22–27) are inaccurate at high order, so the last frames are not quite the stated truncation | unverified | open |
+| F1 | Misleading | Page match | The "two-sided" Laurent truncation is just the degree-N Taylor polynomial in every case; negative-power terms are never computed and no case has a principal part | verified | fixed — [fix record](../fixes/laurent-series.md) |
+| F2 | Minor | Implementation | Fitted coefficients for the Γ and Y₀ cases (22–27) are inaccurate at high order, so the last frames are not quite the stated truncation | unverified | fixed — [fix record](../fixes/laurent-series.md) |
 
 ### Maclaurin and Taylor Series — `maclaurin-and-taylor-series` · [round-1 report](../maclaurin-and-taylor-series.md)
 
