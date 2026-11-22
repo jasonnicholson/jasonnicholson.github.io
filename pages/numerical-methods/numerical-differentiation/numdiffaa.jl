@@ -3,6 +3,7 @@
 # Produces: numdiffaa.gif
 
 using Plots
+using Printf
 gr()
 
 f(x) = exp(-x) * sin(x)
@@ -39,7 +40,8 @@ anim = @animate for k in eachindex(hs)
         legend=:topright,
         size=(760, 460),
         background_color=:white,
-        title="Three-Point Central Difference on [0, pi]  |  h = $(h)  |  max error ≈ $(round(maxerr; digits=6))",
+        top_margin=3Plots.mm,
+        title="Three-Point Central Difference on [0, pi]\nh = $(h),  max error ≈ $(@sprintf("%.2e", maxerr))",
     )
 
     plot!(xint, yapprox; color=:dodgerblue3, lw=2, label="D3(x,h)")

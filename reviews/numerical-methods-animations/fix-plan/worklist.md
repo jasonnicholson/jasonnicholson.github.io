@@ -444,10 +444,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | numdiffaa titles are clipped, so frames 9–12 show false error values ("3.3", "8.0", "1.0", "0") | verified | open |
-| F2 | Misleading | Implementation / Page match | the dashed "central secant" in numdiffab is not the secant through the stencil points | verified | open |
-| F3 | Minor | Implementation | `round(maxerr; digits=6)` reports 1.33e-6 as "1.0e-6" and 3.33e-7 as "0.0" | unverified | open |
-| F4 | Minor | Implementation | numdiffab title is clipped, so the "true" slope is cut short | unverified | open |
+| F1 | Error | Implementation | numdiffaa titles are clipped, so frames 9–12 show false error values ("3.3", "8.0", "1.0", "0") | verified | fixed — [fix record](../fixes/numerical-differentiation.md) |
+| F2 | Misleading | Implementation / Page match | the dashed "central secant" in numdiffab is not the secant through the stencil points | verified | fixed — [fix record](../fixes/numerical-differentiation.md) |
+| F3 | Minor | Implementation | `round(maxerr; digits=6)` reports 1.33e-6 as "1.0e-6" and 3.33e-7 as "0.0" | unverified | fixed — [fix record](../fixes/numerical-differentiation.md) |
+| F4 | Minor | Implementation | numdiffab title is clipped, so the "true" slope is cut short | unverified | fixed — [fix record](../fixes/numerical-differentiation.md) |
 
 ### Richardson Extrapolation — `richardson-extrapolation` · [round-1 report](../richardson-extrapolation.md)
 
