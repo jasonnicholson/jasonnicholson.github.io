@@ -167,10 +167,10 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Aitken's theorem is stated without the hypothesis it needs | unverified | open |
-| F2 | Minor | Page match | animation intro and Case 3). Minor. After about 10 frames the top "tangent-line" panel is frozen and the Newton marker is hidden | unverified | open |
-| F3 | Minor | Implementation | Plot titles of Cases 2 and 3 are cut off at the right edge, which hides the root p | unverified | open |
-| F4 | Minor | Fidelity | The archive's Aitken Δ² examples (Mathews Examples 1, 3, 5) are dropped, although the script headers say they were merged in | unverified | open |
+| F1 | Minor | Page match | Aitken's theorem is stated without the hypothesis it needs | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F2 | Minor | Page match | animation intro and Case 3). Minor. After about 10 frames the top "tangent-line" panel is frozen and the Newton marker is hidden | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F3 | Minor | Implementation | Plot titles of Cases 2 and 3 are cut off at the right edge, which hides the root p | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F4 | Minor | Fidelity | The archive's Aitken Δ² examples (Mathews Examples 1, 3, 5) are dropped, although the script headers say they were merged in | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
 
 ### Bisection Method — `bisection-method` · [round-2 report](../bisection-method.md)
 

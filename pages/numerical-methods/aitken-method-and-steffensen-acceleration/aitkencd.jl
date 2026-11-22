@@ -1,11 +1,12 @@
 # aitkencd.jl
-# Aitken/Steffensen animation: Examples 3 & 4 merged (subplot)
+# Aitken/Steffensen animation: Mathews Example 4 (Newton vs Steffensen); Example 3
+# (Aitken Δ² applied to the Newton sequence) is not animated
 # f(x) = (x^2 - 2)*sin(x^2 - 2),  double root p = sqrt(2),  x0 = 1.0
 # Top panel:    Newton tangent-line path + Steffensen iterates on x-axis
 # Bottom panel: log10|error| vs iteration — Newton vs Steffensen
 # Produces: aitkencd.gif
 
-using Plots
+using Plots, Printf
 gr()
 
 # --- Function and derivative ---
@@ -84,7 +85,7 @@ anim = @animate for frame in 0:n_total
     # — Top panel: Newton tangent-line path + Steffensen iterates —
     p1 = plot(size=(680, 420), xlims=xlims_curve, ylims=ylims_curve,
               xlabel="x", ylabel="y",
-              title="Newton (blue) vs Steffensen (red): f(x) = (x²−2)sin(x²−2)  (p = √2)",
+              title="f(x) = (x²−2)sin(x²−2)  (p = √2)",
               legend=:topleft, grid=true, framestyle=:box,
               background_color=:white)
     hline!(p1, [0.0]; color=:black, lw=1, label="")
@@ -97,17 +98,20 @@ anim = @animate for frame in 0:n_total
     end
     x_cur = xN[frame + 1]
     scatter!(p1, [x_cur], [0.0]; color=:steelblue, ms=6, markershape=:circle,
-             label="Newton x_$(frame) = $(round(x_cur; digits=6))")
+             label="Newton x_$(frame) = $(@sprintf("%.10f", x_cur))")
     # Steffensen iterates accumulated on x-axis
     scatter!(p1, xS[1:nS+1], zeros(nS+1); color=:red, ms=7,
              markershape=:diamond,
              label=(frame > n_done && !isempty(stop_reason)) ?
                    "Steffensen ($(n_done) steps; stopped: $(stop_reason))" :
                    "Steffensen ($(nS) steps)")
+    # Newton marker redrawn on top so the diamonds near p do not hide it
+    scatter!(p1, [x_cur], [0.0]; color=:steelblue, ms=6, markershape=:circle,
+             label="")
     if nS > 0
         xs_cur = xS[nS + 1]
-        annotate!(p1, xs_cur, 0.08,
-            text("S_$(nS)=$(round(xs_cur; digits=5))", 7, :red, :center))
+        annotate!(p1, xs_cur, -0.15,
+            text("S_$(nS)=$(@sprintf("%.10f", xs_cur))", 7, :red, :center))
     end
 
     # — Bottom panel: convergence comparison —
@@ -121,7 +125,7 @@ anim = @animate for frame in 0:n_total
     plot!(p2, 0:nS, log_errS[1:nS+1];
           color=:red, lw=2, markershape=:diamond, ms=5, label="Steffensen")
 
-    plot(p1, p2; layout=(2, 1), size=(680, 880))
+    plot(p1, p2; layout=(2, 1), size=(680, 880), left_margin=3Plots.mm)
 end
 
 gif(anim, joinpath(@__DIR__, "aitkencd.gif"); fps=2)
