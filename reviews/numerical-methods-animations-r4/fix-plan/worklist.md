@@ -256,7 +256,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the Derivation Notes say five-point formulas are O(h^4) without saying which derivatives | unverified | open |
+| F1 | Minor | Page match | the Derivation Notes say five-point formulas are O(h^4) without saying which derivatives | unverified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
 
 ### Numerical Differentiation — `numerical-differentiation` · [round-4 report](../numerical-differentiation.md)
 
