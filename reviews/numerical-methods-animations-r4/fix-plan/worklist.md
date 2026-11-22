@@ -165,7 +165,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 2 frame annotation reads "x₂ = -2.0", which contradicts the page's "Halley [first reaches −2 exactly] at x₃" | unverified | open |
+| F1 | Minor | Page match | Case 2 frame annotation reads "x₂ = -2.0", which contradicts the page's "Halley [first reaches −2 exactly] at x₃" | unverified | fixed — [fix record](../fixes/halleys-method.md) |
 
 ### Improved Newton Method — `improved-newton-method` · [round-4 report](../improved-newton-method.md)
 

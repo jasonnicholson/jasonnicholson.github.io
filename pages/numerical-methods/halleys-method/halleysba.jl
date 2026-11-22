@@ -4,6 +4,7 @@
 # Produces: halleysba.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Parameters ---
@@ -84,7 +85,7 @@ anim = @animate for frame in 0:n_iters
     end
 
     annotate!(2.3, -4.5,
-        text("x$(SUB[frame+1]) = $(round(x_cur; digits=8))", :black, :right, 9))
+        text("x$(SUB[frame+1]) = $(@sprintf("%.10f", x_cur))", :black, :right, 9))
 end
 
 gif(anim, joinpath(@__DIR__, "halleysba.gif"); fps=1)
