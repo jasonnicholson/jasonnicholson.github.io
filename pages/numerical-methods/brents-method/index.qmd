@@ -13,7 +13,7 @@ Source inspiration: [@mathewsSite].
 
 The method maintains a bracket that always contains a root, and intelligently selects among three sub-methods at each step:
 
-1. **Inverse quadratic interpolation** — fits a quadratic through the three points $(a, f(a))$, $(b, f(b))$, $(c, f(c))$ and uses the $x$-intercept of that quadratic. Converges superlinearly near a simple root.
+1. **Inverse quadratic interpolation** — fits $x$ as a quadratic function of $y$ through the three points $(a, f(a))$, $(b, f(b))$, $(c, f(c))$ (a sideways parabola) and evaluates it at $y = 0$. Converges superlinearly near a simple root.
 2. **Secant method (regula falsi)** — uses the chord through $(a, f(a))$ and $(b, f(b))$ as a fallback when inverse quadratic interpolation cannot be used (only two distinct points, $a = c$).
 3. **Bisection** — used as a safeguard whenever interpolation is not making enough progress; guarantees the bracket shrinks by at least half.
 
@@ -63,7 +63,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Polynomial root, $f(x) = 4x^3 - 16x^2 + 17x - 4$, $[a_0, b_0] = [0, 1]$
 
-**Behavior:** $f(0) = -4 < 0$ and $f(1) = 1 > 0$, so the IVT guarantees a root in $[0, 1]$. The true root is $x^* \approx 0.3285$. Brent's method takes 8 steps: secant, bisection, IQI, secant, IQI, secant, secant, IQI. At step 3 the IQI point $0.2276$ has the larger $|f|$, so it becomes the other end of the bracket and $b$ stays at $0.4$. After the bisection at step 2 every step is an interpolation step, and at steps 5–8 the error in $b$ falls to $3.2\times10^{-4}$, $5.5\times10^{-6}$, $2.7\times10^{-9}$ and $4.0\times10^{-19}$: at step 8 $b$ is the double-precision number nearest the root, and $f(b)$ evaluates to exactly 0. To get within $10^{-10}$ of the root on $[0, 1]$, bisection needs 32 iterations and regula falsi 24.
+**Behavior:** $f(0) = -4 < 0$ and $f(1) = 1 > 0$, so the IVT guarantees a root in $[0, 1]$. The true root is $x^* \approx 0.3285$. Brent's method takes 8 steps: secant, bisection, IQI, secant, IQI, secant, secant, IQI. At step 3 the IQI point $0.2276$ has the larger $|f|$, so it becomes the other end of the bracket and $b$ stays at $0.4$. After the bisection at step 2 every step is an interpolation step, and at steps 5–8 the error in $b$ falls to $3.2\times10^{-4}$, $5.5\times10^{-6}$, $2.7\times10^{-9}$ and $4.0\times10^{-19}$: at step 8 $b$ is the double-precision number nearest the root, and $f(b)$ evaluates to exactly 0. To get within $10^{-10}$ of the root on $[0, 1]$, bisection needs 32 iterations and regula falsi 24. The window also shows the cubic's other two roots, $x \approx 1.2647$ in $[1, 2]$ and $x \approx 2.4068$ in $[2, 3]$; Mathews' example also finds these with Brent's method, but only the run on $[0, 1]$ is animated here.
 
 [Julia source](brentsaa.jl)
 

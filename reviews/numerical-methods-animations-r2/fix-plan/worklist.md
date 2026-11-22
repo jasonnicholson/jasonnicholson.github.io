@@ -183,8 +183,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | The prose description of the IQI step describes a forward parabola, not inverse interpolation | unverified | open |
-| F2 | Minor | Fidelity | Mathews' Example 4 finds all three roots of the cubic, but the page keeps only the first one and does not say so | unverified | open |
+| F1 | Minor | Page match | The prose description of the IQI step describes a forward parabola, not inverse interpolation | unverified | fixed — [fix record](../fixes/brents-method.md) |
+| F2 | Minor | Fidelity | Mathews' Example 4 finds all three roots of the cubic, but the page keeps only the first one and does not say so | unverified | fixed — [fix record](../fixes/brents-method.md) |
 
 ### Broyden's Method — `broydens-method` · [round-2 report](../broydens-method.md)
 
