@@ -27,9 +27,9 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | Γ and Y0 cases (22–27) are built from least-squares-fitted Taylor coefficients that are wrong by up to 13%, so many of their frames are not the Padé approximants of Γ or Y0 | verified | open |
-| F2 | Minor | Implementation | When the Padé system is singular and inconsistent, `pinv` returns a least-squares denominator, so a few frames show a curve that is not a Padé approximant of any kind | unverified | open |
-| F3 | Minor | Page match | The Description says R always matches f through order m+n, but about 170 frames show degenerate table entries that cannot | unverified | open |
+| F1 | Error | Implementation | Γ and Y0 cases (22–27) are built from least-squares-fitted Taylor coefficients that are wrong by up to 13%, so many of their frames are not the Padé approximants of Γ or Y0 | verified | fixed — [fix record](../fixes/pade-approximation.md) |
+| F2 | Minor | Implementation | When the Padé system is singular and inconsistent, `pinv` returns a least-squares denominator, so a few frames show a curve that is not a Padé approximant of any kind | unverified | fixed — [fix record](../fixes/pade-approximation.md) |
+| F3 | Minor | Page match | The Description says R always matches f through order m+n, but about 170 frames show degenerate table entries that cannot | unverified | fixed — [fix record](../fixes/pade-approximation.md) |
 
 ## WP-B shared interpolation script
 
