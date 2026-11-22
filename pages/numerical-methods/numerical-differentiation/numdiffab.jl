@@ -43,7 +43,7 @@ anim = @animate for k in eachindex(hs)
         yplot;
         color=:black,
         lw=2.5,
-        label="f(x) = e^{-x} sin(x)",
+        label="f(x) = e^(-x) sin(x)",
         xlabel="x",
         ylabel="y",
         xlims=xlims,

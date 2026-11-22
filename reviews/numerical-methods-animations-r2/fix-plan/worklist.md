@@ -355,9 +355,9 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | Case 2 legend shows "f" instead of the function (Implementation / picture, Minor) | unverified | open |
-| F2 | Minor | Page match | Case 1 "max error" covers [h, π−h], not [0, π] (Page match / picture, Minor) | unverified | open |
-| F3 | Minor | Fidelity | archive cases dropped without mention (Fidelity, Minor) | unverified | open |
+| F1 | Minor | Implementation | Case 2 legend shows "f" instead of the function (Implementation / picture, Minor) | unverified | fixed — [fix record](../fixes/numerical-differentiation.md) |
+| F2 | Minor | Page match | Case 1 "max error" covers [h, π−h], not [0, π] (Page match / picture, Minor) | unverified | fixed — [fix record](../fixes/numerical-differentiation.md) |
+| F3 | Minor | Fidelity | archive cases dropped without mention (Fidelity, Minor) | unverified | fixed — [fix record](../fixes/numerical-differentiation.md) |
 
 ### Richardson Extrapolation — `richardson-extrapolation` · [round-2 report](../richardson-extrapolation.md)
 
