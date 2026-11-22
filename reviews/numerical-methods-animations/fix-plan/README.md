@@ -56,9 +56,10 @@ The whole effort is finished after a full independent re-review (`/review-animat
   | ABM4 PECE | 1.285 | 0.031 | 161 |
 
   Taylor order 4 has about the same limit as RK4.
-- Add one sentence noting that coarser steps become unstable once the solution flattens.
+- Add one sentence saying exactly what is computed: for steps longer than about h*, h·|∂f/∂y| exceeds the method's stability limit before t = 5, so from then on errors are amplified instead of damped. Just above h* this affects only the last steps. At the old step it starts at a computed time t. (The earlier wording here, "coarser steps become unstable once the solution flattens", is false and must not be used: for large h the onset comes before the solution flattens.)
 - Check Mathews' own example in the legacy archive for the step size he used. If he used a coarse step, the default still applies. Say on the page, in a sentence, that the coarser step goes unstable.
 - **Alternative:** keep the coarse steps and make the instability the point of each animation, rewriting the text accordingly.
+- **Superseded for round 2 by R2-B below.**
 
 **D3 — Orphan files.**
 - **Default:**
@@ -87,6 +88,40 @@ The whole effort is finished after a full independent re-review (`/review-animat
 - The director commits. Subagents never do.
 - Nothing is pushed.
 - Any uncommitted change already in the working tree when a run starts is not part of this work and is never staged.
+
+## Round 2 decisions (Jason, 2026-11-22)
+
+These apply when fixing from `reviews/numerical-methods-animations-r2`. Where they conflict with D1–D8, they take precedence.
+
+**R2-A — Fidelity findings (departures from the Mathews archive).** Jason left this to the director. The rule:
+- **Follow Mathews** when the departure is a parameter of an existing case or an element missing from the picture. Parameters include the interval, starting point, centre, function and step. Picture elements include sample-point markers, panel dividers and legacy-style bars. Examples:
+  - Chebyshev case 03 interval;
+  - Fixed-Point cases 4–6 starting points;
+  - Maclaurin T08–T12 centres and functions, and M10;
+  - Bisection intervals;
+  - panel markers on Simpson, Simpson 3/8, Newton-Cotes and Boole;
+  - Gauss-Legendre bars.
+
+  If following Mathews would make the page mathematically wrong, or would contradict a fix that round 1 confirmed, keep the page. Say why in one sentence on the page, and record it.
+- **Add one sentence** when a whole Mathews example or topic is left out, saying what was left out. Do not add the example. This is the case for, among others, B-Splines (Mathews' subject is B-spline interpolation), Monte Carlo π, Rational, Catenary, Hermite and Tangent Parabola.
+- **Correct every stale "legacy GIF missing" note.** These appear on Euler, Midpoint, Simpson 3/8 and Newton-Cotes, and the GIFs are in `a2001/Animations/`.
+
+**R2-B — ODE animations: do what Mathews did.** On Euler (both cases), Runge-Kutta, Taylor (both orders) and Adams-Bashforth-Moulton:
+- Replace the single fixed-step trajectory with Mathews' **step-refinement sweep**. Each frame is a full run over [0, 5] with m subintervals, labelled with m and the computed y(5).
+- Take the m sequence from the page's own legacy GIF in `a2001/Animations/OrdinaryDE/` (for example Euler m = 10…130, Modified Euler 12…120, RK4 12…150). Reproduce Mathews' printed y(5) values as the check.
+- Coarse m goes unstable and fine m converges. The text describes exactly that, with computed numbers and the corrected D2 stability sentence.
+- Keep the exact-solution reference curve.
+
+**R2-C — Madsen-Reid: follow Jason's reference implementation.** The page's method is Vestermark's `newton_real` (Future Team ApS, 2002), downloadable at <https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp>. That file, not the 1975 Madsen–Reid report, is the reference for the scripts and the page. Fixers read it from the URL; it carries a restrictive licence, so do not copy it into the repository. Port its iteration faithfully:
+- the stage test `stage1 = f2/u > u/f/4 || f != ff`, with Stage 2 as plain Newton under Adams' rounding-error bound;
+- the Stage-1 search: halve while |f| > |f0|; after two helpful halvings, take the rotated half step `alterdirection(dz, 0.5)`; otherwise keep stepping along dz, up to n times, while |f| falls;
+- `alterdirection` = multiply by 0.6 + 0.8i (53.13°) times m;
+- the r0 cap with rotation, and r0 = 5·(pre-cap length);
+- the saddle-point and rounding-domain branches.
+
+The page cites this implementation as "Madsen's method as implemented by Vestermark", not as the 1975 report's equations. Under this decision, r2 finding F3 (the r0 update uses the pre-cap length) matches the reference and is `not a defect`. F1 and F2 are fixed against the reference.
+
+**R2-D — Euler "Modified Euler": switch to the midpoint method.** This follows Mathews. The update is y_{k+1} = y_k + h·f(t_k + h/2, y_k + (h/2)·f(t_k, y_k)). Retitle the case and the GIF "Modified Euler (midpoint)", and fix the Description and numbers. Mathews' printed Example 12 values are the check.
 
 ## Work packages and order
 
