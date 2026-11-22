@@ -370,12 +370,12 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | The intro says the degree goes up one step at a time, but it skips degrees | verified | open |
-| F2 | Error | Page match | Case 19 interpolates on [-0.999, 0.999], not on the [-1.5, 1.5] the alt text states | verified | open |
-| F3 | Error | Implementation (picture) | The titles run off the right edge, so cases 19 and 20 show the wrong degree and case 21 shows none | verified | open |
-| F4 | Minor | Implementation (picture) | For symmetric problems, "degree n−1" in the title overstates the interpolant's real degree | unverified | open |
-| F5 | Minor | Implementation (picture) | The y-window cuts off the steep end of f, the outermost nodes and the largest error in several cases | unverified | open |
-| F6 | Minor | Page match | "(expanded)" in the alt text for cases 04 and 29 matches nothing in the GIFs | unverified | open |
+| F1 | Error | Page match | The intro says the degree goes up one step at a time, but it skips degrees | verified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F2 | Error | Page match | Case 19 interpolates on [-0.999, 0.999], not on the [-1.5, 1.5] the alt text states | verified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F3 | Error | Implementation (picture) | The titles run off the right edge, so cases 19 and 20 show the wrong degree and case 21 shows none | verified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F4 | Minor | Implementation (picture) | For symmetric problems, "degree n−1" in the title overstates the interpolant's real degree | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F5 | Minor | Implementation (picture) | The y-window cuts off the steep end of f, the outermost nodes and the largest error in several cases | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F6 | Minor | Page match | "(expanded)" in the alt text for cases 04 and 29 matches nothing in the GIFs | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
 
 ### Cubic Splines — `cubic-splines` · [round-1 report](../cubic-splines.md)
 

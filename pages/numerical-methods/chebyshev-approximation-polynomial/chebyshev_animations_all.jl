@@ -39,7 +39,7 @@ cases = ChebyCase[
     auto_span("16", "cos(x)*exp(-x)", x -> cos(x) * exp(-x), (-2.0, 4.0)),
     auto_span("17", "cosh(x)", x -> cosh(x), (-4.0, 4.0)),
     auto_span("18", "atan(x)", x -> atan(x), (-2.2, 2.2)),
-    auto_span("19", "asin(x)", x -> asin(x), (-1.5, 1.5)),
+    with_span("19", "asin(x)", x -> asin(x), (-1.5, 1.5), (-1.0, 1.0)),
     auto_span("20", "besselj(0,x)", x -> besselj(0, x), (-10.2, 10.2)),
     auto_span("21", "besselj(1,x)", x -> besselj(1, x), (-10.2, 10.2)),
     auto_span("22", "normal_pdf(x)", x -> exp(-x^2 / 2) / sqrt(2pi), (-3.0, 3.0)),
@@ -72,15 +72,11 @@ function finite_support(case::ChebyCase)
 end
 
 function resolved_span(case::ChebyCase)
-    s = finite_support(case)
-    if case.has_span
-        a = max(case.node_span[1], s[1])
-        b = min(case.node_span[2], s[2])
-        if b > a + 1e-8
-            return (a, b)
-        end
-    end
-    return s
+    # An explicit node interval is used as given (chebyshev_nodes checks that f is
+    # finite at every node); only cases without one fall back to the finite support
+    # of f on the plotting grid.
+    case.has_span && return case.node_span
+    return finite_support(case)
 end
 
 function chebyshev_nodes(f::Function, span::Tuple{Float64, Float64}, n_nodes::Int)
@@ -155,6 +151,17 @@ function robust_ylims(vals::Vector{Float64})
     return (lo - margin, hi + margin)
 end
 
+# Widen the quantile window so that f over the whole approximation interval, and
+# therefore every node, lies inside it.
+function window_ylims(case::ChebyCase, span::Tuple{Float64, Float64}, ytrue::Vector{Float64})
+    lo, hi = robust_ylims(ytrue)
+    fspan = [safe_eval(case.f, x) for x in range(span[1], span[2], length=2001)]
+    fspan = [v for v in fspan if isfinite(v)]
+    flo, fhi = extrema(fspan)
+    pad = 0.05 * (max(hi, fhi) - min(lo, flo))
+    return (min(lo, flo - pad), max(hi, fhi + pad))
+end
+
 function node_count_sequence(max_order::Int)
     nmax = max_order + 1
     base = [2, 3, 4, 5, 6, 8, 10, 12, 14, 16]
@@ -198,23 +205,26 @@ function render_case(case::ChebyCase)
     y_hi = [barycentric_eval(x, xs_hi, ys_hi, w_hi) for x in xplot]
 
     # Keep axis limits tied to the target function so extreme polynomial blow-up
-    # does not collapse the visual dynamic range.
-    ylims = robust_ylims(ytrue)
-    ytrue_clip = [isfinite(y) ? clamp(y, ylims[1], ylims[2]) : NaN for y in ytrue]
+    # does not collapse the visual dynamic range. Curves are clamped only to a band
+    # one window-height beyond the limits, so where they leave the window they run
+    # off the frame instead of along its edge.
+    ylims = window_ylims(case, span, ytrue)
+    band = (ylims[1] - (ylims[2] - ylims[1]), ylims[2] + (ylims[2] - ylims[1]))
+    ytrue_clip = [isfinite(y) ? clamp(y, band[1], band[2]) : NaN for y in ytrue]
 
     anim = Animation()
     for n_nodes in n_nodes_seq
         xs, ys_nodes = chebyshev_nodes(case.f, span, n_nodes)
         w = barycentric_weights(xs)
         yinterp = [barycentric_eval(x, xs, ys_nodes, w) for x in xplot]
-        yinterp = clamp.(yinterp, ylims[1], ylims[2])
+        yinterp = clamp.(yinterp, band[1], band[2])
 
         pplot = plot(size=(760, 520),
                      xlims=case.xlims, ylims=ylims,
                      xlabel="x", ylabel="y",
-                     title="Chebyshev Case $(case.id): f(x) = $(case.formula_label), interval [$(fmt_num(span[1])), $(fmt_num(span[2]))], degree $(n_nodes - 1)",
+                     title="Chebyshev Case $(case.id): f(x) = $(case.formula_label)\ninterval [$(fmt_num(span[1])), $(fmt_num(span[2]))], n = $(n_nodes) nodes, degree ≤ $(n_nodes - 1)",
                      legend=:topleft, grid=true, framestyle=:box,
-                     background_color=:white)
+                     background_color=:white, top_margin=3Plots.mm)
 
         plot!(pplot, xplot, ytrue_clip; color=:magenta, lw=2.5, label="f(x)")
         plot!(pplot, xplot, yinterp; color=:steelblue, lw=2.2, label="interpolant")
