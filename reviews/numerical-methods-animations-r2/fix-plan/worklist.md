@@ -124,8 +124,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | the h = 0.0311 "stability limit" is presented as the step size above which ABM4 fails on this problem. In practice errors stay tiny up to about h = 0.07 | verified | open |
-| F2 | Minor | Fidelity | the legacy animation's content (a sweep over the number of subintervals) is replaced by a single fixed-step trajectory, and the page does not say so | unverified | open |
+| F1 | Misleading | Page match | the h = 0.0311 "stability limit" is presented as the step size above which ABM4 fails on this problem. In practice errors stay tiny up to about h = 0.07 | verified | fixed — [fix record](../fixes/adams-bashforth-moulton-method.md) |
+| F2 | Minor | Fidelity | the legacy animation's content (a sweep over the number of subintervals) is replaced by a single fixed-step trajectory, and the page does not say so | unverified | fixed — [fix record](../fixes/adams-bashforth-moulton-method.md) |
 
 ### Euler's Method for ODE's — `eulers-method-for-odes` · [round-2 report](../eulers-method-for-odes.md)
 
