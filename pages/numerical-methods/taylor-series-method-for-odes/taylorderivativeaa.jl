@@ -25,13 +25,14 @@ end
 
 t0, y0 = 0.0, 1.0
 T  = 5.0
-n  = 20
+n  = 100    # steps: h = 0.05 keeps h*|df/dy| below order-3 Taylor's limit 2.513 up to t = 5
 h  = (T - t0) / n
+stride = 5  # each frame adds `stride` Taylor steps (0.25 in t)
 
-xlims = (0.0, 5.0)
-ylims = (0.0, 1.8)
+xlims = (-0.1, 5.1)   # small margins so the end point (5, 0.0081) is not clipped
+ylims = (-0.05, 1.8)
 
-title_str = "Taylor Method (n=3): y' = 1 - t·y^{1/3},  y(0) = 1"
+title_str = "Taylor order 3, h = 0.05: y' = 1 - t·y^(1/3),  y(0) = 1"
 
 # --- Compute solution ---
 ts = Vector{Float64}(undef, n+1)
@@ -42,8 +43,8 @@ for i in 1:n
     ys[i+1] = taylor3_step(ts[i], ys[i], h)
 end
 
-# --- Animation ---
-anim = @animate for frame in 1:n+1
+# --- Animation: reveal the solution `stride` steps per frame ---
+anim = @animate for frame in 1:stride:n+1
     plot(size=(640, 480), xlims=xlims, ylims=ylims,
          xlabel="t", ylabel="y", title=title_str,
          legend=false, grid=true, framestyle=:box,

@@ -177,10 +177,10 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | With h = 0.25 both methods are unstable for t ≳ 3.25, so the last third of each animation shows a numerical blow-up, not the solution | verified | open |
-| F2 | Error | Page match | "slightly better accuracy than order 3" is false in both directions | verified | open |
-| F3 | Error | Page match | Order-3 Taylor does not match RK4 in order | verified | open |
-| F4 | Misleading | Implementation / Page match | The "order 4" script gets y'''' by a finite difference, not analytically | verified | open |
+| F1 | Error | Implementation | With h = 0.25 both methods are unstable for t ≳ 3.25, so the last third of each animation shows a numerical blow-up, not the solution | verified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
+| F2 | Error | Page match | "slightly better accuracy than order 3" is false in both directions | verified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
+| F3 | Error | Page match | Order-3 Taylor does not match RK4 in order | verified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
+| F4 | Misleading | Implementation / Page match | The "order 4" script gets y'''' by a finite difference, not analytically | verified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
 
 ## WP-E root finding
 
