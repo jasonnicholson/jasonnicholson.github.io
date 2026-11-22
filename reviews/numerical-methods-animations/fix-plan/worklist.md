@@ -364,7 +364,7 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | Small-$c$ behaviour sentence misdescribes which curve is lower and where they separate | verified | open |
+| F1 | Misleading | Page match | Small-$c$ behaviour sentence misdescribes which curve is lower and where they separate | verified | fixed — [fix record](../fixes/catenary.md) |
 
 ### Chebyshev Approximation Polynomial — `chebyshev-approximation-polynomial` · [round-1 report](../chebyshev-approximation-polynomial.md)
 
