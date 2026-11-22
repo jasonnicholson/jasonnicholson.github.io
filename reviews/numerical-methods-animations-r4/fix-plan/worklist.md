@@ -268,5 +268,5 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | legacy Examples 1, 3, 4 (error-bound graphs) dropped without mention | unverified | open |
+| F1 | Minor | Fidelity | legacy Examples 1, 3, 4 (error-bound graphs) dropped without mention | unverified | fixed — [fix record](../fixes/richardson-extrapolation.md) |
 
