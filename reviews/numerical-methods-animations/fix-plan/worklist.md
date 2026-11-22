@@ -436,9 +436,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Case 3 heading says "at $x_0=1$", but the animation has no $x_0$ | verified | open |
-| F2 | Minor | Implementation | Error annotations rounded to a fixed number of decimals, so they show "0.0" or a wrong leading digit | unverified | open |
-| F3 | Minor | Implementation | Case 2 frame title is cut off, so the formula's divisor reads "/(12" | unverified | open |
+| F1 | Error | Page match | Case 3 heading says "at $x_0=1$", but the animation has no $x_0$ | verified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
+| F2 | Minor | Implementation | Error annotations rounded to a fixed number of decimals, so they show "0.0" or a wrong leading digit | unverified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
+| F3 | Minor | Implementation | Case 2 frame title is cut off, so the formula's divisor reads "/(12" | unverified | fixed — [fix record](../fixes/derive-numerical-differentiation-formulae.md) |
 
 ### Numerical Differentiation — `numerical-differentiation` · [round-1 report](../numerical-differentiation.md)
 

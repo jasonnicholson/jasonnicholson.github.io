@@ -3,6 +3,7 @@
 # Produces: diffformab.gif
 
 using Plots
+using Printf
 gr()
 
 f(x) = exp(-x) * sin(x)
@@ -46,6 +47,7 @@ anim = @animate for h in hs
         legend=:topright,
         size=(760, 460),
         background_color=:white,
+        titlefontsize=11,
         title="Five-point formula: f'(x0) ≈ [f(x0-2h)-8f(x0-h)+8f(x0+h)-f(x0+2h)]/(12h)",
     )
 
@@ -58,7 +60,7 @@ anim = @animate for h in hs
         0.08,
         -0.07,
         text(
-            "h=$(h),  |err3|≈$(round(abs(approx3 - exact); digits=6)),  |err5|≈$(round(abs(approx5 - exact); digits=6))",
+            "h=$(h),  |err3|≈$(@sprintf("%.2e", abs(approx3 - exact))),  |err5|≈$(@sprintf("%.2e", abs(approx5 - exact)))",
             10,
             :left,
             :black,
