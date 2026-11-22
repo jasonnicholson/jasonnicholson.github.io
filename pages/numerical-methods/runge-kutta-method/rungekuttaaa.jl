@@ -15,7 +15,7 @@ T  = 5.0
 ms = [12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 70, 80, 90, 100, 120, 150]
 
 xlims = (-0.1, 5.1)
-ylims = (-0.05, 1.8)    # every computed value of every run lies inside (min 0.0081, max 1.4498)
+ylims = (-0.05, 1.8)    # every grid value of every run lies inside (min 0.0081, max 1.4498); RK4 stage values reach -1.15
 
 # --- RK4 with m subintervals on [t0, T] ---
 function rk4(m)
