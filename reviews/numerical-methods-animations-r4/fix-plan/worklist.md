@@ -177,7 +177,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the "Note on generalization" overstates how far the method's structure carries over | unverified | open |
+| F1 | Minor | Page match | the "Note on generalization" overstates how far the method's structure carries over | unverified | fixed — [fix record](../fixes/madsen-reid-method.md) |
 
 ### Muller's Method — `mullers-method` · [round-4 report](../mullers-method.md)
 
