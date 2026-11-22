@@ -1,9 +1,11 @@
 # gausslegendreaa.jl
 # Gauss-Legendre Quadrature animation: legacy-style bar visualization
+# (bar i has width w_i and height f(x_i), so its area is w_i f(x_i))
 # Produces: gausslegendreaa.gif
 
 using LinearAlgebra
 using Plots
+using Printf
 gr()
 
 f(x) = 1 + exp(-x) * sin(8 * x^(2 / 3))
@@ -39,16 +41,11 @@ function gauss_legendre_sum(n)
 end
 
 function weighted_rectangles(xnodes, weights)
-    n = length(xnodes)
-    bounds = zeros(n + 1)
-    bounds[1] = a
-    bounds[end] = b
-    for i in 1:n-1
-        bounds[i + 1] = (xnodes[i] + xnodes[i + 1]) / 2
-    end
-
-    widths = [bounds[i + 1] - bounds[i] for i in 1:n]
-    heights = [weights[i] * f(xnodes[i]) / widths[i] for i in 1:n]
+    # Cells of width w_i laid end to end from a (cumulative weights); each
+    # node x_i lies inside its own cell. Bar height is the sample f(x_i).
+    bounds = a .+ [0.0; cumsum(weights)]
+    widths = copy(weights)
+    heights = f.(xnodes)
     return bounds, widths, heights
 end
 
@@ -73,6 +70,7 @@ anim = @animate for state in frame_states
     intro_text1 = ""
     intro_text2 = ""
     intro_text3 = ""
+    sample_x = Float64[]
 
     if state isa Int
         n = state
@@ -92,15 +90,21 @@ anim = @animate for state in frame_states
             plot!([x_nodes[i], x_nodes[i]], [0.0, f(x_nodes[i])]; color=:red, lw=0.6)
         end
 
+        sample_x = x_nodes
         sample_text = "Sample Points = $n"
-        approx_text = "Approximation = $(round(approx; digits=6))"
+        approx_text = @sprintf("Approximation = %.6f", approx)
     elseif state == :intro2
         intro_text1 = "True"
         intro_text2 = "Numerical Quadrature"
-        intro_text3 = "I = $(round(true_int; digits=6))"
+        intro_text3 = @sprintf("I = %.6f", true_int)
     end
 
     plot!(xplot, f.(xplot); color=:magenta, lw=2)
+    # Red dot at each sample (x_i, f(x_i)) on the top edge of its bar
+    if !isempty(sample_x)
+        scatter!(sample_x, f.(sample_x); color=:red, markersize=3,
+                 markerstrokewidth=0)
+    end
 
     annotate!(0.24, 2.02, text("Y = exp(-x) sin(8*x^(2/3)) + 1", :black, 7))
     annotate!(1.20, 2.02, text("Gauss-Legendre Rule", :black, 12))

@@ -67,8 +67,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Bars are not the legacy weight-by-sample bars; end bars sit about 18% below the curve in every frame | unverified | open |
-| F2 | Minor | Implementation | Two on-frame numbers lose their trailing zeros, so they show fewer digits than the others | unverified | open |
+| F1 | Minor | Fidelity | Bars are not the legacy weight-by-sample bars; end bars sit about 18% below the curve in every frame | unverified | fixed — [fix record](../fixes/gauss-legendre-quadrature.md) |
+| F2 | Minor | Implementation | Two on-frame numbers lose their trailing zeros, so they show fewer digits than the others | unverified | fixed — [fix record](../fixes/gauss-legendre-quadrature.md) |
 
 ### Midpoint Rule — `midpoint-rule` · [round-2 report](../midpoint-rule.md)
 
