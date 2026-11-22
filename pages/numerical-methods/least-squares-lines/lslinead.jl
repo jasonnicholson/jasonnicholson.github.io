@@ -26,7 +26,7 @@ anim = @animate for k in 1:n_pts
              xlabel="Distance to sun r (million km)",
              ylabel="Orbital period T (days)",
              title="Power Fit: T = a*r^(3/2)",
-             legend=:topleft, grid=true, framestyle=:box,
+             legend=:bottomright, grid=true, framestyle=:box,
              background_color=:white)
 
     scatter!(p, x, y; color=:lightgray, ms=4, label="all planets")

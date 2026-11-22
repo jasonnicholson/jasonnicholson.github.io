@@ -396,11 +396,11 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 1 "stabilize" is not what the slope sequence does | unverified | open |
-| F2 | Minor | Page match | Intro says every animation shows residuals and fitted parameters | unverified | open |
-| F3 | Minor | Implementation (picture) | Case 2: intersection marker never visible; k=2 label is inaccurate | unverified | open |
-| F4 | Minor | Implementation (picture) | Parameter annotation overprints the legend in Cases 3 and 4 | unverified | open |
-| F5 | Minor | Implementation | Mercury's distance in the Kepler data is about 0.55% low | unverified | open |
+| F1 | Minor | Page match | Case 1 "stabilize" is not what the slope sequence does | unverified | fixed — [fix record](../fixes/least-squares-lines.md) |
+| F2 | Minor | Page match | Intro says every animation shows residuals and fitted parameters | unverified | fixed — [fix record](../fixes/least-squares-lines.md) |
+| F3 | Minor | Implementation (picture) | Case 2: intersection marker never visible; k=2 label is inaccurate | unverified | fixed — [fix record](../fixes/least-squares-lines.md) |
+| F4 | Minor | Implementation (picture) | Parameter annotation overprints the legend in Cases 3 and 4 | unverified | fixed — [fix record](../fixes/least-squares-lines.md) |
+| F5 | Minor | Implementation | Mercury's distance in the Kepler data is about 0.55% low | unverified | fixed — [fix record](../fixes/least-squares-lines.md) |
 
 ### Least Squares Polynomials — `least-squares-polynomials` · [round-1 report](../least-squares-polynomials.md)
 
