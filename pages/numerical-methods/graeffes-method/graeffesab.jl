@@ -46,7 +46,7 @@ estimates = [mag_estimates(polys[m+1], m) for m in 0:n_iters]
 
 # --- Animation ---
 colors = [:steelblue, :steelblue, :crimson, :darkorange]
-linestyles = [:solid, :dash, :solid, :solid]
+linestyles = [:solid, :solid, :solid, :solid]   # traces solid; dashed is reserved for the true-value lines
 root_labels = ["r₁  (|r₁| = 5, double)", "", "r₃  (|r₃| = 2)", "r₄  (|r₄| = 1)"]
 
 anim = @animate for frame in 0:n_iters
