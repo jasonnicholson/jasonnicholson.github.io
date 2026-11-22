@@ -274,7 +274,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Fidelity | The page replaces Mathews' subject (cubic B-spline interpolation) with parametric clamped B-spline curves and drops both archive examples without saying so | verified | open |
+| F1 | Misleading | Fidelity | The page replaces Mathews' subject (cubic B-spline interpolation) with parametric clamped B-spline curves and drops both archive examples without saying so | verified | fixed — [fix record](../fixes/b-splines.md) |
 
 ### Bézier Curves — `bezier-curves` · [round-2 report](../bezier-curves.md)
 
