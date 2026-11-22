@@ -106,7 +106,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Case 1 says it "reconstructs" Mathews' Example 1, but its step controller is not the module's, so at the same tolerance its numbers differ from Mathews' Example | unverified | open |
+| F1 | Minor | Fidelity | Case 1 says it "reconstructs" Mathews' Example 1, but its step controller is not the module's, so at the same tolerance its numbers differ from Mathews' Example | unverified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
 
 ### Runge-Kutta Method — `runge-kutta-method` · [round-4 report](../runge-kutta-method.md)
 
