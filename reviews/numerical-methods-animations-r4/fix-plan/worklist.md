@@ -130,7 +130,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 2's final Steffensen error is given as "about 6 × 10⁻¹⁶", but it is 6.7 × 10⁻¹⁶ | unverified | open |
+| F1 | Minor | Page match | Case 2's final Steffensen error is given as "about 6 × 10⁻¹⁶", but it is 6.7 × 10⁻¹⁶ | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
 
 ### Bisection Method — `bisection-method` · [round-4 report](../bisection-method.md)
 
