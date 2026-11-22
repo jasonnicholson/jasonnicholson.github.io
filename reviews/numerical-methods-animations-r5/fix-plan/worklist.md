@@ -130,7 +130,7 @@ No findings in round 5.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Final Case A residual is quoted to two digits at roundoff level (Page match, Minor) | unverified | open |
+| F1 | Minor | Page match | Final Case A residual is quoted to two digits at roundoff level (Page match, Minor) | unverified | fixed — [fix record](../fixes/broydens-method.md) |
 
 ### False Position or Regula Falsi Method — `false-position-or-regula-falsi-method` · [round-5 report](../false-position-or-regula-falsi-method.md)
 

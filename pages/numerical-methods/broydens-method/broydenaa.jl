@@ -78,6 +78,12 @@ yg = range(ylims[1], ylims[2], length=ny)
 Z1 = [1 - 4*xi + 2*xi^2 - 2*yi^3       for yi in yg, xi in xg]
 Z2 = [-4 + xi^4 + 4*yi + 4*yi^4        for yi in yg, xi in xg]
 
+# Right-panel title. Below 1e-14 the residual is at the rounding level of evaluating F
+# (terms of size up to 4, eps ≈ 2.2e-16), so only its order of magnitude is shown.
+resid_title(k, r) = r < 1e-14 ?
+    @sprintf("||F(X_%d)|| ≈ 1e%d (machine precision)", k, round(Int, log10(r))) :
+    @sprintf("||F(X_%d)|| = %.2e", k, r)
+
 # --- Animation ---
 anim = @animate for frame in 0:n_frames
     # iterates up to current frame
@@ -103,7 +109,7 @@ anim = @animate for frame in 0:n_frames
               xlims=(-0.5, n_frames + 0.5), ylims=(1e-16, 1e1),
               xticks=0:n_frames, yticks=10.0 .^ (-16:2:0),
               xlabel="k", ylabel="||F(X_k)||",
-              title=@sprintf("||F(X_%d)|| = %.2e", frame, residuals[frame+1]),
+              title=resid_title(frame, residuals[frame+1]),
               color=:steelblue, lw=1.5, marker=:circle, ms=4,
               legend=false, grid=true, framestyle=:box)
     scatter!(p2, [frame], [residuals[frame+1]]; color=:red, ms=7)
