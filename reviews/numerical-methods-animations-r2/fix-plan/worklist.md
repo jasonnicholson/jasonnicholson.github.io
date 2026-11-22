@@ -176,8 +176,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | The introduction says the shaded bracket is "known to contain a root", which is false for Case 2 | unverified | open |
-| F2 | Minor | Fidelity | Both starting intervals differ from Mathews' examples and the page gives no reason | unverified | open |
+| F1 | Minor | Page match | The introduction says the shaded bracket is "known to contain a root", which is false for Case 2 | unverified | fixed — [fix record](../fixes/bisection-method.md) |
+| F2 | Minor | Fidelity | Both starting intervals differ from Mathews' examples and the page gives no reason | unverified | fixed — [fix record](../fixes/bisection-method.md) |
 
 ### Brent's Method — `brents-method` · [round-2 report](../brents-method.md)
 

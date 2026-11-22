@@ -1,5 +1,6 @@
 # bisectionaa.jl
-# Bisection Method animation: f(x) = x^3 + 4x^2 - 10, interval [1, 2]
+# Bisection Method animation: f(x) = x^3 + 4x^2 - 10, interval [-1, 2]
+# (Mathews, Bisection Method module, Example 3).
 # True root ≈ 1.3652. Each frame advances one bisection step.
 # Top panel: full view. Bottom panel: zoom on the bracket before the step,
 # so the halving stays visible after the bracket is narrower than a pixel
@@ -12,10 +13,10 @@ gr()
 
 # --- Parameters ---
 f(x) = x^3 + 4x^2 - 10
-a0, b0 = 1.0, 2.0
+a0, b0 = -1.0, 2.0
 n_iters = 12
 
-xlims = (-1.0, 2.2)
+xlims = (-1.2, 2.2)   # margin left of a0 so the initial bracket line is visible
 ylims = (-12.0, 16.0)
 
 title_str = "Bisection Method: f(x) = x³ + 4x² − 10"
@@ -93,7 +94,7 @@ anim = @animate for frame in 0:n_iters
     else
         # Frame 0: just annotate the initial bracket
         annotate!(p1,
-            (a_cur + b_cur) / 2, ylims[2] * 0.85,
+            (a_cur + b_cur) / 2, ylims[2] * 0.6,   # below the legend
             text("Initial bracket [$(a_cur), $(b_cur)]", :center, 9, :steelblue)
         )
     end

@@ -1,7 +1,10 @@
 # bisectionbb.jl
-# Bisection Method animation: f(x) = tan(x), interval [1, 2]
-# Cautionary case: sign change on [1,2] is due to the asymptote at π/2 ≈ 1.5708,
-# not a true root. Bisection converges to the discontinuity.
+# Bisection Method animation: f(x) = tan(x), interval [0, 2]
+# (Mathews, Bisection Method module, Example 4).
+# Cautionary case: tan(0) = 0 is a root at the left end, but f(a)f(c) = 0 at the
+# first midpoint c = 1, so the step keeps [1, 2]. The sign change on [1, 2] is due
+# to the asymptote at π/2 ≈ 1.5708, not a true root. Bisection converges to the
+# discontinuity.
 # Top panel: full view. Bottom panel: zoom on the bracket before the step,
 # so the halving stays visible after the bracket is narrower than a pixel
 # in the full view.
@@ -13,10 +16,10 @@ gr()
 
 # --- Parameters ---
 f(x) = tan(x)
-a0, b0 = 1.0, 2.0
+a0, b0 = 0.0, 2.0
 n_iters = 12
 
-xlims = (0.0, 2.2)
+xlims = (-0.2, 2.2)   # margin left of a0 so the initial bracket line and the root at 0 are visible
 ylims = (-15.0, 15.0)
 
 title_str = "Bisection Method: f(x) = tan(x)  [cautionary case]"
@@ -111,7 +114,7 @@ anim = @animate for frame in 0:n_iters
         scatter!(p1, [c_cur], [0.0]; color=:red, ms=5, marker=:diamond, label="")
     else
         annotate!(p1,
-            (a_cur + b_cur) / 2, ylims[2] * 0.85,
+            (a_cur + b_cur) / 2, ylims[2] * 0.6,   # below the legend
             text("Initial bracket [$(a_cur), $(b_cur)]", :center, 9, :steelblue)
         )
     end
