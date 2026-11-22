@@ -225,9 +225,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case B root y-coordinate is misrounded as −1.665; to 3 decimals it is −1.664 | unverified | open |
-| F2 | Minor | Page match | "the second solution": the system has four real solutions, three of them inside the plotted window | unverified | open |
-| F3 | Minor | Page match | Case B is said to illustrate that the method is "dimension-independent", but it does not show this | unverified | open |
+| F1 | Minor | Page match | Case B root y-coordinate is misrounded as −1.665; to 3 decimals it is −1.664 | unverified | fixed — [fix record](../fixes/broydens-method.md) |
+| F2 | Minor | Page match | "the second solution": the system has four real solutions, three of them inside the plotted window | unverified | fixed — [fix record](../fixes/broydens-method.md) |
+| F3 | Minor | Page match | Case B is said to illustrate that the method is "dimension-independent", but it does not show this | unverified | fixed — [fix record](../fixes/broydens-method.md) |
 
 ### False Position or Regula Falsi Method — `false-position-or-regula-falsi-method` · [round-1 report](../false-position-or-regula-falsi-method.md)
 

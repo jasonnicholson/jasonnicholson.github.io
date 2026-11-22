@@ -1,5 +1,5 @@
 # broydenbb.jl
-# Broyden's Method animation: convergence to solution 2 near (2.808, -1.665)
+# Broyden's Method animation: convergence to the lower-right solution near (2.808, -1.664)
 # System: f1(x,y) = 1 - 4x + 2x² - 2y² = 0
 #         f2(x,y) = -4 + x² + 4y + y² = 0
 # Starting point: (2.5, -1.5)
@@ -26,7 +26,7 @@ n_iters = 10
 xlims = (-1.0, 3.5)
 ylims = (-2.5, 2.0)
 
-title_str = "Broyden's Method: solution near (2.808, -1.665)"
+title_str = "Broyden's Method: solution near (2.808, -1.664)"
 
 # --- Run Broyden's method ---
 function run_broyden(x0, y0, n_iters)

@@ -1,5 +1,5 @@
 # broydenaa.jl
-# Broyden's Method animation: convergence to solution 1 near (-0.088, 0.827)
+# Broyden's Method animation: convergence to the upper-left solution near (-0.088, 0.827)
 # System: f1(x,y) = 1 - 4x + 2x² - 2y² = 0
 #         f2(x,y) = -4 + x² + 4y + y² = 0
 # Starting point: (0, 1)
