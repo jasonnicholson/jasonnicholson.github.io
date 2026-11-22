@@ -73,11 +73,12 @@ anim = @animate for frame in 1:(n_iters + 1)
     # Function curve
     plot!(xplot, f.(xplot); color=:magenta, lw=2, label="f(x)")
 
-    # Parabola through current 3 points
-    xpara = range(min(q0, q1, q2) - 0.2, max(q0, q1, q2) + 0.2, length=200)
+    # Parabola through current 3 points, drawn far enough to include its axis
+    # crossing (the next iterate); the plot window clips it at the axis limits
+    q3 = muller_step(q0, q1, q2, f)
+    xpara = range(min(q0, q1, q2, q3) - 0.2, max(q0, q1, q2, q3) + 0.2, length=200)
     ypara = [lagrange_parabola(x, q0, q1, q2, f) for x in xpara]
-    ypara_clamped = clamp.(ypara, ylims[1], ylims[2])
-    plot!(collect(xpara), ypara_clamped; color=:steelblue, lw=1.5, ls=:dash, label="parabola")
+    plot!(collect(xpara), ypara; color=:steelblue, lw=1.5, ls=:dash, label="parabola")
 
     # Current 3 points
     scatter!([q0, q1], [f(q0), f(q1)]; color=:gray, ms=6, label="")

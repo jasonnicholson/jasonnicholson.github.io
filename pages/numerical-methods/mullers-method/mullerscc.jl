@@ -13,8 +13,8 @@ f(x) = x^6 - 7x^4 + 15x^2 - 9
 p_init = [1.3, 1.4, 1.5]   # [p0, p1, p2]
 n_iters = 8
 
-xlims = (-2.5, 2.5)
-ylims = (-12.0, 20.0)
+xlims = (0.9, 2.1)
+ylims = (-0.5, 1.5)   # window around the double root; the axes clip f and the parabolas
 
 title_str = "Muller's Method: f(x) = x⁶ - 7x⁴ + 15x² - 9"
 
@@ -72,13 +72,14 @@ anim = @animate for frame in 1:(n_iters + 1)
     hline!([0.0]; color=:black, lw=1, label="")
 
     # Function curve
-    plot!(xplot, clamp.(f.(xplot), ylims[1], ylims[2]); color=:magenta, lw=2, label="f(x)")
+    plot!(xplot, f.(xplot); color=:magenta, lw=2, label="f(x)")
 
-    # Parabola through current 3 points
-    xpara = range(min(q0, q1, q2) - 0.2, max(q0, q1, q2) + 0.2, length=200)
+    # Parabola through current 3 points, drawn far enough to include its axis
+    # crossing (the next iterate); the plot window clips it at the axis limits
+    q3 = muller_step(q0, q1, q2, f)
+    xpara = range(min(q0, q1, q2, q3) - 0.2, max(q0, q1, q2, q3) + 0.2, length=200)
     ypara = [lagrange_parabola(x, q0, q1, q2, f) for x in xpara]
-    ypara_clamped = clamp.(ypara, ylims[1], ylims[2])
-    plot!(collect(xpara), ypara_clamped; color=:steelblue, lw=1.5, ls=:dash, label="parabola")
+    plot!(collect(xpara), ypara; color=:steelblue, lw=1.5, ls=:dash, label="parabola")
 
     # Current 3 points
     scatter!([q0, q1], [f(q0), f(q1)]; color=:gray, ms=6, label="")
