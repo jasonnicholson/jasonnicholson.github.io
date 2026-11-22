@@ -233,7 +233,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the Mathews data-point example is replaced by sin(x), and no reason is given | unverified | open |
+| F1 | Minor | Fidelity | the Mathews data-point example is replaced by sin(x), and no reason is given | unverified | fixed — [fix record](../fixes/cubic-splines.md) |
 
 ### Hermite Polynomial Interpolation — `hermite-polynomial-interpolation` · [round-3 report](../hermite-polynomial-interpolation.md)
 
