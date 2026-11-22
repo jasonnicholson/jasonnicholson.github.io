@@ -27,17 +27,17 @@ Applying this transformation $m$ times yields a polynomial $p_m$ with roots $r_1
 
 Once the roots are sufficiently separated in magnitude — meaning $|r_1^{2^m}| \gg |r_2^{2^m}| \gg \cdots \gg |r_n^{2^m}|$ — the **separated root theorem** (Vieta's formulas applied term by term) gives
 
-$$|r_k|^{2^m} \approx \left|\frac{c_{n-k+1}}{c_{n-k}}\right|, \qquad k = 1, 2, \ldots, n,$$
+$$|r_k|^{2^m} \approx \left|\frac{c_{n-k}}{c_{n-k+1}}\right|, \qquad k = 1, 2, \ldots, n,$$
 
-where $c_0, c_1, \ldots, c_n$ are the coefficients of $p_m$. The magnitude of each original root is then recovered as
+where $c_j$ is the coefficient of $x^j$ in $p_m$. The magnitude of each original root is then recovered as
 
-$$|r_k| \approx \left|\frac{c_{n-k+1}}{c_{n-k}}\right|^{1/2^m}.$$
+$$|r_k| \approx \left|\frac{c_{n-k}}{c_{n-k+1}}\right|^{1/2^m}.$$
 
 The sign (or complex argument) of each root is determined by evaluating $p$ at the candidate magnitude.
 
 ### Convergence and Limitations
 
-For polynomials with **distinct real roots**, the approximation error decreases quadratically with each root-squaring step — the number of accurate digits roughly doubles per iteration (similar to Newton-Raphson).
+For polynomials with **real roots of distinct magnitudes**, the approximation error decreases quadratically with each root-squaring step — the number of accurate digits roughly doubles per iteration (similar to Newton-Raphson).
 
 However, the method has a serious practical limitation: the coefficients of $p_m$ grow exponentially as $|r_k|^{2^m}$, rapidly exceeding the range of standard floating-point arithmetic. Most software cannot apply more than a handful of iterations before overflow. The method was popular in the 19th and early 20th centuries when it was implemented with extended-precision hand calculation or symbolic algebra systems; today it is primarily of historical and educational interest.
 
@@ -47,7 +47,7 @@ Special cases — double roots, complex conjugate root pairs, roots equal in mag
 
 Each animation below shows how the **Separated Root Theorem estimates** of each root's magnitude evolve over successive Graeffe squaring iterations $m = 0, 1, 2, \ldots$. Dashed horizontal lines mark the true root magnitudes; colored traces show the estimates converging toward (or slowly approaching) those targets as $m$ increases.
 
-Julia source scripts that generated these animations are linked under each case.
+Julia source scripts that generated these animations are linked under each case. The scripts square the coefficients in exact integer arithmetic, because in double precision they overflow at $m = 8$: the largest coefficient of $p_8$ is about $2.2 \times 10^{353}$ in Case 1 and $8.6 \times 10^{434}$ in Case 2.
 
 ### Case 1 — Distinct real roots, $f(x) = (x+1)(x-2)(x+3)(x-4)$, true $|r_k| \in \{1,2,3,4\}$
 
@@ -55,11 +55,11 @@ Julia source scripts that generated these animations are linked under each case.
 
 [Julia source](graeffesaa.jl)
 
-![Graeffe convergence animation for a degree-4 polynomial with four distinct real roots −3, −1, 2, 4. Each colored trace shows one root-magnitude estimate growing from its initial poor approximation toward the dashed true-value line as the squaring iteration count increases.](graeffesaa.gif)
+![Graeffe convergence animation for a degree-4 polynomial with four distinct real roots −3, −1, 2, 4. Each colored trace shows one root-magnitude estimate moving from its initial poor approximation onto the dashed true-value line as the squaring iteration count increases.](graeffesaa.gif)
 
 ### Case 2 — Repeated real root at $x = 5$, $f(x) = (x-1)(x+2)(x-5)^2$, true $|r_k| \in \{1,2,5,5\}$
 
-**Behavior:** The two estimates for the double root (both targeting $|r| = 5$) converge **linearly** — the error is halved each iteration rather than squared — because the separated-root condition $|r_k|^{2^m} \gg |r_{k+1}|^{2^m}$ is never satisfied when two roots share the same magnitude. The two simple roots ($|r| = 1$ and $|r| = 2$) converge quadratically as usual. This contrast in convergence rate is the diagnostic signature of a repeated root.
+**Behavior:** The two estimates for the double root (both targeting $|r| = 5$) converge **linearly** — the error is halved each iteration rather than squared — because the separated-root condition $|r_k|^{2^m} \gg |r_{k+1}|^{2^m}$ is never satisfied when two roots share the same magnitude. The two simple roots ($|r| = 1$ and $|r| = 2$) converge quadratically as usual. This contrast in convergence rate is the diagnostic signature of two roots of equal magnitude (here a repeated root).
 
 [Julia source](graeffesab.jl)
 

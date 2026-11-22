@@ -9,7 +9,9 @@ using Plots
 gr()
 
 # --- Polynomial coefficients [c₄, c₃, c₂, c₁, c₀] (highest degree first) ---
-c0 = [1.0, -9.0, 13.0, 45.0, -50.0]
+# Exact integer arithmetic (BigInt): the largest coefficient of p₈ is ≈ (5·5·2)^256 ≈ 8.6e434,
+# beyond the Float64 range (≈1.8e308), so Float64 would give Inf/NaN from m = 8 on.
+c0 = big.([1, -9, 13, 45, -50])
 
 # True root magnitudes sorted descending: {5, 5, 2, 1}
 true_mags = [5.0, 5.0, 2.0, 1.0]
@@ -29,12 +31,12 @@ end
 # After m squarings: |cₙ₋ₖ / cₙ₋ₖ₊₁|^{1/2^m} for k = 1..4
 function mag_estimates(c, m)
     ratios = abs.([c[2]/c[1], c[3]/c[2], c[4]/c[3], c[5]/c[4]])
-    return ratios .^ (1.0 / 2^m)
+    return Float64.(ratios .^ (1.0 / 2^m))   # estimates are O(1), safe in Float64
 end
 
 # --- Pre-compute squaring iterates and estimates ---
 n_iters = 10
-polys = Vector{Vector{Float64}}(undef, n_iters + 1)
+polys = Vector{Vector{BigInt}}(undef, n_iters + 1)
 polys[1] = c0
 for i in 1:n_iters
     polys[i+1] = graeffe_step(polys[i])
@@ -49,7 +51,7 @@ root_labels = ["r₁  (|r₁| = 5, double)", "", "r₃  (|r₃| = 2)", "r₄  (|
 
 anim = @animate for frame in 0:n_iters
     p = plot(size=(700, 500),
-             xlims=(-0.3, n_iters + 0.3), ylims=(0.0, 7.0),
+             xlims=(-0.3, n_iters + 0.3), ylims=(0.0, 9.5),
              xlabel="Squaring iteration m", ylabel="Estimated root magnitude |rₖ|",
              title="Graeffe's Method — Repeated Root at x = 5\n" *
                    "f(x) = (x−1)(x+2)(x−5)²,  m = $frame",

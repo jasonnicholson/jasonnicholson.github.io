@@ -253,12 +253,12 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | The Separated Root Theorem formula in the Description is upside down | verified | open |
-| F2 | Misleading | Implementation | In Case 2, floating-point overflow silently empties the last three frames | verified | open |
-| F3 | Minor | Implementation | In Case 1, overflow at the last frame drops r₃ and r₄ | unverified | open |
-| F4 | Minor | Implementation | Some starting estimates fall outside the y-axis limits | unverified | open |
-| F5 | Minor | Page match | Linear convergence is attributed to repeated or distinct roots when it depends on equal magnitudes | unverified | open |
-| F6 | Minor | Page match | The Case 1 alt text says every estimate grows toward its target | unverified | open |
+| F1 | Error | Page match | The Separated Root Theorem formula in the Description is upside down | verified | fixed — [fix record](../fixes/graeffes-method.md) |
+| F2 | Misleading | Implementation | In Case 2, floating-point overflow silently empties the last three frames | verified | fixed — [fix record](../fixes/graeffes-method.md) |
+| F3 | Minor | Implementation | In Case 1, overflow at the last frame drops r₃ and r₄ | unverified | fixed — [fix record](../fixes/graeffes-method.md) |
+| F4 | Minor | Implementation | Some starting estimates fall outside the y-axis limits | unverified | fixed — [fix record](../fixes/graeffes-method.md) |
+| F5 | Minor | Page match | Linear convergence is attributed to repeated or distinct roots when it depends on equal magnitudes | unverified | fixed — [fix record](../fixes/graeffes-method.md) |
+| F6 | Minor | Page match | The Case 1 alt text says every estimate grows toward its target | unverified | fixed — [fix record](../fixes/graeffes-method.md) |
 
 ### Halley's Method — `halleys-method` · [round-1 report](../halleys-method.md)
 
