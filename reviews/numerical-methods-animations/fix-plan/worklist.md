@@ -243,11 +243,11 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | Case 6 GIF shows clamped iterates labelled as real values, and draws a 0↔4 bounce that does not exist | verified | open |
-| F2 | Error | Implementation | Case 5 GIF parks the iterate at x = 4.0 for six frames and labels it as the real value | verified | open |
-| F3 | Error | Page match | Case 4 says g is "tangent to y = x at x* = 2 from below" | verified | open |
-| F4 | Error | Page match | Case 4 is headed "Divergent", but the iteration converges to the other fixed point x = 0 | verified | open |
-| F5 | Misleading | Page match | Case 6 says the staircase "spirals outward"; the true orbit is bounded and settles onto a 4-cycle | verified | open |
+| F1 | Error | Implementation | Case 6 GIF shows clamped iterates labelled as real values, and draws a 0↔4 bounce that does not exist | verified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
+| F2 | Error | Implementation | Case 5 GIF parks the iterate at x = 4.0 for six frames and labels it as the real value | verified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
+| F3 | Error | Page match | Case 4 says g is "tangent to y = x at x* = 2 from below" | verified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
+| F4 | Error | Page match | Case 4 is headed "Divergent", but the iteration converges to the other fixed point x = 0 | verified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
+| F5 | Misleading | Page match | Case 6 says the staircase "spirals outward"; the true orbit is bounded and settles onto a 4-cycle | verified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
 
 ### Graeffe's Method — `graeffes-method` · [round-1 report](../graeffes-method.md)
 
