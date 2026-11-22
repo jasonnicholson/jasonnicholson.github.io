@@ -116,7 +116,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Behavior paragraph implies steady improvement; frame 2 is almost as accurate as the last frame | unverified | open |
+| F1 | Minor | Page match | Behavior paragraph implies steady improvement; frame 2 is almost as accurate as the last frame | unverified | fixed — [fix record](../fixes/trapezoidal-rule-for-numerical-integration.md) |
 
 ## WP-D
 
