@@ -205,9 +205,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Quoted root x* ≈ 1.3688 is wrong; the true root is 1.36523 | verified | open |
-| F2 | Error | Page match | "the midpoints converge monotonically" is false | verified | open |
-| F3 | Minor | Implementation (picture) | The last half of each animation is visually static because the axes never zoom | unverified | open |
+| F1 | Error | Page match | Quoted root x* ≈ 1.3688 is wrong; the true root is 1.36523 | verified | fixed — [fix record](../fixes/bisection-method.md) |
+| F2 | Error | Page match | "the midpoints converge monotonically" is false | verified | fixed — [fix record](../fixes/bisection-method.md) |
+| F3 | Minor | Implementation (picture) | The last half of each animation is visually static because the axes never zoom | unverified | fixed — [fix record](../fixes/bisection-method.md) |
 
 ### Brent's Method — `brents-method` · [round-1 report](../brents-method.md)
 
