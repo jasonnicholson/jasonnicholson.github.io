@@ -53,7 +53,7 @@ Run of 2026-11-22 on branch `fix/numerical-methods-animations`, scope `all`, fro
 
 ## Commits (18, oldest first)
 
-`97ec020 9983832 3ec245b ea7bd83 dab6baf bbbdd41 f1b2324 d54d1c7 c4b5c80 a89ffcb c4e2995 f242ca4 ef953ae 9ee23bd cc752da 6b8fbc2 dbe55f3 2b8b623` (WP-B: Lagrange and Newton). This README is in the last commit.
+`97ec020 9983832 3ec245b ea7bd83 dab6baf bbbdd41 f1b2324 d54d1c7 c4b5c80 a89ffcb c4e2995 f242ca4 ef953ae 9ee23bd cc752da 6b8fbc2 dbe55f3 2b8b623` (WP-B: Lagrange and Newton). This README is in a separate commit after these.
 
 The round-4 report is `525b1b2`. Decisions R4-A to R4-C are in `0a59cda`.
 
