@@ -206,7 +206,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | says the interpolant has degree n-1, but this page's own example has degree n-2 (Page match / method description; Minor) | unverified | open |
+| F1 | Minor | Page match | says the interpolant has degree n-1, but this page's own example has degree n-2 (Page match / method description; Minor) | unverified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
 
 ### B-Splines — `b-splines` · [round-3 report](../b-splines.md)
 
