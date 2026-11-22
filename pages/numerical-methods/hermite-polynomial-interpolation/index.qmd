@@ -19,9 +19,11 @@ where $H_{00},H_{10},H_{01},H_{11}$ are the standard cubic Hermite basis functio
 
 ## Animations
 
-These animations illustrate the cubic Hermite polynomial, which interpolates both function values **and** first derivatives at the endpoint nodes. Unlike ordinary polynomial interpolation, Hermite interpolation matches the slope at each node, giving a smoother fit.
+These animations illustrate the cubic Hermite polynomial, which interpolates both function values **and** first derivatives at the endpoint nodes. Unlike ordinary (Lagrange) interpolation, which uses only function values, Hermite interpolation also matches the slope at each node.
 
 Julia source scripts that generated these animations are linked under each case.
+
+Mathews' Hermite polynomial module has no animation. Case 1, piecewise interpolation of $\sin x$ on $[0, 2\pi]$, is this site's own example; Case 2 uses the endpoint data of the module's Example 1. The module's Examples 2 and 3, a clamped and a natural cubic spline through given knots, are not animated here.
 
 ### Case 1 — Piecewise cubic Hermite for $\sin(x)$, refining the mesh
 
@@ -31,14 +33,10 @@ Julia source scripts that generated these animations are linked under each case.
 
 ![Piecewise cubic Hermite interpolation of sin(x) on 0 to 2pi, showing n=1,2,4,8 intervals; the maximum error falls from 0.425 at n=1 to 0.000906 at n=8](hermitepolyaa.gif)
 
-### Case 2 — Hermite basis functions building the interpolant of $e^x$ on $[0,1]$
+### Case 2 — Hermite basis functions building the cubic with $p(1)=2$, $p'(1)=1$, $p(3)=1$, $p'(3)=2$
 
-**Behavior:** The four cubic Hermite basis functions $H_{00}$, $H_{10}$, $H_{01}$, $H_{11}$ each carry one degree of freedom (a value or derivative at an endpoint). Their weighted combination $H(x) = y_0 H_{00} + h y_0' H_{10} + y_1 H_{01} + h y_1' H_{11}$ equals the true function at both endpoints and matches the slope there. The frames add the weighted terms one at a time and draw the running sum; the first two partial sums fall to 0 with zero slope at $x = 1$, because $H_{00}$ and $H_{10}$ have zero value and zero slope there.
+**Behavior:** The four cubic Hermite basis functions $H_{00}$, $H_{10}$, $H_{01}$, $H_{11}$ each carry one degree of freedom (a value or derivative at an endpoint). Their weighted combination $H(x) = y_0 H_{00} + h y_0' H_{10} + y_1 H_{01} + h y_1' H_{11}$ takes the prescribed values and slopes at both endpoints. Here $h = 2$, so the slope weights are $h y_0' = 2$ and $h y_1' = 4$, and the result is $H(x) = x^3 - \tfrac{23}{4}x^2 + \tfrac{19}{2}x - \tfrac{11}{4}$, the cubic of Mathews' solution. The frames add the weighted terms one at a time and draw the running sum, with the prescribed tangent lines as short dotted segments; the first two partial sums fall to 0 with zero slope at $x = 3$, because $H_{00}$ and $H_{10}$ have zero value and zero slope there.
 
 [Julia source](hermitepolybb.jl)
 
-![Running sum of the four weighted Hermite basis terms for e^x on [0,1], adding one term per frame until it forms the complete cubic Hermite interpolant](hermitepolybb.gif)
-
-Mathews' Hermite polynomial module has no animation; the two cases above are this site's own examples, $\sin x$ on $[0, 2\pi]$ and $e^x$ on $[0, 1]$.
-The module's worked Examples 1–3, which find the cubic Hermite polynomial ("clamped cubic") from given values and slopes at the two endpoints of an interval (Example 1) and a clamped and a natural cubic spline through given knots (Examples 2 and 3), are not animated here.
-
+![Running sum of the four weighted Hermite basis terms for the endpoint data p(1)=2, p'(1)=1, p(3)=1, p'(3)=2, adding one term per frame until it forms the complete cubic Hermite polynomial, which meets the dotted tangent segments at both endpoints](hermitepolybb.gif)

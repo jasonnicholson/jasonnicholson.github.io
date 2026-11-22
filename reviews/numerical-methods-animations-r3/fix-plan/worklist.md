@@ -239,8 +239,8 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "giving a smoother fit" | unverified | open |
-| F2 | Minor | Fidelity | Mathews' Example 1 replaced by an unexplained example | unverified | open |
+| F1 | Minor | Page match | "giving a smoother fit" | unverified | fixed — [fix record](../fixes/hermite-polynomial-interpolation.md) |
+| F2 | Minor | Fidelity | Mathews' Example 1 replaced by an unexplained example | unverified | fixed — [fix record](../fixes/hermite-polynomial-interpolation.md) |
 
 ### Least Squares Lines — `least-squares-lines` · [round-3 report](../least-squares-lines.md)
 
