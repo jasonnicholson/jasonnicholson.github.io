@@ -26,13 +26,13 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation / Page match | Case 14: f = tan x is drawn as one continuous curve through its poles (vertical magenta segments at x ≈ ±π/2) | unverified | open |
+| F1 | Minor | Implementation / Page match | Case 14: f = tan x is drawn as one continuous curve through its poles (vertical magenta segments at x ≈ ±π/2) | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
 
 ### Newton Interpolation Polynomial — `newton-interpolation-polynomial` · [round-3 report](../newton-interpolation-polynomial.md)
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Cases 12 and 13 show constant lines in frames titled degree 1–3, and this page never says so | unverified | open |
+| F1 | Minor | Page match | Cases 12 and 13 show constant lines in frames titled degree 1–3, and this page never says so | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
 
 ## WP-C
 

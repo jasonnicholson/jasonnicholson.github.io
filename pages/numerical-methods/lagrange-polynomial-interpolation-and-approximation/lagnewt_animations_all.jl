@@ -14,24 +14,24 @@ struct InterpCase
     xlims::Tuple{Float64, Float64}
     node_span::Tuple{Float64, Float64}
     has_span::Bool
-    pole::Float64      # pole of f inside the window (NaN if none)
+    poles::Vector{Float64}  # poles of f inside the window (empty if none)
     legend::Symbol
 end
 
-with_span(id, label, f, xlims, span; pole=NaN, legend=:topleft) =
-    InterpCase(id, label, f, xlims, span, true, pole, legend)
-auto_span(id, label, f, xlims) = InterpCase(id, label, f, xlims, (0.0, 0.0), false, NaN, :topleft)
+with_span(id, label, f, xlims, span; poles=Float64[], legend=:topleft) =
+    InterpCase(id, label, f, xlims, span, true, poles, legend)
+auto_span(id, label, f, xlims) = InterpCase(id, label, f, xlims, (0.0, 0.0), false, Float64[], :topleft)
 
 cases = InterpCase[
     # Cases 01-03 and 07 use Mathews' plot windows, which run past the
     # singularity of f at x = 1 (x = -1 in Case 02).
     # Nodes: 01 as in his animation; 02 mirrors 01; 03 as 01; 07 as in his
     # static example linked to animation 7.
-    # For 01-03 (pole given) the y-limits come from f on the node interval,
-    # and f is broken at the pole and left to run off the window.
-    with_span("01", "1/(1-x)", x -> 1 / (1 - x), (-1.6, 1.5), (-1.5, 0.9); pole=1.0),
-    with_span("02", "1/(1+x)", x -> 1 / (1 + x), (-1.5, 1.6), (-0.9, 1.5); pole=-1.0, legend=:topright),
-    with_span("03", "1/(1-x)^2", x -> 1 / (1 - x)^2, (-1.6, 1.5), (-1.5, 0.9); pole=1.0),
+    # For 01-03 and 14 (poles given) the y-limits come from f on the node
+    # interval, and f is broken at each pole and left to run off the window.
+    with_span("01", "1/(1-x)", x -> 1 / (1 - x), (-1.6, 1.5), (-1.5, 0.9); poles=[1.0]),
+    with_span("02", "1/(1+x)", x -> 1 / (1 + x), (-1.5, 1.6), (-0.9, 1.5); poles=[-1.0], legend=:topright),
+    with_span("03", "1/(1-x)^2", x -> 1 / (1 - x)^2, (-1.6, 1.5), (-1.5, 0.9); poles=[1.0]),
     with_span("04", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 2.0)),
     with_span("05", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 8.0)),
     with_span("06", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 10.0)),
@@ -44,7 +44,7 @@ cases = InterpCase[
     auto_span("13", "cos(x)", x -> cos(x), (-3pi, 3pi)),
     # Nodes on [-3, 3], not [-pi, pi]: 5 equally spaced nodes on [-pi, pi]
     # would land on the poles at +-pi/2.
-    with_span("14", "tan(x)", x -> tan(x), (-pi, pi), (-3.0, 3.0)),
+    with_span("14", "tan(x)", x -> tan(x), (-pi, pi), (-3.0, 3.0); poles=[-pi/2, pi/2]),
     auto_span("15", "exp(x)", x -> exp(x), (-2.0, 3.0)),
     auto_span("16", "cos(x)*exp(-x)", x -> cos(x) * exp(-x), (-2.0, 4.0)),
     auto_span("17", "cosh(x)", x -> cosh(x), (-4.0, 4.0)),
@@ -177,7 +177,7 @@ function render_case(case::InterpCase)
     y_hi = [barycentric_eval(x, xs_hi, ys_hi, w_hi) for x in xplot]
 
     # Include the node values of every frame so that every node is drawn.
-    has_pole = !isnan(case.pole)
+    has_pole = !isempty(case.poles)
     ylims_f = has_pole ?
         robust_ylims([safe_eval(case.f, x) for x in range(span[1], span[2], length=1000)]) :
         robust_ylims(ytrue)
@@ -194,10 +194,10 @@ function render_case(case::InterpCase)
     ytrue_clip = [isfinite(y) ? clamp(y, ylims[1], ylims[2]) : NaN for y in ytrue]
     xf, yf = xplot, ytrue_clip
     if has_pole
-        # Unclamped f with a NaN point at the pole, so the curve breaks there
+        # Unclamped f with a NaN point at each pole, so the curve breaks there
         # instead of drawing a segment along the window edge or across the pole.
-        xf = sort(vcat(xplot, case.pole))
-        yf = [x == case.pole ? NaN : safe_eval(case.f, x) for x in xf]
+        xf = sort(vcat(xplot, case.poles))
+        yf = [x in case.poles ? NaN : safe_eval(case.f, x) for x in xf]
     end
     # Small x-margin so that nodes at the ends of the window are drawn whole.
     xpad = 0.02 * (case.xlims[2] - case.xlims[1])
