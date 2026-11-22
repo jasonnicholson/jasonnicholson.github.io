@@ -18,7 +18,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | garbled wording in the Description | unverified | open |
+| F1 | Minor | Page match | garbled wording in the Description | unverified | fixed — [fix record](../fixes/pade-approximation.md) |
 
 ## WP-B
 
@@ -185,8 +185,8 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | In Case 1, the feature the page describes can't be seen after frame 2 | unverified | open |
-| F2 | Minor | Fidelity | Case 1 handles complex roots with a different rule from Mathews' Example 1, and the page doesn't say so | unverified | open |
+| F1 | Minor | Implementation | In Case 1, the feature the page describes can't be seen after frame 2 | unverified | deferred — parked by Jason (decision R3-C) |
+| F2 | Minor | Fidelity | Case 1 handles complex roots with a different rule from Mathews' Example 1, and the page doesn't say so | unverified | deferred — parked by Jason (decision R3-C) |
 
 ### Newton-Raphson Method — `newton-raphson-method` · [round-3 report](../newton-raphson-method.md)
 
