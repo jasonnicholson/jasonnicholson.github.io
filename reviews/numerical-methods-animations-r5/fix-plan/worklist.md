@@ -191,7 +191,7 @@ No findings in round 5.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | The animated example is the page's own and none of Mathews' worked examples is used | unverified | open |
+| F1 | Minor | Fidelity | The animated example is the page's own and none of Mathews' worked examples is used | unverified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
 
 ### B-Splines — `b-splines` · [round-5 report](../b-splines.md)
 
