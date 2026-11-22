@@ -307,13 +307,13 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Case 1 root quoted as 0.2910; the true root is 0.25485 | verified | open |
-| F2 | Error | Page match | Case 1 says "A single real root exists"; 3eˣ − 4cos x has infinitely many real roots | verified | open |
-| F3 | Error | Page match | Case 1 iterates do not "overshoot then undershoot"; they decrease monotonically onto the root | verified | open |
-| F4 | Error | Page match | Case 4 says x³ − x + 3 has no real roots; it has one, at x ≈ −1.6717 | verified | open |
-| F5 | Error | Page match | Case 5 says Newton converges to 0 with leftward jumps; it diverges to +∞ with rightward jumps | verified | open |
-| F6 | Misleading | Page match | Case 4 says the iterates "cycle or diverge"; they never diverge | verified | open |
-| F7 | Minor | Implementation | newtondd.jl header calls the 4-cycle a cycle "between ~0 and ~3" | unverified | open |
+| F1 | Error | Page match | Case 1 root quoted as 0.2910; the true root is 0.25485 | verified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F2 | Error | Page match | Case 1 says "A single real root exists"; 3eˣ − 4cos x has infinitely many real roots | verified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F3 | Error | Page match | Case 1 iterates do not "overshoot then undershoot"; they decrease monotonically onto the root | verified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F4 | Error | Page match | Case 4 says x³ − x + 3 has no real roots; it has one, at x ≈ −1.6717 | verified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F5 | Error | Page match | Case 5 says Newton converges to 0 with leftward jumps; it diverges to +∞ with rightward jumps | verified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F6 | Misleading | Page match | Case 4 says the iterates "cycle or diverge"; they never diverge | verified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F7 | Minor | Implementation | newtondd.jl header calls the 4-cycle a cycle "between ~0 and ~3" | unverified | fixed — [fix record](../fixes/newton-raphson-method.md) |
 
 ### Nonlinear Systems — `nonlinear-systems` · [round-1 report](../nonlinear-systems.md)
 
