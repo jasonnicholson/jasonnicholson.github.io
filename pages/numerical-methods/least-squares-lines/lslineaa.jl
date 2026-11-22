@@ -39,7 +39,7 @@ anim = @animate for k in 2:n_pts
              background_color=:white)
 
     scatter!(p, x, y; color=:lightgray, ms=4, label="all data")
-    scatter!(p, xv, yv; color=:red, ms=6, label="points used")
+    scatter!(p, xv, yv; color=:red, ms=4, msw=0, label="points used")
 
     yline = a .* xplot .+ b
     plot!(p, xplot, yline; color=:green, lw=2.5,
@@ -48,7 +48,7 @@ anim = @animate for k in 2:n_pts
     # Show vertical residuals for points currently used.
     for i in 1:k
         yh = a * xv[i] + b
-        plot!(p, [xv[i], xv[i]], [yv[i], yh]; color=:steelblue, lw=1.2, label="")
+        plot!(p, [xv[i], xv[i]], [yv[i], yh]; color=:navy, lw=2.5, label="")
     end
 
     rss = sum((yv .- (a .* xv .+ b)) .^ 2)

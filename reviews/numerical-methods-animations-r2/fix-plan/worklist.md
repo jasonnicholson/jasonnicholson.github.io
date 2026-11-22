@@ -314,8 +314,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | the "vertical residuals" the page points readers to are mostly hidden under the data markers (Case 3 almost completely) | verified | open |
-| F2 | Minor | Page match | Case 3 "settles near" is not supported by the computed sequence | unverified | open |
+| F1 | Misleading | Page match | the "vertical residuals" the page points readers to are mostly hidden under the data markers (Case 3 almost completely) | verified | fixed — [fix record](../fixes/least-squares-lines.md) |
+| F2 | Minor | Page match | Case 3 "settles near" is not supported by the computed sequence | unverified | fixed — [fix record](../fixes/least-squares-lines.md) |
 
 ### Least Squares Polynomials — `least-squares-polynomials` · [round-2 report](../least-squares-polynomials.md)
 
