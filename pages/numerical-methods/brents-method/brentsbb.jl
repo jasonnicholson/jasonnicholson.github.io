@@ -1,6 +1,6 @@
 # brentsbb.jl
 # Brent's Method animation: f(x) = tan(x) - 2x, interval [0.5, 1.5]
-# Non-trivial root ≈ 1.1656. Illustrates fast convergence vs slow Regula Falsi.
+# Non-trivial root ≈ 1.1656. Shows the bracket and best estimate b at each step, labelled with the step's method.
 # Produces: brentsbb.gif
 
 using Plots

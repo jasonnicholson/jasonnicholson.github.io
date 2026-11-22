@@ -139,7 +139,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | script header comment), Minor | unverified | open |
+| F1 | Minor | Implementation | script header comment), Minor | unverified | fixed — [fix record](../fixes/brents-method.md) |
 
 ### Broyden's Method — `broydens-method` · [round-3 report](../broydens-method.md)
 
