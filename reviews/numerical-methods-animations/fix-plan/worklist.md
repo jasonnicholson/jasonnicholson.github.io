@@ -381,8 +381,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | "Natural cubic spline converges at O(h^4) for smooth functions" is false in general | verified | open |
-| F2 | Misleading | Page match | Description gives O(h^4) right after defining only the natural spline | verified | open |
+| F1 | Error | Page match | "Natural cubic spline converges at O(h^4) for smooth functions" is false in general | verified | fixed — [fix record](../fixes/cubic-splines.md) |
+| F2 | Misleading | Page match | Description gives O(h^4) right after defining only the natural spline | verified | fixed — [fix record](../fixes/cubic-splines.md) |
 
 ### Hermite Polynomial Interpolation — `hermite-polynomial-interpolation` · [round-1 report](../hermite-polynomial-interpolation.md)
 
