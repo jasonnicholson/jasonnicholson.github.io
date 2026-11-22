@@ -140,8 +140,8 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "The non-trivial root of tan(x) = 2x" implies there is only one | unverified | open |
-| F2 | Minor | Implementation | the last steps of each animation cannot be told apart, so the fast convergence the page describes does not show | unverified | open |
+| F1 | Minor | Page match | "The non-trivial root of tan(x) = 2x" implies there is only one | unverified | fixed — [fix record](../fixes/brents-method.md) |
+| F2 | Minor | Implementation | the last steps of each animation cannot be told apart, so the fast convergence the page describes does not show | unverified | fixed — [fix record](../fixes/brents-method.md) |
 
 ### Broyden's Method — `broydens-method` · [round-4 report](../broydens-method.md)
 

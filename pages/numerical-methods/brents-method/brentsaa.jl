@@ -4,6 +4,7 @@
 # Produces: brentsaa.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Parameters ---
@@ -140,7 +141,7 @@ anim = @animate for i in 1:length(steps)
     b_best = st.b
     b_best = clamp(b_best, xlims[1], xlims[2])
     scatter!([b_best], [f(b_best)]; color=:red, ms=8,
-             label="b = $(round(b_best; digits=6))")
+             label=@sprintf("b = %.10f, |c−b| = %.1e", st.b, abs(st.c - st.b)))
 
     annotate!(xlims[1] + 0.02*(xlims[2]-xlims[1]), ylims[2] - 0.04*(ylims[2]-ylims[1]),
               text("Step $(i-1): $meth", :left, 10, col))

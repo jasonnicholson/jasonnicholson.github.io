@@ -1,9 +1,10 @@
 # brentsbb.jl
 # Brent's Method animation: f(x) = tan(x) - 2x, interval [0.5, 1.5]
-# Non-trivial root ≈ 1.1656. Shows the bracket and best estimate b at each step, labelled with the step's method.
+# Root in [0.5, 1.5] (the smallest positive root of tan(x) = 2x) ≈ 1.1656. Shows the bracket and best estimate b at each step, labelled with the step's method.
 # Produces: brentsbb.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Parameters ---
@@ -144,7 +145,7 @@ anim = @animate for i in 1:length(steps)
     b_best = st.b
     fb_best = clamp(f(b_best), ylims[1], ylims[2])
     scatter!([b_best], [fb_best]; color=:red, ms=8,
-             label="b = $(round(b_best; digits=6))")
+             label=@sprintf("b = %.10f, |c−b| = %.1e", st.b, abs(st.c - st.b)))
 
     annotate!(xlims[1] + 0.02*(xlims[2]-xlims[1]), ylims[2] - 0.04*(ylims[2]-ylims[1]),
               text("Step $(i-1): $meth", :left, 10, col))
