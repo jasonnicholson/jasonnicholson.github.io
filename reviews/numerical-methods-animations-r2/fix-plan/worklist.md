@@ -102,8 +102,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the legacy note says the archived GIF is missing, but it is present | unverified | open |
-| F2 | Minor | Fidelity / Page match | the frames never show the sample points or the boundaries between the three-subinterval panels | unverified | open |
+| F1 | Minor | Fidelity | the legacy note says the archived GIF is missing, but it is present | unverified | fixed — [fix record](../fixes/simpsons-3-8-rule-for-numerical-integration.md) |
+| F2 | Minor | Fidelity / Page match | the frames never show the sample points or the boundaries between the three-subinterval panels | unverified | fixed — [fix record](../fixes/simpsons-3-8-rule-for-numerical-integration.md) |
 
 ### Simpson's Rule for Numerical Integration — `simpsons-rule-for-numerical-integration` · [round-2 report](../simpsons-rule-for-numerical-integration.md)
 
