@@ -262,7 +262,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the list of material that is not animated is incomplete | unverified | open |
+| F1 | Minor | Fidelity | the list of material that is not animated is incomplete | unverified | fixed — [fix record](../fixes/numerical-differentiation.md) |
 
 ### Richardson Extrapolation — `richardson-extrapolation` · [round-4 report](../richardson-extrapolation.md)
 
