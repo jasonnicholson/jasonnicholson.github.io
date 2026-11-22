@@ -153,3 +153,7 @@ Not new, and left as it was: clamping to ylims draws flat segments at the plot b
 - The F1 note about the same fit in `laurent-series` is outside this page. That page has its own pending changes in the working tree, and I did not check them.
 
 **Final status:** committed
+
+## Follow-up after commit (director)
+
+The script comment "(WP-A shared routine)" used an internal label; it now reads "(the same routine is used on the Maclaurin and Laurent pages)". Comment only. A scratch rerun reproduces all 27 GIFs byte-identical.
