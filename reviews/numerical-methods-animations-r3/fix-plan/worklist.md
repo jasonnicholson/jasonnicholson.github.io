@@ -52,7 +52,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F? | Minor | Page match | F-1. Page match, Minor: "tracks the curve more tightly" fails at the first refinement under the pointwise (sup) gap | unverified | open |
+| F1 | Minor | Page match | Page match, Minor: "tracks the curve more tightly" fails at the first refinement under the pointwise (sup) gap | unverified | fixed — [fix record](../fixes/cubic-spline-quadrature.md) |
 
 ### Gauss-Legendre Quadrature — `gauss-legendre-quadrature` · [round-3 report](../gauss-legendre-quadrature.md)
 
