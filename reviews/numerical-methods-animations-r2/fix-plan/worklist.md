@@ -80,7 +80,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | archive Examples 2–7 of the Mathews module are not carried over, and the page does not say so | unverified | open |
+| F1 | Minor | Fidelity | archive Examples 2–7 of the Mathews module are not carried over, and the page does not say so | unverified | fixed — [fix record](../fixes/monte-carlo-pi.md) |
 
 ### Newton-Cotes Integration — `newton-cotes-integration` · [round-2 report](../newton-cotes-integration.md)
 
