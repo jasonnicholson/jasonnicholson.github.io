@@ -73,7 +73,7 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | Behavior paragraph claims sixth-order, rapid convergence; the computed sequence converges at order 5/3 | verified | open |
+| F1 | Error | Page match | Behavior paragraph claims sixth-order, rapid convergence; the computed sequence converges at order 5/3 | verified | fixed — [fix record](../fixes/booles-rule.md) |
 
 ### Cubic Spline Quadrature — `cubic-spline-quadrature` · [round-1 report](../cubic-spline-quadrature.md)
 
