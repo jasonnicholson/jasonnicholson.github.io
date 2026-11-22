@@ -37,20 +37,20 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | "Degree increases one step at a time" is false after degree 5 | verified | open |
-| F2 | Error | Implementation | Barycentric evaluation fails far outside the nodes and draws spurious vertical bars (cases 04 and 29) | verified | open |
-| F3 | Misleading | Page match | The page refers to "listed node intervals" and a "function-and-interval list" that it never gives | verified | open |
-| F4 | Misleading | Implementation / Page match | Nodes are inset 3% from each end of the interval, which hides endpoint behaviour (notably √x at 0) | verified | open |
-| F5 | Minor | Implementation | Case 14 degree-13 frame: two of the 14 nodes are off-screen | unverified | open |
+| F1 | Error | Page match | "Degree increases one step at a time" is false after degree 5 | verified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
+| F2 | Error | Implementation | Barycentric evaluation fails far outside the nodes and draws spurious vertical bars (cases 04 and 29) | verified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
+| F3 | Misleading | Page match | The page refers to "listed node intervals" and a "function-and-interval list" that it never gives | verified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
+| F4 | Misleading | Implementation / Page match | Nodes are inset 3% from each end of the interval, which hides endpoint behaviour (notably √x at 0) | verified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
+| F5 | Minor | Implementation | Case 14 degree-13 frame: two of the 14 nodes are off-screen | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
 
 ### Newton Interpolation Polynomial — `newton-interpolation-polynomial` · [round-1 report](../newton-interpolation-polynomial.md)
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | Roundoff in the barycentric evaluation draws spurious vertical bars in lagnewt04 (degree 15) and lagnewt29 (degrees 13, 15) | verified | open |
-| F2 | Error | Page match | "increases polynomial degree one step at a time" is false after degree 5 | verified | open |
-| F3 | Minor | Page match | The linked "Newton" source never forms divided differences; it evaluates barycentric Lagrange | unverified | open |
-| F4 | Minor | Implementation | newtpolybb.gif titles every frame "Runge Phenomenon", but frames 0–9 show extrapolation, not Runge oscillation (orphan file) | unverified | open |
+| F1 | Error | Implementation | Roundoff in the barycentric evaluation draws spurious vertical bars in lagnewt04 (degree 15) and lagnewt29 (degrees 13, 15) | verified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F2 | Error | Page match | "increases polynomial degree one step at a time" is false after degree 5 | verified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F3 | Minor | Page match | The linked "Newton" source never forms divided differences; it evaluates barycentric Lagrange | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F4 | Minor | Implementation | newtpolybb.gif titles every frame "Runge Phenomenon", but frames 0–9 show extrapolation, not Runge oscillation (orphan file) | unverified | deferred (handled by D3) — [fix record](../fixes/newton-interpolation-polynomial.md) |
 
 ## WP-C quadrature (non-smooth integrand)
 

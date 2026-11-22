@@ -33,12 +33,14 @@ cases = InterpCase[
     with_span("11", "log(1+x)", x -> log(1 + x), (-1.5, 1.5), (-0.98, 1.0)),
     auto_span("12", "sin(x)", x -> sin(x), (-3pi, 3pi)),
     auto_span("13", "cos(x)", x -> cos(x), (-3pi, 3pi)),
-    auto_span("14", "tan(x)", x -> tan(x), (-pi, pi)),
+    # Nodes on [-3, 3], not [-pi, pi]: 5 equally spaced nodes on [-pi, pi]
+    # would land on the poles at +-pi/2.
+    with_span("14", "tan(x)", x -> tan(x), (-pi, pi), (-3.0, 3.0)),
     auto_span("15", "exp(x)", x -> exp(x), (-2.0, 3.0)),
     auto_span("16", "cos(x)*exp(-x)", x -> cos(x) * exp(-x), (-2.0, 4.0)),
     auto_span("17", "cosh(x)", x -> cosh(x), (-4.0, 4.0)),
     auto_span("18", "atan(x)", x -> atan(x), (-2.2, 2.2)),
-    auto_span("19", "asin(x)", x -> asin(x), (-1.5, 1.5)),
+    with_span("19", "asin(x)", x -> asin(x), (-1.5, 1.5), (-1.0, 1.0)),
     auto_span("20", "besselj(0,x)", x -> besselj(0, x), (-10.2, 10.2)),
     auto_span("21", "besselj(1,x)", x -> besselj(1, x), (-10.2, 10.2)),
     auto_span("22", "normal_pdf(x)", x -> exp(-x^2 / 2) / sqrt(2pi), (-3.0, 3.0)),
@@ -71,24 +73,19 @@ function finite_support(case::InterpCase)
 end
 
 function resolved_span(case::InterpCase)
-    s = finite_support(case)
-    if case.has_span
-        a = max(case.node_span[1], s[1])
-        b = min(case.node_span[2], s[2])
-        if b > a + 1e-8
-            return (a, b)
-        end
-    end
-    return s
+    # A listed node span is used as given (f is finite at both of its ends);
+    # otherwise the nodes span the part of the plot window where f is finite.
+    case.has_span && return case.node_span
+    return finite_support(case)
 end
 
 function equal_nodes(f::Function, span::Tuple{Float64, Float64}, n_nodes::Int)
     a, b = span
     width = b - a
     for attempt in 0:8
-        # Keep equally-spaced nodes slightly inside the interval so the first
-        # few frames do not pin a node at near-singular endpoints.
-        trim = width * (0.03 + 0.01 * attempt)
+        # Equally spaced nodes from a to b, endpoints included. Only if f is
+        # not finite at some node are the nodes moved inside the interval.
+        trim = attempt == 0 ? 0.0 : width * (0.02 + 0.01 * attempt)
         aa = a + trim
         bb = b - trim
         bb <= aa && continue
@@ -120,14 +117,16 @@ function barycentric_eval(x::Float64, xs::Vector{Float64}, ys::Vector{Float64}, 
         end
     end
 
-    num = 0.0
-    den = 0.0
+    # First barycentric form P(x) = l(x) * sum_j w_j y_j / (x - x_j), with
+    # l(x) = prod_j (x - x_j). The second form (num/den) loses all accuracy
+    # far outside the nodes, where its denominator cancels.
+    s = 0.0
+    l = 1.0
     for j in eachindex(xs)
-        t = w[j] / (x - xs[j])
-        num += t * ys[j]
-        den += t
+        s += w[j] * ys[j] / (x - xs[j])
+        l *= (x - xs[j])
     end
-    return num / den
+    return l * s
 end
 
 function robust_ylims(vals::Vector{Float64})
@@ -168,10 +167,10 @@ function render_case(case::InterpCase)
     w_hi = barycentric_weights(xs_hi)
     y_hi = [barycentric_eval(x, xs_hi, ys_hi, w_hi) for x in xplot]
 
-    # Include node-value range so near-singularity endpoint behavior remains
-    # visible in early low-degree frames.
+    # Include the node values of every frame so that every node is drawn.
     ylims_f = robust_ylims(ytrue)
-    ynode = [y for y in vcat(ys_lo, ys_hi) if isfinite(y)]
+    ys_all = vcat([equal_nodes(case.f, span, n)[2] for n in n_nodes_seq]...)
+    ynode = [y for y in ys_all if isfinite(y)]
     if isempty(ynode)
         ylims = ylims_f
     else
@@ -181,6 +180,9 @@ function render_case(case::InterpCase)
         ylims = (lo - m, hi + m)
     end
     ytrue_clip = [isfinite(y) ? clamp(y, ylims[1], ylims[2]) : NaN for y in ytrue]
+    # Small x-margin so that nodes at the ends of the window are drawn whole.
+    xpad = 0.02 * (case.xlims[2] - case.xlims[1])
+    xaxis = (case.xlims[1] - xpad, case.xlims[2] + xpad)
 
     anim = Animation()
     for n_nodes in n_nodes_seq
@@ -190,7 +192,7 @@ function render_case(case::InterpCase)
         yinterp = clamp.(yinterp, ylims[1], ylims[2])
 
         pplot = plot(size=(760, 520),
-                     xlims=case.xlims, ylims=ylims,
+                     xlims=xaxis, ylims=ylims,
                      xlabel="x", ylabel="y",
                      title="Interpolation Case $(case.id): f(x) = $(case.formula_label), degree $(n_nodes - 1)",
                      legend=:topleft, grid=true, framestyle=:box,
