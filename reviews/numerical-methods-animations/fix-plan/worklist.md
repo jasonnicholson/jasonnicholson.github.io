@@ -97,7 +97,7 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | The `1/sqrt(n)` annotation is smaller than the error in every frame, so it reads as a bound that is always broken | unverified | open |
+| F1 | Minor | Implementation | The `1/sqrt(n)` annotation is smaller than the error in every frame, so it reads as a bound that is always broken | unverified | fixed — [fix record](../fixes/monte-carlo-pi.md) |
 
 ### Newton-Cotes Integration — `newton-cotes-integration` · [round-1 report](../newton-cotes-integration.md)
 

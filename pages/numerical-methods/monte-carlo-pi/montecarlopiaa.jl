@@ -47,7 +47,9 @@ anim = @animate for n in vcat(0, n_seq)
         annotate!(0.62, 0.85, text("outside k = $(n - m)", :black, 10))
         annotate!(0.62, 0.80, text("pi_hat = $(round(pi_hat; digits=6))", :black, 10))
         annotate!(0.62, 0.75, text("|pi - pi_hat| = $(round(err; digits=6))", :black, 10))
-        annotate!(0.62, 0.70, text("1/sqrt(n) = $(round(1 / sqrt(n); digits=6))", :black, 10))
+        # standard error of pi_hat = 4m/n: 4*sqrt(p(1-p)/n) with p = pi/4 (about 1.642/sqrt(n))
+        se = 4 * sqrt((pi / 4) * (1 - pi / 4) / n)
+        annotate!(0.62, 0.70, text("std error = $(round(se; digits=6))", :black, 10))
     end
 end
 
