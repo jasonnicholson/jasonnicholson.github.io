@@ -1,7 +1,10 @@
 # secantmethodcc.jl
 # Secant Method animation: Convergence with Oscillation
-# f(x) = arctan(x), p0=1.35, p1=1.30, n=10
+# f(x) = arctan(x), p0=1.35, p1=1.30, n=7
 # Root at x=0; method oscillates but converges
+# The run stops at p8: p6 and p7 are so small that atan(x) rounds to x in double
+# precision, so the secant through them hits the origin and p8 comes out as exactly 0.0
+# (exact-arithmetic p8 is about -7.6e-48). Later steps would divide by f(p8)-f(p7) ~ 1e-25.
 # Produces: secantmethodcc.gif
 
 using Plots
@@ -12,7 +15,7 @@ gr()
 f(x) = atan(x)
 p0   = 1.35
 p1   = 1.30
-n_iters = 10
+n_iters = 7
 
 xlims = (-3.0, 2.0)
 ylims = (-1.25, 1.15)
@@ -33,7 +36,8 @@ for i in 2:n_iters+1
 end
 
 # Legend value: 5 decimals, or scientific notation once |x| < 1e-3 so small iterates do not print as 0.0.
-fmt_p(x) = x == 0 ? "0" : abs(x) >= 1e-3 ? @sprintf("%.5f", x) : @sprintf("%.2e", x)
+# An iterate that is exactly 0.0 is a double-precision result, not the exact secant iterate.
+fmt_p(x) = x == 0 ? "0 (double-precision result)" : abs(x) >= 1e-3 ? @sprintf("%.5f", x) : @sprintf("%.2e", x)
 
 # --- Backdrop ---
 xplot = range(xlims[1], xlims[2], length=400)

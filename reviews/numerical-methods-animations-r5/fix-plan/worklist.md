@@ -178,7 +178,7 @@ No findings in round 5.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | Case 3 animation: last frames show "p8 = 0" and then three static frames with filler iterates (Implementation/display, Minor) | unverified | open |
+| F1 | Minor | Implementation | Case 3 animation: last frames show "p8 = 0" and then three static frames with filler iterates (Implementation/display, Minor) | unverified | fixed — [fix record](../fixes/secant-method.md) |
 
 ## WP-F
 
