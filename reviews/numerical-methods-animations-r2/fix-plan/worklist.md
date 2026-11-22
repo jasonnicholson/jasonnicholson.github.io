@@ -333,7 +333,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Examples 2 to 5 of the Mathews module are dropped without a note | unverified | open |
+| F1 | Minor | Fidelity | Examples 2 to 5 of the Mathews module are dropped without a note | unverified | fixed — [fix record](../fixes/rational-approximation.md) |
 
 ### The Tangent Parabola — `the-tangent-parabola` · [round-2 report](../the-tangent-parabola.md)
 
