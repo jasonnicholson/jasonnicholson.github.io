@@ -74,7 +74,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the page says the legacy midpoint animation is partly missing, but it is in the archive | unverified | open |
+| F1 | Minor | Fidelity | the page says the legacy midpoint animation is partly missing, but it is in the archive | unverified | fixed — [fix record](../fixes/midpoint-rule.md) |
 
 ### Monte Carlo Pi — `monte-carlo-pi` · [round-2 report](../monte-carlo-pi.md)
 
