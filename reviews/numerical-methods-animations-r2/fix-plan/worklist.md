@@ -244,7 +244,7 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | Case 6 final, most divergent step is not drawn | unverified | open |
+| F1 | Minor | Implementation | Case 6 final, most divergent step is not drawn | unverified | fixed — [fix record](../fixes/newton-raphson-method.md) |
 
 ### Nonlinear Systems — `nonlinear-systems` · [round-2 report](../nonlinear-systems.md)
 

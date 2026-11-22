@@ -43,10 +43,13 @@ anim = @animate for frame in 0:n_iters
         xn  = xs[k]
         xn1 = xs[k+1]
         fn  = f(xn)
-        if xlims[1] <= xn <= xlims[2] && xlims[1] <= xn1 <= xlims[2]
+        if xlims[1] <= xn <= xlims[2]
+            # tangent segment; if x_{n+1} is off-window, xlims clips it at the edge
             plot!([xn, xn1], [fn, 0.0]; color=:steelblue, lw=1.5, label="")
-            fn1 = f(xn1)
-            plot!([xn1, xn1], [0.0, fn1]; color=:steelblue, lw=1.5, label="")
+            if xlims[1] <= xn1 <= xlims[2]
+                fn1 = f(xn1)
+                plot!([xn1, xn1], [0.0, fn1]; color=:steelblue, lw=1.5, label="")
+            end
         end
     end
 
