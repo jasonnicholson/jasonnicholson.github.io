@@ -250,8 +250,8 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | the claim that Newton needs only "a handful of iterations from anywhere in the basin" | verified | open |
-| F2 | Minor | Fidelity | Mathews' fixed-point example (Example 1) is dropped without comment | unverified | open |
+| F1 | Misleading | Page match | the claim that Newton needs only "a handful of iterations from anywhere in the basin" | verified | fixed — [fix record](../fixes/nonlinear-systems.md) |
+| F2 | Minor | Fidelity | Mathews' fixed-point example (Example 1) is dropped without comment | unverified | fixed — [fix record](../fixes/nonlinear-systems.md) |
 
 ### Secant Method — `secant-method` · [round-2 report](../secant-method.md)
 
