@@ -21,20 +21,29 @@ high accuracy with low per-step cost.
 ## Animations
 
 The animation below reconstructs legacy Example 11 from the Mathews module:
-$y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, over $0 \le t \le 5$, with the historical
-$n=50$-step setup (51 mesh points).
+$y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, over $0 \le t \le 5$, computed with $n=200$ steps
+($h=0.025$) instead of the $n=50$ steps ($h=0.1$) of the module's first run (see Behavior).
+Each frame adds four steps (0.1 in $t$); the connecting curve passes through every
+computed point.
 
 The dashed black curve is a high-accuracy reference trajectory computed with fixed-step
 RK4 at $h=10^{-4}$, since no closed-form exact solution is used for this case.
 
-### Case 1 - ABM4 predictor-corrector, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $0 \le t \le 5$
+### Case 1 - ABM4 predictor-corrector, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $0 \le t \le 5$, $n=200$ steps ($h=0.025$)
 
-**Behavior:** The ABM trajectory tracks the reference curve closely over the full
-interval while keeping a smooth and stable descent toward the right endpoint.
+**Behavior:** With $h=0.025$ the ABM4 values stay within $3.1\times10^{-7}$ of the exact
+solution at all 201 step points (the largest error is near $t=3.3$), and the error at
+$t=5$ is $2.6\times10^{-11}$ (exact $y(5)=0.0081199$). For steps longer than about
+$h=0.0311$, $h\,|\partial f/\partial y|$ exceeds the ABM4 predictor-corrector's stability
+limit $1.285$ before $t=5$ (because $\partial f/\partial y=-t/(3y^{2/3})$ reaches $-41.3$ at
+$t=5$), and from then on errors are amplified instead of damped; just above $h=0.0311$
+this affects only the last steps, but at the module's $h=0.1$ ($n=50$) it starts at
+$t\approx3.45$, and the computed values fall to $y_{48}\approx-0.0018$ at $t=4.8$ (below
+zero), then turn upward and end at $y(5)\approx0.138$, about 17 times the exact value.
 
 [Julia source](adamsbashforthmoultonaa.jl)
 
-![Adams-Bashforth-Moulton predictor-corrector trajectory versus high-accuracy reference for y' = 1 - t cbrt(y), y(0)=1 on [0,5]](adamsbashforthmoultonaa.gif)
+![Adams-Bashforth-Moulton (ABM4 predictor-corrector) animation with step h = 0.025 (n = 200) for y' = 1 - t cbrt(y), y(0)=1 on [0,5]: the magenta trace builds four steps per frame and lies on the dashed RK4 reference throughout, rising to about 1.45 near t = 0.9 and falling to y ≈ 0.0081 at t = 5](adamsbashforthmoultonaa.gif)
 
 ## Derivation Notes (Planned)
 

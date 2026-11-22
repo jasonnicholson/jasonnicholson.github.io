@@ -147,7 +147,7 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Page match | The ABM run goes unstable near the end; it does not track the reference "over the full interval" | verified | open |
+| F1 | Error | Page match | The ABM run goes unstable near the end; it does not track the reference "over the full interval" | verified | fixed — [fix record](../fixes/adams-bashforth-moulton-method.md) |
 
 ### Euler's Method for ODE's — `eulers-method-for-odes` · [round-1 report](../eulers-method-for-odes.md)
 

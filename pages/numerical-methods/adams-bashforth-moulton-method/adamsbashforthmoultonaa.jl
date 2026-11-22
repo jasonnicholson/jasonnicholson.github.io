@@ -61,23 +61,24 @@ end
 t0 = 0.0
 tf = 5.0
 y0 = 1.0
-n_steps = 50
+n_steps = 200   # h = 0.025 keeps h*|df/dy| below ABM4 PECE's limit 1.285 up to t = 5
+stride = 4      # each frame adds `stride` ABM4 steps (0.1 in t)
 h_ref = 1e-4
 
 ts, ys = abm4(f, t0, tf, y0, n_steps)
 ts_ref, ys_ref = rk4_reference(f, t0, tf, y0, h_ref)
 
-xlims = (0.0, 5.0)
-ylims = (0.0, 1.55)
+xlims = (-0.1, 5.1)   # small margins so the end point (5, 0.0081) is not clipped
+ylims = (-0.05, 1.55)
 
-anim = @animate for frame in 1:length(ts)
+anim = @animate for frame in 1:stride:length(ts)
     plot(
         size=(700, 500),
         xlims=xlims,
         ylims=ylims,
         xlabel="t",
         ylabel="y",
-        title="ABM4: y' = 1 - t*cbrt(y), y(0)=1",
+        title="ABM4, h = 0.025: y' = 1 - t*cbrt(y), y(0)=1",
         legend=:topright,
         grid=true,
         framestyle=:box,
