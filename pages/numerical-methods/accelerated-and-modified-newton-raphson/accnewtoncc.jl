@@ -4,7 +4,7 @@
 # Method B: define h(x) = f(x)/f'(x); h has a SIMPLE root where f has a double root.
 # Newton on h(x) gives: x_{n+1} = x_n - f(x_n)*f'(x_n) / (f'(x_n)^2 - f(x_n)*f''(x_n))
 # Shows QUADRATIC (fast) convergence without needing to know the multiplicity m.
-# The animation plots h(x) and shows Newton tangent lines converging in ~2 steps.
+# The animation plots h(x) and its Newton tangent lines; x2 = 0.999994 and x3 equals 1 to six decimals.
 # Produces: accnewtoncc.gif
 
 using Plots

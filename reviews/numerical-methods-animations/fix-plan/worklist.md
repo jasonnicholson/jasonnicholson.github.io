@@ -188,9 +188,9 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | Case 2's orange lines are called tangent lines but have half the tangent slope | verified | open |
-| F2 | Misleading | Page match | Case 1's explanation says the tangent "crosses zero far from x*", but the frames show it landing halfway to the root | verified | open |
-| F3 | Minor | Page match | Case 3 is said to converge "in just 2 steps", but the GIF shows x₂ = 0.999994 and is no faster than Case 2 | unverified | open |
+| F1 | Misleading | Page match | Case 2's orange lines are called tangent lines but have half the tangent slope | verified | fixed — [fix record](../fixes/accelerated-and-modified-newton-raphson.md) |
+| F2 | Misleading | Page match | Case 1's explanation says the tangent "crosses zero far from x*", but the frames show it landing halfway to the root | verified | fixed — [fix record](../fixes/accelerated-and-modified-newton-raphson.md) |
+| F3 | Minor | Page match | Case 3 is said to converge "in just 2 steps", but the GIF shows x₂ = 0.999994 and is no faster than Case 2 | unverified | fixed — [fix record](../fixes/accelerated-and-modified-newton-raphson.md) |
 
 ### Aitken's Method & Steffensen's Acceleration — `aitken-method-and-steffensen-acceleration` · [round-1 report](../aitken-method-and-steffensen-acceleration.md)
 
