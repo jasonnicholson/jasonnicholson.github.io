@@ -171,7 +171,7 @@ No findings in round 4.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "each drawn line is the tangent" leaves out the vertical segments | unverified | open |
+| F1 | Minor | Page match | "each drawn line is the tangent" leaves out the vertical segments | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
 
 ### Damped Newton with Acceleration (Madsen-Reid Method) — `madsen-reid-method` · [round-4 report](../madsen-reid-method.md)
 
