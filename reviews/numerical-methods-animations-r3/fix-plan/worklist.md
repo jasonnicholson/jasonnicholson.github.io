@@ -173,7 +173,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Mathews' "wrong m" caveat in Example 2 is dropped without mention | unverified | open |
+| F1 | Minor | Fidelity | Mathews' "wrong m" caveat in Example 2 is dropped without mention | unverified | fixed — [fix record](../fixes/improved-newton-method.md) |
 
 ### Damped Newton with Acceleration (Madsen-Reid Method) — `madsen-reid-method` · [round-3 report](../madsen-reid-method.md)
 
