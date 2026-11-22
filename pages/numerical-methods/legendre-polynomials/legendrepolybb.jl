@@ -1,9 +1,10 @@
 # legendrepolybb.jl
 # Legendre Polynomial animation: partial-sum Legendre series approximation of cos(πx/2)
-# Adds one Legendre term per frame, showing convergence on [-1, 1]
+# Adds one Legendre term per frame (odd-n coefficients are zero, so S_1, S_3, S_5, S_7 equal S_0, S_2, S_4, S_6), showing convergence on [-1, 1]
 # Produces: legendrepolybb.gif
 
 using Plots
+using LinearAlgebra
 gr()
 
 # --- Legendre polynomial via recurrence ---
@@ -24,14 +25,18 @@ function legendre(n::Int, xv::AbstractVector)
     return P
 end
 
-# --- Legendre series coefficient (Gauss-Legendre quadrature with many points) ---
+# --- Gauss-Legendre nodes and weights on [-1, 1] (Golub-Welsch eigenvalue method) ---
+function gauss_legendre(m)
+    J = SymTridiagonal(zeros(m), [k / sqrt(4k^2 - 1) for k in 1:m-1])
+    E = eigen(J)
+    return E.values, 2 .* E.vectors[1, :] .^ 2
+end
+
+# --- Legendre series coefficient (20-point Gauss-Legendre quadrature) ---
 # c_n = (2n+1)/2 * integral_{-1}^{1} f(x)*P_n(x) dx
-function legendre_coeff(f, n; npts=1000)
-    # Trapezoid rule on [-1, 1]
-    xq = range(-1.0, 1.0, length=npts)
-    h  = 2.0 / (npts - 1)
-    integrand = f.(xq) .* legendre(n, xq)
-    integral  = h * (sum(integrand) - 0.5 * (integrand[1] + integrand[end]))
+function legendre_coeff(f, n; npts=20)
+    xq, wq = gauss_legendre(npts)
+    integral = sum(wq .* f.(xq) .* legendre(n, xq))
     return (2n + 1) / 2 * integral
 end
 
@@ -55,7 +60,7 @@ anim = @animate for n in 0:n_max
     plot(size=(700, 500),
          xlims=(-1.0, 1.0), ylims=(-1.3, 1.3),
          xlabel="x", ylabel="y",
-         title="Legendre Series for cos(πx/2) — $(n+1) term$(n==0 ? "" : "s")  (max err = $(round(err, sigdigits=3)))",
+         title="Legendre Series for cos(πx/2) — S_$n(x)  (max err = $(round(err, sigdigits=3)))",
          legend=:topright, grid=true, framestyle=:box,
          background_color=:white)
 

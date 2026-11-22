@@ -415,8 +415,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | Series coefficients from a coarse trapezoid rule; c_8 is wrong by a factor of 2 and the "max err" in the last two titles is wrong | verified | open |
-| F2 | Misleading | Page match | "Each added term refines the fit", but half the frames add a zero term and do not change | verified | open |
+| F1 | Error | Implementation | Series coefficients from a coarse trapezoid rule; c_8 is wrong by a factor of 2 and the "max err" in the last two titles is wrong | verified | fixed — [fix record](../fixes/legendre-polynomials.md) |
+| F2 | Misleading | Page match | "Each added term refines the fit", but half the frames add a zero term and do not change | verified | fixed — [fix record](../fixes/legendre-polynomials.md) |
 
 ### Rational Approximation — `rational-approximation` · [round-1 report](../rational-approximation.md)
 
