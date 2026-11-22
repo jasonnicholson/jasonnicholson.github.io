@@ -153,8 +153,8 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the convergence criterion in the introduction is stated as if it were global | unverified | open |
-| F2 | Minor | Fidelity | Cases 2 and 3 change Mathews' starting value with no reason given | unverified | open |
+| F1 | Minor | Page match | the convergence criterion in the introduction is stated as if it were global | unverified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
+| F2 | Minor | Fidelity | Cases 2 and 3 change Mathews' starting value with no reason given | unverified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
 
 ### Graeffe's Method — `graeffes-method` · [round-3 report](../graeffes-method.md)
 

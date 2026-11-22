@@ -1,5 +1,5 @@
 # fixpointbb.jl
-# Fixed Point Iteration animation: g(x) = sqrt(2x), x0 = 3.8
+# Fixed Point Iteration animation: g(x) = sqrt(2x), x0 = 4.0 (Mathews Example 5, p0 = 4.0)
 # Convergent case starting above the fixed point: staircase descends to x* = 2
 # Produces: fixpointbb.gif
 
@@ -8,13 +8,13 @@ gr()
 
 # --- Parameters ---
 g(x) = sqrt(2x)
-x0 = 3.8
+x0 = 4.0
 n_iters = 12
 
-xlims = (0.0, 4.0)
-ylims = (0.0, 4.0)
+xlims = (0.0, 4.2)   # a margin past x0 = 4.0 so its marker and first vertical step are not on the frame edge
+ylims = (0.0, 4.2)
 
-title_str = "Fixed Point Iteration: g(x) = √(2x), x₀ = 3.8"
+title_str = "Fixed Point Iteration: g(x) = √(2x), x₀ = 4.0"
 
 # --- Pre-compute iterates ---
 xs = Vector{Float64}(undef, n_iters + 1)
