@@ -70,7 +70,7 @@ No findings in round 3.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Simpson composite formula has no summation limits | unverified | open |
+| F1 | Minor | Page match | Simpson composite formula has no summation limits | unverified | fixed — [fix record](../fixes/newton-cotes-integration.md) |
 
 ### Riemann Sums — `riemann-sums` · [round-3 report](../riemann-sums.md)
 
