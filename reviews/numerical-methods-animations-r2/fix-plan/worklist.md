@@ -293,9 +293,9 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | the top-left legend hides nodes and the curve peak in cases 13, 16, 27, 28 and 29 | unverified | open |
-| F2 | Minor | Fidelity | node intervals of cases 04 and 29 differ from Mathews' examples, with no reason given | unverified | open |
-| F3 | Minor | Fidelity | cases 02 and 03 use wider node intervals than Mathews; the pole-side windows of 01/02/03/07 are cut off | unverified | open |
+| F1 | Minor | Implementation | the top-left legend hides nodes and the curve peak in cases 13, 16, 27, 28 and 29 | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F2 | Minor | Fidelity | node intervals of cases 04 and 29 differ from Mathews' examples, with no reason given | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F3 | Minor | Fidelity | cases 02 and 03 use wider node intervals than Mathews; the pole-side windows of 01/02/03/07 are cut off | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
 
 ### Cubic Splines — `cubic-splines` · [round-2 report](../cubic-splines.md)
 

@@ -15,26 +15,30 @@ struct ChebyCase
     node_span::Tuple{Float64, Float64}
     has_span::Bool
     max_order::Int
+    ylims_from_span::Bool
+    poles::Vector{Float64}     # poles of f inside the plotting window (f is broken there)
 end
 
-with_span(id, label, f, xlims, span; max_order=15) = ChebyCase(id, label, f, xlims, span, true, max_order)
-auto_span(id, label, f, xlims; max_order=15) = ChebyCase(id, label, f, xlims, (0.0, 0.0), false, max_order)
+with_span(id, label, f, xlims, span; max_order=15, ylims_from_span=false, poles=Float64[]) =
+    ChebyCase(id, label, f, xlims, span, true, max_order, ylims_from_span, poles)
+auto_span(id, label, f, xlims; max_order=15) =
+    ChebyCase(id, label, f, xlims, (0.0, 0.0), false, max_order, false, Float64[])
 
 cases = ChebyCase[
-    with_span("01", "1/(1-x)", x -> 1 / (1 - x), (-1.6, 0.9), (-1.6, 0.9)),
-    with_span("02", "1/(1+x)", x -> 1 / (1 + x), (-0.9, 1.6), (-0.9, 1.6)),
-    with_span("03", "1/(1-x)^2", x -> 1 / (1 - x)^2, (-1.6, 0.9), (-1.6, 0.9)),
-    with_span("04", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 4.0)),
+    with_span("01", "1/(1-x)", x -> 1 / (1 - x), (-1.6, 1.5), (-1.6, 0.9); poles=[1.0]),
+    with_span("02", "1/(1+x)", x -> 1 / (1 + x), (-1.5, 1.6), (-0.9, 1.5); poles=[-1.0]),
+    with_span("03", "1/(1-x)^2", x -> 1 / (1 - x)^2, (-1.6, 1.5), (-1.5, 0.8); ylims_from_span=true),
+    with_span("04", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 2.0)),
     with_span("05", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 8.0)),
     with_span("06", "sqrt(x)", x -> sqrt(x), (0.0, 10.5), (0.0, 10.0)),
-    with_span("07", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), (-1.6, 0.9), (-1.6, 0.9)),
+    with_span("07", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), (-1.6, 1.5), (-1.6, 0.9)),
     with_span("08", "1/(1+10x^2)", x -> 1 / (1 + 10x^2), (-1.5, 1.5), (-1.0, 1.0); max_order=31),
     with_span("09", "log(x)", x -> log(x), (-0.5, 4.1), (0.02, 2.0)),
     with_span("10", "log(x)", x -> log(x), (-0.5, 4.1), (0.02, 4.0)),
     with_span("11", "log(1+x)", x -> log(1 + x), (-1.5, 1.5), (-0.98, 1.0)),
     auto_span("12", "sin(x)", x -> sin(x), (-3pi, 3pi)),
     auto_span("13", "cos(x)", x -> cos(x), (-3pi, 3pi)),
-    with_span("14", "tan(x)", x -> tan(x), (-pi, pi), (-1.45, 1.45)),
+    with_span("14", "tan(x)", x -> tan(x), (-pi, pi), (-1.45, 1.45); poles=[-pi / 2, pi / 2]),
     auto_span("15", "exp(x)", x -> exp(x), (-2.0, 3.0)),
     auto_span("16", "cos(x)*exp(-x)", x -> cos(x) * exp(-x), (-2.0, 4.0)),
     auto_span("17", "cosh(x)", x -> cosh(x), (-4.0, 4.0)),
@@ -49,7 +53,7 @@ cases = ChebyCase[
     with_span("26", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.5, 5.0)),
     with_span("27", "bessely(0,x)", x -> bessely(0, x), (0.0, 22.0), (0.5, 20.0)),
     with_span("28", "bessely(0,x)", x -> bessely(0, x), (0.0, 22.0), (0.5, 10.0)),
-    with_span("29", "bessely(0,x)", x -> bessely(0, x), (0.0, 22.0), (0.5, 6.0)),
+    with_span("29", "bessely(0,x)", x -> bessely(0, x), (0.0, 22.0), (0.5, 4.0)),
 ]
 
 function safe_eval(f::Function, x::Float64)
@@ -118,6 +122,14 @@ function barycentric_eval(x::Float64, xs::Vector{Float64}, ys::Vector{Float64}, 
         if abs(x - xs[j]) <= 1e-12
             return ys[j]
         end
+    end
+
+    # Outside the nodes (extrapolation) the denominator of the second barycentric form
+    # below cancels badly; the first form l(x) * sum_j w_j y_j / (x - x_j), with
+    # l(x) = prod_j (x - x_j), stays accurate there.
+    if x < minimum(xs) || x > maximum(xs)
+        l = prod(x - xj for xj in xs)
+        return l * sum(w[j] * ys[j] / (x - xs[j]) for j in eachindex(xs))
     end
 
     num = 0.0
@@ -207,10 +219,21 @@ function render_case(case::ChebyCase)
     # Keep axis limits tied to the target function so extreme polynomial blow-up
     # does not collapse the visual dynamic range. Curves are clamped only to a band
     # one window-height beyond the limits, so where they leave the window they run
-    # off the frame instead of along its edge.
-    ylims = window_ylims(case, span, ytrue)
+    # off the frame instead of along its edge. In cases with poles (01, 02, 14) f is
+    # not clamped: it is drawn with a NaN point at each pole, so the curve breaks
+    # there and runs off the window instead of joining its two branches.
+    # With ylims_from_span (case 03) the quantile window is taken from f on the
+    # approximation interval only, so the pole inside the plotting window does not
+    # set the y-range.
+    yref = case.ylims_from_span ? [safe_eval(case.f, x) for x in range(span[1], span[2], length=1000)] : ytrue
+    ylims = window_ylims(case, span, yref)
     band = (ylims[1] - (ylims[2] - ylims[1]), ylims[2] + (ylims[2] - ylims[1]))
     ytrue_clip = [isfinite(y) ? clamp(y, band[1], band[2]) : NaN for y in ytrue]
+    xf, yf = xplot, ytrue_clip
+    if !isempty(case.poles)
+        xf = sort(vcat(xplot, case.poles))
+        yf = [x in case.poles ? NaN : safe_eval(case.f, x) for x in xf]
+    end
 
     anim = Animation()
     for n_nodes in n_nodes_seq
@@ -223,10 +246,10 @@ function render_case(case::ChebyCase)
                      xlims=case.xlims, ylims=ylims,
                      xlabel="x", ylabel="y",
                      title="Chebyshev Case $(case.id): f(x) = $(case.formula_label)\ninterval [$(fmt_num(span[1])), $(fmt_num(span[2]))], n = $(n_nodes) nodes, degree ≤ $(n_nodes - 1)",
-                     legend=:topleft, grid=true, framestyle=:box,
+                     legend=:outerbottom, legend_columns=3, grid=true, framestyle=:box,
                      background_color=:white, top_margin=3Plots.mm)
 
-        plot!(pplot, xplot, ytrue_clip; color=:magenta, lw=2.5, label="f(x)")
+        plot!(pplot, xf, yf; color=:magenta, lw=2.5, label="f(x)")
         plot!(pplot, xplot, yinterp; color=:steelblue, lw=2.2, label="interpolant")
         scatter!(pplot, xs, ys_nodes; color=:red, ms=4.5, label="nodes")
 
