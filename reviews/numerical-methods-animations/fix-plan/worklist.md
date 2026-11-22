@@ -17,11 +17,11 @@ Severity and check columns are copied from the round-1 report: **verified** mean
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation | None of the 13 "Taylor" cases (T01–T13) uses Taylor coefficients: they come from a least-squares polynomial fit over a wide stencil, and many are wrong in sign and magnitude | verified | open |
-| F2 | Error | Page match | The Description's convergence heuristic ("asymptotes" and "behaves like a polynomial") is false, and five cases on this same page contradict it | verified | open |
-| F3 | Minor | Page match | "smooth transition between successive partial sums" does not describe the GIFs | unverified | open |
-| F4 | Minor | Page match | Order-of-accuracy example is off by one under the site's meaning of "numerical integration" | unverified | open |
-| F5 | Minor | Page match | "Other infinite series exist, such as the Laurent or the Power series" | unverified | open |
+| F1 | Error | Implementation | None of the 13 "Taylor" cases (T01–T13) uses Taylor coefficients: they come from a least-squares polynomial fit over a wide stencil, and many are wrong in sign and magnitude | verified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
+| F2 | Error | Page match | The Description's convergence heuristic ("asymptotes" and "behaves like a polynomial") is false, and five cases on this same page contradict it | verified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
+| F3 | Minor | Page match | "smooth transition between successive partial sums" does not describe the GIFs | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
+| F4 | Minor | Page match | Order-of-accuracy example is off by one under the site's meaning of "numerical integration" | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
+| F5 | Minor | Page match | "Other infinite series exist, such as the Laurent or the Power series" | unverified | fixed — [fix record](../fixes/maclaurin-and-taylor-series.md) |
 
 ### Padé Approximation — `pade-approximation` · [round-1 report](../pade-approximation.md)
 
