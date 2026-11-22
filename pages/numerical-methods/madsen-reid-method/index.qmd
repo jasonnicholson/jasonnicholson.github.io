@@ -7,27 +7,28 @@ bibliography: ../../../references.bib
 
 ## Description
 
-The **Madsen-Reid method** [@madsenReid1975] is a robust, globally convergent Newton-based algorithm for finding all roots of a real-coefficient polynomial. It combines three complementary ideas into a single, practical solver:
+The **Madsen-Reid method** [@madsenReid1975] is a robust, globally convergent Newton-based algorithm for finding all roots of a real-coefficient polynomial. This page follows Madsen's method as implemented by Vestermark: the scripts port the iteration of `newton_real` ([Newton_Real.cpp](https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp), Future Team ApS, 2002), and the description below is of that implementation. It combines three complementary ideas into a single, practical solver:
 
-### 1. Quadratic convergence — even at multiple roots
+### 1. Lengthened steps at multiple roots
 
-Standard Newton-Raphson degrades to *linear* convergence at a root of multiplicity $m > 1$ because $f'(x^*) = 0$: near the root $f/f' \approx (x-x^*)/m$, so each Newton step covers only $1/m$ of the remaining distance and the error shrinks by the factor $(m-1)/m$ per step. Madsen-Reid counters this by taking **multiple steps in the same direction**: when the Newton step $\Delta z$ reduces $|f|^2$, it also tries $z - 2\Delta z,\ z - 3\Delta z, \dots$ (up to $z - n\,\Delta z$ for a polynomial of degree $n$) and keeps the last point at which $|f|^2$ is still decreasing. Near a root of multiplicity $m \le n$ that point is $z - m\,\Delta z$, the multiplicity-corrected Newton step, which converges quadratically (Case 2).
+Standard Newton-Raphson degrades to *linear* convergence at a root of multiplicity $m > 1$ because $f'(x^*) = 0$: near the root $f/f' \approx (x-x^*)/m$, so each Newton step covers only $1/m$ of the remaining distance and the error shrinks by the factor $(m-1)/m$ per step. Madsen-Reid counters this by taking **multiple steps in the same direction**: in Stage 1 (below), when the Newton point $z - \Delta z$ does not increase $|f|^2$, it also tries $z - 2\Delta z,\ z - 3\Delta z, \dots$ (up to $z - (n+1)\,\Delta z$ for a polynomial of degree $n$), stops at the first trial that does not lower $|f|^2$, and keeps the trial before it. Near a root of multiplicity $m$ that point is $z - m\,\Delta z$, the multiplicity-corrected Newton step, which converges quadratically until rounding error takes over (Case 2). Only Stage 1 searches, though: Stage 2 takes plain Newton steps, which are linear at a multiple root. Started at $x_0 = -0.7$ instead of 4, Case 2's polynomial gets 19 Stage-2 steps (steps 2 to 20) whose error shrinks by a factor of 0.55 to 0.50 per step, from 0.41 to $1.8 \times 10^{-6}$, before the stage test fails and one lengthened step brings the error to $3.5 \times 10^{-11}$.
 
-A separate safeguard limits the Newton step to length $r_0$, which is reset after every iteration to five times the latest Newton step length:
+A separate safeguard limits the Newton step to length $r_0$, which is reset after each Newton step to five times that step's length before the cap:
 
 $$r_0 \leftarrow 5\,|\Delta z|$$
 
-A Newton step longer than $r_0$ is cut to length $r_0$; in the real-axis scripts (Cases 1 and 2) it keeps its direction, and in the complex script (Case 3) it is also rotated by $53.13°$ by `alterdirection` (below). No Newton step in the three animations is longer than $r_0$, so the limit never acts.
+A Newton step longer than $r_0$ is cut to length $r_0$ and rotated by $53.13°$ by `alterdirection` (below); a rotation would take Cases 1 and 2 off the real axis, and their scripts stop with an error if one occurs. No Newton step in the three animations is longer than $r_0$, so the cap never acts.
 
-### 2. Safety — the dual-stage strategy
+### 2. Safety — the two stages
 
-The algorithm chooses each step by comparing $|f|^2$ at trial points along the Newton direction:
+Each iteration computes the Newton step $\Delta z = f(z)/f'(z)$, caps it at $r_0$, and takes it in one of two stages:
 
-- **Stage 2 (Newton):** If the full Newton step $\Delta z = f(z)/f'(z)$ reduces $|f(z)|^2$ and the doubled step $z - 2\Delta z$ does not reduce it further, $z - \Delta z$ is accepted as-is. This is the fast, quadratic phase near a simple root.
-- **Stage 1 (Multi-step):** If $z - 2\Delta z$ reduces $|f|^2$ further, the multi-step search described above chooses $z - k\,\Delta z$ with $k \ge 2$.
-- **Stage 1 (Damped):** If the full Newton step *increases* $|f(z)|^2$, the step is repeatedly halved (up to 4 times) until a reducing step is found. If halving fails, `alterdirection` rotates the step by $53.13°$ (multiplication by $0.6 + 0.8i$; this makes the step complex, so it can only be shown in Case 3), breaking symmetry and escaping saddle points or cycles.
+- **Stage 1 (checked steps)** compares $|f|^2$ at trial points along the step. If $z - \Delta z$ does not increase $|f|^2$, the lengthening search above runs. If it does, the step is halved, and each halving is kept only while it lowers $|f|^2$ below the previous trial. If two halvings both help, the iterate is taken to be near a saddle point: `alterdirection` rotates the step by $53.13°$ and halves it once more (multiplication by $0.5\,(0.6 + 0.8i)$), and that point is accepted. The rotation makes the step complex, so it can only be shown in Case 3.
+- **Stage 2 (plain Newton)** takes $z - \Delta z$ with no trial points, and ends the run once $|f(z)|$ is no larger than Adams' bound on the rounding error of $f(z)$. It is used only when the previous step was a plain Newton step (the Stage-1 search left it unchanged) and the test $2\,|f(z_k)|\,|w| \le |f'(z_k)|^2\,|z_{k-1} - z_k|$ passes. With $w = f'(z_{k-1}) - f'(z_k)$, $w/(z_{k-1} - z_k)$ estimates $f''$ and the test estimates Kantorovich's condition $2|f|\,|f''| \le |f'|^2$ for Newton's method to converge. The reference file forms $w$ that way only on the first iteration, with the origin standing in for the previous point; afterwards it uses $w = f(z_{k-1}) - f'(z_k)$. The scripts copy this, and with $w = f'(z_{k-1}) - f'(z_k)$ the three runs change stage at the same steps.
 
-The dual-stage structure is designed to make $|f(z)|^2$ decrease at every step, without requiring a full line search. It is not a guarantee: an `alterdirection` step is accepted without checking $|f|^2$. In all three animations below $|f|^2$ does decrease at every step.
+Two further branches handle a true saddle point ($f'(z) = 0$: the previous step is rotated by $53.13°$ and lengthened 5 times) and the rounding-error domain (when a Newton step shorter than $2^{-26}|z|$ does not lower $|f|^2$, it is retried from its starting point, rotated and halved). Neither is reached in the three animations.
+
+The two-stage structure is designed to make $|f(z)|^2$ decrease at every step, without requiring a full line search. It is not a guarantee: each halving is compared with the previous trial rather than with $|f(z_k)|^2$, the rotated step is accepted without a check, and Stage-2 steps are not checked at all. In all three animations below $|f|^2$ does decrease at every step.
 
 ### 3. Efficiency — minimizing function evaluations
 
@@ -39,33 +40,33 @@ After each root is found, the polynomial is deflated (divided out), reducing the
 
 ## Animations
 
-Each animation shows the **iteration path** of the Madsen-Reid method. Blue segments indicate full Newton steps (Stage 2); green segments indicate multi-step moves $z - k\,\Delta z$ with $k \ge 2$, drawn as the tangent line down to the Newton point and then along the axis; orange segments indicate damped or direction-altered steps (Stage 1). In Case 3, star markers show the exact roots.
+Each animation shows the **iteration path** of the Madsen-Reid method. Blue segments are plain Newton steps $z - \Delta z$; green segments are lengthened steps $z - k\,\Delta z$ with $k \ge 2$, drawn as the tangent line down to the Newton point and then along the axis; orange segments are halved or rotated steps. The label of the current point names the stage of the step that reached it. Cases 1 and 2 start from their own $x_0$ with $r_0 = 5|x_0|$ rather than from the reference's start-point rule; Case 3 starts where the reference does. In Case 3, star markers show the exact roots.
 
 Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Simple root, $P(x) = x^3 - 3x - 1$, $x_0 = 3.0$
 
-**Behavior:** Three simple real roots exist. Starting from $x_0 = 3.0$, the doubled step reduces $|P|^2$ more than the Newton step does, so the first move is the multi-step $x_1 = x_0 - 2\Delta x \approx 1.5833$ (green), which passes the root. Every later step is a full Newton step (blue), and no damping occurs. Because $P'(x^*) \neq 0$, the convergence to the root $x^* \approx 1.8794$ is quadratic: the error falls $9.8 \times 10^{-2}$, $6.4 \times 10^{-3}$, $3.0 \times 10^{-5}$, $6.7 \times 10^{-10}$ over steps 2 to 5, and $x_6$ equals $x^*$ to double precision.
+**Behavior:** Three simple real roots exist. Starting from $x_0 = 3.0$, the doubled step reduces $|P|^2$ more than the Newton step does, and the tripled step does not ($|P|^2$ = 17.3, 3.17 and 8.73 for $\Delta x$, $2\Delta x$ and $3\Delta x$), so the first move is the lengthened step $x_1 = x_0 - 2\Delta x \approx 1.5833$ (green), which passes the root. Every later step is a plain Newton step (blue): step 2 is checked in Stage 1, and steps 3 to 6 are Stage-2 steps. No step is halved. Because $P'(x^*) \neq 0$, the convergence to the root $x^* \approx 1.8794$ is quadratic: the error falls $9.8 \times 10^{-2}$, $6.4 \times 10^{-3}$, $3.0 \times 10^{-5}$, $6.7 \times 10^{-10}$ over steps 2 to 5, and $x_6$ equals $x^*$ to double precision; there $|P|$ is below Adams' bound and the run stops.
 
 [Julia source](madsreidaa.jl)
 
-![Madsen-Reid tangent-line animation on P(x)=x³−3x−1: a doubled first step from x₀=3.0 to x₁≈1.5833, then full Newton steps converging quadratically to the simple root near x≈1.8794](madsreidaa.gif)
+![Madsen-Reid tangent-line animation on P(x)=x³−3x−1: a doubled first step from x₀=3.0 to x₁≈1.5833, then plain Newton steps, Stage 2 from step 3 on, converging quadratically to the simple root near x≈1.8794](madsreidaa.gif)
 
 ### Case 2 — Double root, $P(x) = (x-1)^2(x+2)$, $x_0 = 4.0$
 
-**Behavior:** $P(x)$ has a double root at $x^* = 1$ where $P'(x^*) = 0$. Standard Newton-Raphson converges only linearly here: from $x_0 = 4$ its error roughly halves each step and is still $3.4 \times 10^{-4}$ after 14 steps. Madsen-Reid takes a multi-step move at every step (all green): $3\Delta x$ to $x_1 = 0.4$, past the root, then $2\Delta x$, the multiplicity-corrected step for $m = 2$, three times. The errors $8.6 \times 10^{-2}$, $1.2 \times 10^{-3}$, $2.3 \times 10^{-7}$ fall quadratically, and the run stops after 4 steps at $x_4 \approx 1.00000023$, where $|P(x_4)| \approx 1.6 \times 10^{-13}$. No step is damped. From $x_2$ on, the window zooms in on each new step, because the steps shrink from $0.69$ to $0.0012$ in $x$; each zoomed frame shows the tangent reaching the axis halfway along the step, then the second $\Delta x$ along the axis.
+**Behavior:** $P(x)$ has a double root at $x^* = 1$ where $P'(x^*) = 0$. Standard Newton-Raphson converges only linearly here: from $x_0 = 4$ its error roughly halves each step and is still $3.4 \times 10^{-4}$ after 14 steps. Madsen-Reid takes a lengthened step every time (all green, all in Stage 1: the run starts in Stage 1, and a lengthened step never leads to Stage 2): $3\Delta x$ to $x_1 = 0.4$, past the root, then $2\Delta x$, the multiplicity-corrected step for $m = 2$, four times. The errors $8.6 \times 10^{-2}$, $1.2 \times 10^{-3}$, $2.3 \times 10^{-7}$ of $x_2$ to $x_4$ fall quadratically. The fifth step reaches $x_5 \approx 0.99999999952$ (error $4.8 \times 10^{-10}$), where rounding makes the computed $|P(x_5)|^2$ exactly 0 (its true value is about $4.8 \times 10^{-37}$), so the run stops. No step is halved. From $x_2$ on, the window zooms in on each new step, because the steps shrink from $0.69$ to $2.3 \times 10^{-7}$ in $x$; each zoomed frame shows the tangent reaching the axis halfway along the step, then the second $\Delta x$ along the axis.
 
 [Julia source](madsreidab.jl)
 
-![Madsen-Reid animation on P(x)=(x−1)²(x+2): four multi-step moves (3Δx, then 2Δx three times) converging quadratically from x₀=4.0 to the double root at x=1, the view zooming in on each step from x₂ on](madsreidab.gif)
+![Madsen-Reid animation on P(x)=(x−1)²(x+2): five lengthened steps (3Δx, then 2Δx four times) converging from x₀=4.0 to the double root at x=1, quadratically until rounding ends the run at x₅, the view zooming in on each step from x₂ on](madsreidab.gif)
 
 ### Case 3 — Complex conjugate roots, $P(z) = z^2 + 4$, $z_0 = 1 + 0i$
 
-**Behavior:** The roots are $z^* = \pm 2i$ — there are no real roots. Starting on the real axis at $z_0 = 1$, a halved Newton step reaches $z_1 = -0.25$, where neither the real Newton step nor any of its 4 halvings reduces $|P|^2$: the real-axis iterates stagnate. The `alterdirection` mechanism rotates the step into the complex plane, to $z_2 = 0.0546875 + 0.40625i$, allowing the iterates to escape the real axis. Orange segments are Stage 1 steps: the first and third are halved Newton steps, and the second is the `alterdirection` rotation. The last four segments are full Newton steps (blue), and no multi-step move occurs. The path is a polyline converging to $z^* = +2i$. This case illustrates how the algorithm handles polynomials with no real roots starting from a real initial guess.
+**Behavior:** The roots are $z^* = \pm 2i$ — there are no real roots. The reference solves a quadratic in closed form, so this case runs its iteration loop on $z^2 + 4$ directly, from the reference's own start $z_0 = 1$ with $r_0 = 5$. The full Newton step to $-1.5$ increases $|P|^2$ (39.1 against 25), and one halving reaches $z_1 = -0.25$ (a second halving, to $0.375$, does not help). At $z_1$ the full step to $7.875$ increases $|P|^2$ again, and two halvings both help (to $3.8125$, then $1.78125$), so `alterdirection` rotates the step and halves it once more: $z_2 = 0.359375 + 0.8125i$, off the real axis. Orange segments are the halved steps 1 and 3 and the rotated step 2. Step 4 is a plain Newton step checked in Stage 1, and steps 5 to 8 are Stage-2 plain Newton steps (blue), converging quadratically to $z^* = +2i$; the run stops at $z_8$, where $|P| \approx 3.2 \times 10^{-30}$ is below Adams' bound. No lengthened step occurs. The path is a polyline. This case illustrates how the algorithm handles polynomials with no real roots starting from a real initial guess.
 
 [Julia source](madsreidac.jl)
 
-![Madsen-Reid animation in the complex plane on P(z)=z²+4: iterates escape the real axis via alterdirection and converge to the root at z=+2i](madsreidac.gif)
+![Madsen-Reid animation in the complex plane on P(z)=z²+4: from z₀=1 a halved step, then a step rotated off the real axis after two helpful halvings, a further halved step, and plain Newton steps converging to the root at z=+2i](madsreidac.gif)
 
 ## References
 

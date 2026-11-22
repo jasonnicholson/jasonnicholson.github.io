@@ -229,9 +229,9 @@ No findings in round 2.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Error | Implementation / Page match | the damped / `alterdirection` rule is not Madsen's | verified | open |
-| F2 | Error | Implementation / Page match | "Stage 1" and "Stage 2" are defined wrongly | verified | open |
-| F3 | Minor | Implementation / Page match | the r0 update uses the pre-limit step length | unverified | open |
+| F1 | Error | Implementation / Page match | the damped / `alterdirection` rule is not Madsen's | verified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F2 | Error | Implementation / Page match | "Stage 1" and "Stage 2" are defined wrongly | verified | fixed — [fix record](../fixes/madsen-reid-method.md) |
+| F3 | Minor | Implementation / Page match | the r0 update uses the pre-limit step length | unverified | not reproduced — [fix record](../fixes/madsen-reid-method.md) |
 
 ### Muller's Method — `mullers-method` · [round-2 report](../mullers-method.md)
 
