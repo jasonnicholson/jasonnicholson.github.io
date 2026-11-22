@@ -90,8 +90,8 @@ No findings in round 1. Nothing to fix; included in the re-review.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | The O(Δx²) / "factor of 4" rate does not hold for the page's own integrand; the measured rate is Δx^(5/3) (factor about 3.17) | verified | open |
-| F2 | Minor | Page match | "the estimate stabilizes quickly" overstates what the animated sequence does | unverified | open |
+| F1 | Misleading | Page match | The O(Δx²) / "factor of 4" rate does not hold for the page's own integrand; the measured rate is Δx^(5/3) (factor about 3.17) | verified | fixed — [fix record](../fixes/midpoint-rule.md) |
+| F2 | Minor | Page match | "the estimate stabilizes quickly" overstates what the animated sequence does | unverified | fixed — [fix record](../fixes/midpoint-rule.md) |
 
 ### Monte Carlo Pi — `monte-carlo-pi` · [round-1 report](../monte-carlo-pi.md)
 
