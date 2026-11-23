@@ -117,7 +117,7 @@ No findings in round 6.
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
 | F1 | Minor | Implementation | Case 1 window hides the slow convergence the case is about | unverified | deferred — owner decision (R6-C) |
-| F2 | Minor | Page match | Intro says each animation shows three methods | unverified | open |
+| F2 | Minor | Page match | Intro says each animation shows three methods | unverified | fixed — [fix record](../fixes/accelerated-and-modified-newton-raphson.md) |
 
 ### Aitken's Method & Steffensen's Acceleration — `aitken-method-and-steffensen-acceleration` · [round-6 report](../aitken-method-and-steffensen-acceleration.md)
 
