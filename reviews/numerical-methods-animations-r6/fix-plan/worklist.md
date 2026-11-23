@@ -10,7 +10,7 @@ No findings in round 6. F1 below is decision R6-B, not a round-6 finding.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | — | Implementation / Page match | (R6-B) rebuild the page: Laurent reduces to Taylor at times; negative powers give vertical and horizontal asymptotes | owner decision | open |
+| F1 | — | Implementation / Page match | (R6-B) rebuild the page: Laurent reduces to Taylor at times; negative powers give vertical and horizontal asymptotes | owner decision | fixed — [fix record](../fixes/laurent-series.md) |
 
 ### Maclaurin and Taylor Series — `maclaurin-and-taylor-series` · [round-6 report](../maclaurin-and-taylor-series.md)
 
