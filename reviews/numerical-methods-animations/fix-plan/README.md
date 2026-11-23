@@ -181,6 +181,20 @@ These apply when fixing from `reviews/numerical-methods-animations-r5`. They tak
   - **Laurent pole lines in Cases 12 and 22–24:** break the f curve at each pole so no false vertical line is drawn, as round 3 did for Lagrange Case 14. Regenerate only those GIFs; the others must stay byte-identical. This supersedes the "leave" in R4-D.
 - **The other round-5 Minor findings are fixed as reported:** Runge-Kutta-Fehlberg, Nonlinear Systems, Broyden and the Maclaurin M03 alt text.
 
+## Round 6 decisions (Jason, 2026-11-23)
+
+These apply when fixing from `reviews/numerical-methods-animations-r6`. They take precedence over earlier decisions.
+
+- **R6-A — Muller: fix the Case 3 window (F1); leave Case 1.** Zoom Case 3 on the current points and mark the axis crossing, as Case 2 does since R5-A. Case 1 keeps its real-part variant, its script and its GIF. Case 2 is also unchanged.
+- **R6-B — Laurent: rebuild the whole page.** This supersedes D6 and the R5-F pole-line scope. The 27 all-Taylor cases, copied from the Padé list, and the legend "Laurent = Taylor, N = n" go, except where a case really does reduce to Taylor. The page must show two things:
+  1. A Laurent series sometimes **simplifies to a Taylor series** (no negative powers).
+  2. Other times it has **negative real powers, which support asymptotic behaviour that polynomials cannot handle: both vertical and horizontal asymptotes.**
+
+  The page **may deviate from Mathews** to tell this story. His module (Complex Analysis §7.3, `c2003/LaurentSeriesMod.html`) has no animations, and its formula images are missing from the local archive, so a function may be attributed to him only if that is confirmed.
+- **R6-C — Accelerated Newton F1: leave.** The contrast from Case 1 to Case 2 is the point and tells the story well. Mark F1 `deferred` (owner decision). F2, the intro sentence, is fixed as reported.
+- **R6-D — Maclaurin F1 (order cutoff): leave.** Mark it `deferred` (owner decision).
+- **R6-E — The other round-6 Minor findings are fixed as reported:** Padé F1 (off-scale curve clamped to the frame edge), Chebyshev F1 (mark the approximation interval), B-Splines F1 (option b: add the reason to the disclosure sentence) and Tangent Parabola F1 (duplicate legend entry). The Padé pole lines stay as they are under R5-C.
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
