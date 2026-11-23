@@ -187,7 +187,7 @@ No findings in round 6.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the page replaces Mathews' only examples (B-spline interpolation) with a different topic (parametric clamped B-spline curves) | unverified | open |
+| F1 | Minor | Fidelity | the page replaces Mathews' only examples (B-spline interpolation) with a different topic (parametric clamped B-spline curves) | unverified | fixed — [fix record](../fixes/b-splines.md) |
 
 ### Bézier Curves — `bezier-curves` · [round-6 report](../bezier-curves.md)
 
