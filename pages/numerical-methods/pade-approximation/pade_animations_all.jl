@@ -68,7 +68,7 @@ function binom_real(alpha::Float64, k::Int)
     return p / factorial(k)
 end
 
-# Exact Taylor coefficients, correctly rounded to Float64 (the same routine is used on the Maclaurin and Laurent pages).
+# Exact Taylor coefficients, correctly rounded to Float64 (the same routine is used on the Maclaurin page).
 # Self-contained: needs only SpecialFunctions (gamma, digamma, besselj, bessely on BigFloat).
 #
 # taylor_coeffs_exact(family, c, n; nu=0, alpha=0.5, prec=256) returns a[k+1] = f^(k)(c)/k!

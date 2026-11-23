@@ -88,3 +88,7 @@ None. This rests on:
 - MATLAB and quarto were not run. No repository file was modified.
 
 **Final status:** committed
+
+### Director note (after the Laurent rebuild)
+
+The comment on line 71 of `pade_animations_all.jl` said the coefficient routine is also used on the Laurent page. The rebuilt Laurent script no longer uses it, so the comment now names only the Maclaurin page. Comment-only change; all 27 GIFs reproduce byte for byte.
