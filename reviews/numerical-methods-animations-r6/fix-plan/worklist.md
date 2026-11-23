@@ -201,7 +201,7 @@ No findings in round 6.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity / Page match | The approximation interval is not marked in the frames, so extrapolation blow-up just past the interval looks like a failure of the method (page match / fidelit | unverified | open |
+| F1 | Minor | Fidelity / Page match | The approximation interval is not marked in the frames, so extrapolation blow-up just past the interval looks like a failure of the method (page match / fidelit | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
 
 ### Cubic Splines — `cubic-splines` · [round-6 report](../cubic-splines.md)
 

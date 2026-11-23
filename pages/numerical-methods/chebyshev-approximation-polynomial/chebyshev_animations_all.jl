@@ -235,6 +235,13 @@ function render_case(case::ChebyCase)
         yf = [x in case.poles ? NaN : safe_eval(case.f, x) for x in xf]
     end
 
+    # The interval endpoints are drawn as green lines, as in the Mathews animations.
+    # A line on the edge of the plotting window would be clipped and lie on the frame,
+    # so the axis (not the curves) extends slightly past that endpoint on that side.
+    xpad = 0.015 * (case.xlims[2] - case.xlims[1])
+    xview = (span[1] <= case.xlims[1] ? case.xlims[1] - xpad : case.xlims[1],
+             span[2] >= case.xlims[2] ? case.xlims[2] + xpad : case.xlims[2])
+
     anim = Animation()
     for n_nodes in n_nodes_seq
         xs, ys_nodes = chebyshev_nodes(case.f, span, n_nodes)
@@ -243,15 +250,16 @@ function render_case(case::ChebyCase)
         yinterp = clamp.(yinterp, band[1], band[2])
 
         pplot = plot(size=(760, 520),
-                     xlims=case.xlims, ylims=ylims,
+                     xlims=xview, ylims=ylims,
                      xlabel="x", ylabel="y",
                      title="Chebyshev Case $(case.id): f(x) = $(case.formula_label)\ninterval [$(fmt_num(span[1])), $(fmt_num(span[2]))], n = $(n_nodes) nodes, degree ≤ $(n_nodes - 1)",
-                     legend=:outerbottom, legend_columns=3, grid=true, framestyle=:box,
+                     legend=:outerbottom, legend_columns=4, grid=true, framestyle=:box,
                      background_color=:white, top_margin=3Plots.mm)
 
         plot!(pplot, xf, yf; color=:magenta, lw=2.5, label="f(x)")
         plot!(pplot, xplot, yinterp; color=:steelblue, lw=2.2, label="interpolant")
         scatter!(pplot, xs, ys_nodes; color=:red, ms=4.5, label="nodes")
+        vline!(pplot, collect(span); color=:green, ls=:dash, lw=1.5, label="interval ends")
 
         frame(anim, pplot)
     end
