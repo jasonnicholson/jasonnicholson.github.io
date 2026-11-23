@@ -472,7 +472,10 @@ function render_case(case::PadeCase)
             end
         end
 
-        ypad = clamp.(ypad, case.ylims[1], case.ylims[2])
+        # Limit off-scale values to one y-span beyond the axes, not to the axes,
+        # so the curve leaves the frame instead of running along its edge.
+        yspan = case.ylims[2] - case.ylims[1]
+        ypad = clamp.(ypad, case.ylims[1] - yspan, case.ylims[2] + yspan)
 
         pplot = plot(size=(700, 520),
                      xlims=case.xlims, ylims=case.ylims,

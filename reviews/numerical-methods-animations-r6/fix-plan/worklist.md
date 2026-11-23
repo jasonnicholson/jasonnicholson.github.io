@@ -22,7 +22,7 @@ No findings in round 6. F1 below is decision R6-B, not a round-6 finding.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | off-scale parts of the approximant are drawn along the plot border, so they look like a curve that levels off at the axis limit (Minor) | unverified | open |
+| F1 | Minor | Implementation | off-scale parts of the approximant are drawn along the plot border, so they look like a curve that levels off at the axis limit (Minor) | unverified | fixed — [fix record](../fixes/pade-approximation.md) |
 
 ## WP-B
 
