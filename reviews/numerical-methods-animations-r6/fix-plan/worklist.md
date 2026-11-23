@@ -231,7 +231,7 @@ No findings in round 6.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | the hold frames list "Tangent parabola T₂(x)" twice in the legend | unverified | open |
+| F1 | Minor | Implementation | the hold frames list "Tangent parabola T₂(x)" twice in the legend | unverified | fixed — [fix record](../fixes/the-tangent-parabola.md) |
 
 ## WP-G
 

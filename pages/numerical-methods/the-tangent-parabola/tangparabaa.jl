@@ -45,10 +45,7 @@ anim = @animate for h in h_vals
         p_lbl  = "Secant parabola  (h = $h_lbl)"
         p_clr  = :tomato
     else
-        P_vals = T2_vals
         ttl    = "Tangent Parabola (T₂ — Taylor degree 2 at x₀)"
-        p_lbl  = "Tangent parabola T₂(x)"
-        p_clr  = :darkgreen
     end
 
     plot(size=(700, 500),
@@ -59,7 +56,8 @@ anim = @animate for h in h_vals
          background_color=:white)
 
     plot!(x_plot, f.(x_plot);  color=:blue, lw=2, label="f(x) = sin(x)")
-    plot!(x_plot, P_vals;      color=p_clr, lw=2, linestyle=:dash, label=p_lbl)
+    # The hold frames (h = 0) have no secant parabola, so T₂ is drawn once, by the dotted line below
+    h > 1e-6 && plot!(x_plot, P_vals; color=p_clr, lw=2, linestyle=:dash, label=p_lbl)
     plot!(x_plot, T2_vals;     color=:darkgreen, lw=1.5, linestyle=:dot,
           label="Tangent parabola T₂(x)")
 
