@@ -163,7 +163,7 @@ No findings in round 6.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation / Page match | In Case 3 the last frames show no visible iteration | unverified | open |
+| F1 | Minor | Implementation / Page match | In Case 3 the last frames show no visible iteration | unverified | fixed — [fix record](../fixes/mullers-method.md) |
 
 ### Newton-Raphson Method — `newton-raphson-method` · [round-6 report](../newton-raphson-method.md)
 
