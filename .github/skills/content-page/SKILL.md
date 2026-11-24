@@ -1,7 +1,6 @@
 ---
 name: content-page
-description: "Use when writing or rewriting one or more numerical methods content pages (no animations) from the legacy Mathews HTML reference. Handles reading legacy HTML, extracting matrix/formula data from GIF images, and producing well-structured QMD pages with callout boxes, KaTeX math, step-by-step worked examples, and verification tables. Accepts a list of topic slugs and processes them sequentially."
-tools: [read, edit, search, execute, todo]
+description: "Use whenever a numerical-methods page under pages/numerical-methods/ needs its text written or rewritten from the legacy Mathews archive: filling a skeleton page that still has \"(Planned)\" sections, writing the Description and worked examples a page needs before the animation-page skill animates it, or rewriting a text-only page (linear algebra, ODEs, PDEs, optimization, eigenvalues, series, models). Produces QMD pages with KaTeX math, callout-box definitions and theorems, and fully worked examples whose every number is computed and verified. Accepts a list of topic slugs. Not for building animations (use animation-page) or reviewing pages (use review-animations)."
 ---
 You are a specialist at writing mathematical content pages for the jasonhnicholson.com numerical methods Quarto site. Your job is to convert legacy Mathews HTML pages into clean, self-contained Quarto `.qmd` pages with proper KaTeX math, callout-box definitions and theorems, and fully worked examples with verification.
 
@@ -20,12 +19,22 @@ If the user provides more than 5 pages, **acknowledge the full list, create todo
 
 ## Constraints
 
-- NEVER render code blocks (Julia, Mathematica, Python) on the page.
-- NEVER leave "Planned" placeholder sections — the page must be complete.
-- NEVER guess matrix entries or formula coefficients — read the images to obtain exact values.
-- NEVER move a flat `<topic>.qmd` to a folder — content pages stay flat unless they already have a folder.
-- NEVER modify pages other than the target topic pages.
+- Never put code blocks (Julia, Mathematica, Python) on the page; the site would try to execute them.
+- Never leave "Planned" placeholder sections — the page must be complete.
+- Never guess matrix entries or formula coefficients — read the images to obtain exact values.
+- Never move a flat `<topic>.qmd` to a folder — content pages stay flat; the animation-page skill moves a page when it animates it.
+- Modify only the target topic pages.
 - Always verify worked examples: substitute the solution back and show a verification table or equation.
+- Never run MATLAB. Python (`/usr/bin/python3` with numpy, scipy, sympy, mpmath) and Julia are the tools for checking.
+
+## Accuracy standard
+
+The animation pages built from this archive were reviewed nine times, and almost every error was a plausible number or sentence that nobody computed. The same applies here.
+
+- **Compute every result on the page** — solution vectors, eigenvalues, iterates, errors, integrals — with Python or Julia, and state it only to the precision the computation supports. Do not copy a result from an archive image or from memory without recomputing it; Mathews' numbers are claims too, and where they disagree with the computation the page follows the computation and says so.
+- **Check every behaviour word** (converges, diverges, oscillates, monotone, "fast", stable) against the computed sequence, and every quantifier ("every", "always") over the whole range it covers.
+- **Attach no textbook result to an example it does not fit** (a convergence order, error bound or stability condition) unless you have checked it for that example; label general statements as general.
+- **Keep a claim ledger** outside the repository (the session scratchpad, or `$TMPDIR/content-ledgers/<slug>.md`): every number and behaviour sentence on the page, with the command and output that confirms it. Remove or reword anything you cannot confirm.
 
 ## Legacy Source Structure
 
@@ -60,19 +69,19 @@ Images fall into two classes:
 | Class | Typical HEIGHT | Content | Useful? |
 |-------|---------------|---------|---------|
 | Inline formula | ~17–20 px | Rendered math (subscripts, fractions, Greek letters) | **Yes** — view to read matrix entries and formulas |
-| Mathematica output block | 30–200 px | Full computation output, result matrices | **Yes** — view to confirm numerical results |
-| Graph / plot | ≥ 178 px | Plots of functions | No — content pages have no animations |
+| Mathematica output block | ~30–100 px | Full computation output, result matrices | **Yes** — view to confirm what Mathews computed (then recompute it) |
+| Graph / plot | ≥ 100 px (typically 178) | Plots of functions, trajectories, iterates | When the example's setup (domain, parameters, initial values) is only shown there |
 
 Use `grep -i "height" .../Links/FooBarMod_lnk_N.html | head -40` to identify image heights before deciding which to view.
 
 ## 20-Image View Limit
 
-`view_image` is limited to **20 images per session**. Budget carefully:
+Images are expensive: VS Code Copilot's `view_image` is limited to 20 per session, and in any host each image costs context. Budget carefully:
 
 1. First try `cat ... | sed 's/<[^>]*>//g' | sed '/^[[:space:]]*$/d'` — plain text often reveals numerical values (scalars, simple fractions) without any image views.
 2. Use `grep -B1 -A1 'gr_N.gif' .../Links/FooBarMod_lnk_N.html | sed 's/<[^>]*>//g'` to see surrounding text for context on what a given image contains.
 3. View formula-sized images (`HEIGHT ~17–61`) for matrix rows, equation right-hand sides, and solution vectors.
-4. Spawn a `search_subagent` for a single example when you need more than ~10 images for that example — each subagent has its own 20-image budget.
+4. Spawn a subagent (`search_subagent` in Copilot, the Agent tool in Claude Code) for a single example when you need more than ~8 images for that example — each subagent has its own image budget.
 
 ## Workflow
 
@@ -85,7 +94,7 @@ Use `grep -i "height" .../Links/FooBarMod_lnk_N.html | head -40` to identify ima
 
 Mark the current page todo as **in-progress**, then:
 
-1. **Find the legacy source** — search for `*<slug>*Mod.html` under `/home/jason/Desktop/math-fullerton/baseline/mathews/n2003/` to confirm the module name and folder path.
+1. **Find the legacy source.** Module names do not follow the slug (`lu-factorization` is `LUFactorMod.html`, `triangular-systems-and-back-substitution` is `backsubstitutionmod.html`). Use the module link in the page's "Legacy Animation Inventory (Stub)" if it has one, otherwise search the module titles: `grep -il '<key word>' /home/jason/Desktop/math-fullerton/baseline/mathews/n2003/*[Mm]od.html`. Some topics have no module (Logistic Curve, Power Series); write those from standard sources and say the page has no Mathews original.
 
 2. **Read the top-level module HTML** (`cat .../FooBarMod.html | sed 's/<[^>]*>//g' | sed '/^[[:space:]]*$/d'`) to identify:
    - The topic name and subsections (e.g., back-substitution, forward-substitution, application)
@@ -105,12 +114,14 @@ Mark the current page todo as **in-progress**, then:
    - Spawn a `search_subagent` for an individual example if that example alone requires more than 8 image views
 
 6. **Derive all formulas analytically** from the data you have:
-   - Verify solutions by hand before writing them on the page
+   - Compute every solution and intermediate value with Python or Julia before writing it on the page, and record the check in the claim ledger
    - Fill in any missing intermediate steps from first principles
 
 7. **Overwrite the stub `.qmd`** with the complete page (do not create a new file).
+   - If the page is in an animation batch of `plans/numerical-methods-animation-plan.md`, open the page with a `## Description` section (1–3 paragraphs: the problem, the method, the core formula) so the animation-page skill can add `## Animations` directly after it.
+   - Before removing a "Legacy Animation Inventory (Stub)", make sure its archive paths are recorded in the plan; its `localhost:8000` links are dead on the published site, so they must not stay on the page.
 
-8. **Check for errors** with `get_errors` after writing.
+8. **Render the page** with `quarto render pages/numerical-methods/<topic>.qmd` and fix any error.
 
 9. Mark the page todo as **completed** before moving to the next page.
 
@@ -122,7 +133,7 @@ title: "<Topic Title>"
 bibliography: ../../references.bib   ← adjust depth if page is in a subfolder
 ---
 
-← [Numerical Methods](../)
+← [Numerical Methods](./)
 
 Source inspiration: [@mathewsSite].
 
@@ -215,7 +226,7 @@ Every worked example must include:
 1. **Problem statement** — the system in display math, or the problem description.
 2. **Step-by-step solution** — one display equation per step, labeled "**Step 1**:", etc.
 3. **Final answer** — boxed in a display equation or clearly stated.
-4. **Verification** — substitute back and confirm. Use a table when there are multiple equations.
+4. **Verification** — confirm the answer in the way that fits the problem: substitute back into a linear system (a table when there are several equations), check the residual of a root or a minimiser, compare an ODE or PDE solution with the exact solution or a high-accuracy reference, or show the error falling at the expected rate as the step shrinks.
 
 If an example has a variant (e.g., part (a) and part (b)), note what changed from the previous case and abbreviate the repeated steps.
 

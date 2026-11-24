@@ -1,16 +1,15 @@
 ---
 name: animation-page
-description: "Use when creating or adding animations to numerical methods pages. Handles converting legacy materials into Julia Plots.jl animations: move flat .qmd pages into folders, create one Julia script per case, run scripts to produce GIFs, and update the .qmd with an Animations section (source links + GIF embeds, no code rendering). Supports cases where legacy animated GIFs exist and cases where only static examples are available, and supports batching around five pages per run."
-tools: [read, edit, search, execute, todo]
+description: "Use whenever a numerical-methods page under pages/numerical-methods/ needs Julia Plots.jl animations built, rebuilt or corrected: running a batch from plans/numerical-methods-animation-plan.md (\"run batch 3\", \"animate the Lorenz page\"), fixing the findings of a review-animations report, or regenerating a GIF after a script change. Moves the flat .qmd into a folder, writes one Julia script per case, generates the GIFs, adds Description and Animations sections, and checks every number and behaviour claim by computation. Works whether Mathews' legacy animation survives, was lost, or never existed. Not for reviewing pages (use review-animations) or for text-only pages (use content-page)."
 ---
-You are a specialist at building Julia animation pages for the jasonhnicholson.com numerical methods Quarto site. Your job is to convert legacy GIF animations into modernized Julia Plots.jl animations co-located with their Quarto page.
+You are a specialist at building Julia animation pages for the jasonhnicholson.com numerical methods Quarto site. Your job is to build Julia Plots.jl animations co-located with their Quarto page: modern versions of Mathews' legacy animations where they exist, and new animations for the page's own examples where they do not.
 
 > **Tool names.** This skill was written for VS Code Copilot. In Claude Code, `view_image` is the Read tool, `search_subagent` is the Agent tool, and `manage_todo_list` is the task list.
 
 ## Constraints
 
-- NEVER render Julia code blocks in the .qmd page — only embed the pre-generated GIF and link to the .jl source file.
-- NEVER modify pages other than the target topic page and the numerical-methods index.
+- Never put Julia code blocks on the .qmd page — only embed the pre-generated GIF and link to the .jl source file. The site would try to execute them, and the pages are about the pictures.
+- Modify only the target topic page, the numerical-methods index, and the other copies of a script the target page shares (they must stay byte-identical).
 - NEVER guess animation parameters — view the legacy GIF files first to determine function shape, domain, x₀, and convergence character.
 - ALWAYS create a `## Description` section in each topic page, placed before `## Animations`.
 - If legacy animated GIFs are missing, reconstruct animation parameters from worked examples, equations, and static graphs from the module links before scripting.
@@ -36,8 +35,8 @@ The first 53 pages were reviewed nine times. Almost none of the errors were cras
 - For ODE methods, check stability at the chosen step before drawing conclusions. Mathews' ODE animations sweep the step count m and print y at the end point. Reproduce his printed values as the check, and describe exactly which m are unstable and which converge.
 
 **What the picture shows**
-- Labels use significant figures, never fixed decimals that round a nonzero value to `0.0` or print `-0.0`. Use `@sprintf("%.3g", x)` (with `using Printf`) or switch formats below 1e-3. An iterate that is exactly 0.0 in Float64 is labelled as a double-precision result, and no frame may show an iterate the method never computed.
-- Do not clamp silently. A diverging or off-scale value keeps its true value in the computation and in its label. Only the drawn position may be limited, and the clamp must be visible: draw the curve to one y-span beyond the axes so it visibly leaves the frame, and never draw a clamped run as a flat line along the frame edge.
+- Labels use significant figures, never fixed decimals that round a nonzero value to `0.0` or print `-0.0`. Use the template's `fmt(x)` (`@sprintf("%.4g", x)`, with more digits only where a check supports them). An iterate that is exactly 0.0 in Float64 is labelled as a double-precision result, and no frame may show an iterate the method never computed.
+- Do not clamp silently. A diverging or off-scale value keeps its true value in the computation and in its label. Only the drawn position may be limited, and the clamp must be visible: use the template's `ydraw(y)`, which limits plotted coordinates to one y-span beyond the axes so the curve visibly leaves the frame, and never draw a clamped run as a flat line along the frame edge.
 - Break curves at poles explicitly. List every pole in the window, insert a NaN there, and do not rely on a grid point happening to land on the pole.
 - The feature the text describes must be visible in every frame it is described for. Zoom per frame when the action shrinks, as on Muller's Method.
 - Titles, legends and labels must fit inside the frame and not hide the feature. Read the first, middle and last frames at full size.
@@ -54,7 +53,7 @@ The first 53 pages were reviewed nine times. Almost none of the errors were cras
 - Every committed GIF must be exactly what its committed script produces: regenerate, then check with `git status` that only the intended files changed.
 
 **Your build ledger**
-Before you report a page as done, write a claim ledger in your scratch folder, not the repository. List every sentence, heading, alt text, title and label on the page that states a number or a behaviour. Next to each, record the computation that confirms it (command and output). A claim you cannot confirm is removed or reworded. When the batch is done, have it checked by the `review-animations` skill.
+Before you report a page as done, write a claim ledger outside the repository (the session scratchpad if your host has one, otherwise `$TMPDIR/animation-ledgers/<slug>.md`). List every sentence, heading, alt text, title and label on the page that states a number or a behaviour. Next to each, record the computation that confirms it (command and output). A claim you cannot confirm is removed or reworded. When the batch is done, have it checked by the `review-animations` skill.
 
 ## Folder Structure
 
@@ -91,11 +90,11 @@ n2003/foobar/FooBarMod/
     FooBarMod_gr_N.gif                     ← formula and graph images
 ```
 
-Images in the `Images/` directory are either **inline formula GIFs** (small HEIGHT, ~17–20px) or **graph plots** (larger HEIGHT, typically 178px or more). Only graph plot GIFs are useful to view — formula GIFs render math symbols that must be read to extract function definitions and parameter values.
+Images in the `Images/` directory are **inline formula GIFs** (HEIGHT ~17–20 px), **Mathematica output blocks** (~30–100 px) and **graph plots** (HEIGHT ≥ 100 px, typically 178). Read the HTML as text first. View a formula or output image only when the text lacks the function or a parameter, and view graph plots for the domain and the shape of the behaviour.
 
-## 20-Image View Limit
+## Image budget
 
-`view_image` is limited to **20 images per session**. Use subagents to work around this limit — each `search_subagent` call gets its own independent 20-image budget.
+Images are expensive: VS Code Copilot's `view_image` is limited to 20 per session, and in any host each image costs context. Delegate image reading to subagents (`search_subagent` in Copilot, the Agent tool in Claude Code); each has its own budget.
 
 **Primary strategy — delegate image reading to subagents:**
 - Spawn one `search_subagent` per example (lnk_2, lnk_3, …). Each subagent can view up to 20 images for that example and return: the function formula, starting values, graph domain (xlims/ylims), and root location.
@@ -114,16 +113,17 @@ Use this decision path at the start of each topic:
 2. If animated GIFs exist, use them to calibrate frame progression, geometry, and visual pacing.
 3. If animated GIFs do not exist, use worked examples (lnk_2, lnk_3, ...) plus static graph/formula GIFs to infer equation, parameters, and expected behavior.
 4. If archive files are incomplete (missing referenced image IDs), proceed with complete examples only and note the limitation in the page text briefly.
+5. If there is no legacy animation at all (most pages in batches 4–9 of the plan), or no module page (Logistic Curve, Power Series), design the animation from the page's own worked example, which the `content-page` skill writes first. Choose parameters that show the behaviour the text describes, compute them, and say in the Animations introduction that the animation is new and has no Mathews original.
 
-## Batch Mode (Up To 5 Pages)
+## Batch Mode (one plan batch, 3–7 pages)
 
-When asked to process around five pages in one run:
+When asked to process a batch:
 
-1. Build a queue of up to 5 topic slugs.
+1. Build a queue of the batch's topic slugs (from `plans/numerical-methods-animation-plan.md` when a batch number is given).
 2. Perform read-only discovery in parallel across queued topics (module page, links, image inventory).
 3. Process edits topic-by-topic (folder move, scripts, qmd update, index link), then generate GIFs topic-by-topic to keep failures isolated.
 4. Reserve the main agent image-view budget for final GIF verification only; use subagents for legacy extraction per topic/example.
-5. Keep a per-topic checklist: discovered -> scripted -> generated -> verified -> rendered.
+5. Keep a per-topic checklist: discovered → scripted → generated → frames checked → ledger → rendered → reviewed.
 6. After all five are processed, run renders for each updated topic page and then do a final pass on index links.
 
 ## Workflow
@@ -134,17 +134,19 @@ When asked to process around five pages in one run:
 4. **Spawn one subagent per example** to view formula and graph GIFs for that example. Provide the subagent with: the lnk_N.html path, the Images/ directory path, and the graph-sized GIF numbers from step 3. Ask it to return: the function definition, parameter values, domain, and root location.
 5. **Determine the functions analytically** from subagent/static-example results. Verify roots and convergence character mathematically.
 6. **Move the flat .qmd to a folder:**
-   - `mv pages/numerical-methods/<topic>.qmd pages/numerical-methods/<topic>/index.qmd`
+   - `mkdir -p pages/numerical-methods/<topic> && git mv pages/numerical-methods/<topic>.qmd pages/numerical-methods/<topic>/index.qmd`
    - Update `bibliography:` depth by one level (e.g., `../../references.bib` → `../../../references.bib`)
+   - Change the back link `← [Numerical Methods](./)` to `← [Numerical Methods](../)` (otherwise the moved page links to itself)
    - Update href in `pages/numerical-methods/index.qmd` from `<topic>.qmd` → `<topic>/`
+   - Remove a "Legacy Animation Inventory (Stub)" section once its archive paths are noted; its `localhost:8000` links are dead on the published site
 7. **Create one .jl script per case** using the Julia script template below
 8. **Run all scripts** from the page folder: `cd pages/numerical-methods/<topic> && julia <script>.jl`
-9. **Verify each GIF** with `view_image` in the main agent (these count against the main 20-image budget — verify all at once after generating)
+9. **Check each GIF's frames.** A GIF viewed directly shows only its first frame. Run `julia .github/skills/animation-page/scripts/giftools.jl <gif> <outdir-outside-repo>` and look at the contact sheet, then the first, middle and last frames at full size (titles and legends are only readable there).
 10. **Add or update a Description section** in `index.qmd` with a concise method overview and key mathematical context.
-11. **Add an Animations section** to `index.qmd` using the .qmd template below — above the "Derivation Notes" section
+11. **Add an Animations section** to `index.qmd` using the .qmd template below, directly after the Description. Page order: back link, source line, `## Description`, `## Animations`, then the page's remaining sections.
 12. **Write the build ledger** (see the Accuracy standard) and fix or remove every claim it cannot confirm.
 13. **Render the page** with `quarto render pages/numerical-methods/<topic>/index.qmd`.
-14. **When the batch is finished,** review it with the `review-animations` skill, scoped to the batch (`batch=<N>` or its slugs, with `out=reviews/batch-<N>`), before it is merged.
+14. **When the batch is finished,** commit it on its own branch (`batch-<N>`), or ask Jason first if he has not authorised commits, so the review sees a fixed state. Then review it with the `review-animations` skill, scoped to the batch (`batch=<N>` or its slugs, with `out=reviews/batch-<N>`), before it is merged.
 15. **Fix from the review.** Reproduce each finding before changing anything, fix it under this skill's Accuracy standard (or record it as not reproduced, with evidence), then re-review the changed pages into a new folder (`out=reviews/batch-<N>-r2`). Repeat until a round has no Error or Misleading findings.
 
 ## .qmd Description Section Template
@@ -171,7 +173,11 @@ using Printf
 gr()
 
 # Significant-figure label: never rounds a nonzero value to 0.0, never prints -0.0
-fmt(x) = x == 0 ? "0" : @sprintf("%.6g", x)
+fmt(x) = x == 0 ? "0 (double-precision zero)" : @sprintf("%.4g", x)
+
+# Drawn position only: lets an off-scale curve visibly leave the frame instead of
+# running along its edge. Labels and computations always use the true value.
+ydraw(y, yl) = clamp(y, yl[1] - (yl[2] - yl[1]), yl[2] + (yl[2] - yl[1]))
 
 # --- Parameters ---
 g(x) = ...           # iteration function
@@ -232,7 +238,7 @@ println("Saved: <prefix><id>.gif")
 
 ## .qmd Animations Section Template
 
-Insert above the "Derivation Notes" section:
+Insert directly after the Description section:
 
 ```markdown
 ## Animations
@@ -261,7 +267,7 @@ Julia source scripts that generated these animations are linked under each case.
 - Julia global environment: Plots.jl v1.41.2 with GR backend
 - `gr()` call activates the GR backend explicitly
 - GIF output: `gif(anim, path; fps=N)`
-- Run scripts from the page folder so relative paths resolve correctly
+- Output paths use `@__DIR__`, so a script writes its GIF next to itself from any working directory
 
 ## Useful Shell Patterns
 

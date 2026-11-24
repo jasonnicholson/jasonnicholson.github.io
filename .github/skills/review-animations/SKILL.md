@@ -1,7 +1,7 @@
 ---
 name: review-animations
-description: "Use to review Julia animation pages under pages/numerical-methods - a newly built batch from the animation-page skill, named pages, or all of them. Directs one independent reviewer subagent per page (is each implementation correct, does each page match its animation, is it faithful to Mathews), has Error and Misleading findings checked independently, and writes a report. Changes nothing under version control."
-argument-hint: "[all | <page-slug> ... | \"<index section title>\"] [out=<report folder>]"
+description: "Use whenever Julia animation pages under pages/numerical-methods need checking, auditing or re-reviewing - a newly built batch from the animation-page skill (\"review batch 2\"), a re-review after fixes, named pages, or all of them. Directs one independent reviewer subagent per page (is each implementation correct, does each page match its animation, is it faithful to Mathews), has Error and Misleading findings checked independently, and writes a report. Changes nothing under version control; not for fixing (use animation-page for that)."
+argument-hint: "[all | batch=<N> | <page-slug> ... | \"<index section title>\"] [out=<report folder>]"
 ---
 
 # Review director: numerical-methods animations
@@ -12,9 +12,9 @@ This is a review. Nothing under version control is changed, and nothing is fixed
 
 **Scope for this run:** $ARGUMENTS
 
-An empty scope, `all`, or an unfilled placeholder means every page that has animations. Otherwise the scope is a list of page slugs (folder names such as `bisection-method`), `batch=<N>` for the pages of batch N in `plans/numerical-methods-animation-plan.md`, or the title of a section in `pages/numerical-methods/index.qmd`, meaning the animation pages listed in that section. A page that already has a finished report from an earlier run is skipped unless it is named explicitly, so an interrupted run can be resumed by running the same scope again.
+If the scope above is empty or an unfilled placeholder, take the scope from the user's message, and if none is stated, ask; a review of every page starts dozens of subagents, so treat `all` as the scope only when the user says so. `all` means every page that has animations. Otherwise the scope is a list of page slugs (folder names such as `bisection-method`), `batch=<N>` for the pages of batch N in `plans/numerical-methods-animation-plan.md`, or the title of a section in `pages/numerical-methods/index.qmd`, meaning the animation pages listed in that section. A page that already has a finished report from an earlier run is skipped unless it is named explicitly, so an interrupted run can be resumed by running the same scope again.
 
-The arguments may also include `out=<folder>`, the report folder for this run; call it `$OUT` below. It defaults to `reviews/numerical-methods-animations`. Use a new folder for each batch and each re-review round, for example `out=reviews/batch-1` and then `out=reviews/batch-1-r2`, so that earlier rounds are kept. The nine review rounds of the first 53 pages were removed from the working tree after they were merged; they are in git history (the last commit containing them is `05cb9ba`), and like any earlier round they are not read before this round's findings are final. The skip-if-finished rule applies only within `$OUT`.
+The arguments may also include `out=<folder>`, the report folder for this run; call it `$OUT` below. If it is not given, use `reviews/<scope>-<YYYY-MM-DD>` (for example `reviews/batch-1-2026-11-25`). Use a new folder for each batch and each re-review round, for example `out=reviews/batch-1` and then `out=reviews/batch-1-r2`, so that earlier rounds are kept. The nine review rounds of the first 53 pages were removed from the working tree after they were merged; they are in git history (the last commit containing them is `05cb9ba`), and like any earlier round they are not read before this round's findings are final. The skip-if-finished rule applies only within `$OUT`.
 
 A re-review is a fresh, independent review. Neither you nor your reviewers read earlier rounds' reports or the fix records under `reviews/` before the findings of this round are written and checked, because a reviewer who knows what was fixed tends to check only that. After the round's findings are final, you may compare them with earlier rounds in the README, noting any earlier finding that has come back.
 
@@ -33,7 +33,7 @@ The review answers two questions about every animation:
 
 Each animated topic is a folder `pages/numerical-methods/<slug>/` holding `index.qmd`, one or more `.jl` scripts, and the GIFs those scripts produced. The page never executes code. It embeds the pre-generated GIF and links to the script as its source. When this prompt was last revised (2026-11-24) there were 53 such pages, 114 scripts and 261 GIFs, but build your own inventory rather than trusting those numbers.
 
-Most scripts produce one GIF and are named after it (`bisectionaa.jl` makes `bisectionaa.gif`). Six pages are different: a single table-driven script named `*_all.jl` produces 27 to 31 GIFs, one per row of a case table, with file names built at run time. Those six pages hold well over half of all the GIFs.
+Most scripts produce one GIF and are named after it (`bisectionaa.jl` makes `bisectionaa.gif`). Six pages are different: a single table-driven script named `*_all.jl` produces one GIF per row of a case table (8 to 31 of them), with file names built at run time. Those six pages hold well over half of all the GIFs.
 
 Topic pages that are still flat `.qmd` files have no animations and are out of scope. So are the MATLAB `.m` files and the "Video Animations" sections on two pages, the "(Planned)" placeholder sections, and the "Legacy Animation Inventory (Stub)" sections.
 
@@ -49,7 +49,6 @@ When the archive is present, give each reviewer the location of their topic in i
 
 A page whose animations have no Mathews original must say so in its Animations introduction; if it does not, or if it attributes something to Mathews that the archive does not show, that is a Fidelity finding. A real departure that matters to a reader is reported as a finding of kind **Fidelity**, alongside Implementation and Page match. Examples are a different example function from the one Mathews used, or a case the archive has that the page silently drops. Fidelity findings go through the same severities and the same independent check as any other finding. They are listed separately in the README so that Jason can decide them as a group.
 
-The round-1 review ran without the archive, so fidelity was not checked in that round.
 
 ## Phase 1: prepare the evidence yourself
 
@@ -57,11 +56,11 @@ This phase is mechanical and you should do it directly with a script of your own
 
 **Never run a script where it lives.** Every script writes its GIFs next to itself through `@__DIR__`, so running one inside its page folder overwrites committed, LFS-tracked GIFs. Copy the `.jl` files to `$WORK/<slug>/regen/` and run the copies. The output then lands in scratch.
 
-**Julia environment.** The scripts run against Jason's global Julia environment with a plain `julia <script>.jl`. Beyond the standard library they use only Plots, plus SpecialFunctions in the six `*_all.jl` scripts, and the global environment provides both (Plots 1.41.2 and SpecialFunctions 2.9.2 when this was written). In that environment, scratch copies of the six `*_all.jl` scripts and a single-GIF script reproduced all 173 of their committed GIFs byte for byte.
+**Julia environment.** The scripts run against Jason's global Julia environment with a plain `julia <script>.jl`. Collect each script's `using` lines and check that every package loads; the first 53 pages need only the standard library, Plots and (five scripts) SpecialFunctions, but new batches may add more. On 2026-11-24 the global environment had Plots 1.41.2 and SpecialFunctions 2.7.2, and scratch copies of all 114 scripts reproduced all 261 committed GIFs byte for byte.
 
-The GIFs are tracked with Git LFS. Before anything else, confirm that the committed GIFs are real image data (`file <gif>` reports GIF image data) and not LFS pointer text. If they are pointers, run `git lfs pull`. Find a Python with numpy, scipy, sympy and mpmath for the reviewers' independent computations and give its path in every brief. If none exists, create a throwaway virtual environment in scratch, never in the repo, and say so in the report.
+The GIFs are tracked with Git LFS. Before anything else, confirm that the committed GIFs are real image data (`file <gif>` reports GIF image data) and not LFS pointer text. If they are pointers, run `git lfs pull`. Use `/usr/bin/python3` (numpy, scipy, sympy, mpmath) for the reviewers' independent computations and give its path in every brief. If those imports fail, create a throwaway virtual environment in scratch, never in the repo, and say so in the report.
 
-Check that both packages load before you start. If one does not, say so in the report and leave the global environment alone, since changing it is Jason's call. To keep going, create a throwaway environment in scratch and put it behind the global one on the load path:
+Check that the packages load before you start. If one does not, say so in the report and leave the global environment alone, since changing it is Jason's call. To keep going, create a throwaway environment in scratch and put it behind the global one on the load path:
 
 ```bash
 julia --project="$WORK/env" -e 'using Pkg; Pkg.add("SpecialFunctions")'
@@ -74,28 +73,7 @@ A warm run takes about 3 seconds for a single-GIF script and 15 to 20 seconds fo
 
 **Compare decoded frames, not just bytes.** Identical bytes prove the committed GIF is what the committed script produces. Different bytes prove nothing on their own: the same script under slightly different package versions produced files that differed in size but had identical frames. So when bytes differ, compare frame hashes before drawing any conclusion.
 
-**Looking at frames.** An image viewer shows only the first frame of a GIF. The machine may have no system ffmpeg or ImageMagick, but Plots bundles ffmpeg, and this works:
-
-```julia
-# usage: julia giftools.jl <gif> <outdir>
-using Plots
-gifpath, outdir = ARGS
-mkpath(outdir)
-ff(args...) = Plots.FFMPEG.exe("-v", "error", "-y", args...)
-
-# every frame as a PNG
-ff("-i", gifpath, joinpath(outdir, "frame_%03d.png"))
-n = count(endswith(".png"), readdir(outdir))
-
-# one contact sheet of up to 12 evenly spaced frames, 4 per row
-k = max(1, cld(n, 12)); rows = cld(cld(n, k), 4)
-ff("-i", gifpath, "-vf", "select='not(mod(n\\,$k))',scale=420:-1,tile=4x$rows",
-   "-frames:v", "1", "-vsync", "0", joinpath(outdir, "sheet.png"))
-
-# per-frame hashes of the decoded pixels, for comparing two GIFs
-ff("-i", gifpath, "-pix_fmt", "rgb24", "-f", "framemd5", joinpath(outdir, "frames.md5"))
-println(n, " frames")
-```
+**Looking at frames.** An image viewer shows only the first frame of a GIF. The machine may have no system ffmpeg or ImageMagick, but Plots bundles ffmpeg, and `.github/skills/animation-page/scripts/giftools.jl` uses it: `julia .github/skills/animation-page/scripts/giftools.jl <gif> <outdir>` writes every frame as `frame_###.png`, a contact sheet `sheet.png` of up to 12 evenly spaced frames, and `frames.md5`, the hashes of the decoded frames for comparing two GIFs. Give reviewers this path.
 
 The contact sheet is enough to follow the progression. Small legend text is only reliably readable in the full-size frames.
 
@@ -116,7 +94,7 @@ A reviewer starts with nothing but your brief, so the brief carries everything i
 
 The six table-driven pages need a different shape of review. The algorithm is shared, so it is checked once. What multiplies is the case table: every row's function, interval and parameters has to agree with the page's heading and caption for that case and with the title visible in that case's GIF. If one page is too much for one reviewer, split it by case range and make one of the reviewers responsible for the shared algorithm. Two of these pages carry copies of a script with the same file name, so have a reviewer diff them and say whether they have drifted apart.
 
-**Start with a pilot.** Review three or four pages first, chosen to span the kinds of topic: a root finder, a quadrature rule, an ODE method and one table-driven page. Read those reports critically before launching the rest, because a weakness in your brief will otherwise repeat on every page. For a batch of five pages or fewer, the pilot is just the calibration page; then run the rest. Calibrate with a planted error (the original known-answer check, two errors on the Bisection page, was fixed in the first fix run):
+**Start with a pilot.** For a batch or a list of pages, the pilot is one calibration page from the scope, whatever its size. For `all`, review three or four pages first, chosen to span the kinds of topic (a root finder, a quadrature rule, an ODE method and one table-driven page), one of them the calibration page. Read the pilot reports critically before launching the rest, because a weakness in your brief will otherwise repeat on every page. Calibrate with a planted error:
 
 1. Copy one pilot page's folder into scratch.
 2. Introduce two errors into the copy: one quoted number that is wrong in the third significant digit, and one behaviour sentence that the computed sequence contradicts. Record both in your notes.
