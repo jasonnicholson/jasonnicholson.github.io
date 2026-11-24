@@ -28,7 +28,7 @@ No findings in round 8.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the animations stop at degree 15 and leave out Mathews' "convergence region" band | unverified | open |
+| F1 | Minor | Fidelity | the animations stop at degree 15 and leave out Mathews' "convergence region" band | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
 
 ## WP-C
 
