@@ -210,6 +210,13 @@ These apply when fixing from `reviews/numerical-methods-animations-r7`. They tak
 - **R7-C — Lagrange and Newton Interpolation clamp.** Stop drawing clamped runs of the interpolant, between the nodes or outside them. Use the Padé approach from R6-E: clamp to one y-span beyond the axes so the curve visibly leaves the frame. One fixer owns both pages, and the two copies of `lagnewt_animations_all.jl` stay byte-identical. The notes kept under R4-D stay unless a changed interval makes them false.
 - **R7-D — Where a finding offers options,** take the smallest correct one, under D7. Text is corrected and the animation is left alone unless the finding says the picture itself misleads.
 
+## Round 8 decisions (director's defaults, 2026-11-24)
+
+These apply when fixing from `reviews/numerical-methods-animations-r8`. They take precedence over earlier decisions, and Jason can overrule either of them.
+
+- **R8-A — Scope.** Fix the two Minor findings, Adams-Bashforth-Moulton F1 and Newton Interpolation F1. Maclaurin F1 (order cutoff) repeats R6-D and is marked `deferred` (owner decision).
+- **R8-B — Newton Interpolation F1 takes the text option, under R7-D.** One sentence in the introduction says what Mathews' animations showed and these frames do not: his higher degrees and his ±0.05 convergence band. The script and GIFs are unchanged. The Lagrange page shows the same animations from the same script, so it gets the same sentence, and the two copies of `lagnewt_animations_all.jl` stay byte-identical. One fixer owns both pages.
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
