@@ -33,6 +33,10 @@ Written 2026-11-24, after the nine review rounds of the 53 animation pages were 
 
    Fixes go back through `animation-page`, followed by a re-review into `reviews/batch-<N>-r2`, until a round has no Error or Misleading findings. The old `fix-animations` command was tied to the first 53 pages' fix plan, so it was not restored. It is in history at `37a1c08^` if needed.
 
+## Running a batch
+
+Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>` (or ask to "run batch N"). The `run-animation-batch` skill directs content-page, animation-page and review-animations for the batch on a `batch-<N>` branch, and stops short of merging.
+
 ## Batches
 
 | Batch | Theme |
