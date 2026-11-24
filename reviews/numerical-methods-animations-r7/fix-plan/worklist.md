@@ -83,7 +83,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the alt text says the estimate "approaches pi", without the fluctuation the run shows | unverified | open |
+| F1 | Minor | Page match | the alt text says the estimate "approaches pi", without the fluctuation the run shows | unverified | fixed — [fix record](../fixes/monte-carlo-pi.md) |
 
 ### Newton-Cotes Integration — `newton-cotes-integration` · [round-7 report](../newton-cotes-integration.md)
 
