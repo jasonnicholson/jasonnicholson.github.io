@@ -49,14 +49,14 @@ Steffensen's method applies Aitken's $\Delta^2$ process *directly* to the Newton
 2. Apply Aitken's formula: $\displaystyle p_1 = p_0 - \frac{(q_1 - p_0)^2}{q_2 - 2q_1 + p_0}$
 3. Set $p_0 \leftarrow p_1$ and repeat.
 
-Each outer iteration consumes **two Newton steps** but produces a correction that is far more accurate than either step alone. The combined effect restores roughly **quadratic convergence** at roots where unaided Newton would only converge linearly.
+Each outer iteration consumes **two Newton steps** but, once the iterates are close to the root and rounding in $f$ does not dominate, produces a correction far more accurate than either step alone. The combined effect restores roughly **quadratic convergence** at roots where unaided Newton would only converge linearly.
 
 ### Summary Comparison
 
 | Method | Root type | Convergence order | Notes |
 |---|---|---|---|
 | Newton–Raphson | Simple ($m=1$) | Quadratic ($\approx 2$) | Standard |
-| Newton–Raphson | Double ($m=2$) | Linear ($\tfrac{1}{2}$) | Very slow |
+| Newton–Raphson | Double ($m=2$) | Linear (order 1, ratio $\tfrac{1}{2}$) | Very slow |
 | Steffensen | Double ($m=2$) | Superlinear ($\approx 2$) | Two Newton evals per step |
 
 ## Animations
@@ -70,7 +70,7 @@ The module's Examples 1, 3 and 5, which apply Aitken's $\Delta^2$ process to the
 
 ### Case 1 — $f(x) = x^3 - 3x + 2$, double root $p = 1$, $x_0 = 2.0$
 
-**Behavior:** Newton–Raphson converges linearly (slowly) to the double root $p = 1$ of $f(x) = (x-1)^2(x+2)$. At a double root the asymptotic error ratio is $\tfrac{1}{2}$, so each step only halves the error. Steffensen's acceleration brings the error to $6.6 \times 10^{-9}$ in 3 steps (errors $1$, $5.7 \times 10^{-2}$, $2.8 \times 10^{-4}$, $6.6 \times 10^{-9}$), while plain Newton is still at $3.1 \times 10^{-7}$ after 22 steps. It cannot go further in double precision: at $S_3$ the expanded polynomial $x^3 - 3x + 2$ evaluates to exactly 0, so the $\Delta^2$ denominator is 0 and the animation stops the Steffensen sequence there.
+**Behavior:** Newton–Raphson converges linearly (slowly) to the double root $p = 1$ of $f(x) = (x-1)^2(x+2)$. At a double root the asymptotic error ratio is $\tfrac{1}{2}$, so each step only halves the error. Steffensen's acceleration brings the error to $6.6 \times 10^{-9}$ in 3 steps (errors $1$, $5.7 \times 10^{-2}$, $2.8 \times 10^{-4}$, $6.6 \times 10^{-9}$), while plain Newton is still at $3.1 \times 10^{-7}$ after 22 steps. The sequence cannot continue from $S_3$: there the expanded polynomial $x^3 - 3x + 2$ rounds to exactly 0, so the $\Delta^2$ denominator is 0 and the animation stops. This is a limit of evaluating the expanded form, not of double precision: the factored form $(x-1)^2(x+2)$ takes a fourth step to the root.
 
 [Julia source](aitkenab.jl)
 

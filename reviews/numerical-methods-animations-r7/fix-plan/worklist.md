@@ -158,9 +158,9 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | Case 1 presents 6.6e-9 as a double-precision limit | verified | open |
-| F2 | Minor | Page match | the "Convergence order" column gives a rate as if it were an order | unverified | open |
-| F3 | Minor | Page match | "far more accurate than either step alone" is stated for every outer iteration | unverified | open |
+| F1 | Misleading | Page match | Case 1 presents 6.6e-9 as a double-precision limit | verified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F2 | Minor | Page match | the "Convergence order" column gives a rate as if it were an order | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
+| F3 | Minor | Page match | "far more accurate than either step alone" is stated for every outer iteration | unverified | fixed — [fix record](../fixes/aitken-method-and-steffensen-acceleration.md) |
 
 ### Bisection Method — `bisection-method` · [round-7 report](../bisection-method.md)
 
