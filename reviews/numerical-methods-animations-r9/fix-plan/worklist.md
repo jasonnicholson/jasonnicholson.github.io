@@ -24,7 +24,7 @@ No findings in round 9.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | Γ's pole at x = 0 is not listed for Cases 24–26; f breaks there only because a grid point lands exactly on 0.0 | unverified | open |
+| F1 | Minor | Implementation | Γ's pole at x = 0 is not listed for Cases 24–26; f breaks there only because a grid point lands exactly on 0.0 | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
 
 ### Newton Interpolation Polynomial — `newton-interpolation-polynomial` · [round-9 report](../newton-interpolation-polynomial.md)
 

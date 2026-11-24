@@ -14,7 +14,10 @@ struct InterpCase
     xlims::Tuple{Float64, Float64}
     node_span::Tuple{Float64, Float64}
     has_span::Bool
-    poles::Vector{Float64}  # poles of f inside the window (empty if none)
+    # Poles at which f is broken explicitly, with the y-limits taken from f on
+    # the node interval. Not every pole in the window is listed: Γ's pole at
+    # x = 0 in Cases 24-26 is not (see the note on those rows).
+    poles::Vector{Float64}
     legend::Symbol
 end
 
@@ -56,6 +59,11 @@ cases = InterpCase[
     auto_span("21", "besselj(1,x)", x -> besselj(1, x), (-10.2, 10.2)),
     auto_span("22", "normal_pdf(x)", x -> exp(-x^2 / 2) / sqrt(2pi), (-3.0, 3.0)),
     auto_span("23", "normal_cdf(x)", x -> 0.5 + 0.5 * erf(x / sqrt(2.0)), (-3.0, 3.0)),
+    # Cases 24-26: Γ's pole at x = 0 lies in the window but is not in `poles`,
+    # so the y-limits come from the whole window. f still breaks at 0 only
+    # because the plot grid range(-0.2, 5.2, length=1000) has x[38] == 0.0
+    # exactly, gamma(0.0) == Inf and safe_eval makes that NaN. With another
+    # grid or window, add poles=[0.0] (which also changes the y-limits).
     with_span("24", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.05, 2.0)),
     with_span("25", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.05, 4.0)),
     with_span("26", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.5, 5.0)),
