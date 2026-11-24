@@ -291,7 +291,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the printed quintic does not interpolate at its printed precision | unverified | open |
+| F1 | Minor | Page match | the printed quintic does not interpolate at its printed precision | unverified | fixed — [fix record](../fixes/least-squares-polynomials.md) |
 
 ### Legendre Polynomials — `legendre-polynomials` · [round-7 report](../legendre-polynomials.md)
 
