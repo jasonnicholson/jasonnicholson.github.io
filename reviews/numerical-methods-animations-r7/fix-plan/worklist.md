@@ -77,7 +77,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "From 4 sample points on" is true of the animation but not of all n | unverified | open |
+| F1 | Minor | Page match | "From 4 sample points on" is true of the animation but not of all n | unverified | fixed — [fix record](../fixes/midpoint-rule.md) |
 
 ### Monte Carlo Pi — `monte-carlo-pi` · [round-7 report](../monte-carlo-pi.md)
 
