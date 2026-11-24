@@ -317,7 +317,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Case 2 claims to follow Example 14 but omits the construction that distinguishes it | unverified | open |
+| F1 | Minor | Fidelity | Case 2 claims to follow Example 14 but omits the construction that distinguishes it | unverified | fixed — [fix record](../fixes/numerical-differentiation.md) |
 
 ### Richardson Extrapolation — `richardson-extrapolation` · [round-7 report](../richardson-extrapolation.md)
 

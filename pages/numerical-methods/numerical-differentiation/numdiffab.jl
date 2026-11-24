@@ -37,6 +37,10 @@ anim = @animate for k in eachindex(hs)
     line_x = range(x0 - 0.9, x0 + 0.9, length=200)
     secant_y = yl .+ msec .* (line_x .- xl)  # chord through (x0-h, f(x0-h)) and (x0+h, f(x0+h))
     tangent_y = y0 .+ mtan .* (line_x .- x0)
+    # Example 14: parabola through the three stencil points; its slope at x0 is msec
+    c2 = (yr - 2y0 + yl) / (2h^2)
+    parab_y = y0 .+ msec .* (line_x .- x0) .+ c2 .* (line_x .- x0) .^ 2
+    centre_y = y0 .+ msec .* (line_x .- x0)  # line through (x0, f(x0)) with the secant slope
 
     plot(
         xplot,
@@ -58,6 +62,8 @@ anim = @animate for k in eachindex(hs)
     )
 
     plot!(line_x, secant_y; color=:dodgerblue3, lw=2, ls=:dash, label="central secant (chord through x0 ± h)")
+    plot!(line_x, parab_y; color=:forestgreen, lw=2, label="parabola through the 3 stencil points")
+    plot!(line_x, centre_y; color=:purple, lw=2, ls=:dot, label="line through (x0, f(x0)), secant slope")
     plot!(line_x, tangent_y; color=:crimson, lw=2, label="true tangent")
     scatter!([xl, x0, xr], [yl, y0, yr]; color=:darkorange3, ms=6, label="stencil points")
 end
