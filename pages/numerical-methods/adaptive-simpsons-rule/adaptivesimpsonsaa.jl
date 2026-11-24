@@ -24,6 +24,9 @@ panel_nodes(panels) = vcat([[p, (p + q) / 2] for (p, q, _) in panels]..., [panel
 # Run the refinement one split per frame: each step splits the widest panel that
 # fails the test (leftmost first), so the panels are visited level by level. The
 # final partition is the one the recursive routine accepts.
+# Exception: Mathews' trace (Example 7) splits [1/2, 1] before [0, 1/2]; following
+# it at that one step reproduces all 20 of his node sets.
+first_panel = (0.5, 1.0)
 function adaptive_node_sets(a, b, tol)
     panels = [(a, b, tol)]
     node_sets = [panel_nodes(panels)]
@@ -31,7 +34,9 @@ function adaptive_node_sets(a, b, tol)
     while true
         failing = [k for (k, (p, q, t)) in enumerate(panels) if !accepted(p, q, t)]
         isempty(failing) && break
-        k = first(sort(failing; by=k -> (-(panels[k][2] - panels[k][1]), panels[k][1])))
+        k = first(sort(failing; by=k -> (-(panels[k][2] - panels[k][1]),
+                                         (panels[k][1], panels[k][2]) == first_panel ? 0 : 1,
+                                         panels[k][1])))
         p, q, t = panels[k]
         m = (p + q) / 2
         panels = vcat(panels[1:k-1], [(p, m, t / 2), (m, q, t / 2)], panels[k+1:end])

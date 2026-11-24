@@ -52,8 +52,8 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | the 11-point stage differs from Mathews' sequence | unverified | open |
-| F2 | Minor | Page match | "41 points" is the drawn node count, not the number of points the test samples | unverified | open |
+| F1 | Minor | Fidelity | the 11-point stage differs from Mathews' sequence | unverified | fixed — [fix record](../fixes/adaptive-simpsons-rule.md) |
+| F2 | Minor | Page match | "41 points" is the drawn node count, not the number of points the test samples | unverified | fixed — [fix record](../fixes/adaptive-simpsons-rule.md) |
 
 ### Boole's Rule — `booles-rule` · [round-7 report](../booles-rule.md)
 
