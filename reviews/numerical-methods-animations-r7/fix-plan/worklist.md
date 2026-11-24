@@ -131,7 +131,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the module's acceptance test is stated without its second branch | unverified | open |
+| F1 | Minor | Page match | the module's acceptance test is stated without its second branch | unverified | fixed — [fix record](../fixes/runge-kutta-fehlberg-method.md) |
 
 ### Runge-Kutta Method — `runge-kutta-method` · [round-7 report](../runge-kutta-method.md)
 
