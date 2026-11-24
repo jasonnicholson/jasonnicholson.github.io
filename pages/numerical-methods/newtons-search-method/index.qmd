@@ -1,9 +1,9 @@
 ---
 title: "Newton's Search Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -15,7 +15,39 @@ $$
 \mathbf{P}_{k+1} = \mathbf{P}_k + \Delta\mathbf{P}_k, \qquad \mathbf{H}(\mathbf{P}_k)\,\Delta\mathbf{P}_k = -\nabla f(\mathbf{P}_k).
 $$
 
-This is the [Newton-Raphson method](newton-raphson-method/) applied to the system $\nabla f(\mathbf{X}) = \mathbf{0}$, with the Hessian playing the part of the Jacobian. With one variable it reduces to $p_{k+1} = p_k - f'(p_k)/f''(p_k)$. Near a minimum where the Hessian is positive definite the iteration converges quadratically, and a quadratic $f$ with a positive definite Hessian is minimised in a single step. But the method only looks for a zero of the gradient, so it converges just as readily to a saddle point or a maximum, and from a poor starting point it can run away altogether. Mathews works in two variables, $\mathbf{P}_k = (x_k, y_k)$, so every run below is a path of points on the surface $z = f(x, y)$, and every one has been recomputed in 60-digit arithmetic.
+This is the [Newton-Raphson method](../newton-raphson-method/) applied to the system $\nabla f(\mathbf{X}) = \mathbf{0}$, with the Hessian playing the part of the Jacobian. With one variable it reduces to $p_{k+1} = p_k - f'(p_k)/f''(p_k)$. Near a minimum where the Hessian is positive definite the iteration converges quadratically, and a quadratic $f$ with a positive definite Hessian is minimised in a single step. But the method only looks for a zero of the gradient, so it converges just as readily to a saddle point or a maximum, and from a poor starting point it can run away altogether. Mathews works in two variables, $\mathbf{P}_k = (x_k, y_k)$, so every run below is a path of points on the surface $z = f(x, y)$, and every one has been recomputed in 60-digit arithmetic.
+
+## Animations
+
+Each animation below draws Newton's search method on a **contour map** of $f$. The iterates $\mathbf{P}_0, \mathbf{P}_1, \ldots$ are joined in order, and the stationary points are marked by type, found from the eigenvalues of the Hessian there: a star for a minimum, a cross for a saddle point, a triangle for a maximum. The titles give $\mathbf{P}_k$, $f(\mathbf{P}_k)$, the distance to the limit and whether $\mathbf{H}(\mathbf{P}_k)$ is positive definite or indefinite, and frame $k$ shows row $k$ of the example's table further down this page; Case 2 goes on to $k = 10$, Mathews' ten iterations, past the end of the table for $(-3, 2)$. The scripts iterate in 256-bit (about 77-digit) arithmetic, so every value in a title is correct to the four significant figures shown; an independent run in 80-digit arithmetic produces the same title text in every frame.
+
+Mathews' module has no animation for this method. Neither the module page nor its notebook links to one, and the archive's optimization animations (`a2001/Animations/Optimization/`) have none for Newton's search, so all three animations are new, with no Mathews original. They use his examples and starting points, and the windows of his contour plots where the notebook gives one: $[-3, 3] \times [-0.5, 2]$ for Example 5 and $[-4, 4] \times [-4, 4]$ for Example 6. Examples 1 and 2 (a gradient, a Hessian and a Taylor polynomial at one point, with no iteration), Example 3 (a quadratic, minimised exactly in one step), Mathews' comparison of $f$ at four neighbours of $(1.0, 0.8)$ in Example 5, his `FindMinimum` run in Example 4 and the enhanced method with a line search are not animated.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 5, three minima and two saddle points, $f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x$ (new)
+
+**Behavior:** The five runs of Example 5 follow one another, $25$ frames in all: the three minima from $(0, 0)$, $(2, 1.5)$ and $(-2, 1.5)$, with $4$, $5$ and $5$ steps as in Mathews' tables, then the two runs from $(1.0, 0.8)$ and $(-1.0, 0.8)$, with $3$ steps each. The left panel keeps Mathews' contour window and adds the two curves he plots separately, $f_x = 0$ (dashed orange) and $f_y = 0$ (dash-dot purple), whose five crossings are the stationary points. The right panel zooms on $\mathbf{P}_j$, with axes in units of a power of ten that shrinks from $10^{-1}$ to $10^{-29}$, and draws the contours of $f$ (grey) over those of the quadratic model $Q$ at $\mathbf{P}_j$ (dashed). The next iterate $\mathbf{P}_{j+1}$ is the stationary point of $Q$, at the end of the black arrow. In the three runs to a minimum, $\mathbf{H}$ is positive definite at every iterate, the model's contours are blue ellipses and each step goes to their centre. From $(1.0, 0.8)$ and $(-1.0, 0.8)$, $\mathbf{H}$ is indefinite at every iterate (eigenvalues $-4.79$ and $33.75$ at both starts), the model's contours are red hyperbolas, and each step goes to the saddle point of the model. Newton's method converges just as fast to the saddle points $(0.9685, 0.7784)$ and $(-0.9021, 0.7210)$ of $f$, and $f$ goes up on the first step of both runs. At $\mathbf{P}_0$ the contours of $f$ and $Q$ differ by up to $5.6\%$ of the spread of $Q$ across the zoom; from $\mathbf{P}_2$ on they differ by less than $0.1\%$ and the two sets of curves coincide. Each new iterate lands much closer to the limit than the last: in case (ii) the distances are $0.172$, $0.0450$, $0.00203$, $4.39 \times 10^{-6}$, $2.07 \times 10^{-11}$ and $4.59 \times 10^{-22}$.
+
+[Julia source](newtonsearchaa.jl)
+
+![Newton's search method on Example 5 in Mathews' window [−3, 3] × [−0.5, 2]: runs from (0, 0), (2, 1.5) and (−2, 1.5) converge to the three minima, and runs from (1.0, 0.8) and (−1.0, 0.8) converge to the saddle points near (0.9685, 0.7784) and (−0.9021, 0.7210); a zoom panel shows at each iterate the contours of f and of the quadratic model, ellipses where the Hessian is positive definite and hyperbolas where it is indefinite, with the Newton step to the model's stationary point](newtonsearchaa.gif)
+
+### Case 2 — Example 6, convergence from $(-0.3, 0.2)$ and divergence from $(-3, 2)$, $f(x, y) = \dfrac{x - y}{x^2 + y^2 + 2}$ (new)
+
+**Behavior:** The animation shows $k = 0, \ldots, 10$. From $(-0.3, 0.2)$ (blue, in Mathews' window on the left) the iterates reach the minimum $(-1, 1)$ with $\mathbf{H}$ positive definite and $f$ decreasing at every step. On the log scale at the bottom the error $\lVert \mathbf{P}_k - (-1, 1) \rVert$ falls ever more steeply, through $1.063$, $0.1743$, $0.0137$, $1.893 \times 10^{-4}$, $3.748 \times 10^{-8}$ and $1.481 \times 10^{-15}$, while the ratio $e_{k+1}/e_k^2$ rises from $0.15$ to $1.05$: quadratic convergence. Like Mathews, this run stops after $5$ iterations. From $(-3, 2)$ (red) the first step already leaves Mathews' window, to $\mathbf{P}_1 = (-5.763, 3.579)$, so the left panel shows the path running off its edge, and the panel on the right, whose window widens every frame, holds the whole path. There $\mathbf{H}$ is indefinite at every iterate and $f$ rises at every step toward $0$. The distance from the origin grows by the factors $1.882$, $1.571$, $1.527$, $1.511$, $1.505$, $1.502$, $1.501$, $1.500$, $1.500$ and $1.500$, to $\lVert \mathbf{P}_{10} \rVert = 281.6$ at $\mathbf{P}_{10} = (-241.0, 145.6)$, where $f = -0.004876$.
+
+[Julia source](newtonsearchbb.jl)
+
+![Newton's search method on f = (x − y)/(x² + y² + 2): from (−0.3, 0.2) five steps reach the minimum (−1, 1) with error 1.481e−15, while from (−3, 2) the iterates leave Mathews' window [−4, 4]² at the first step and run off to (−241.0, 145.6) after ten steps, shown in a widening window; a log-scale panel shows the error of the first run falling quadratically and the distance of the second growing by a factor per step that approaches 1.5](newtonsearchbb.gif)
+
+### Case 3 — Example 4, Rosenbrock's function $f(x, y) = 100(y - x^2)^2 + (1 - x)^2$ from $(0.99, 1.01)$ and $(1.8, 1.2)$ (new)
+
+**Behavior:** Both runs are shown for $k = 0, \ldots, 5$, with the valley floor $y = x^2$ dashed. On the left is Mathews' run from $(0.99, 1.01)$, in a window much smaller than his contour plot's $[0.5, 1.5]^2$ so that the steps can be seen. $\mathbf{H}(\mathbf{P}_0)$ is indefinite; the first step lands on the valley floor but moves away from $(1, 1)$, from a distance of $0.01414$ to $0.02673$. From then on $\mathbf{H}$ is positive definite and the distances fall to $1.636 \times 10^{-4}$, $6.056 \times 10^{-7}$, $8.305 \times 10^{-14}$ and $1.571 \times 10^{-25}$. On the right is the run from $(1.8, 1.2)$, which starts outside Mathews' window, in $[0.5, 2] \times [0, 3.5]$. $\mathbf{H}$ is positive definite at every iterate, yet $f$ does not decrease at every step. The first step goes up to the valley floor at $\mathbf{P}_1 = (1.798, 3.233)$ and lowers $f$ from $416.8$ to $0.6369$. The second jumps across the valley to $\mathbf{P}_2 = (1.001, 0.3653)$ and raises $f$ to $40.44$, which the log-scale panel at the bottom marks. The third step returns to the floor at $(1.001, 1.001)$, and the run then converges to $f(\mathbf{P}_5) = 4.045 \times 10^{-32}$. Newton's method is not a descent method.
+
+[Julia source](newtonsearchcc.jl)
+
+![Newton's search method on Rosenbrock's function: from (0.99, 1.01) the first step lands on the valley floor y = x² but farther from (1, 1), then the run converges; from (1.8, 1.2) the iterates go up to the valley floor at (1.798, 3.233), jump across the valley to (1.001, 0.3653), where f rises from 0.6369 to 40.44, and then converge to (1, 1); a log-scale panel plots f at each step for both runs](newtonsearchcc.gif)
 
 ## Gradient and Hessian
 
