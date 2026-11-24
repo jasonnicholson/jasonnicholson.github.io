@@ -7,43 +7,411 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Milne-Simpson's method approximates the solution of an initial value problem
+$y' = f(t,y)$, $y(a) = \alpha$, on a grid $t_k = a + kh$, $k = 0, 1, \ldots, m$, with
+$h = (b-a)/m$. It is a multistep predictor-corrector method. Euler, Taylor and Runge-Kutta
+methods use only the current point to take the next step. Milne-Simpson instead uses the
+four points $(t_{k-3},y_{k-3}), \ldots, (t_k,y_k)$ to compute $y_{k+1}$.
 
-### Planned animation ideas
+Each step has two stages. Milne's **predictor** integrates an interpolating polynomial for
+$f$ over the four intervals $[t_{k-3}, t_{k+1}]$ to get a first estimate $p_{k+1}$. Then
+**Simpson's rule** over the two intervals $[t_{k-1}, t_{k+1}]$, with
+$f(t_{k+1}, p_{k+1})$ as the new slope, corrects it:
+$$
+p_{k+1} = y_{k-3} + \frac{4h}{3}\bigl(2f_{k-2} - f_{k-1} + 2f_k\bigr), \qquad
+y_{k+1} = y_{k-1} + \frac{h}{3}\bigl(f_{k-1} + 4f_k + f(t_{k+1}, p_{k+1})\bigr),
+$$
+where $f_j = f(t_j, y_j)$. Each step costs two evaluations of $f$: one at the predicted
+value and one at the corrected value.
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+The method is not self-starting. The steps need $y_0, y_1, y_2, y_3$, so the three values
+$y_1, y_2, y_3$ after the initial value are computed first with the fourth-order
+Runge-Kutta method (RK4) and the same step $h$. The local error of each step is
+$O(h^5)$ and the global error is $O(h^4)$. However, the Simpson corrector makes the method
+only *weakly stable*: on a decaying solution, a small $h$ can let a spurious, sign-alternating
+error grow (Example 2).
 
-## Derivation Notes (Planned)
+## The Milne-Simpson Method
 
-Short derivations will be added to explain the core equations and assumptions.
+### Derivation
 
-## Worked Example (Planned)
+Integrating the differential equation from $t_{k-3}$ to $t_{k+1}$ gives
+$$
+y(t_{k+1}) = y(t_{k-3}) + \int_{t_{k-3}}^{t_{k+1}} f\bigl(t, y(t)\bigr)\,dt.
+\tag{1}
+$$
+The predictor replaces $f$ by the cubic Lagrange polynomial through
+$(t_{k-3}, f_{k-3})$, $(t_{k-2}, f_{k-2})$, $(t_{k-1}, f_{k-1})$, $(t_k, f_k)$. Integrating
+that polynomial over $[t_{k-3}, t_{k+1}]$ gives the weights
+$0, \tfrac{8}{3}h, -\tfrac{4}{3}h, \tfrac{8}{3}h$. The weight of $f_{k-3}$ is exactly zero,
+so the formula uses only three slopes:
+$$
+p_{k+1} = y_{k-3} + \frac{4h}{3}\bigl(2f_{k-2} - f_{k-1} + 2f_k\bigr).
+\tag{2}
+$$
+The corrector integrates over $[t_{k-1}, t_{k+1}]$ instead. The quadratic through
+$(t_{k-1}, f_{k-1})$, $(t_k, f_k)$, $(t_{k+1}, f_{k+1})$ gives Simpson's rule, with the
+unknown $f_{k+1}$ replaced by $f(t_{k+1}, p_{k+1})$:
+$$
+y_{k+1} = y_{k-1} + \frac{h}{3}\bigl(f_{k-1} + 4f_k + f(t_{k+1}, p_{k+1})\bigr).
+\tag{3}
+$$
 
-A compact numerical example with intermediate steps will be included.
+::: {.callout-important appearance="simple"}
+## Theorem — Milne-Simpson's method
+Assume $f(t,y)$ is continuous and satisfies a Lipschitz condition in $y$, and consider
+$y' = f(t,y)$, $y(a) = \alpha$, on $[a,b]$ with $t_k = a + kh$, $h = (b-a)/m$. Given the
+starting values $y_0 = \alpha$ and $y_1, y_2, y_3$, the Milne-Simpson method computes
+$y_4, \ldots, y_m$ from the predictor (2) and the corrector (3) for
+$k = 3, 4, \ldots, m-1$.
+:::
 
-## Implementation Notes (Planned)
+::: {.callout-tip appearance="simple"}
+## Theorem — Precision of the Milne-Simpson method
+If $y \in C^5[a,b]$, the local truncation errors of the two formulas are
+$$
+y(t_{k+1}) - p_{k+1} = \frac{28}{90}\,y^{(5)}(c_{k+1})\,h^5 \quad\text{(predictor)}, \qquad
+y(t_{k+1}) - y_{k+1} = -\frac{1}{90}\,y^{(5)}(d_{k+1})\,h^5 \quad\text{(corrector)},
+\tag{4}
+$$
+for some $c_{k+1}, d_{k+1}$ in $[t_{k-3}, t_{k+1}]$. The global error
+$e_k = y(t_k) - y_k$ is $O(h^4)$ when the starting values are accurate to $O(h^4)$, and so
+is the final global error $E(y(b), h) = |y(b) - y_m|$.
+:::
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+The constants $\tfrac{28}{90}$ and $-\tfrac{1}{90}$ follow from expanding both formulas in
+Taylor series about $t_k$. The terms in $h^0$ through $h^4$ cancel, and the $h^5$ terms
+leave these multiples of $y^{(5)}(t_k)$. The $O(h^4)$ rate is an asymptotic statement:
+Example 1 shows the error ratio approaching $2^4 = 16$ as $h$ is halved repeatedly.
 
-## Legacy Animation Inventory (Stub)
+### Error estimate and the modified method
 
-- Legacy module page: [Milne-Simpson's Method](http://localhost:8000/n2003/MilneSimpsonMod.html) (ok)
-- Animation links found in module Animations paragraph: 4
-- Unique animation portals: 1
+If $h$ is small enough that $y^{(5)}$ is nearly constant over $[t_{k-3}, t_{k+1}]$,
+subtracting the two parts of (4) eliminates $y^{(5)}$:
+$$
+y(t_{k+1}) - p_{k+1} \approx \frac{28}{29}\bigl(y_{k+1} - p_{k+1}\bigr).
+\tag{5}
+$$
+This estimates the predictor's error from computed values alone. Mathews' textbook uses it
+to build a *modified* Milne-Simpson method. The modifier
+$m_{k+1} = p_{k+1} + \tfrac{28}{29}(y_k - p_k)$ replaces $p_{k+1}$ in the corrector, on the
+assumption that the predictor-corrector difference changes slowly from step to step. The
+module's program and all the examples below use the unmodified formulas (2) and (3).
 
-### Animation Portals
+### Algorithm
 
-1. [Milne-Simpson's Method](http://localhost:8000/a2001/Animations/OrdinaryDE/Milne1/Milne.html) (ok)
+To approximate the solution of $y' = f(t,y)$, $y(a) = \alpha$, on $[a,b]$ with
+$m \ge 4$ subintervals:
 
-- Animation item links found: 1
+1. Set $h = (b-a)/m$, $t_k = a + kh$ and $y_0 = \alpha$.
+2. For $i = 0, 1, 2$, take one RK4 step:
+$$
+\begin{aligned}
+k_1 &= h f(t_i, y_i), & k_2 &= h f\bigl(t_i + \tfrac{h}{2}, y_i + \tfrac{k_1}{2}\bigr),\\
+k_3 &= h f\bigl(t_i + \tfrac{h}{2}, y_i + \tfrac{k_2}{2}\bigr), & k_4 &= h f(t_i + h, y_i + k_3),\\
+y_{i+1} &= y_i + \tfrac{1}{6}(k_1 + 2k_2 + 2k_3 + k_4).
+\end{aligned}
+$$
+3. Compute $f_1, f_2, f_3$ with $f_j = f(t_j, y_j)$.
+4. For $k = 3, 4, \ldots, m-1$: predict $p_{k+1}$ by (2), evaluate $f(t_{k+1}, p_{k+1})$,
+   correct $y_{k+1}$ by (3), and evaluate $f_{k+1} = f(t_{k+1}, y_{k+1})$.
 
-### Animation Items
+The examples below follow this algorithm, which is the order of operations in Mathews'
+Mathematica subroutine. Each step after the start costs two evaluations of $f$.
 
-1. [Milne-Simpson Method](http://localhost:8000/a2001/Animations/OrdinaryDE/Milne1/Milneaa.html) (ok)
-- Main animated GIF count: 1
-- http://localhost:8000/a2001/Animations/OrdinaryDE/Milne1/Milneaa.gif
+### Weak stability
 
+Apply the method to the test equation $y' = \lambda y$ and write $z = h\lambda$. The
+predictor and corrector together give a linear four-step recurrence for $y_k$, whose
+characteristic polynomial is
+$$
+9\zeta^4 - (12z + 8z^2)\,\zeta^3 + (4z^2 - 3z - 9)\,\zeta^2 - 8z^2\,\zeta - 3z = 0.
+\tag{6}
+$$
+At $z = 0$ this is $9\zeta^2(\zeta^2 - 1)$, with roots $1, -1, 0, 0$. The root near $1$
+tracks the true growth factor: its expansion is $1 + z + z^2/2 + z^3/6 + \cdots$, which
+matches $e^z$ through $z^3$. The root near $-1$ comes from Simpson's rule, which reaches
+back two steps. It is *parasitic*: it has nothing to do with the differential equation.
+Its expansion is
+$$
+\zeta_{\text{par}} = -1 + \frac{z}{3} + \frac{5z^2}{6} - \frac{11z^3}{18} + \cdots
+\tag{7}
+$$
+
+::: {.callout-warning appearance="simple"}
+## Weak stability
+For real $\lambda < 0$ (a decaying solution), (7) gives
+$|\zeta_{\text{par}}| \approx 1 + h|\lambda|/3 > 1$ for small $h$. Rounding and truncation
+errors excite this root, so they grow by about that factor each step and flip sign at every
+step, although the true solution decays. Over a fixed interval, this spurious mode grows
+roughly like $e^{|\lambda| t/3}$ as $h \to 0$. The method still converges, but on long
+intervals the parasitic mode can dominate the error.
+
+Solving (6) numerically for real $z < 0$ shows that all four roots lie strictly inside the
+unit circle only for $-0.8443 < z < -0.3$. At $z = -0.3$ the parasitic root is exactly
+$-1$, and below $-0.8443$ a complex pair leaves the unit circle. So on $y' = \lambda y$
+with $\lambda < 0$, a step that is *too small* ($h|\lambda| < 0.3$) is unstable as well as
+one that is too large ($h|\lambda| > 0.8443$). Example 2 shows both sides of the lower
+boundary.
+:::
+
+## Worked Examples
+
+The examples follow the module's eleven examples, grouped by differential equation.
+Throughout, $e_k = y(t_k) - y_k$ is the error (exact minus computed), as in Mathews'
+error plots.
+
+### Example 1 — $y' = 1 - ty$, $y(0) = 1$, on $[0, 5]$ (Mathews' Examples 1–4)
+
+Solve the I.V.P. with $m = 25$ subintervals ($h = 0.2$), then with $m = 50$ ($h = 0.1$),
+and compare with the exact solution.
+
+**Exact solution.** The equation is linear: $\bigl(e^{t^2/2}y\bigr)' = e^{t^2/2}$, so
+$$
+y(t) = e^{-t^2/2}\Bigl(1 + \int_0^t e^{s^2/2}\,ds\Bigr)
+     = e^{-t^2/2}\Bigl(1 + \sqrt{\tfrac{\pi}{2}}\,\operatorname{erfi}\bigl(\tfrac{t}{\sqrt 2}\bigr)\Bigr).
+$$
+Substituting back gives $y' - (1 - ty) = 0$ identically, and $y(0) = 1$.
+
+**Step 1 (starting values by RK4, $h = 0.2$).** From $t_0 = 0$, $y_0 = 1$:
+$k_1 = 0.2$, $k_2 = 0.178$, $k_3 = 0.17822$, $k_4 = 0.1528712$, so
+$$
+y_1 = 1 + \tfrac{1}{6}(0.2 + 0.356 + 0.35644 + 0.1528712) = 1.1775518667.
+$$
+Two more RK4 steps give $y_2 = 1.3024474547$ and $y_3 = 1.3681930817$. Their errors are
+$1.35\times10^{-6}$, $2.90\times10^{-6}$ and $4.85\times10^{-6}$. The slopes are
+$$
+f_0 = 1, \quad f_1 = 0.7644896267, \quad f_2 = 0.4790210181, \quad f_3 = 0.1790841510.
+$$
+
+**Step 2 (first predictor, $k = 3$).**
+$$
+p_4 = y_0 + \frac{4(0.2)}{3}\bigl(2f_1 - f_2 + 2f_3\bigr) = 1 + 0.2\overline{6}\,(1.4081265371) = 1.3755004099.
+$$
+
+**Step 3 (first corrector).** The predicted slope is
+$f(t_4, p_4) = 1 - 0.8(1.3755004099) = -0.1004003279$, so
+$$
+y_4 = y_2 + \frac{0.2}{3}\bigl(f_2 + 4f_3 + f(t_4, p_4)\bigr) = 1.3024474547 + \frac{0.2}{3}(1.0949572940) = 1.3754446077.
+$$
+The exact value is $y(0.8) = 1.3754645720$. The corrector reduces the predictor's error
+from $-3.58\times10^{-5}$ to $e_4 = 2.00\times10^{-5}$.
+
+**Step 4 (next step, $k = 4$).** With $f_4 = f(t_4, y_4) = -0.1003556861$:
+$$
+p_5 = y_1 + \tfrac{0.8}{3}(0.5782465130) = 1.3317509368, \qquad
+y_5 = y_3 + \tfrac{0.2}{3}(-0.5540895303) = 1.3312537797,
+$$
+against $y(1) = 1.3313091187$.
+
+**Result ($m = 25$).**
+
+| $k$ | $t_k$ | $p_k$ | $y_k$ | $y(t_k)$ | $e_k$ |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 0.0 | — | 1.00000000 | 1.00000000 | $0$ |
+| 1 | 0.2 | — (RK4) | 1.17755187 | 1.17755322 | $1.35\times10^{-6}$ |
+| 2 | 0.4 | — (RK4) | 1.30244745 | 1.30245035 | $2.90\times10^{-6}$ |
+| 3 | 0.6 | — (RK4) | 1.36819308 | 1.36819793 | $4.85\times10^{-6}$ |
+| 4 | 0.8 | 1.37550041 | 1.37544461 | 1.37546457 | $2.00\times10^{-5}$ |
+| 5 | 1.0 | 1.33175094 | 1.33125378 | 1.33130912 | $5.53\times10^{-5}$ |
+| 8 | 1.6 | 1.01547842 | 1.01460444 | 1.01473641 | $1.32\times10^{-4}$ |
+| 10 | 2.0 | 0.77558500 | 0.77523186 | 0.77532336 | $9.15\times10^{-5}$ |
+| 15 | 3.0 | 0.40398511 | 0.40432408 | 0.40427588 | $-4.82\times10^{-5}$ |
+| 20 | 4.0 | 0.27072276 | 0.27073711 | 0.27073176 | $-5.35\times10^{-6}$ |
+| 25 | 5.0 | 0.20927015 | 0.20924464 | 0.20924948 | $4.85\times10^{-6}$ |
+
+The largest error is $e_8 = 1.32\times10^{-4}$ at $t = 1.6$. The error is positive through
+$t = 2.4$, negative from $t = 2.6$ to $4.2$ (smallest $-4.82\times10^{-5}$ at $t = 3$), and
+positive again from $t = 4.4$. This matches the shape of Mathews' error plot for
+Example 3.
+
+**Halving the step (Mathews' Example 4).** With $m = 50$ ($h = 0.1$) the largest error is
+$4.81\times10^{-6}$, at $t = 1.5$, and $y(5) \approx 0.20924945$ with
+$e_{50} = 3.4\times10^{-8}$. From $t = 2.5$ to the end, the error alternates up and down at
+every step while staying below $1.7\times10^{-6}$ in size. This zigzag is visible in
+Mathews' plot.
+
+**Verification of the order.** Mathews asks by what factor the error falls when $h$ is
+halved; for an $O(h^4)$ method the theoretical answer is $16$. The computed maximum errors
+over $[0, 5]$ are:
+
+| $m$ | $h$ | $\max_k \lvert e_k\rvert$ | ratio to previous |
+|---:|---:|---:|---:|
+| 25 | 0.2 | $1.32\times10^{-4}$ | — |
+| 50 | 0.1 | $4.81\times10^{-6}$ | 27.4 |
+| 100 | 0.05 | $2.00\times10^{-7}$ | 24.0 |
+| 200 | 0.025 | $9.61\times10^{-9}$ | 20.9 |
+| 400 | 0.0125 | $5.12\times10^{-10}$ | 18.8 |
+| 800 | 0.00625 | $2.92\times10^{-11}$ | 17.5 |
+
+The first halving reduces the error by $27.4$, more than $16$. The ratios then fall toward
+$16$ as $h$ shrinks, consistent with $O(h^4)$ convergence.
+
+### Example 2 — $y' = 30 - 5y$, $y(0) = 1$, on $[0, 5]$ (Mathews' Examples 5–8)
+
+Solve with $m = 50$ ($h = 0.1$), then halve the step to $m = 100$ ($h = 0.05$).
+
+**Exact solution.** $y(t) = 6 - 5e^{-5t}$. Then $y' = 25e^{-5t}$ and
+$30 - 5y = 25e^{-5t}$, and $y(0) = 6 - 5 = 1$. The error $e = y - 6$ obeys $e' = -5e$, so
+this is the test equation with $\lambda = -5$.
+
+**Step 1 (starting values by RK4, $h = 0.1$).**
+$y_1 = 2.966146$, $y_2 = 4.159146$, $y_3 = 4.883023$, against the exact
+$2.967347$, $4.160603$, $4.884349$. The errors are $1.20\times10^{-3}$, $1.46\times10^{-3}$
+and $1.33\times10^{-3}$.
+
+**Step 2 (first predictor-corrector step).** $p_4 = 5.307205$, then $y_4 = 5.326072$,
+against $y(0.4) = 5.323324$.
+
+**Result ($m = 50$).** All 51 computed values agree with the list printed in Mathews'
+notebook to its six significant digits ($y(0.5) \approx 5.58938$, $y(1) \approx 5.96763$,
+and $6.00000$ from $t = 2.7$ on). The largest error is $|e| = 3.30\times10^{-3}$ at
+$t = 0.6$, and the error then dies out:
+
+| interval | $(0,1]$ | $(1,2]$ | $(2,3]$ | $(3,4]$ | $(4,5]$ |
+|---|---:|---:|---:|---:|---:|
+| $\max\lvert e_k\rvert$, $h = 0.1$ | $3.30\times10^{-3}$ | $6.05\times10^{-4}$ | $5.18\times10^{-5}$ | $2.29\times10^{-6}$ | $8.55\times10^{-8}$ |
+| $\max\lvert e_k\rvert$, $h = 0.05$ | $1.36\times10^{-4}$ | $1.01\times10^{-4}$ | $1.44\times10^{-4}$ | $2.07\times10^{-4}$ | $2.97\times10^{-4}$ |
+
+The final value is $y_{50} = 5.99999998$, with $e_{50} = 2.2\times10^{-8}$.
+
+**Halving the step (Mathews' Examples 7–8).** With $h = 0.05$ the error starts smaller,
+but from $t = 2$ on it *grows*, to $e_{100} = -2.97\times10^{-4}$ at $t = 5$
+($y_{100} = 6.00029671$). That is about $13{,}000$ times the final error for $h = 0.1$.
+From $t = 0.6$ on, the error changes sign at every step. Over the last ten steps its size
+grows by the factor $1.01823$ per step. Mathews plots $|e_k|$, which hides the sign
+changes, so his curve for $h = 0.05$ looks like a smooth rise.
+
+**Why.** For this problem $z = h\lambda = -5h$. With $h = 0.1$, $z = -0.5$ lies inside the
+interval $(-0.8443, -0.3)$. There all roots of (6) are inside the unit circle, the
+largest parasitic one has modulus $0.776$, and errors are damped. With $h = 0.05$,
+$z = -0.25$ lies outside it. The parasitic root is then $-1.01823$, which is exactly the
+per-step growth factor and sign flip observed. Refining further does not restore damping:
+
+| $m$ | $h$ | $z = -5h$ | $e_m$ at $t = 5$ |
+|---:|---:|---:|---:|
+| 50 | 0.1 | $-0.5$ | $2.2\times10^{-8}$ |
+| 100 | 0.05 | $-0.25$ | $-2.97\times10^{-4}$ |
+| 200 | 0.025 | $-0.125$ | $-2.67\times10^{-4}$ |
+| 400 | 0.0125 | $-0.0625$ | $-3.55\times10^{-5}$ |
+| 800 | 0.00625 | $-0.03125$ | $-2.21\times10^{-6}$ |
+
+For $m = 100$ to $800$ the error alternates sign at every step from $t \le 0.725$ on. Its
+size at $t = 5$ falls as $h \to 0$, as convergence requires. But at every one of these
+step sizes it is far larger than with $h = 0.1$. This is weak stability in action: Mathews'
+"theoretical" factor of $\tfrac{1}{16}$ assumes the error is dominated by truncation, and
+here it is dominated by the parasitic mode.
+
+### Example 3 — $y' = t^2 + y^2$, $y(0) = 1$, on $[0, 1]$ (Mathews' Examples 9–10)
+
+Solve with $m = 50$, $100$ and $200$ subintervals.
+
+**Exact solution.** This is a Riccati equation. The substitution $y = -u'/u$ turns it into
+$u'' + t^2 u = 0$ with $u(0) = 1$, $u'(0) = -1$, whose solution is
+$$
+u(t) = \sqrt{t}\,\Bigl[\frac{\Gamma(3/4)}{\sqrt 2}\,J_{-1/4}\bigl(\tfrac{t^2}{2}\bigr)
+       - \sqrt{2}\,\Gamma(5/4)\,J_{1/4}\bigl(\tfrac{t^2}{2}\bigr)\Bigr], \qquad
+y(t) = -\frac{u'(t)}{u(t)}.
+$$
+Its expansion at $0$ is $u(t) = 1 - t + O(t^4)$, so $y(0) = 1$. Symbolically
+$u'' + t^2u = 0$. The formula also matches an independent high-precision numerical solution,
+for example $y(0.5) = 2.06699971209$ and $y(0.9) = 14.3048643328$. The solution has a
+vertical asymptote where $u$ first vanishes, at
+$$
+t^* \approx 0.969811,
+$$
+so it does not exist on all of $[0, 1]$.
+
+**Result.**
+
+| $m$ | $h$ | $e$ at $t = 0.5$ | $e$ at $t = 0.9$ | $y_k$ at $t = 0.96$ (exact $101.927$) | first grid value past $t^*$ | $y_m$ at $t = 1$ |
+|---:|---:|---:|---:|---:|---:|---:|
+| 50 | 0.02 | $-6.0\times10^{-7}$ | $9.5\times10^{-3}$ | 84.11 | $y(0.98) \approx 1212$ | $4.08\times10^{7}$ |
+| 100 | 0.01 | $-5.9\times10^{-8}$ | $2.4\times10^{-4}$ | 97.24 | $y(0.97) \approx 434.3$ | $6.85\times10^{50}$ |
+| 200 | 0.005 | $-4.4\times10^{-9}$ | $-1.8\times10^{-5}$ | 101.29 | $y(0.97) \approx 910.9$ | overflow |
+
+Away from the asymptote the method is accurate, and the error at $t = 0.5$ falls by a
+factor of $10$ to $13$ with each halving of $h$. Close to $t^*$ every run lags the
+exploding solution: at $t = 0.96$ all three are below it, by $17\%$, $4.6\%$ and $0.62\%$.
+
+**Passing the asymptote (Mathews' Example 10).** Every run continues past $t^*$ and
+returns finite numbers there, as Mathews observes. A fixed-step method has no way to
+detect the pole by itself. Those numbers do not approximate anything, because the solution
+does not exist beyond $t^*$. A smaller step makes the blow-up more violent: with
+$m = 200$, $y \approx 1.66\times10^{203}$ at $t = 0.99$, and the next value overflows
+double precision. Mathews' notebook reports that the 100- and 200-subinterval runs compute
+one and four fewer points. In IEEE double precision the 100-subinterval run reaches
+$t = 1$ with finite values, and the 200-subinterval run loses only its last two points
+($t = 0.995$ and $1$).
+
+### Example 4 — $y' = 1 - t\sqrt[3]{y}$, $y(0) = 1$, on $[0, 5]$ (Mathews' Example 11 and the legacy animation)
+
+Compute the Milne-Simpson solution for a sweep of subinterval counts $m$. This is the
+problem of Mathews' legacy animation, whose frames use
+$m = 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 70, 80, 90, 100, 120, 150$.
+
+**Reference solution.** No closed form is used. The reference is a high-accuracy numerical
+solution (an adaptive 8th-order Runge-Kutta method with relative tolerance $10^{-13}$,
+confirmed by an independent high-precision Taylor-series solver). It rises from $1$ to
+about $1.4498$ near $t = 0.88$ and then decays, staying positive, to
+$y(5) = 0.0081199$. The cube root is the real cube root, so $f$ is defined when a computed
+$y_k$ is negative. With this choice the computation reproduces all 21 values of $y(5)$
+printed on the frames of Mathews' animation.
+
+**Step 1 (starting values, $m = 20$, $h = 0.25$).** RK4 gives
+$y_1 = 1.21726149$, $y_2 = 1.36481748$, $y_3 = 1.43957934$ (reference
+$1.21726253$, $1.36481871$, $1.43958037$). Then $p_4 = 1.44235148$ and
+$y_4 = 1.44216110$, against $y(1) = 1.44216836$.
+
+**Result.** The end value $y_m \approx y(5)$ for each $m$, with its error $e_m$:
+
+| $m$ | $y_m$ | $e_m$ | | $m$ | $y_m$ | $e_m$ |
+|---:|---:|---:|---|---:|---:|---:|
+| 12 | 1.9270743 | $-1.92$ | | 44 | 0.0367562 | $-2.86\times10^{-2}$ |
+| 14 | 1.6212814 | $-1.61$ | | 48 | 0.0261107 | $-1.80\times10^{-2}$ |
+| 16 | $-0.7571300$ | $7.65\times10^{-1}$ | | 52 | 0.0694733 | $-6.14\times10^{-2}$ |
+| 18 | 0.8023358 | $-7.94\times10^{-1}$ | | 56 | 0.0237524 | $-1.56\times10^{-2}$ |
+| 20 | 0.7505670 | $-7.42\times10^{-1}$ | | 60 | 0.0081310 | $-1.1\times10^{-5}$ |
+| 24 | 0.6563583 | $-6.48\times10^{-1}$ | | 70 | 0.0058730 | $2.25\times10^{-3}$ |
+| 28 | 0.1707696 | $-1.63\times10^{-1}$ | | 80 | 0.0078237 | $2.96\times10^{-4}$ |
+| 32 | 0.0245949 | $-1.65\times10^{-2}$ | | 90 | 0.0081093 | $1.06\times10^{-5}$ |
+| 36 | $-0.0805830$ | $8.87\times10^{-2}$ | | 100 | 0.0081192 | $6.8\times10^{-7}$ |
+| 40 | 0.0893196 | $-8.12\times10^{-2}$ | | 120 | 0.0081199 | $1.6\times10^{-8}$ |
+| | | | | 150 | 0.0081199 | $1.6\times10^{-11}$ |
+
+For every $m$ from $12$ to $56$, the run stays within $5\times10^{-4}$ of the reference up
+to $t = 2.5$. It breaks away in the tail, where $|e_k|$ first exceeds $0.01$ somewhere
+between $t \approx 3.2$ ($m = 14$) and $t \approx 4.9$ ($m = 56$). The runs with
+$m = 12, 14, 16, 18, 20, 24$ and $36$ go below zero. A single end value can mislead: for
+$m = 60$, $y_{60}$ is off by only $1.1\times10^{-5}$, but the run is off by
+$3.5\times10^{-3}$ at $t \approx 4.92$. For $m = 70$ the end error $2.25\times10^{-3}$ is
+$28\%$ of $y(5)$. From $m = 80$ on, the end error falls at every refinement, and for
+$m = 100$, $120$, $150$ the largest error anywhere on the grid is below
+$3.4\times10^{-6}$.
+
+Along the reference, $\partial f/\partial y = -t/(3y^{2/3})$ falls to about $-41.3$ at
+$t = 5$. So for every $m$ in the sweep, $h\,|\partial f/\partial y|$ passes $0.8443$, the
+edge of the stable interval of (6), before $t = 5$: at $t \approx 2.65$ for $m = 12$ and at
+$t \approx 4.26$ for $m = 150$. This frozen-coefficient test shows where trouble can start
+in the tail, not how large it gets. The $m = 150$ run crosses that edge too and stays
+accurate.
+
+## Implementation Notes
+
+- **Starting values.** Their errors propagate into every later step, so they should be at
+  least as accurate as the method, $O(h^4)$ globally. RK4 with the same $h$ is the usual
+  choice.
+- **Cost.** After the start, each step needs only two new evaluations of $f$,
+  $f(t_{k+1}, p_{k+1})$ and $f(t_{k+1}, y_{k+1})$. RK4 needs four, and the older slopes are
+  reused.
+- **Error monitoring.** The difference $y_{k+1} - p_{k+1}$ costs nothing extra. By (5) it
+  estimates the local error, so a program can use it to decide whether $h$ is small
+  enough.
+- **Stability.** On decaying problems, check that $h\lambda$ is not in the weakly unstable
+  range near $0$ (for the test equation, $-0.3 < h\lambda < 0$; Example 2). Watch for
+  errors that alternate in sign from step to step. Compare runs with $h$ and $h/2$ over the
+  whole interval, not only at the end point (Example 4).
+- **Blow-up.** A fixed-step method marches past a singularity of the solution without
+  warning (Example 3). Very rapid growth of $y_k$ and of $y_{k+1} - p_{k+1}$ is the signal.
