@@ -144,9 +144,9 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Fidelity | the page says Mathews' negative-`y` evaluation is unreproduced, but his program prints the rule and it reproduces all 42 values | verified | open |
-| F2 | Misleading | Page match | at $m=80$ (Case 1) the shaded "unstable" band contains no step, and "the last steps" is wrong | verified | open |
-| F3 | Misleading | Page match | at $m=70$ (Case 2) the error rise is attributed to stability, but no step amplifies | verified | open |
+| F1 | Misleading | Fidelity | the page says Mathews' negative-`y` evaluation is unreproduced, but his program prints the rule and it reproduces all 42 values | verified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
+| F2 | Misleading | Page match | at $m=80$ (Case 1) the shaded "unstable" band contains no step, and "the last steps" is wrong | verified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
+| F3 | Misleading | Page match | at $m=70$ (Case 2) the error rise is attributed to stability, but no step amplifies | verified | fixed — [fix record](../fixes/taylor-series-method-for-odes.md) |
 
 ## WP-E
 
