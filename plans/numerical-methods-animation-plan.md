@@ -37,6 +37,10 @@ Written 2026-11-24, after the nine review rounds of the 53 animation pages were 
 
 Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>` (or ask to "run batch N"). The `run-animation-batch` skill directs content-page, animation-page and review-animations for the batch on a `batch-<N>` branch, and stops short of merging.
 
+## Status
+
+- **Batch 1 done 2026-11-24** on branch `batch-1`: all four pages have written text and animations. Two independent review rounds (`reviews/batch-1`, `reviews/batch-1-r2`) found no Error or Misleading findings; all Minor findings were fixed and independently checked. See `reviews/batch-1/README.md`.
+
 ## Batches
 
 | Batch | Theme |
@@ -57,10 +61,10 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 
 | Batch | Page | Page text | Legacy animation | Archive examples | Archive graphs |
 |---|---|---|---|---|---|
-| 1 | [Fibonacci Search](../pages/numerical-methods/fibonacci-search.qmd) | skeleton | survives: `Optimization/Fibonacci1/Fibonacciaa.gif` (39 frames) | 4 | 17 |
-| 1 | [Milne-Simpson's Method](../pages/numerical-methods/milne-simpsons-method.qmd) | skeleton | survives: `OrdinaryDE/Milne1/Milneaa.gif` (38 frames) | 12 | 40 |
-| 1 | [Fourier series](../pages/numerical-methods/fourier-series.qmd) | skeleton | 4 of 9 survive: `FourierFFT{cc,dd,ee}.gif`, `FourierSeriesee.gif` | 6 | 30 |
-| 1 | [Monte Carlo Integration](../pages/numerical-methods/monte-carlo-integration.qmd) | skeleton | none (module links the Midpoint animation by mistake) | 15 | 111 |
+| 1 | [Fibonacci Search](../pages/numerical-methods/fibonacci-search/) | written; **done (batch 1):** 3 animations (rebuild of Mathews' n = 32 animation, his Example 2 tolerance, new Example 1) | survives: `Optimization/Fibonacci1/Fibonacciaa.gif` (39 frames) | 4 | 17 |
+| 1 | [Milne-Simpson's Method](../pages/numerical-methods/milne-simpsons-method/) | written; **done (batch 1):** 2 animations (rebuild of Mathews' m-sweep for y' = 1 − t∛y, new weak-stability error plot) | survives: `OrdinaryDE/Milne1/Milneaa.gif` (38 frames) | 12 | 40 |
+| 1 | [Fourier series](../pages/numerical-methods/fourier-series/) | written; **done (batch 1):** 8 animations (rebuilds of all 5 Fourier-series cases and the 3 surviving discrete ones; the module links 10 animations, not 9; the 2 lost discrete ones are not rebuilt) | 4 of 9 survive: `FourierFFT{cc,dd,ee}.gif`, `FourierSeriesee.gif` | 6 | 30 |
+| 1 | [Monte Carlo Integration](../pages/numerical-methods/monte-carlo-integration/) | written; **done (batch 1):** 2 new animations (Example 3 running estimate, Example 14 Monte Carlo vs midpoint rule in 5-D) | none (module links the Midpoint animation by mistake) | 15 | 111 |
 | 2 | [Golden Ratio Search](../pages/numerical-methods/golden-ratio-search.qmd) | skeleton | lost (portal HTML only) | 7 | 38 |
 | 2 | [Quadratic Interpolative Search](../pages/numerical-methods/quadratic-interpolative-search.qmd) | skeleton | lost (Quadratic and Cubic portals, HTML only) | 5 | 44 |
 | 2 | [Newton's Search Method](../pages/numerical-methods/newtons-search-method.qmd) | skeleton | none | 7 | 55 |

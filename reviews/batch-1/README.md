@@ -53,4 +53,69 @@ Fidelity findings, which Jason decides as a group:
 
 The nine earlier review rounds, of the first 53 pages, were not read, and these findings were not compared with them.
 
-<!-- The batch director appends a closing section here in Phase 5 of run-animation-batch. -->
+## Batch closing (run-animation-batch, 2026-11-24)
+
+**Built:** four pages, each with new text (content-page) and animations (animation-page): 15 scripts and 15 GIFs. Every GIF regenerates byte for byte from its script.
+
+| Page | Animations |
+|---|---|
+| Fibonacci Search | 3: Mathews' Example 2 at his worked tolerance (n = 12); a rebuild of his animation (n = 32, inferred from its 30 steps); Example 1 with the e-split (new) |
+| Milne-Simpson's Method | 2: a rebuild of his m-sweep for y′ = 1 − t∛y with 21 values of m (all of his printed y(5) values reproduced, with the real cube root); a new weak-stability error plot for y′ = 30 − 5y |
+| Fourier series | 8: rebuilds of all five Fourier-series animations (only one GIF survived) and the three surviving discrete-series animations |
+| Monte Carlo Integration | 2 new: Example 3's running estimate, and Example 14's Monte Carlo against the midpoint rule in 5-D |
+
+### Findings by round
+
+| Round | Error | Misleading | Minor | Outcome |
+|---|---|---|---|---|
+| 1 (`reviews/batch-1`) | 0 | 0 | 17 | all 17 reproduced and fixed, plus one more rounding slip the fixer found (Milne e₂: 2.90e-6 should be 2.89e-6); each fix independently checked |
+| 2 (`reviews/batch-1-r2`) | 0 | 0 | 5 | all 5 reproduced and fixed, plus three more computed-vs-exact labels in the Milne Example 3 table and one in Example 4; each fix independently checked |
+
+- **Stop condition.** Round 2 had no Error or Misleading findings. That is the stop condition of Phase 4.
+- **Independent checks.** Every fix was checked by a separate subagent that saw only the finding and the diff, never the fixer's reasoning. Each checker confirmed its fixes resolved. Four wording nits the checkers raised were sent back to the same fixer, tightened, and then confirmed by the director:
+  - Fourier: "even-degree terms";
+  - Fourier: "same layout";
+  - Fourier: the D2 sentence;
+  - Monte Carlo: the coordinate-order sentence.
+- **Calibration.** Each round's review was calibrated with two planted errors: Milne-Simpson in round 1, Monte Carlo in round 2. Both rounds' reviewers caught both.
+
+**Open:** nothing. No finding was left unfixed or deferred.
+
+### Decisions taken for Jason to revisit
+
+1. **The Fourier module overlap.** `fft-and-trigonometric-polynomials/` is a skeleton folder page, outside the plan, and it uses the same Mathews module (`FourierSeriesMod`). Following the plan, the Fourier series page covers both the series and the discrete/FFT material and all of the module's animations. If the FFT page is written later, it should link to these rather than duplicate them, or the discrete cases (6–8) could move there.
+2. **Lost discrete-series animations FFT1 and FFT2.** They were not rebuilt, and the page says why. The archive's index layout indicates they used |x−π| and x−π; rebuilding them would be two more scripts like Cases 6–8.
+3. **Monte Carlo Example 14 repeat study.** I kept the figures (88.7% and 90.9%) and stated the random stream they came from, which continues the Example 3 study's generator, instead of rerunning it from a fresh seed. A fresh seed would give 87.9% and 90.8%.
+4. **Fibonacci Case 3 split frame.** The two points overlap at the plotted scale. I added a note to the text rather than re-zooming the frame.
+5. **No round 3.** Round 2 met the stop condition. Its five Minor findings were small text edits, each checked independently, so no third review round was run.
+6. **The plan's count.** The plan said "4 of 9" Fourier animations survive. The module actually links 10, of which 4 survive. The plan row now says so.
+
+### Process notes
+
+- Subagents cannot write report files in this environment, so reviewers returned their reports as text and the director wrote these files.
+- Legacy GIFs decode with duplicated frames under ffmpeg: 507 decoded frames for 31 distinct in `Fibonacciaa.gif`. Count distinct frames from `frames.md5`. Every brief said so.
+- Nothing was pushed, and nothing was merged into `main`.
+- No MATLAB was run anywhere.
+- The global Julia environment was not changed.
+- The whole section renders without errors (`quarto render pages/numerical-methods/`).
+
+### Commits on `batch-1` (oldest first)
+
+1. Write Monte Carlo Integration page text (batch 1)
+2. Write Fibonacci Search page text (batch 1)
+3. Write Fourier series page text (batch 1)
+4. Write Milne-Simpson's Method page text (batch 1)
+5. Add Fibonacci Search animations (batch 1)
+6. Add Monte Carlo Integration animations (batch 1)
+7. Add Milne-Simpson's Method animations (batch 1)
+8. Add Fourier series animations (batch 1)
+9. Add batch 1 review
+10. Fix Fibonacci Search (batch 1 review)
+11. Fix Milne-Simpson's Method (batch 1 review)
+12. Fix Monte Carlo Integration (batch 1 review)
+13. Fix Fourier series (batch 1 review)
+14. Add batch 1 review round 2
+15. Fix Milne-Simpson's Method (batch 1 review round 2)
+16. Fix Fourier series (batch 1 review round 2)
+17. Mark batch 1 done in the plan and close the batch README (this commit)
+
