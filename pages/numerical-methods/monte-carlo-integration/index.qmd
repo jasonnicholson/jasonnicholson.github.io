@@ -20,7 +20,7 @@ The estimate is the base times the "average height" of $f$, which is the mean va
 The error is random. Its standard deviation, the **standard error**, is $(b-a)\,\sigma_f/\sqrt n$, where $\sigma_f$ is the standard deviation of $f$ over the interval, so the error falls like $O(1/\sqrt n)$: a hundred times as many points buys one more correct digit.
 That rate does not depend on the dimension, whereas a product midpoint rule with $n$ points in $d$ dimensions has error $O(n^{-2/d})$ for smooth integrands; for $d>4$ the Monte Carlo rate is the faster one.
 Mathews' module uses only the sample-mean estimator; the hit-or-miss variant, which counts the random points that land under the graph, is on the Monte Carlo Pi page.
-Every run gives a different estimate, so each single-run estimate on this page is one sample run, made with NumPy's `default_rng` generator (PCG64) and the seed stated, and is quoted with its estimated standard error; the repeat studies give their seeds too, and Mathews' own runs are quoted as his runs.
+Every run gives a different estimate, so each single-run estimate on this page is one sample run, made with NumPy's `default_rng` generator (PCG64) and the seed stated, and is quoted with its estimated standard error; the repeat studies give their seeds too, and Mathews' own runs are quoted as his runs. A point in $d$ dimensions takes $d$ consecutive numbers from the stream (`random((n, d))`), one for each coordinate in the order $x, y, z, u, w$, which is the order of the intervals in the box (outermost integral sign first), each scaled to that coordinate's interval.
 
 ## Animations
 
@@ -197,7 +197,7 @@ and formula (4) gives an estimated error of $0.445971$.
 | 1000 | 1.369864 | 5.479454 | 0.058091 | 0.059628 | $+0.146121$ | 2.52 |
 | 10000 | 1.343237 | 5.372947 | 0.018642 | 0.018856 | $+0.039614$ | 2.12 |
 
-**Verification:** the estimated error tracks the true standard deviation $1.885618/\sqrt n$ more closely as $n$ grows. In this run the actual error at $n=1000$ and $n=10000$ is a little over two estimated standard errors, something that happens in about 5% of runs at each of these two sample sizes (see the repeat study below); the rows share points (the first 1000 points are part of the 10000), so their errors are not independent. A single run cannot show the average behaviour; the repeat study does.
+**Verification:** the estimated error tracks the true standard deviation $1.885618/\sqrt n$ more closely as $n$ grows. In this run the actual error at $n=1000$ and $n=10000$ is 2.52 and 2.12 estimated standard errors; an error beyond two estimated standard errors happens in about 5% of runs at each of these two sample sizes (4.67% and 4.62% in the repeat study below); the rows share points (the first 1000 points are part of the 10000), so their errors are not independent. A single run cannot show the average behaviour; the repeat study does.
 
 Mathews' run of the same example, with a different random stream, gave
 
@@ -208,11 +208,11 @@ Mathews' run of the same example, with a different random stream, gave
 | 1000 | 5.43848 | 0.0587627 | 0.105151 |
 | 10000 | 5.34253 | 0.0188432 | 0.00919347 |
 
-His actual errors equal his estimates minus $16/3$ up to display rounding, his error estimates are within 18% of the true standard deviations $1.885618/\sqrt n$, and his largest error, at $n=1000$, is 1.79 estimated standard errors.
+His actual errors equal his estimates minus $16/3$ up to display rounding, his error estimates are within 18% of the true standard deviations $1.885618/\sqrt n$, and his largest error relative to its estimate, at $n=1000$, is 1.79 estimated standard errors.
 
 ### How fast the error shrinks
 
-A single run cannot show a rate, so the estimate of Example 3 was repeated 10,000 times independently at each $n$ (seed 20261124) and the root-mean-square (RMS) error was measured:
+A single run cannot show a rate, so the estimate of Example 3 was repeated 10,000 times independently at each $n$ (seed 20261124; one stream drawn for $n=10$, $100$, $1000$ and $10000$ in that order, each run taking $n$ consecutive numbers, `random((10000, n))`) and the root-mean-square (RMS) error was measured:
 
 | $n$ | True SD $1.885618/\sqrt n$ | RMS error over 10,000 runs | RMS / SD | Runs within 1 estimated error | Runs within 2 estimated errors |
 |---:|---:|---:|---:|---:|---:|
@@ -343,7 +343,7 @@ $$
 | 4 | 1024 | 1.1917870 | $+3.004\times10^{-3}$ | 1.774 | 1.778 |
 | 5 | 3125 | 1.1907077 | $+1.924\times10^{-3}$ | 1.561 | 1.563 |
 | 6 | 7776 | 1.1901205 | $+1.337\times10^{-3}$ | 1.439 | 1.440 |
-| 7 | 16807 | 1.1897660 | $+9.828\times10^{-4}$ | 1.361 | 1.361 |
+| 7 | 16807 | 1.1897660 | $+9.827\times10^{-4}$ | 1.361 | 1.361 |
 
 The ratios match $(m/(m-1))^2$ to within 0.3%, so the midpoint error falls like $m^{-2}=n^{-2/5}$, as the rate comparison predicts for $d=5$. Every midpoint value in the table is too large (as it is for every $m$ from 2 to 10).
 
@@ -356,7 +356,7 @@ The ratios match $(m/(m-1))^2$ to within 0.3%, so the midpoint error falls like 
 
 Mathews' runs gave $1.189189324$ and $1.188543363$, errors $+4.06\times10^{-4}$ and $-2.40\times10^{-4}$ against the reference value.
 
-**Verification:** Mathews remarks that for this quintuple integral the Monte Carlo estimate has less error than the midpoint rule *most of the time*. Repeating the Monte Carlo estimate 10,000 times (seed 20261124), $\lvert\text{MC error}\rvert$ was smaller than the midpoint error in 88.7% of runs at $n=7776$ and in 90.9% at $n=16807$, close to the normal-theory probabilities 88.0% and 90.6%. In the remaining 11.3% and 9.1% of runs the midpoint rule wins, so "most of the time" is the right claim, not "always".
+**Verification:** Mathews remarks that for this quintuple integral the Monte Carlo estimate has less error than the midpoint rule *most of the time*. Repeating the Monte Carlo estimate 10,000 times (continuing the seed-20261124 stream of the Example 3 repeat study after its last draw: first the runs at $n=7776$, then those at $n=16807$, each run taking $5n$ consecutive numbers, `random((10000, n, 5))`), $\lvert\text{MC error}\rvert$ was smaller than the midpoint error in 88.7% of runs at $n=7776$ and in 90.9% at $n=16807$, close to the normal-theory probabilities 87.9% and 90.7%. In the remaining 11.3% and 9.1% of runs the midpoint rule wins, so "most of the time" is the right claim, not "always".
 
 ## Practical Notes
 
