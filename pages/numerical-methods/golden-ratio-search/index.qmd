@@ -1,9 +1,9 @@
 ---
 title: "Golden Ratio Search"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -17,7 +17,39 @@ $$
 c_k = a_k + (1 - \rho)(b_k - a_k), \qquad d_k = a_k + \rho\,(b_k - a_k), \qquad \rho = \frac{\sqrt5 - 1}{2} \approx 0.618034.
 $$
 
-Because $\rho^2 = 1 - \rho$, the interior point that survives a step is exactly an interior point of the next interval, so every step after the first costs one new function evaluation, and every step shrinks the interval by the same factor: $b_k - a_k = \rho^k (b_0 - a_0)$. Unlike [Fibonacci search](fibonacci-search/), which fixes the number of steps in advance and changes the ratio at every step, the golden ratio search can simply run until the interval is shorter than a tolerance $\delta$.
+Because $\rho^2 = 1 - \rho$, the interior point that survives a step is exactly an interior point of the next interval, so every step after the first costs one new function evaluation, and every step shrinks the interval by the same factor: $b_k - a_k = \rho^k (b_0 - a_0)$. Unlike [Fibonacci search](../fibonacci-search/), which fixes the number of steps in advance and changes the ratio at every step, the golden ratio search can simply run until the interval is shorter than a tolerance $\delta$.
+
+## Animations
+
+Each animation below shows the **shrinking bracket** of a golden ratio search. The top panel keeps the picture of Mathews' plotting program: the graph of $f$ in magenta, the current interval $[a_k, b_k]$ as a red arc with pink fill, red dots at $a_k$ and $b_k$, blue dots at the interior points $c_k$ and $d_k$, and the list $\{a_k, c_k, d_k, b_k\}$ in the title. The bottom panel is new. It zooms on $[a_k, b_k]$ and plots $f(x) - f(p)$, where $p$ is the true minimiser (the dashed green line in both panels), so the comparison of $f(c_k)$ with $f(d_k)$ stays visible after the bracket has become too narrow to see in the top panel. Its title gives the step $k$, the width $b_k - a_k$, the sign of $f(c_k) - f(d_k)$ and the part that is kept, which a green bar marks. In Cases 1 and 2, frame $k$ shows row $k$ of the example's table. The last frame gives the endpoint that Mathews' program returns and the midpoint of the last interval, and it is held. Points are labelled with enough significant figures to tell them apart, so the labels gain digits as the bracket shrinks. The differences in the titles and the curve in the bottom panel are evaluated in high precision at the double-precision points. Every double-precision comparison has the same sign as that high-precision difference, and a 50-digit run of each search keeps the same side at every step.
+
+Mathews' module has one animation, linked from the solution of Example 6. Its GIF is lost (the archive keeps only the animation's HTML page), and so are the ten pictures of his Example 6 solution. Case 1 rebuilds it from his plotting program, which survives, and from the Example 6 text: the same function, interval, window and picture elements, and the ten pictures of his solution, the start and nine steps (how many frames his GIF had is not recorded). Cases 2 and 3 are new, with no Mathews original. Example 2's search on $[0, 1]$, Example 3, Examples 4 and 5 (his Exercises 4 and 5) and the secant-method comparison in Example 1 are not animated. The scripts squeeze with the rule of the Description and of the algorithm below, which keeps $[a_k, d_k]$ when $f(c_k) \le f(d_k)$; Mathews' program keeps $[c_k, b_k]$ in a tie, but no comparison in the three runs is a tie, so both rules give the same steps. Like Mathews' program, the scripts compute $1 - \rho$ as $\rho^2$ and return the endpoint with the smaller function value.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Mathews' animation, Example 6, $f(x) = \tfrac12 + x^5 - \tfrac45 x$ on $[0, 1]$, $9$ steps
+
+**Behavior:** Mathews' plotting program draws the starting interval and then makes `max` − 1 steps. His Example 6 solution has ten pictures, so `max` = 10, and the animation shows $k = 0, \ldots, 9$, the rows of the Example 6 table, in his window $[-0.05, 1.05] \times [0, 0.72]$. The bracket is squeezed from the left (keep $[c_k, b_k]$) at $k = 0, 2, 4, 5, 8$ and from the right (keep $[a_k, d_k]$) at $k = 1, 3, 6, 7$, and every bracket contains $p = \sqrt{10}/5 \approx 0.6325$. By $k = 9$ the four dots overlap at Mathews' scale, and the zoom panel separates them. The last interval is $[0.6262, 0.6393]$, of width $\rho^9 = 0.01316$. Mathews' program returns $a_9 = 0.6262$, which is $6.29 \times 10^{-3}$ from $p$; the midpoint $0.6327$ is $2.9 \times 10^{-4}$ from $p$.
+
+[Julia source](goldenaa.jl)
+
+![Rebuild of Mathews' golden ratio search animation on f(x) = 1/2 + x⁵ − 4x/5 over [0, 1]: 9 steps shrink the pink bracket to [0.6262, 0.6393] around the minimiser √10/5 ≈ 0.6325, with a lower panel zoomed on each bracket that shows the sign of f(c) − f(d) and the part kept](goldenaa.gif)
+
+### Case 2 — Example 1, $f(x) = x^2 - \sin x$ on $[0, 1]$, $25$ steps (new)
+
+**Behavior:** Mathews runs Example 1 for $25$ steps, and the animation shows $k = 0, \ldots, 25$, the rows of the Example 1 table. Every bracket contains the minimiser $p \approx 0.450184$, the root of $2x = \cos x$. From $k = 10$ on the bracket is less than $1\%$ of $[0, 1]$ ($\rho^{10} = 0.0081$), so its four dots overlap in the top panel. From $k = 18$ on the two values compared differ by less than $2 \times 10^{-9}$, and at $k = 24$ by only $1.19 \times 10^{-12}$, yet the zoom panel still shows which is lower. The last interval is $[0.4501790, 0.4501850]$, of width $\rho^{25} = 5.96 \times 10^{-6}$. Mathews' program returns $b_{25} = 0.4501850$, which is $1.35 \times 10^{-6}$ from $p$; the midpoint $0.4501820$ is $1.63 \times 10^{-6}$ from $p$. Mathews' solution of Example 1 lists the steps but has no animation.
+
+[Julia source](goldenbb.jl)
+
+![Golden ratio search on f(x) = x² − sin x over [0, 1]: 25 steps shrink the bracket to [0.4501790, 0.4501850], of width 5.96e−6, around the minimiser p ≈ 0.4502, while a lower panel zoomed on each bracket shows comparisons of f(c) with f(d) down to a difference of 1.19e−12](goldenbb.gif)
+
+### Case 3 — Example 2's function on all of $[-1, 1]$, $f(x) = e^x - \sin 2x$, $\delta = \varepsilon = 10^{-6}$ (new)
+
+**Behavior:** $f$ is not unimodal on $[-1, 1]$: it rises to a local maximum at $x \approx -0.6539$ (the dotted orange line) before it falls to the minimum at $p \approx 0.3770$, so the guarantee of the interval-length theorem below, that every interval contains $p$, does not apply. The first comparison, $f(c_0) = f(-0.2361) = 1.2445 > f(d_0) = f(0.2361) = 0.8115$, keeps $[c_0, b_0] = [-0.2361, 1]$ and so drops the local maximum. On $[-0.2361, 1]$ the derivative $f'(x) = e^x - 2\cos 2x$ changes sign only at $p$, so $f$ is unimodal there, and from $k = 1$ on the run is an ordinary golden ratio search; every bracket contains $p$. The method did not see the local maximum: the values at $c_0$ and $d_0$ happened to send the search the right way, which is why Example 2 calls this luck rather than a guarantee. Mathews' stopping rule ends the search after $31$ steps at $[0.37700182, 0.37700249]$, of width $2\rho^{31} = 6.64 \times 10^{-7}$, and returns $a_{31} = 0.3770018$, which is $2.3 \times 10^{-7}$ from $p$. The smallest difference compared, $|f(c_{29}) - f(d_{29})| = 4.7 \times 10^{-14}$, is still more than $400$ times the spacing of double-precision numbers near $f(p) \approx 0.773$.
+
+[Julia source](goldencc.jl)
+
+![Golden ratio search on f(x) = eˣ − sin 2x over all of [−1, 1], where f has a local maximum near −0.6539: the first comparison drops [−1, −0.2361], which holds the local maximum, and 31 steps close in on the minimiser p ≈ 0.3770, with a lower panel zoomed on each bracket](goldencc.gif)
 
 ## Unimodal Functions and Bracketing
 
@@ -60,7 +92,7 @@ $$
 \tag{3}
 $$
 
-Mathews calls $\rho$ the golden ratio. The name is more often given to its reciprocal $\phi = 1/\rho = (1 + \sqrt5)/2 = 1.6180339887\ldots$; either way, $\rho$ is the factor by which the interval shrinks. Equation (2) is the special case $r_1 = r_0$ of the equation $r_1 = (1 - r_0)/r_0$ on the [Fibonacci search](fibonacci-search/) page.
+Mathews calls $\rho$ the golden ratio. The name is more often given to its reciprocal $\phi = 1/\rho = (1 + \sqrt5)/2 = 1.6180339887\ldots$; either way, $\rho$ is the factor by which the interval shrinks. Equation (2) is the special case $r_1 = r_0$ of the equation $r_1 = (1 - r_0)/r_0$ on the [Fibonacci search](../fibonacci-search/) page.
 
 ::: {.callout-tip appearance="simple"}
 ## Theorem — Interval lengths in golden ratio search
@@ -227,7 +259,7 @@ After five secant steps $p_6$ is within $1.1 \times 10^{-13}$ of $p$, and $f''(p
 
 **Notes on Mathews' numbers.** The module's printed list for this example agrees with the table above at all $26$ rows (to the six decimals it prints for the points and eight for the function values). The textbook version of the example (Mathews and Fink, *Numerical Methods Using Matlab*, 4th ed., Section 8.1, linked from the module as its proof page) stops at $k = 23$; the rows it shows agree with the table up to $k = 22$. Its row $k = 23$, however, is $\{0.4501827, 0.4501886, 0.4501923, 0.4501983\}$, the result of a squeeze from the left at $k = 22$. Since $f(c_{22}) - f(d_{22}) = -3.0 \times 10^{-11} < 0$, the correct step is a squeeze from the right, which gives the row $\{0.4501730, 0.4501790, 0.4501827, 0.4501886\}$ above. Both intervals have length $1.56 \times 10^{-5}$ and both contain $p$. The book also prints $c_0 \approx 0.38919660$, a typo for $(3 - \sqrt5)/2 \approx 0.3819660$.
 
-This is also Example 1 of the [Fibonacci search](fibonacci-search/) page. That search ($n = 21$) makes $18$ comparisons, $k = 0, \ldots, 17$, and keeps the same side as the golden ratio search at every one of them.
+This is also Example 1 of the [Fibonacci search](../fibonacci-search/) page. That search ($n = 21$) makes $18$ comparisons, $k = 0, \ldots, 17$, and keeps the same side as the golden ratio search at every one of them.
 
 ## Example 2 — Local minimum of $e^x - \sin 2x$ over $[-1, 1]$
 
@@ -389,7 +421,7 @@ $$
 f(x) = \frac12 + x^5 - \frac45\,x
 $$
 
-on $[0, 1]$. This is the example Mathews animated. The function is unimodal on $[0, 1]$ because $f''(x) = 20x^3 > 0$ for $0 < x \le 1$, and $f'(x) = 5x^4 - \tfrac45 = 0$ gives the minimiser exactly: $p = (4/25)^{1/4} = \sqrt{10}/5 = 0.6324555320$, with $f(p) = 0.0952284595$. It is also Example 2 of the [Fibonacci search](fibonacci-search/) page.
+on $[0, 1]$. This is the example Mathews animated. The function is unimodal on $[0, 1]$ because $f''(x) = 20x^3 > 0$ for $0 < x \le 1$, and $f'(x) = 5x^4 - \tfrac45 = 0$ gives the minimiser exactly: $p = (4/25)^{1/4} = \sqrt{10}/5 = 0.6324555320$, with $f(p) = 0.0952284595$. It is also Example 2 of the [Fibonacci search](../fibonacci-search/) page.
 
 For this example Mathews uses a version of his program that draws a picture at every step: the graph of $f$ in magenta over the window $[-0.05, 1.05] \times [0, 0.72]$, the part of the graph over the current interval $[a_k, b_k]$ in red with the region beneath it filled pink, red dots at $(a_k, f(a_k))$ and $(b_k, f(b_k))$, and blue dots at $(c_k, f(c_k))$ and $(d_k, f(d_k))$. With `max` as its argument this version draws the starting picture and makes `max` − 1 steps. His solution has ten such pictures (the image files are lost), which corresponds to `max` = 10, so the table shows the starting interval and nine steps.
 
@@ -433,7 +465,7 @@ Mathews' rule returns the endpoint $a_9 = 0.626165$, since $f(a_9) < f(b_9)$; th
 Both methods use the same squeeze rule and one new function evaluation per step. The Fibonacci ratios $r_k = F_{n-1-k}/F_{n-k}$ tend to $\rho$, and on the two functions both pages use, the two searches keep the same side at every comparison the Fibonacci search makes: $18$ of them in Example 1 and $9$ in Example 6. The differences are:
 
 - **Planning.** Fibonacci search fixes the number of evaluations before it starts, and a tighter tolerance means starting again. The golden ratio search uses the same ratio at every step, so it can be stopped by a tolerance, or continued, at any time.
-- **Efficiency.** With $N$ evaluations the golden ratio search leaves a bracket of length $\rho^{N-1}(b_0 - a_0)$, and Fibonacci search, with Mathews' final split ($e = 0.01$), leaves one about $0.871$ times as long (the ratio tends to $(1 + 2e)\sqrt5/\phi^2$ as $N$ grows; see the [Fibonacci search](fibonacci-search/) page). Apart from the last few Fibonacci steps, both shrink the bracket by a factor close to $0.618$ per evaluation.
+- **Efficiency.** With $N$ evaluations the golden ratio search leaves a bracket of length $\rho^{N-1}(b_0 - a_0)$, and Fibonacci search, with Mathews' final split ($e = 0.01$), leaves one about $0.871$ times as long (the ratio tends to $(1 + 2e)\sqrt5/\phi^2$ as $N$ grows; see the [Fibonacci search](../fibonacci-search/) page). Apart from the last few Fibonacci steps, both shrink the bracket by a factor close to $0.618$ per evaluation.
 
 ## Implementation Notes
 
