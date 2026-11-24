@@ -15,26 +15,26 @@ S(a,b)=\frac{b-a}{6}\left[f(a)+4f(m)+f(b)\right],
 $$
 and refinement compares $S(a,b)$ against $S(a,m)+S(m,b)$.
 
-A common acceptance criterion is
+The animation uses the acceptance test of Mathews' routine: $[a,b]$ is accepted when
 $$
-\left|S(a,m)+S(m,b)-S(a,b)\right| < 15\,\varepsilon,
+\left|S(a,m)+S(m,b)-S(a,b)\right| < \varepsilon_{[a,b]},
 $$
-so refinement concentrates where curvature or oscillation is strongest.
+where the whole interval starts with $\varepsilon$ and each half of a split interval gets half its tolerance, so refinement concentrates where curvature or oscillation is strongest. A common variant uses $15\,\varepsilon_{[a,b]}$ on the right; for the example below it accepts 9 subintervals (the finest is $[0,1/32]$) instead of 20 (the finest is $[0,1/2048]$).
 
 ## Animations
 
 Each animation below shows the **adaptive Simpson refinement process** for
-$f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$ with tolerance $10^{-3}$. Frames follow the recorded node-set progression from the worked example, showing how new points are introduced nonuniformly.
+$f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$ with tolerance $\varepsilon=10^{-3}$. Starting from the single panel $[0,2]$, each frame splits the widest panel that fails the test (leftmost first, except that $[1/2,1]$ is split before $[0,1/2]$, as in Mathews' trace) and marks the two new sample points in blue; "Approximation" is the composite Simpson sum of $S(a,b)$ over the panels drawn.
 
 Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Adaptive Refinement, $f(x)=1+e^{-x}\sin(8x^{2/3})$, $[0,2]$, $\varepsilon=10^{-3}$
 
-**Behavior:** The partition evolves from coarse to fine by splitting only where needed; each frame redraws the piecewise quadratic approximation over the current node set and updates the running integral estimate.
+**Behavior:** Refinement stops when all 20 panels pass the test. The 41 points drawn are the nodes of the composite rule; the test also evaluates each panel's two quarter-points, so reaching this partition samples $f$ at 81 distinct points. $[1.5,2]$ is never split, while 19 of the 41 nodes lie in $[0,1/8]$. The last seven frames split $[0,1/16], [0,1/32], \dots, [0,1/1024]$ in turn, because $f'$ is unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$); the panels split in the last five frames are at most $1/64$ wide (under 5 pixels at this scale), so the blue label names each one. The final estimate $2.016252$ differs from the integral $2.016280$ by $-2.8\times10^{-5}$; summing $S(a,m)+S(m,b)$ over the same panels, as the recursive routine returns, gives $2.016273$.
 
 [Julia source](adaptivesimpsonsaa.jl)
 
-![Adaptive Simpson animation over [0,2]: nonuniform node refinement concentrates on difficult regions while the piecewise quadratic approximation and integral estimate update each frame](adaptivesimpsonsaa.gif)
+![Adaptive Simpson animation over [0,2]: one failing panel is split per frame, with sample points and panel boundaries drawn and the new points in blue; the refinement ends with 41 points, 19 of them in [0, 1/8], while the piecewise quadratic approximation and integral estimate update each frame](adaptivesimpsonsaa.gif)
 
 
 ## Derivation Notes (Planned)

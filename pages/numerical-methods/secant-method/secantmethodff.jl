@@ -1,10 +1,11 @@
 # secantmethodff.jl
 # Secant Method animation: Convergence
 # f(x) = arctan(x), p0=1.60, p1=1.50, n=6
-# Root at x=0; method converges directly
+# Root at x=0; overshoots to p2 ≈ -1.842, then from p3 on the iterates alternate sides of the root while converging
 # Produces: secantmethodff.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Parameters ---
@@ -30,6 +31,9 @@ for i in 2:n_iters+1
         ps[i+1] = ps[i] - f(ps[i]) * (ps[i] - ps[i-1]) / denom
     end
 end
+
+# Legend value: 5 decimals, or scientific notation once |x| < 1e-3 so small iterates do not print as 0.0.
+fmt_p(x) = x == 0 ? "0" : abs(x) >= 1e-3 ? @sprintf("%.5f", x) : @sprintf("%.2e", x)
 
 # --- Backdrop ---
 xplot = range(xlims[1], xlims[2], length=400)
@@ -82,7 +86,7 @@ anim = @animate for frame in 1:n_iters
             plot!([pc, pc], [0.0, f(pc)];
                   color=:steelblue, lw=1, ls=:dash, label="")
             scatter!([pc], [0.0]; color=:red, ms=8, marker=:diamond,
-                     label="p$(frame+1) = $(round(pc; digits=5))")
+                     label="p$(frame+1) = $(fmt_p(pc))")
         end
     end
 

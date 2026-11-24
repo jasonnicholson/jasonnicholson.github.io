@@ -1,7 +1,7 @@
 # regulafalsibb.jl
 # Regula Falsi (False Position) animation: f(x) = x - cos(x), [a, b] = [0, 1]
-# Classic example showing "one-sided" convergence: left endpoint stays fixed at 0.
-# The successive c points converge from the right.
+# Classic example showing "one-sided" convergence: right endpoint stays fixed at 1.
+# The successive c points converge from the left.
 # Root: x* ≈ 0.7391 (Dottie number)
 # Produces: regulafalsibb.gif
 

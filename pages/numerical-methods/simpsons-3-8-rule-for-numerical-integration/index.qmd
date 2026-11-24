@@ -14,24 +14,24 @@ $$
 S^{3/8}_n = \frac{3h}{8}\left[f(x_0)+f(x_n)+3\sum_{i\not\equiv 0\,(\mathrm{mod}\,3)} f(x_i)+2\sum_{i\equiv 0\,(\mathrm{mod}\,3),\,0<i<n} f(x_i)\right].
 $$
 
-The method is fourth-order accurate for smooth integrands, $S^{3/8}_n - I = O(h^4)$, and can be viewed as a higher-order refinement of trapezoidal geometry using piecewise cubic panels.
+For smooth $f$ (four times continuously differentiable on $[a,b]$), the global truncation error is fourth order: $S^{3/8}_n - I = O(h^4)$. The method can be viewed as a higher-order refinement of trapezoidal geometry using piecewise cubic panels.
 
 ## Animations
 
 Each animation below shows the **Simpson's 3/8 rule diagram** over $[0,2]$ for
-$y = e^{-x}\sin(8x^{2/3})+1$. Each frame recomputes the approximation across the full interval with a denser partition where $n$ remains a multiple of 3.
+$y = e^{-x}\sin(8x^{2/3})+1$. Each frame recomputes the approximation across the full interval with a denser partition where $n$ remains a multiple of 3. Red dots mark the sample points $x_i$, and vertical red lines mark the panel boundaries $x_{3k}$.
 
 Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Composite Simpson's 3/8 Rule, $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$
 
-**Behavior:** Piecewise cubic panels over triplets of subintervals are rebuilt at increasing density. The approximation converges rapidly with fourth-order global error.
+**Behavior:** Piecewise cubic panels over triplets of subintervals are rebuilt at increasing density. Every approximation shown lies below the true integral $\int_0^2 f(x)\,dx \approx 2.016280$. The error grows from 4 to 7 sample points, then shrinks at every later frame; the last frame (121 sample points) gives 2.01581, about 0.00047 low. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error shrinks like $O(h^{5/3})$ rather than $O(h^4)$: halving $h$ divides it by about 3.22 (from 60 to 120 subintervals), tending to $2^{5/3}\approx 3.17$, instead of 16.
 
 [Julia source](simpson38aa.jl)
 
-![Simpson's 3/8 Rule animation over [0,2] with full-interval density refinement: each frame updates piecewise cubic panels and the global approximation](simpson38aa.gif)
+![Simpson's 3/8 Rule animation over [0,2] with full-interval density refinement: after an opening frame showing only f, each frame shows the sample points as red dots, the panel boundaries as vertical red lines, the piecewise cubic panels and the global approximation](simpson38aa.gif)
 
-Legacy note: the archived animation HTML exists, but the referenced `Simpsonaa.gif` is missing in the snapshot; this reconstruction follows the module formulas and visual conventions.
+Legacy note: this animation reconstructs Mathews' archived animation `Simpsonaa.gif`. It uses the same integrand and interval and ends at the same 121-point approximation, 2.015810, but steps through a different sequence of intermediate $n$.
 
 ## Derivation Notes (Planned)
 

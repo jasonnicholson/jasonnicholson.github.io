@@ -3,6 +3,7 @@
 # Produces: diffformac.gif
 
 using Plots
+using Printf
 gr()
 
 f(x) = exp(-x) * sin(x)
@@ -43,7 +44,7 @@ anim = @animate for h in hs
         legend=:topright,
         size=(760, 460),
         background_color=:white,
-        title="Second-derivative formulas on [0, pi]  |  h = $(h)",
+        title="Second-derivative formulas on [2h, pi-2h]  |  h = $(h)",
     )
 
     plot!(xinner, y3; color=:steelblue3, lw=2, ls=:dash, label="3-point d2")
@@ -52,7 +53,7 @@ anim = @animate for h in hs
     annotate!(
         0.08,
         -1.95,
-        text("max|error 3-point| ≈ $(round(err3; digits=8))   max|error 5-point| ≈ $(round(err5; digits=8))", 10, :left, :black),
+        text("max|error 3-point| ≈ $(@sprintf("%.2e", err3))   max|error 5-point| ≈ $(@sprintf("%.2e", err5))", 10, :left, :black),
     )
 end
 

@@ -18,39 +18,95 @@ y_{n+1} = y_n + h\,f(t_n,y_n), \qquad t_{n+1}=t_n+h.
 $$
 
 For smooth problems, Euler has local truncation error $O(h^2)$ and global error
-$O(h)$, so reducing the step size improves accuracy linearly. The modified Euler
-(Heun) predictor-corrector method averages endpoint slopes and improves global
+$O(h)$, so reducing the step size improves accuracy linearly. Mathews' modified Euler
+method is the explicit midpoint method,
+$y_{n+1} = y_n + h\,f\big(t_n+\tfrac{h}{2},\ y_n+\tfrac{h}{2}f(t_n,y_n)\big)$: it takes a half
+Euler step to the middle of the step and uses the slope there, which improves the global
 accuracy to $O(h^2)$.
 
 ## Animations
 
-Each animation below shows the **numerical solution trace** for the IVP
-$y' = 1 - t\sqrt[3]{y}$, $y(0)=1$ on $0 \le t \le 5$, using the legacy module's
-$n=41$ point setup ($h=0.125$). Each frame adds one new computed point and segment.
-The dashed black curve is a high-accuracy reference trajectory computed with fixed-step
-RK4 at $h=10^{-4}$ and shown for direct visual error comparison.
+Each animation below repeats one of Mathews' **step-refinement sweeps** for the IVP
+$y' = 1 - t\sqrt[3]{y}$, $y(0)=1$ on $0 \le t \le 5$. Each frame is a complete run with
+$m$ subintervals ($h=5/m$), for the values of $m$ in Mathews' animation, drawn over a gray
+reference solution (fixed-step RK4 with 50 000 steps) and labelled with the computed $y(5)$,
+its error at $t=5$ and the largest error at any grid point of the run. A light red band marks where $h\,|\partial f/\partial y|$, evaluated along the
+reference solution rather than the plotted run, exceeds the method's stability limit.
 
-Legacy archive note: the original `Euleraa.gif` and `MEuleraa.gif` files were missing
-from the recovered animation folders, so these are reconstructed from the module's
-worked-example equations and parameters (Examples 11-12).
+Legacy archive note: Mathews' animations `Euleraa.gif` and `MEuleraa.gif` are in the
+archive and sweep $m$ in the same way; every $y(5)$ printed in them agrees with the runs
+here when rounded to seven decimals. The module's Examples 11 (Euler) and 12 (modified
+Euler) each print runs with $m=40$, $100$ and $150$; their final values agree with this
+page's frames for those $m$.
 
-### Case 1 - Forward Euler, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $0 \le t \le 5$, $n=41$
+### Case 1 - Forward Euler step-refinement sweep, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $m = 10$ to $150$ subintervals
 
-**Behavior:** Forward Euler accumulates first-order global error and drifts low near
-$t=5$ relative to the dashed RK4 reference trajectory.
+**Behavior:** The frames use the 20 values of Mathews' animation, $m = 10, 15, 20, 25, 30,
+35, 40, 45, 50, 55, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150$. The reference solution
+rises from $y(0)=1$ to about $1.4498$ near $t=0.88$, then decays toward the nullcline
+$y=1/t^3$ (where $y'=0$) and reaches $y(5)=0.0081199$. For $m=10$ to $40$ the computed
+values zig-zag in the tail and dip below zero, although the exact solution stays positive;
+they end at $y(5)\approx1.777$ for $m=10$, $0.391$ for $m=30$ and $-0.0174$ for $m=40$
+(the first of the module's Example 11 runs, $m=40$, $100$ and $150$). At $m=45$ the last steps still alternate, but by less than
+$0.009$, too little to see at this scale. From $m=50$ on the runs decrease steadily after
+their peak, and the error at $t=5$ is small: $-4.2\times10^{-6}$ at $m=60$ and
+$-1.7\times10^{-6}$ at $m=150$, where $y(5)\approx0.0081182$. It does not measure the
+accuracy of the run: $\partial f/\partial y$ is strongly negative late in the run, which
+damps the error made earlier, and from $m=55$ on the error at $t=5$ is more than $10^4$
+times smaller than the largest error at any grid point ("max |error|" in each frame). For
+$m=45$ to $150$ that largest error lies between $t=1.64$ and $1.73$, after the peak, where
+the run is above the reference. It falls at every refinement in the sweep and, from $m=45$ on,
+about halves when $m$ doubles, as expected of a first-order method: $5.7\times10^{-2}$ at $m=60$,
+$2.8\times10^{-2}$ at $m=120$ and $2.2\times10^{-2}$ at $m=150$. The cause of the coarse-grid behaviour is stability:
+$\partial f/\partial y=-t/(3y^{2/3})$ reaches $-41.3$ at $t=5$, so for steps longer than
+about $h=0.0485$ ($m\le103$; here $m=10$ to $100$), $h\,|\partial f/\partial y|$ along the
+reference solution exceeds Euler's stability limit $2$ before $t=5$ (the shaded region in
+those frames). There, while the error is small compared with the reference solution, each
+step multiplies the error it inherits by about $1+h\,\partial f/\partial y<-1$ and adds its
+own local error, so the inherited part is amplified with alternating sign. For $m=10$ to
+$40$ the error grows to more than $25$ times the reference solution at the same $t$, so
+this linear picture no longer holds and individual steps can shrink the error: at $m=25$ the step from $t=4.2$
+takes it from $+0.429$ to $-0.009$. At $m=10$ the onset is at $t\approx2.92$,
+and for $m=10$ to $45$ the error at $t=5$ is larger than just before the onset. For $m=50$
+to $100$ the onset comes later, from $t\approx3.95$ ($m=50$) to $t\approx4.95$ ($m=100$),
+and the amplified part stays too small to see: these runs decrease steadily, and their error
+at $t=5$ is smaller than just before the onset. For $m=110$ to $150$,
+$h\,|\partial f/\partial y|$ stays below $2$ up to $t=5$.
 
 [Julia source](eulersmethodaa.jl)
 
-![Forward Euler animation for y' = 1 - t cbrt(y), y(0)=1 over 0 <= t <= 5 using 41 points](eulersmethodaa.gif)
+![Forward Euler step-refinement sweep for y' = 1 - t·y^(1/3), y(0)=1 on [0,5]: each frame is a complete Euler run with m subintervals, m = 10 to 150, drawn over a gray reference curve that peaks near 1.45 at t ≈ 0.88 and decays to 0.0081 at t = 5. For m = 10 to 40 the run zig-zags in the tail and dips below zero, ending at y(5) = 1.777 for m = 10; for m = 10 to 100 a shaded region marks where h·|∂f/∂y|, evaluated on the reference solution, exceeds 2; from m = 50 on the run decreases steadily after its peak, with y(5) = 0.0081182 at m = 150. Each frame also prints the error at t = 5 and the largest error at any grid point; at m = 150 these are -1.7e-06 and 2.2e-02, the largest near t = 1.67](eulersmethodaa.gif)
 
-### Case 2 - Modified Euler (Heun), same IVP and grid
+### Case 2 - Modified Euler (midpoint) step-refinement sweep, same IVP, $m = 12$ to $150$ subintervals
 
-**Behavior:** The predictor-corrector slope average reduces drift and stays closer to
-the dashed RK4 reference trajectory at the right endpoint.
+**Behavior:** The frames use the 21 values of Mathews' animation, $m = 12, 14, 16, 18, 20,
+24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 70, 80, 90, 100, 120, 150$, and the same reference
+solution as Case 1. For $m=12$ to $24$ the tail zig-zags; at $m=24$ only the last three steps
+alternate ($+0.069$, $-0.076$, $+0.489$), ending at $y(5)\approx0.613$. For $m=28$ to $60$
+the curve turns upward before $t=5$ instead of following the decay (at $m=28$ with one small
+dip of $0.0075$ in the second-to-last step), rising from its minimum by $0.35$ at $m=28$,
+$0.057$ at $m=40$ and $0.015$ at $m=60$ (barely visible at this scale) and ending at
+$y(5)\approx0.384$, $0.0761$ (the first of the module's Example 12 runs, $m=40$, $100$ and $150$) and $0.0259$. At $m=70$ the upturn
+is only $0.0008$, too small to see, and from $m=80$ on the runs decrease steadily after
+their peak. From $m=16$ the error at $t=5$ falls at every refinement in the sweep, to
+$2.5\times10^{-4}$ at $m=80$ and $1.8\times10^{-6}$ at $m=150$, where
+$y(5)\approx0.0081217$. For $m=16$ to $70$ it is also the largest error of the run, but from
+$m=80$ on the same damping as in Case 1 makes it $2.5$ to $87$ times smaller than the largest error, which
+lies between $t=3.19$ and $3.22$: $6.3\times10^{-4}$ at $m=80$ and $1.6\times10^{-4}$ at
+$m=150$. From $m=80$ to $150$ that largest error falls by a factor of $3.9$, close to the
+$(150/80)^2\approx3.5$ of a second-order method, while Euler's falls by $1.9$, close to
+$150/80\approx1.9$. At $m=150$ it is about 140 times smaller than Euler's
+$2.2\times10^{-2}$, although the two errors at $t=5$ are about the same size. The method's amplification factor $1+z+z^2/2$, with
+$z=h\,\partial f/\partial y$, has size at most 1 on the negative real axis exactly for
+$-2\le z\le0$, so its stability limit is $2$, the same as Euler's: for $m\le103$ (here
+$m=12$ to $100$), $h\,|\partial f/\partial y|$ along the reference solution exceeds $2$
+before $t=5$ (the shaded region), from $t\approx2.99$ at $m=12$ to $t\approx4.95$ at $m=100$, and for each of these
+$m$ the error at $t=5$ is larger than just before the onset. For $m=120$ and $150$,
+$h\,|\partial f/\partial y|$ stays below $2$ up to $t=5$.
 
 [Julia source](eulersmethodbb.jl)
 
-![Modified Euler animation for y' = 1 - t cbrt(y), y(0)=1 over 0 <= t <= 5 using 41 points](eulersmethodbb.gif)
+![Modified Euler (midpoint) step-refinement sweep for y' = 1 - t·y^(1/3), y(0)=1 on [0,5]: each frame is a complete run with m subintervals, m = 12 to 150, drawn over the gray reference curve. For m = 12 to 24 the run zig-zags in the tail (at m = 24 only in the last three steps), and for m = 28 to 60 it turns upward before t = 5, ending at y(5) = 0.0761 for m = 40; for m = 12 to 100 a shaded region marks where h·|∂f/∂y|, evaluated on the reference solution, exceeds 2; from m = 80 on the run decreases steadily after its peak, with y(5) = 0.0081217 at m = 150. Each frame also prints the error at t = 5 and the largest error at any grid point; at m = 150 these are +1.8e-06 and 1.6e-04, the largest near t = 3.20](eulersmethodbb.gif)
 
 ## Derivation Notes (Planned)
 

@@ -20,21 +20,48 @@ high accuracy with low per-step cost.
 
 ## Animations
 
-The animation below reconstructs legacy Example 11 from the Mathews module:
-$y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, over $0 \le t \le 5$, with the historical
-$n=50$-step setup (51 mesh points).
+The animation below repeats the **step-refinement sweep** of Mathews' animation for legacy Example 11 of the module:
+$y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, over $0 \le t \le 5$. Each frame is a complete ABM4 run with $m$
+subintervals ($h=5/m$, the first three steps by RK4), for the 21 values of Mathews' animation,
+$m = 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 70, 80, 90, 100, 120, 150$,
+labelled with the computed $y(5)$ and its error.
 
-The dashed black curve is a high-accuracy reference trajectory computed with fixed-step
+The thick gray curve is a high-accuracy reference trajectory computed with fixed-step
 RK4 at $h=10^{-4}$, since no closed-form exact solution is used for this case.
 
-### Case 1 - ABM4 predictor-corrector, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $0 \le t \le 5$
+### Case 1 - ABM4 predictor-corrector step-refinement sweep, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $m = 12$ to $150$ subintervals
 
-**Behavior:** The ABM trajectory tracks the reference curve closely over the full
-interval while keeping a smooth and stable descent toward the right endpoint.
+**Behavior:** The reference solution rises from $y(0)=1$ to about $1.4498$ near $t=0.88$, then
+decays to $y(5)=0.0081199$. For $m=12$ through $52$ the computed curve visibly breaks away from
+the reference in the tail (from $t\approx3.2$ to $4.7$, depending on $m$), and each of these runs
+goes below zero somewhere (then $\sqrt[3]{y}$ is the real cube root), at $m=48$ only to $-0.0049$,
+too little to see. For $m=56$ and $60$ the run stays on the reference until about $t=4.8$ and
+$4.9$ and then rises above it, by up to $0.11$ and $0.096$. Across $m=12$ to $60$ the end value
+jumps between $y(5)\approx-0.363$ ($m=20$) and $0.632$ ($m=16$), and a small absolute end error
+can hide a much worse run: at $m=12$, $y(5)=0.0214$ is off by only $0.013$ (an error
+1.6 times the exact value, so $y(5)$ is 2.6 times it), while the run is off by $0.74$ at $t\approx4.17$. From
+$m=60$ on, the error in $y(5)$ falls at every refinement: $9.6\times10^{-2}$ at $m=60$,
+$2.1\times10^{-3}$ at $m=70$ (26% of $y(5)$, but too small to see in the frame),
+$1.1\times10^{-5}$ at $m=80$, $4.5\times10^{-9}$ at $m=100$ and $1.4\times10^{-10}$ at $m=150$.
+
+A frozen-coefficient linear stability analysis shows where this can start, not how large it
+gets. $\partial f/\partial y=-t/(3y^{2/3})$ reaches $-41.3$ at $t=5$, and this ABM4
+predictor-corrector is stable on $y'=\lambda y$ with real $\lambda<0$ only while
+$h|\lambda|\le1.285$. So for every $m\le160$ ($h>0.0311$), which includes every frame here,
+$h\,|\partial f/\partial y|$ exceeds $1.285$ before $t=5$ (the shaded region, from $t\approx2.83$
+at $m=12$ to $t\approx4.89$ at $m=150$), and past that point the linear analysis no longer
+guarantees that errors are damped. For $m=12$ to $60$ the error at the last step before the
+shaded region is between $5.6\times10^{-5}$ and $2.2\times10^{-3}$, and after it the error reaches
+$0.096$ to $0.74$; for $m=100$, $120$ and $150$ it is below $10^{-8}$ there, and the error at
+$t=5$ is smaller still. So $h=0.0311$ is a linear stability bound, not an accuracy threshold.
+The module's worked solution of Example 11 uses $n=50$, $100$ and $150$ steps: the $n=100$ and
+$150$ runs (frames $m=100$ and $150$ here) end at $y(5)=0.0081199$, while the $n=50$ run ($h=0.1$)
+falls to $y_{48}\approx-0.0018$ at $t=4.8$ and ends at $y(5)\approx0.138$, about 17 times the
+exact value.
 
 [Julia source](adamsbashforthmoultonaa.jl)
 
-![Adams-Bashforth-Moulton predictor-corrector trajectory versus high-accuracy reference for y' = 1 - t cbrt(y), y(0)=1 on [0,5]](adamsbashforthmoultonaa.gif)
+![Adams-Bashforth-Moulton (ABM4 predictor-corrector) step-refinement sweep for y' = 1 - t·y^(1/3), y(0)=1 on [0,5]: each frame is a complete ABM4 run with m subintervals, m = 12 to 150, drawn over a gray reference curve that peaks near 1.45 at t ≈ 0.88 and decays to 0.0081 at t = 5. For m = 12 to 60 the run visibly breaks away from the reference in the tail, ending between y(5) = -0.363 and 0.632; a shaded region marks where h·|∂f/∂y| exceeds 1.285, which happens in every frame, yet from m = 70 on the run lies on the reference at this scale, with y(5) = 0.0081199 at m = 100 and 150](adamsbashforthmoultonaa.gif)
 
 ## Derivation Notes (Planned)
 

@@ -32,7 +32,7 @@ xplot = range(xlims[1], xlims[2], length=400)
 
 anim = @animate for frame in 0:n_iters
     plot(size=(640, 600), xlims=xlims, ylims=ylims,
-         xlabel="x", ylabel="y", title=title_str,
+         xlabel="x", ylabel="y", title=title_str, titlefontsize=12,
          legend=:topleft, grid=true, framestyle=:box,
          background_color=:white)
 

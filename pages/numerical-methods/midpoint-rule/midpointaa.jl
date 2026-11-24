@@ -8,8 +8,9 @@ gr()
 f(x) = exp(-x) * sin(8 * x^(2 / 3)) + 1
 a, b = 0.0, 2.0
 
-n_seq = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16,
-         20, 24, 28, 32, 40, 48, 56, 64, 72, 88, 104, 120]
+# Sample counts as in Mathews' legacy Midpointaa.gif
+n_seq = [1, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28,
+         32, 40, 50, 60, 70, 80, 100, 120]
 
 xlims = (0.0, 2.0)
 ylims = (0.0, 2.1)
@@ -39,6 +40,8 @@ anim = @animate for n in vcat(0, n_seq)
                   seriestype=:shape, fillcolor=:lightpink, fillalpha=0.65,
                   linecolor=:red, lw=0.7)
         end
+        xs = [a + (i + 0.5) * dx for i in 0:n-1]
+        scatter!(xs, f.(xs); markercolor=:red, markerstrokewidth=0, markersize=3)
 
         approx = midpoint_sum(n)
         annotate!(1.15, 1.88, text("Sample Points = $n", :black, 10))

@@ -9,134 +9,82 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-The Laurent series of a function around a center $x_0$ is
+A Laurent series of $f$ about a center $x_0$, valid in an annulus $r<|x-x_0|<R$ of the complex plane on which $f$ is analytic, is
 
 $$
-f(x)=\sum_{k=-\infty}^{\infty} a_k (x-x_0)^k,
+f(x)=\sum_{k=-\infty}^{\infty} a_k (x-x_0)^k,\qquad a_k=\frac{1}{2\pi i}\oint_C \frac{f(z)}{(z-x_0)^{k+1}}\,dz,
 $$
 
-which extends Taylor series by allowing negative powers. Those negative-power terms form the principal part and capture pole-like behavior. In many smooth cases centered away from singularities, the principal part is zero and the Laurent series reduces to an ordinary Taylor expansion.
+where $C$ is any positively oriented circle about $x_0$ inside the annulus. The terms with $k<0$ form the **principal part**. For a given annulus the coefficients are unique, but a function with several singularities has a different series in each annulus about the same center.
+
+If $f$ is analytic on the whole disk $|x-x_0|<R$, every negative-power coefficient is zero and the Laurent series is the Taylor series. If $f$ is analytic on a connected region containing the annulus and has a non-removable singularity on or inside the inner circle (at the center when $r=0$), some negative power has a nonzero coefficient. Those powers do what a polynomial cannot. For $k>0$ the power $(x-x_0)^{-k}$ is infinite at $x_0$ and tends to $0$ as $|x|\to\infty$, while a polynomial is finite at every $x$, so it has no vertical asymptote, and unless it is constant it is unbounded as $|x|\to\infty$, so it has no horizontal asymptote.
 
 ## Animations
 
-The Laurent animation for this topic reuses the same 27 function/interval/center cases used on the Padé page, but draws Laurent-series truncations instead of rational Padé forms.
+Each frame adds terms to a partial sum of the Laurent series (blue) and compares it with $f$ (magenta). Dashed black lines are the asymptotes of $f$. Green shading marks where the series converges on the real line; outside it the partial sum is not expected to approximate $f$. In the cases with negative powers, the orange curve is the Taylor polynomial of $f$ about a regular point inside the shaded region, with the same number of terms as the blue sum. The legend lists the powers included.
 
-Each frame uses a two-sided truncation with both negative and positive powers at the same time,
+Mathews' Laurent module (Complex Analysis §7.3) has no animations. The examples below were chosen for this page and are not attributed to him, although his module also works a disk, annulus and exterior example of the kind in Cases 05–07.
 
-$$
-\sum_{k=-N}^{N} a_k (x-x_0)^k,
-$$
+### Case 01 — Reduces to Taylor: $f(x)=\dfrac{\sin x}{x}$ about $0$, all $x$
 
-with $N$ increasing frame by frame.
+**Behavior:** Dividing $\sin x=x-x^3/6+x^5/120-\cdots$ by $x$ leaves $1-x^2/6+x^4/120-\cdots$, with no negative power. The singularity at $0$ is removable, and this Laurent series is the Taylor series of $f$. It converges for every $x$. The interval around $0$ on which the sum stays within $0.01$ of $f$ widens with every frame, from about $|x|\le 0.25$ to about $|x|\le 10.9$.
 
-Each case below follows the same case ordering as the Padé suite (Case 01 through Case 27).
+[Julia source](laurent_animations_all.jl)
 
-[Julia source for all cases](laurent_animations_all.jl)
+![Partial sums of the series 1 minus x squared over 6 plus higher even powers, drawn over sin(x)/x on the interval from -14 to 14. No negative power appears, and the sum matches the curve on a wider interval around 0 in each frame.](laurent01.gif)
 
-### Case 01 — $f(x)=\sqrt{x}$, $x_0=1$, $x\in[0,10.5]$
+### Case 02 — Reduces to Taylor: $f(x)=\dfrac{1}{1+x^2}$ about $0$, $|x|<1$
 
-![Laurent-series truncation animation for case 01.](laurent01.gif)
+**Behavior:** $f$ is analytic at $0$, so its series there has no negative powers: $1-x^2+x^4-\cdots$. The radius of convergence is $1$, set by the poles at $\pm i$, which are not on the real line. At $x=0.9$ the error falls with every frame, from $0.448$ to $0.044$. At $x=1.2$, outside the region, it grows with every frame, from $0.590$ to $32.6$.
 
-### Case 02 — $f(x)=\sqrt{x}$, $x_0=4$, $x\in[0,10.5]$
+[Julia source](laurent_animations_all.jl)
 
-![Laurent-series truncation animation for case 02.](laurent02.gif)
+![Even-power Taylor partial sums of 1/(1+x^2) with the interval from -1 to 1 shaded. The sums settle onto the curve inside the shaded interval and swing away from it outside.](laurent02.gif)
 
-### Case 03 — $f(x)=\sqrt{x}$, $x_0=5$, $x\in[0,10.5]$
+### Case 03 — Vertical asymptote: $f(x)=\dfrac{\sin x}{x^3}$ about $0$, $0<|x|<\infty$
 
-![Laurent-series truncation animation for case 03.](laurent03.gif)
+**Behavior:** For every $x\ne 0$, $f(x)=x^{-2}-\tfrac16+\tfrac{x^2}{120}-\cdots$. The principal part $x^{-2}$ carries the blow-up at $0$: $f(x)-x^{-2}\to-\tfrac16$ as $x\to 0$. At $x=0.05$, where $f=399.83$, the last frame's sum (powers $-2$ to $16$) also gives $399.83$, while the degree-9 Taylor polynomial about $x=1$, with the same 10 terms, gives $40.6$. The full Taylor series about $x=1$ converges only on $0<x<2$. As $|x|\to\infty$, the frame 1 sum $x^{-2}$ tends to the horizontal asymptote $y=0$ of $f$, the frame 2 sum $x^{-2}-\tfrac16$ tends to $-\tfrac16$, and every sum from frame 3 on contains a positive power and is unbounded. In Case 04, every partial sum tends to the horizontal asymptote.
 
-### Case 04 — $f(x)=\dfrac{1}{\sqrt{1-x}}$, $x_0=0$, $x\in[-1.5,1.5]$
+[Julia source](laurent_animations_all.jl)
 
-![Laurent-series truncation animation for case 04.](laurent04.gif)
+![Laurent partial sums of sin(x)/x cubed, starting from x to the power -2, follow both sides of the vertical asymptote at x equals 0. An orange Taylor polynomial about x equals 1 stays finite at 0; in the last frame it is on the curve near x equals 1 and leaves it before x equals 2.](laurent03.gif)
 
-### Case 05 — $f(x)=\log(x)$, $x_0=1$, $x\in[-0.5,4.1]$
+### Case 04 — Horizontal asymptote: $f(x)=\dfrac{x^2+1}{x^2-1}$ in powers of $1/x$, $|x|>1$
 
-![Laurent-series truncation animation for case 05.](laurent05.gif)
+**Behavior:** For $|x|>1$, $f(x)=1+2x^{-2}+2x^{-4}+\cdots$. Every partial sum tends to $1$ as $|x|\to\infty$, which is the horizontal asymptote of $f$. In the last frame (powers $-18$ to $0$) the sum is within $0.0011$ of $f$ on $1.5\le|x|\le 10$. The degree-9 Taylor polynomial about $x=3$, with the same 10 terms, leaves the window near $x=5.69$ and equals $-3.06\times 10^{4}$ at $x=10$, where $f=1.0202$; the full Taylor series about $x=3$ converges only on $1<x<5$. Inside $|x|<1$ the series diverges: at $x=0.5$ the last sum is $6.99\times 10^{5}$, while $f=-1.67$.
 
-### Case 06 — $f(x)=\log(x)$, $x_0=2$, $x\in[-0.5,4.1]$
+[Julia source](laurent_animations_all.jl)
 
-![Laurent-series truncation animation for case 06.](laurent06.gif)
+![Partial sums in negative even powers of x level off at the dashed line y equals 1 on both sides, outside the vertical asymptotes at x equals plus and minus 1. An orange Taylor polynomial about x equals 3 matches near 3; in the last frame it leaves the curve before x equals 5.](laurent04.gif)
 
-### Case 07 — $f(x)=\log(1+x)$, $x_0=0$, $x\in[-1.5,1.5]$
+### Case 05 — One function, the disk: $f(x)=\dfrac{4}{(x-1)(x+3)}$, $|x|<1$
 
-![Laurent-series truncation animation for case 07.](laurent07.gif)
+**Behavior:** Cases 05–07 expand the same function, written as $f(x)=\frac{1}{x-1}-\frac{1}{x+3}$, in the three regions set by its poles at $x=1$ and $x=-3$. In the disk both fractions expand in positive powers, so the series is a Taylor series with $a_k=-1-(-1)^k/3^{k+1}$ for $k\ge 0$. At $x=0.5$ the last frame gives $-2.28559$ against $f=-2.28571$. At $x=1.5$, outside the disk, it gives $-582$ against $f=1.78$.
 
-### Case 08 — $f(x)=\sin(x)$, $x_0=0$, $x\in[-3\pi,3\pi]$
+[Julia source](laurent_animations_all.jl)
 
-![Laurent-series truncation animation for case 08.](laurent08.gif)
+![Taylor partial sums of 4 over (x-1)(x+3) with the interval from -1 to 1 shaded. The sums settle onto the curve inside the shaded interval and leave it outside, with dashed asymptotes at x equals -3, x equals 1 and y equals 0.](laurent05.gif)
 
-### Case 09 — $f(x)=\cos(x)$, $x_0=0$, $x\in[-3\pi,3\pi]$
+### Case 06 — One function, the annulus: $f(x)=\dfrac{4}{(x-1)(x+3)}$, $1<|x|<3$
 
-![Laurent-series truncation animation for case 09.](laurent09.gif)
+**Behavior:** In the annulus, $1/(x-1)$ expands in negative powers and $-1/(x+3)$ in positive powers, so $a_k=-(-1)^k/3^{k+1}$ for $k\ge 0$ and $a_k=1$ for $k<0$. One series covers both intervals $-3<x<-1$ and $1<x<3$. In the last frame (powers $-12$ to $12$) its error is below $0.19$ on $-2.5\le x\le-1.5$ and below $0.02$ on $1.5\le x\le 2.5$. The degree-24 Taylor polynomial about $x=2$, with the same 25 terms, is more accurate on the second interval (error below $10^{-7}$), but the full Taylor series about $x=2$ converges only on $1<x<3$, and at $x=-2$ the polynomial is $3.8\times 10^{14}$, where $f=-1.33$.
 
-### Case 10 — $f(x)=\sin(x)$, $x_0=\pi/4$, $x\in[-7\pi/4,9\pi/4]$
+[Julia source](laurent_animations_all.jl)
 
-![Laurent-series truncation animation for case 10.](laurent10.gif)
+![Two-sided partial sums of the same function with the intervals from -3 to -1 and from 1 to 3 shaded. The sum follows the curve on both shaded intervals, while an orange Taylor polynomial about x equals 2 follows it only on the right-hand one.](laurent06.gif)
 
-### Case 11 — $f(x)=\cos(x)$, $x_0=\pi/3$, $x\in[-5\pi/3,7\pi/3]$
+### Case 07 — One function, the exterior: $f(x)=\dfrac{4}{(x-1)(x+3)}$, $|x|>3$
 
-![Laurent-series truncation animation for case 11.](laurent11.gif)
+**Behavior:** Outside $|x|=3$ both fractions expand in negative powers only, so $a_{-k}=1-(-3)^{k-1}$ for $k\ge 1$. The $x^{-1}$ coefficient is zero and the series begins $4x^{-2}-8x^{-3}+28x^{-4}-\cdots$. With no constant or positive power, every partial sum tends to $0$ as $|x|\to\infty$, the horizontal asymptote of $f$. In the last frame (powers $-13$ to $-2$) the error is below $7\times 10^{-4}$ on $5\le|x|\le 12$. The degree-11 Taylor polynomial about $x=5$, with the same 12 terms, equals $-75.0$ at $x=12$, where $f=0.0242$; the full Taylor series about $x=5$ converges only on $1<x<9$.
 
-### Case 12 — $f(x)=\tan(x)$, $x_0=0$, $x\in[-\pi,\pi]$
+[Julia source](laurent_animations_all.jl)
 
-![Laurent-series truncation animation for case 12.](laurent12.gif)
+![Partial sums in negative powers only, for the same function, with x beyond plus and minus 3 shaded. The sums follow the curve toward y equals 0 on both sides, while in the last frame an orange Taylor polynomial about x equals 5 leaves the curve before x equals 9.](laurent07.gif)
 
-### Case 13 — $f(x)=e^x$, $x_0=0$, $x\in[-2,3]$
+### Case 08 — Infinitely many negative powers: $f(x)=e^{1/x}$ about $0$, $0<|x|<\infty$
 
-![Laurent-series truncation animation for case 13.](laurent13.gif)
+**Behavior:** For every $x\ne 0$, $e^{1/x}=1+x^{-1}+x^{-2}/2!+\cdots$. The infinitely many negative powers make $0$ an essential singularity: $f\to+\infty$ as $x\to 0^+$, $f\to 0$ as $x\to 0^-$, and $f\to 1$ as $|x|\to\infty$. Every partial sum tends to $1$ as $|x|\to\infty$ and lies below $f$ for $x>0$. At $x=0.2$ the last sum (powers $-11$ to $0$) gives $147.6$ against $f=148.4$, while the degree-11 Taylor polynomial about $x=1$, with the same 12 terms, gives $44.5$. The full Taylor series about $x=1$ converges only on $0<x<2$. Any sum with a negative power has a pole at $0$, so close to $0$ on the left it departs from $f$: at $x=-0.1$ the last sum is about $-1163$, while $f\approx 4.5\times 10^{-5}$.
 
-### Case 14 — $f(x)=e^{-x}\cos(x)$, $x_0=0$, $x\in[-2,4]$
+[Julia source](laurent_animations_all.jl)
 
-![Laurent-series truncation animation for case 14.](laurent14.gif)
-
-### Case 15 — $f(x)=\cosh(x)$, $x_0=0$, $x\in[-4,4]$
-
-![Laurent-series truncation animation for case 15.](laurent15.gif)
-
-### Case 16 — $f(x)=\arctan(x)$, $x_0=0$, $x\in[-2,2]$
-
-![Laurent-series truncation animation for case 16.](laurent16.gif)
-
-### Case 17 — $f(x)=\arcsin(x)$, $x_0=0$, $x\in[-1.5,1.5]$
-
-![Laurent-series truncation animation for case 17.](laurent17.gif)
-
-### Case 18 — $f(x)=J_0(x)$, $x_0=0$, $x\in[-10.2,10.2]$
-
-![Laurent-series truncation animation for case 18.](laurent18.gif)
-
-### Case 19 — $f(x)=J_1(x)$, $x_0=0$, $x\in[-10.2,10.2]$
-
-![Laurent-series truncation animation for case 19.](laurent19.gif)
-
-### Case 20 — $f(x)=\dfrac{1}{\sqrt{2\pi}}e^{-x^2/2}$, $x_0=0$, $x\in[-3,3]$
-
-![Laurent-series truncation animation for case 20.](laurent20.gif)
-
-### Case 21 — $f(x)=\dfrac{1}{2}+\dfrac{1}{2}\operatorname{erf}\!\left(\dfrac{x}{\sqrt{2}}\right)$, $x_0=0$, $x\in[-3,3]$
-
-![Laurent-series truncation animation for case 21.](laurent21.gif)
-
-### Case 22 — $f(x)=\Gamma(x)$, $x_0=1$, $x\in[-0.2,5.2]$
-
-![Laurent-series truncation animation for case 22.](laurent22.gif)
-
-### Case 23 — $f(x)=\Gamma(x)$, $x_0=2$, $x\in[-0.2,5.2]$
-
-![Laurent-series truncation animation for case 23.](laurent23.gif)
-
-### Case 24 — $f(x)=\Gamma(x)$, $x_0=3$, $x\in[-0.2,5.2]$
-
-![Laurent-series truncation animation for case 24.](laurent24.gif)
-
-### Case 25 — $f(x)=Y_0(x)$, $x_0=10$, $x\in[0,22]$
-
-![Laurent-series truncation animation for case 25.](laurent25.gif)
-
-### Case 26 — $f(x)=Y_0(x)$, $x_0=5$, $x\in[0,22]$
-
-![Laurent-series truncation animation for case 26.](laurent26.gif)
-
-### Case 27 — $f(x)=Y_0(x)$, $x_0=2$, $x\in[0,22]$
-
-![Laurent-series truncation animation for case 27.](laurent27.gif)
+![Partial sums in powers of 1 over x drawn over exp(1/x). They rise along the vertical asymptote at x equals 0 from the right and level off toward the dashed line y equals 1 on both sides, while in the last frame an orange Taylor polynomial about x equals 1 leaves the curve before x equals 2.](laurent08.gif)

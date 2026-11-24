@@ -1,6 +1,6 @@
 # halleysab.jl
 # Halley's Method animation: Halley's iteration on f(x) = x² - 2, x₀ = 2
-# Shows the osculating parabola construction converging to √2 (cubic convergence)
+# Shows the osculating hyperbola construction converging to √2 (cubic convergence)
 # Produces: halleysab.gif
 
 using Plots
@@ -50,10 +50,14 @@ anim = @animate for frame in 0:n_iters
     fpv    = fp(x_cur)
     fppv   = fpp(x_cur)
 
-    # Osculating (Taylor) parabola: P(x) = f + f'(x-xₙ) + f''/2·(x-xₙ)²
-    parabola(x) = fv + fpv*(x - x_cur) + 0.5*fppv*(x - x_cur)^2
-    plot!(xplot, parabola.(xplot); color=:darkorange, lw=1.5, ls=:dash,
-          label="osculatory parabola")
+    # Osculating hyperbola H(x) = (f + a₁(x-xₙ)) / (1 + b₁(x-xₙ)), matching f, f', f'' at xₙ.
+    # Its x-intercept is exactly the Halley iterate xₙ₊₁ (the Taylor parabola's root is not).
+    b1 = -fppv / (2*fpv)
+    a1 = fpv + fv*b1
+    # Draw only the branch through xₙ (NaN beyond the pole at xₙ - 1/b₁)
+    hyperbola(x) = (d = 1 + b1*(x - x_cur); d > 0 ? (fv + a1*(x - x_cur)) / d : NaN)
+    plot!(xplot, hyperbola.(xplot); color=:darkorange, lw=1.5, ls=:dash,
+          label="osculating hyperbola (Halley)")
 
     # Also show tangent line (Newton step) for comparison
     tangent(x) = fv + fpv*(x - x_cur)
@@ -78,7 +82,7 @@ anim = @animate for frame in 0:n_iters
         scatter!([x_newton], [0.0]; color=:steelblue, ms=5, markershape=:diamond,
                  label="Newton xₙ₊₁ ≈ $(round(x_newton; digits=5))")
 
-        # Mark Halley x-intercept (lower root of parabola, nearer to actual root)
+        # Mark Halley iterate (x-intercept of the osculating hyperbola)
         scatter!([x_next], [0.0]; color=:darkorange, ms=6, markershape=:diamond,
                  label="Halley xₙ₊₁ ≈ $(round(x_next; digits=6))")
     end

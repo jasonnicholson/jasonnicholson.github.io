@@ -1,11 +1,12 @@
 # aitkenab.jl
-# Aitken/Steffensen animation: Examples 1 & 2 merged (subplot)
+# Aitken/Steffensen animation: Mathews Example 2 (Newton vs Steffensen); Example 1
+# (Aitken Δ² applied to the Newton sequence) is not animated
 # f(x) = x^3 - 3x + 2,  double root p = 1,  x0 = 2.0
 # Top panel:    Newton tangent-line path + Steffensen iterates on x-axis
 # Bottom panel: log10|error| vs iteration — Newton vs Steffensen
 # Produces: aitkenab.gif
 
-using Plots
+using Plots, Printf
 gr()
 
 # --- Function and derivative ---
@@ -29,18 +30,24 @@ for i in 1:n_total
 end
 
 # ── Steffensen iterates ───────────────────────────────────────────────────────
+# If a guard fires, the sequence stops there: only computed steps are kept
+# and drawn (no padding with copies). Here, in Float64, f(S_3) = x^3-3x+2
+# rounds to exactly 0, so q1 = q2 = S_3 and the Δ² denominator is 0.
 n_steff = 7
 xS = Vector{Float64}(undef, n_steff + 1)
 xS[1] = x0
+n_done = n_steff          # Steffensen steps actually computed
+stop_reason = ""
 for i in 1:n_steff
     q1 = xS[i] - f(xS[i]) / df(xS[i])
     q2 = q1    - f(q1)    / df(q1)
     denom = q2 - 2*q1 + xS[i]
     if abs(denom) < 1e-15
-        xS[i+1:end] .= xS[i]; break
+        global n_done = i - 1; global stop_reason = "Δ² denominator = 0"; break
     end
     xS[i+1] = xS[i] - (q1 - xS[i])^2 / denom
 end
+xS = xS[1:n_done+1]
 
 # ── Tangent-line cobweb path (Newton) ────────────────────────────────────────
 path_x = [xN[1]]; path_y = [0.0]
@@ -61,12 +68,12 @@ xplot = range(xlims_curve[1], xlims_curve[2], length=500)
 # ── Animation ────────────────────────────────────────────────────────────────
 anim = @animate for frame in 0:n_total
 
-    nS = min(frame, n_steff)
+    nS = min(frame, n_done)
 
     # — Top panel: Newton tangent-line path + Steffensen iterates —
     p1 = plot(size=(680, 420), xlims=xlims_curve, ylims=ylims_curve,
               xlabel="x", ylabel="y",
-              title="Newton (blue) vs Steffensen (red): f(x) = x³−3x+2  (p = 1)",
+              title="f(x) = x³−3x+2  (p = 1)",
               legend=:topleft, grid=true, framestyle=:box,
               background_color=:white)
     hline!(p1, [0.0]; color=:black, lw=1, label="")
@@ -79,14 +86,20 @@ anim = @animate for frame in 0:n_total
     end
     x_cur = xN[frame + 1]
     scatter!(p1, [x_cur], [0.0]; color=:steelblue, ms=6, markershape=:circle,
-             label="Newton x_$(frame) = $(round(x_cur; digits=6))")
+             label="Newton x_$(frame) = $(@sprintf("%.10f", x_cur))")
     # Steffensen iterates accumulated on x-axis
     scatter!(p1, xS[1:nS+1], zeros(nS+1); color=:red, ms=7,
-             markershape=:diamond, label="Steffensen ($(nS) steps)")
+             markershape=:diamond,
+             label=(frame > n_done && !isempty(stop_reason)) ?
+                   "Steffensen ($(n_done) steps; stopped: $(stop_reason))" :
+                   "Steffensen ($(nS) steps)")
+    # Newton marker redrawn on top so the diamonds near p do not hide it
+    scatter!(p1, [x_cur], [0.0]; color=:steelblue, ms=6, markershape=:circle,
+             label="")
     if nS > 0
         xs_cur = xS[nS + 1]
         annotate!(p1, xs_cur, 0.25,
-            text("S_$(nS)=$(round(xs_cur; digits=5))", 7, :red, :center))
+            text("S_$(nS)=$(@sprintf("%.10f", xs_cur))", 7, :red, :center))
     end
 
     # — Bottom panel: convergence comparison —
@@ -100,7 +113,7 @@ anim = @animate for frame in 0:n_total
     plot!(p2, 0:nS, log_errS[1:nS+1];
           color=:red, lw=2, markershape=:diamond, ms=5, label="Steffensen")
 
-    plot(p1, p2; layout=(2, 1), size=(680, 880))
+    plot(p1, p2; layout=(2, 1), size=(680, 880), left_margin=3Plots.mm)
 end
 
 gif(anim, joinpath(@__DIR__, "aitkenab.gif"); fps=2)

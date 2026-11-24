@@ -18,7 +18,7 @@ $$
 S''(x_0)=0,\qquad S''(x_n)=0.
 $$
 
-The unknown second derivatives are found from a tridiagonal linear system, then each cubic panel is reconstructed. For smooth functions, spline interpolation error typically scales like $O(h^4)$ with mesh spacing $h$.
+The unknown second derivatives are found from a tridiagonal linear system, then each cubic panel is reconstructed. For smooth $f$ with clamped (exact $f'$ at the ends) or not-a-knot end conditions, the maximum error scales like $O(h^4)$ with mesh spacing $h$. With natural end conditions it is only $O(h^2)$ unless $f''(a)=f''(b)=0$; that error sits near an end where $f''\neq 0$, and away from the ends the error is still $O(h^4)$.
 
 ## Animations
 
@@ -26,11 +26,13 @@ The animation below shows a natural cubic spline fitted to equally-spaced data f
 
 Julia source scripts that generated these animations are linked under each case.
 
+Mathews' Cubic Splines module has no animation, and the $\sin(x)$ example in Case 1 is new to this page rather than taken from that module. It is used because $\sin(x)$ has a closed form, so each frame can report the spline's maximum error; the module's examples interpolate a table of data points with no underlying function.
+The module's Examples 1–3, which construct a natural cubic spline (Examples 1 and 2, the second with Mathematica's SplineFit procedure) and a clamped cubic spline (Example 3) through one shared set of data points, are not animated here.
+
 ### Case 1 — Natural cubic spline convergence for $\sin(x)$
 
-**Behavior:** Adding nodes shrinks the maximum error rapidly. The natural cubic spline converges at $O(h^4)$ for smooth functions, where $h$ is the maximum node spacing. Each frame uses a fully recomputed spline (solving the tridiagonal second-derivative system) for the new set of nodes.
+**Behavior:** Adding nodes shrinks the maximum error rapidly. For this $f$ the natural end conditions are exact, since $\sin''(0)=\sin''(2\pi)=0$, so the spline converges at $O(h^4)$, where $h$ is the maximum node spacing; for a smooth $f$ with $f''(a)\neq 0$ or $f''(b)\neq 0$ the natural spline's maximum error falls only as $O(h^2)$. The 3 to 9 nodes shown are too few for this rate to show cleanly from frame to frame. Each frame uses a fully recomputed spline (solving the tridiagonal second-derivative system) for the new set of nodes.
 
 [Julia source](cubicsplineaa.jl)
 
 ![Natural cubic spline approximating sin(x) on [0, 2pi] with n=3,4,5,6,7,9 nodes; the spline closely tracks the true curve as nodes increase](cubicsplineaa.gif)
-

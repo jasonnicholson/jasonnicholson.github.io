@@ -50,7 +50,8 @@ anim = @animate for n in n_intervals_list
     plot(size=(700, 500),
          xlims=(0.0, 2π), ylims=(-1.4, 1.4),
          xlabel="x", ylabel="y",
-         title="Piecewise Cubic Hermite for sin(x) — $n interval$(n==1 ? "" : "s")  (max err ≈ $(round(err, sigdigits=3)))",
+         # Short title so the 3-significant-figure error fits in the 700-px frame
+         title="Cubic Hermite for sin(x), n = $n  (max err ≈ $(round(err, sigdigits=3)))",
          legend=:topright, grid=true, framestyle=:box,
          background_color=:white)
 
@@ -58,14 +59,6 @@ anim = @animate for n in n_intervals_list
     plot!(x_plot, H;          color=:red,  lw=2, linestyle=:dash,
           label="Hermite H(x)  (n = $n)")
     scatter!(xs_nodes, ys; color=:black, ms=6, label="nodes")
-    # Show slope markers as short arrows at each node
-    for i in eachindex(xs_nodes)
-        dx_arrow = 0.15
-        x0, y0 = xs_nodes[i], ys[i]
-        slope = dys[i]
-        annotate!(x0, y0,
-                  text("→", :center, :gray, 8))   # lightweight indicator
-    end
 end
 
 gif(anim, joinpath(@__DIR__, "hermitepolyaa.gif"); fps=1)

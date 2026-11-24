@@ -1,6 +1,7 @@
 # nevilleaa.jl
 # Neville's Algorithm animation: building successive polynomial interpolants for cos(x)
-# Nodes at x = 0, π/4, π/2, 3π/4, π; reveals degree 0→4 interpolant one frame per degree
+# Nodes at x = 0, π/4, π/2, 3π/4, π; one frame per added node, P_{0,j} for j = 0→4
+# (P_{0,4} = P_{0,3}: the five-node interpolant is the same cubic, so frame 5 is titled degree 3)
 # Produces: nevilleaa.gif
 
 using Plots
@@ -44,10 +45,16 @@ end
 anim = @animate for deg in 0:4
     P_vals = [interp_degree(xq, xs, ys, deg) for xq in x_plot]
 
+    # Exact degree of P_{0,deg}: deg for deg ≤ 3; P_{0,4} = P_{0,3} has degree 3
+    title_str = deg < 4 ?
+        "Neville's Algorithm for cos(x) — P_{0,$deg}, degree $deg ($(deg+1) node$(deg==0 ? "" : "s"))" :
+        "Neville's Algorithm for cos(x) — P_{0,4} = P_{0,3}, degree 3 (5 nodes)"
+
+    # ylims include the quadratic's minimum (≈ -2.88 at x = π + 0.1) so frame 3 shows P_{0,2}(π)
     plot(size=(700, 500),
-         xlims=(-0.1, π + 0.1), ylims=(-1.4, 1.4),
+         xlims=(-0.1, π + 0.1), ylims=(-3.0, 1.4),
          xlabel="x", ylabel="y",
-         title="Neville's Algorithm for cos(x) — degree $deg  ($(deg+1) node$(deg==0 ? "" : "s"))",
+         title=title_str, titlefontsize=12,
          legend=:topright, grid=true, framestyle=:box,
          background_color=:white)
 

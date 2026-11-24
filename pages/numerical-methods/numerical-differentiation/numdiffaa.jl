@@ -3,6 +3,7 @@
 # Produces: numdiffaa.gif
 
 using Plots
+using Printf
 gr()
 
 f(x) = exp(-x) * sin(x)
@@ -18,11 +19,11 @@ ylims = (-1.0, 1.1)
 anim = @animate for k in eachindex(hs)
     h = hs[k]
     xfull = range(xlims[1], xlims[2], length=700)
-    xint = range(xlims[1] + h, xlims[2] - h, length=700)
 
+    # f is defined outside [0, pi], so D3 can be evaluated on the whole interval
     ytrue = fp.(xfull)
-    yapprox = central3.(xint, h)
-    maxerr = maximum(abs.(yapprox .- fp.(xint)))
+    yapprox = central3.(xfull, h)
+    maxerr = maximum(abs.(yapprox .- ytrue))
 
     plot(
         xfull,
@@ -39,10 +40,11 @@ anim = @animate for k in eachindex(hs)
         legend=:topright,
         size=(760, 460),
         background_color=:white,
-        title="Three-Point Central Difference on [0, pi]  |  h = $(h)  |  max error ≈ $(round(maxerr; digits=6))",
+        top_margin=3Plots.mm,
+        title="Three-Point Central Difference on [0, pi]\nh = $(h),  max error ≈ $(@sprintf("%.2e", maxerr))",
     )
 
-    plot!(xint, yapprox; color=:dodgerblue3, lw=2, label="D3(x,h)")
+    plot!(xfull, yapprox; color=:dodgerblue3, lw=2, label="D3(x,h)")
 end
 
 gif(anim, joinpath(@__DIR__, "numdiffaa.gif"); fps=2)

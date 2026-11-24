@@ -1,5 +1,5 @@
 # fixpointcc.jl
-# Fixed Point Iteration animation: g(x) = 8/(x+2), x0 = 1.0
+# Fixed Point Iteration animation: g(x) = 8/(x+2), x0 = 4.0 (Mathews Example 6, p0 = 4.0)
 # Oscillating convergent: g is strictly decreasing so staircase alternates sides of x* = 2
 # |g'(2)| = 8/16 = 0.5 < 1, so iteration converges with oscillation
 # Produces: fixpointcc.gif
@@ -9,13 +9,13 @@ gr()
 
 # --- Parameters ---
 g(x) = 8 / (x + 2)
-x0 = 1.0
+x0 = 4.0
 n_iters = 12
 
-xlims = (0.0, 4.0)
-ylims = (0.0, 4.0)
+xlims = (0.0, 4.2)   # a margin past x0 = 4.0 so its marker and first vertical step are not on the frame edge
+ylims = (0.0, 4.2)
 
-title_str = "Fixed Point Iteration: g(x) = 8/(x+2), x₀ = 1.0"
+title_str = "Fixed Point Iteration: g(x) = 8/(x+2), x₀ = 4.0"
 
 # --- Pre-compute iterates ---
 xs = Vector{Float64}(undef, n_iters + 1)

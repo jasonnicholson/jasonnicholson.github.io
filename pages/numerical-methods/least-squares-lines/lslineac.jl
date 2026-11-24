@@ -24,22 +24,22 @@ anim = @animate for k in 1:n_pts
     p = plot(size=(640, 420), xlims=xlims, ylims=ylims,
              xlabel="x", ylabel="y",
              title="Modified Least-Squares Line: y = a*x",
-             legend=:topleft, grid=true, framestyle=:box,
+             legend=:bottomright, grid=true, framestyle=:box,
              background_color=:white)
 
     scatter!(p, x, y; color=:lightgray, ms=4, label="all data")
-    scatter!(p, xv, yv; color=:red, ms=6, label="points used")
+    scatter!(p, xv, yv; color=:red, ms=4, msw=0, label="points used")
     plot!(p, xplot, a .* xplot; color=:magenta, lw=2.5,
           label="fit through origin")
 
     for i in 1:k
         yh = a * xv[i]
-        plot!(p, [xv[i], xv[i]], [yv[i], yh]; color=:steelblue, lw=1.2, label="")
+        plot!(p, [xv[i], xv[i]], [yv[i], yh]; color=:navy, lw=2.5, label="")
     end
 
     rss = sum((yv .- a .* xv) .^ 2)
-    annotate!(p, 1.0, 12.2,
-              text("a = $(round(a; digits=5)), RSS = $(round(rss; digits=4))", 9, :black))
+    annotate!(p, 0.3, 12.2,
+              text("a = $(round(a; digits=5)), RSS = $(round(rss; digits=4))", 9, :black, :left))
 
     p
 end

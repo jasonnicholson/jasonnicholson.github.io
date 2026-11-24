@@ -47,7 +47,7 @@ anim = @animate for k in 2:n_pts
     alpha = 1 / c
     beta = -d / c
 
-    # Early frames can be nearly singular when both regressions collapse to the same line.
+    # With two points both regressions pass through both points, so a*c = 1 and the lines coincide.
     has_intersection = abs(1 - a * c) > 1e-8
     yi = has_intersection ? (a * d + b) / (1 - a * c) : NaN
     xi = has_intersection ? (c * yi + d) : NaN
@@ -69,16 +69,17 @@ anim = @animate for k in 2:n_pts
     plot!(p, xplot, alpha .* xplot .+ beta; color=:blue, lw=2.0,
           linestyle=:dash, label="x on y (rearranged)")
 
+    # Centroid first, then the smaller intersection marker on top so both stay visible.
+    scatter!(p, [xbar], [ybar]; color=:orange, marker=:star5, ms=11,
+             label="centroid")
     if has_intersection && isfinite(xi) && isfinite(yi)
-        scatter!(p, [xi], [yi]; color=:black, marker=:diamond, ms=6,
+        scatter!(p, [xi], [yi]; color=:black, marker=:diamond, ms=4,
                  label="line intersection")
     end
-    scatter!(p, [xbar], [ybar]; color=:orange, marker=:star5, ms=9,
-             label="centroid")
 
     status = has_intersection ?
              "k=$(k): (xi, yi)=($(round(xi; digits=3)), $(round(yi; digits=3)))" :
-             "k=$(k): intersection ill-conditioned"
+             "k=$(k): both lines coincide"
     annotate!(p, 0.35, 10.6, text(status, 9, :black))
 
     p

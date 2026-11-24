@@ -12,7 +12,7 @@ n_seq = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20,
          24, 28, 32, 36, 40, 44, 48, 56, 64, 72,
          84, 96, 108]
 
-xlims = (0.0, 2.0)
+xlims = (-0.03, 2.03)   # small margin so the end sample points are not clipped
 ylims = (0.0, 2.1)
 xplot = range(a, b, length=800)
 
@@ -54,12 +54,24 @@ anim = @animate for n in vcat(0, n_seq)
                   fillcolor=:lightpink, linecolor=:red, lw=0.8)
         end
 
+        # Panel dividers at every panel boundary x_{2k}, k = 0..n/2 (as in the legacy GIF)
+        for i in 0:2:n
+            xk = a + i * dx
+            plot!([xk, xk], [0.0, f(xk)]; color=:red, lw=0.8)
+        end
+
         approx = simpson_sum(n)
         annotate!(1.15, 1.88, text("Sample Points = $(n + 1)", :black, 10))
         annotate!(1.15, 1.74, text("Approximation = $(round(approx; digits=6))", :black, 10))
     end
 
     plot!(xplot, f.(xplot); color=:magenta, lw=2)
+
+    if n > 0
+        # Sample points x_i = a + i*dx, i = 0..n, drawn on top (as in the legacy GIF)
+        xnodes = [a + i * dx for i in 0:n]
+        scatter!(xnodes, f.(xnodes); color=:red, markersize=3, markerstrokewidth=0)
+    end
 end
 
 gif(anim, joinpath(@__DIR__, "simpsonsaa.gif"); fps=2)

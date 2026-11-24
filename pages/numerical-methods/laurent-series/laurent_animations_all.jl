@@ -1,274 +1,188 @@
 # laurent_animations_all.jl
-# Generate Laurent-series truncation animations for the same 27 function cases as the Pade page.
-# Output GIFs are saved next to this script via @__DIR__.
+# Laurent-series animations: when a Laurent series reduces to a Taylor series, and when
+# its negative powers follow vertical and horizontal asymptotes that a polynomial cannot.
+# Each frame draws f, a partial sum of the Laurent series for the stated region and, in
+# the asymptote cases, a Taylor polynomial with the same number of terms about a regular
+# point. Output GIFs are saved next to this script via @__DIR__.
 
 using Plots
-using SpecialFunctions
+using Printf
 
 gr()
 
+# --- Truncated Taylor-series arithmetic (coefficients of t^0 ... t^n) ---
+
+series_mul(a, b) = [sum(a[j + 1] * b[k - j + 1] for j in 0:k) for k in 0:(length(a) - 1)]
+
+# sin(c + t)
+taylor_sin(c, n) = [sin(c + k * pi / 2) / factorial(big(k)) for k in 0:n] .|> Float64
+
+# (c + t)^(-p)
+taylor_inv_pow(c, p, n) =
+    [Float64((-1)^k * binomial(big(p + k - 1), big(k)) * big(c)^(-(p + k))) for k in 0:n]
+
+# exp(h(t)), from k g_k = sum_{j=1}^{k} j h_j g_{k-j}
+function taylor_exp_of(h)
+    g = zeros(length(h))
+    g[1] = exp(h[1])
+    for k in 1:(length(h) - 1)
+        g[k + 1] = sum(j * h[j + 1] * g[k - j + 1] for j in 1:k) / k
+    end
+    return g
+end
+
+# 4/((x - 1)(x + 3)) = 1/(x - 1) - 1/(x + 3), the two-pole function of cases 05-07,
+# about a regular point r
+two_pole_taylor(r, n) = taylor_inv_pow(r - 1, 1, n) .- taylor_inv_pow(r + 3, 1, n)
+
+# (x^2+1)/(x^2-1) = 1 + 1/(x-1) - 1/(x+1) about x = 3
+function case04_taylor(n)
+    a = taylor_inv_pow(2.0, 1, n) .- taylor_inv_pow(4.0, 1, n)
+    a[1] += 1.0
+    return a
+end
+
+# --- Case table ---
+
 struct LaurentCase
     id::String
-    formula_label::String
+    title::String
     f::Function
-    c::Float64
     xlims::Tuple{Float64, Float64}
     ylims::Tuple{Float64, Float64}
-    max_order::Int
+    regions::Vector{Tuple{Float64, Float64}}  # where the series converges, on the real line
+    poles::Vector{Float64}                    # f is broken here
+    vasym::Vector{Float64}
+    hasym::Vector{Float64}
+    coef::Function                            # k -> a_k, the coefficient of x^k
+    frames::Vector{Vector{Int}}               # powers included in each frame
+    reduces_to_taylor::Bool
+    ref::Union{Nothing, Float64}              # regular point of the polynomial comparison
+    ref_coefs::Union{Nothing, Function}       # degree -> Taylor coefficients about ref
 end
 
-cases = LaurentCase[
-    LaurentCase("01", "sqrt(x)", x -> sqrt(x), 1.0, (0.0, 10.5), (0.0, 3.5), 10),
-    LaurentCase("02", "sqrt(x)", x -> sqrt(x), 4.0, (0.0, 10.5), (0.0, 3.5), 10),
-    LaurentCase("03", "sqrt(x)", x -> sqrt(x), 5.0, (0.0, 10.5), (0.0, 3.5), 10),
-    LaurentCase("04", "1/sqrt(1-x)", x -> 1 / sqrt(1 - x), 0.0, (-1.5, 1.5), (-1.0, 6.0), 10),
-    LaurentCase("05", "log(x)", x -> log(x), 1.0, (-0.5, 4.1), (-6.0, 2.0), 10),
-    LaurentCase("06", "log(x)", x -> log(x), 2.0, (-0.5, 4.1), (-6.0, 2.0), 10),
-    LaurentCase("07", "log(1+x)", x -> log(1 + x), 0.0, (-1.5, 1.5), (-4.0, 2.0), 10),
-    LaurentCase("08", "sin(x)", x -> sin(x), 0.0, (-3pi, 3pi), (-1.5, 1.5), 10),
-    LaurentCase("09", "cos(x)", x -> cos(x), 0.0, (-3pi, 3pi), (-1.5, 1.5), 10),
-    LaurentCase("10", "sin(x)", x -> sin(x), pi / 4, (-7pi / 4, 9pi / 4), (-1.5, 1.5), 10),
-    LaurentCase("11", "cos(x)", x -> cos(x), pi / 3, (-5pi / 3, 7pi / 3), (-1.5, 1.5), 10),
-    LaurentCase("12", "tan(x)", x -> tan(x), 0.0, (-pi, pi), (-10.0, 10.0), 8),
-    LaurentCase("13", "exp(x)", x -> exp(x), 0.0, (-2.0, 3.0), (-1.0, 22.0), 10),
-    LaurentCase("14", "exp(-x)*cos(x)", x -> exp(-x) * cos(x), 0.0, (-2.0, 4.0), (-4.0, 4.0), 10),
-    LaurentCase("15", "cosh(x)", x -> cosh(x), 0.0, (-4.0, 4.0), (-1.0, 30.0), 10),
-    LaurentCase("16", "atan(x)", x -> atan(x), 0.0, (-2.0, 2.0), (-2.0, 2.0), 10),
-    LaurentCase("17", "asin(x)", x -> asin(x), 0.0, (-1.5, 1.5), (-2.0, 2.0), 8),
-    LaurentCase("18", "besselj(0,x)", x -> besselj(0, x), 0.0, (-10.2, 10.2), (-1.5, 1.5), 10),
-    LaurentCase("19", "besselj(1,x)", x -> besselj(1, x), 0.0, (-10.2, 10.2), (-1.5, 1.5), 10),
-    LaurentCase("20", "normal_pdf(x)", x -> exp(-x^2 / 2) / sqrt(2pi), 0.0, (-3.0, 3.0), (-0.05, 0.45), 10),
-    LaurentCase("21", "normal_cdf(x)", x -> 0.5 + 0.5 * erf(x / sqrt(2.0)), 0.0, (-3.0, 3.0), (-0.1, 1.1), 10),
-    LaurentCase("22", "gamma(x)", x -> gamma(x), 1.0, (-0.2, 5.2), (-10.0, 35.0), 8),
-    LaurentCase("23", "gamma(x)", x -> gamma(x), 2.0, (-0.2, 5.2), (-10.0, 35.0), 8),
-    LaurentCase("24", "gamma(x)", x -> gamma(x), 3.0, (-0.2, 5.2), (-10.0, 45.0), 8),
-    LaurentCase("25", "bessely(0,x)", x -> bessely(0, x), 10.0, (0.0, 22.0), (-2.0, 2.0), 8),
-    LaurentCase("26", "bessely(0,x)", x -> bessely(0, x), 5.0, (0.0, 22.0), (-2.0, 2.0), 8),
-    LaurentCase("27", "bessely(0,x)", x -> bessely(0, x), 2.0, (0.0, 22.0), (-2.0, 2.0), 8),
+sinc_f(x) = x == 0 ? 1.0 : sin(x) / x
+two_pole(x) = 4 / ((x - 1) * (x + 3))
+exp_inv(x) = x == 0 ? NaN : exp(1 / x)
+
+const CASES = LaurentCase[
+    LaurentCase("01", "sin(x)/x about 0: every negative power vanishes", sinc_f,
+        (-14.0, 14.0), (-1.0, 1.6), [(-14.0, 14.0)], Float64[], Float64[], [0.0],
+        k -> (k >= 0 && iseven(k)) ? (-1.0)^(k / 2) / Float64(factorial(big(k + 1))) : 0.0,
+        [collect(0:2:(2m)) for m in 0:13], true, nothing, nothing),
+
+    LaurentCase("02", "1/(1+x^2) about 0: Taylor series, |x| < 1", x -> 1 / (1 + x^2),
+        (-2.0, 2.0), (-0.6, 1.6), [(-1.0, 1.0)], Float64[], Float64[], [0.0],
+        k -> (k >= 0 && iseven(k)) ? (-1.0)^(k / 2) : 0.0,
+        [collect(0:2:(2m)) for m in 0:11], true, nothing, nothing),
+
+    LaurentCase("03", "sin(x)/x^3 about 0: pole at 0, region 0 < |x|", x -> x == 0 ? NaN : sin(x) / x^3,
+        (-6.0, 6.0), (-1.0, 5.0), [(-6.0, 0.0), (0.0, 6.0)], [0.0], [0.0], [0.0],
+        k -> (k >= -2 && iseven(k)) ? (-1.0)^((k + 2) / 2) / Float64(factorial(big(k + 3))) : 0.0,
+        [collect(-2:2:(2m - 2)) for m in 0:9], false, 1.0,
+        d -> series_mul(taylor_sin(1.0, d), taylor_inv_pow(1.0, 3, d))),
+
+    LaurentCase("04", "(x^2+1)/(x^2-1) in powers of 1/x, region |x| > 1",
+        x -> abs(x) == 1 ? NaN : (x^2 + 1) / (x^2 - 1),
+        (-10.0, 10.0), (-3.0, 5.0), [(-10.0, -1.0), (1.0, 10.0)], [-1.0, 1.0], [-1.0, 1.0], [1.0],
+        k -> k == 0 ? 1.0 : (k < 0 && iseven(k)) ? 2.0 : 0.0,
+        [collect(-2m:2:0) for m in 0:9], false, 3.0,
+        case04_taylor),
+
+    LaurentCase("05", "4/((x-1)(x+3)), disk |x| < 1: Taylor series", two_pole,
+        (-7.0, 7.0), (-4.0, 4.0), [(-1.0, 1.0)], [-3.0, 1.0], [-3.0, 1.0], [0.0],
+        k -> k >= 0 ? -1.0 - (-1.0)^k / 3.0^(k + 1) : 0.0,
+        [collect(0:n) for n in 0:13], true, nothing, nothing),
+
+    LaurentCase("06", "4/((x-1)(x+3)), annulus 1 < |x| < 3", two_pole,
+        (-7.0, 7.0), (-4.0, 4.0), [(-3.0, -1.0), (1.0, 3.0)], [-3.0, 1.0], [-3.0, 1.0], [0.0],
+        k -> k >= 0 ? -(-1.0)^k / 3.0^(k + 1) : 1.0,
+        [collect(-n:n) for n in 1:12], false, 2.0,
+        d -> two_pole_taylor(2.0, d)),
+
+    LaurentCase("07", "4/((x-1)(x+3)), exterior |x| > 3", two_pole,
+        (-12.0, 12.0), (-4.0, 4.0), [(-12.0, -3.0), (3.0, 12.0)], [-3.0, 1.0], [-3.0, 1.0], [0.0],
+        k -> k <= -2 ? 1.0 - (-3.0)^(-k - 1) : 0.0,
+        [collect(-n:-2) for n in 2:13], false, 5.0,
+        d -> two_pole_taylor(5.0, d)),
+
+    LaurentCase("08", "exp(1/x) about 0: infinitely many negative powers", exp_inv,
+        (-4.0, 6.0), (-2.0, 8.0), [(-4.0, 0.0), (0.0, 6.0)], [0.0], [0.0], [1.0],
+        k -> k <= 0 ? 1 / Float64(factorial(big(-k))) : 0.0,
+        [collect(-n:0) for n in 0:11], false, 1.0,
+        d -> taylor_exp_of([(-1.0)^k for k in 0:d])),
 ]
 
-function safe_eval(f::Function, x::Float64)
-    try
-        y = f(x)
-        return isfinite(y) ? y : NaN
-    catch
-        return NaN
-    end
-end
+# --- Evaluation ---
 
-function binom_real(alpha::Float64, k::Int)
-    k == 0 && return 1.0
-    p = 1.0
-    for j in 0:(k - 1)
-        p *= (alpha - j)
-    end
-    return p / factorial(k)
-end
+finite_or_nan(y) = isfinite(y) ? y : NaN
 
-function series_coeffs_fit(f::Function, c::Float64, n::Int, xlims::Tuple{Float64, Float64})
-    need = n + 1
-    q = max(n + 6, 14)
-    tgrid = collect(-q:q)
+# Partial sum of a_k x^k over the given powers. NaN at x = 0 when a negative power is present.
+partial_sum(case, powers, x) = finite_or_nan(sum(case.coef(k) * x^k for k in powers))
 
-    local_scale = max(1.0, abs(c))
-    h_by_local = 0.01 * local_scale
-    left_room = c - xlims[1]
-    right_room = xlims[2] - c
-    h_by_bounds = 0.45 * min(left_room, right_room) / max(q, 1)
-    h = max(1e-5, min(h_by_local, h_by_bounds))
-
-    if left_room <= 1e-8
-        tgrid = collect(0:(2q))
-    elseif right_room <= 1e-8
-        tgrid = collect((-2q):0)
-    end
-
-    xs = c .+ h .* tgrid
-    ys = [safe_eval(f, x) for x in xs]
-
-    keep = [i for i in eachindex(ys) if isfinite(ys[i])]
-    if length(keep) < need
-        for _ in 1:6
-            h *= 0.5
-            xs = c .+ h .* tgrid
-            ys = [safe_eval(f, x) for x in xs]
-            keep = [i for i in eachindex(ys) if isfinite(ys[i])]
-            length(keep) >= need && break
-        end
-    end
-
-    if length(keep) < need
-        coeffs = zeros(Float64, n + 1)
-        v0 = safe_eval(f, c)
-        coeffs[1] = isfinite(v0) ? v0 : 0.0
-        return coeffs
-    end
-
-    tt = [tgrid[i] for i in keep]
-    yy = [ys[i] for i in keep]
-    A = [t^k for t in tt, k in 0:n]
-    a = A \ yy
-
-    coeffs = zeros(Float64, n + 1)
-    for k in 0:n
-        coeffs[k + 1] = a[k + 1] / (h^k)
-    end
-    return coeffs
-end
-
-function series_coeffs(case::LaurentCase)
-    n = case.max_order
-    c = case.c
-    a = zeros(Float64, n + 1)
-    lbl = case.formula_label
-
-    if lbl == "sqrt(x)"
-        for k in 0:n
-            a[k + 1] = binom_real(0.5, k) * c^(0.5 - k)
-        end
-        return a
-    elseif lbl == "1/sqrt(1-x)" && c == 0.0
-        for k in 0:n
-            a[k + 1] = binomial(2k, k) / (4.0^k)
-        end
-        return a
-    elseif lbl == "log(x)"
-        a[1] = log(c)
-        for k in 1:n
-            a[k + 1] = ((-1.0)^(k - 1)) / (k * c^k)
-        end
-        return a
-    elseif lbl == "log(1+x)" && c == 0.0
-        for k in 1:n
-            a[k + 1] = ((-1.0)^(k + 1)) / k
-        end
-        return a
-    elseif lbl == "sin(x)"
-        for k in 0:n
-            a[k + 1] = sin(c + k * pi / 2) / factorial(k)
-        end
-        return a
-    elseif lbl == "cos(x)"
-        for k in 0:n
-            a[k + 1] = cos(c + k * pi / 2) / factorial(k)
-        end
-        return a
-    elseif lbl == "tan(x)" && c == 0.0
-        tan_coeff = Dict(1 => 1.0, 3 => 1.0 / 3.0, 5 => 2.0 / 15.0, 7 => 17.0 / 315.0, 9 => 62.0 / 2835.0)
-        for (k, v) in tan_coeff
-            if k <= n
-                a[k + 1] = v
-            end
-        end
-        return a
-    elseif lbl == "exp(x)"
-        for k in 0:n
-            a[k + 1] = exp(c) / factorial(k)
-        end
-        return a
-    elseif lbl == "exp(-x)*cos(x)" && c == 0.0
-        z = complex(-1.0, 1.0)
-        for k in 0:n
-            a[k + 1] = real(z^k) / factorial(k)
-        end
-        return a
-    elseif lbl == "cosh(x)" && c == 0.0
-        for m in 0:div(n, 2)
-            k = 2m
-            a[k + 1] = 1.0 / factorial(k)
-        end
-        return a
-    elseif lbl == "atan(x)" && c == 0.0
-        for m in 0:div(n - 1, 2)
-            k = 2m + 1
-            a[k + 1] = ((-1.0)^m) / k
-        end
-        return a
-    elseif lbl == "asin(x)" && c == 0.0
-        for m in 0:div(n - 1, 2)
-            k = 2m + 1
-            a[k + 1] = factorial(2m) / (4.0^m * factorial(m)^2 * (2m + 1))
-        end
-        return a
-    elseif lbl == "besselj(0,x)" && c == 0.0
-        for m in 0:div(n, 2)
-            k = 2m
-            a[k + 1] = ((-1.0)^m) / (4.0^m * factorial(m)^2)
-        end
-        return a
-    elseif lbl == "besselj(1,x)" && c == 0.0
-        for m in 0:div(n - 1, 2)
-            k = 2m + 1
-            a[k + 1] = ((-1.0)^m) / (2.0^(2m + 1) * factorial(m) * factorial(m + 1))
-        end
-        return a
-    elseif lbl == "normal_pdf(x)" && c == 0.0
-        c0 = 1.0 / sqrt(2pi)
-        for m in 0:div(n, 2)
-            k = 2m
-            a[k + 1] = c0 * ((-1.0)^m) / (2.0^m * factorial(m))
-        end
-        return a
-    elseif lbl == "normal_cdf(x)" && c == 0.0
-        a[1] = 0.5
-        c0 = 1.0 / sqrt(2pi)
-        for m in 0:div(n - 1, 2)
-            k = 2m + 1
-            a[k + 1] = c0 * ((-1.0)^m) / (2.0^m * factorial(m) * (2m + 1))
-        end
-        return a
-    end
-
-    return series_coeffs_fit(case.f, c, n, case.xlims)
-end
-
-function poly_eval_asc(coeffs::Vector{Float64}, z::Float64)
-    v = coeffs[end]
-    for i in (length(coeffs) - 1):-1:1
-        v = v * z + coeffs[i]
+function taylor_eval(a, t)
+    v = a[end]
+    for i in (length(a) - 1):-1:1
+        v = v * t + a[i]
     end
     return v
 end
 
-function render_case(case::LaurentCase)
-    xplot = collect(range(case.xlims[1], case.xlims[2], length=900))
-    ytrue = [safe_eval(case.f, x) for x in xplot]
-    ytrue = [isfinite(y) ? clamp(y, case.ylims[1], case.ylims[2]) : NaN for y in ytrue]
+function powers_label(powers)
+    lo, hi = extrema(powers)
+    lo == hi && return "power $(lo)"
+    step_two = length(powers) > 1 && all(diff(powers) .== 2)
+    return "powers $(lo) to $(hi)" * (step_two ? ", even" : "")
+end
 
-    coeffs = series_coeffs(case)
-    yc = safe_eval(case.f, case.c)
+terms_label(n) = n == 1 ? "1 term" : "$(n) terms"
+
+# --- Rendering ---
+
+function render_case(case::LaurentCase)
+    grid = collect(range(case.xlims[1], case.xlims[2], length=2401))
+    xs = sort(unique(vcat(grid, case.poles, [0.0])))
+    yf = [x in case.poles ? NaN : finite_or_nan(case.f(x)) for x in xs]
     anim = Animation()
 
-    for n in 1:case.max_order
-        exps = -n:n
-        ylaur = Vector{Float64}(undef, length(xplot))
+    for powers in case.frames
+        p = plot(size=(840, 600), xlims=case.xlims, ylims=case.ylims,
+                 xlabel="x", ylabel="y", title="Case $(case.id): $(case.title)",
+                 titlefontsize=11, legend=:outerbottom, legendcolumns=2,
+                 legendfontsize=8, grid=true, framestyle=:box, background_color=:white)
 
-        for i in eachindex(xplot)
-            z = xplot[i] - case.c
-            # For these reused Padé centers, f is regular at x0, so the
-            # principal part vanishes and negative-power Laurent terms are zero.
-            ylaur[i] = poly_eval_asc(coeffs[1:(n + 1)], z)
-        end
-        ylaur = [isfinite(y) ? clamp(y, case.ylims[1], case.ylims[2]) : NaN for y in ylaur]
-
-        pplot = plot(size=(700, 520),
-                     xlims=case.xlims, ylims=case.ylims,
-                     xlabel="x", ylabel="y",
-                     title="Laurent Case $(case.id): f(x) = $(case.formula_label), x0 = $(round(case.c; digits=4))",
-                     legend=:topleft, grid=true, framestyle=:box,
-                     background_color=:white)
-
-        plot!(pplot, xplot, ytrue; color=:magenta, lw=2.5, label="y = f(x)")
-          plot!(pplot, xplot, ylaur; color=:steelblue, lw=2.1,
-              label="Laurent orders $(first(exps))..$(last(exps))")
-
-        vline!(pplot, [case.c]; color=:gray50, lw=1.0, ls=:dash, label="")
-
-        if isfinite(yc)
-            scatter!(pplot, [case.c], [yc]; color=:red, ms=5, label="")
+        for (i, (a, b)) in enumerate(case.regions)
+            vspan!(p, [a, b]; color=:seagreen, alpha=0.13, lw=0,
+                   label=i == 1 ? "region of convergence (real x)" : "")
         end
 
-        frame(anim, pplot)
+        asym_label = "asymptote of f"
+        for v in case.vasym
+            vline!(p, [v]; color=:black, ls=:dash, lw=1.1, label=asym_label)
+            asym_label = ""
+        end
+        for h in case.hasym
+            hline!(p, [h]; color=:black, ls=:dash, lw=1.1, label=asym_label)
+            asym_label = ""
+        end
+
+        plot!(p, xs, yf; color=:magenta, lw=2.6, label="y = f(x)")
+
+        nterms = count(k -> case.coef(k) != 0, powers)
+        name = case.reduces_to_taylor ? "Laurent = Taylor" : "Laurent"
+        ysum = [partial_sum(case, powers, x) for x in xs]
+        plot!(p, xs, ysum; color=:steelblue, lw=2.1,
+              label="$(name), $(powers_label(powers)) ($(terms_label(nterms)))")
+
+        if case.ref !== nothing
+            a = case.ref_coefs(nterms - 1)
+            ypoly = [taylor_eval(a, x - case.ref) for x in xs]
+            plot!(p, xs, ypoly; color=:darkorange, lw=1.8,
+                  label=@sprintf("Taylor about x = %g, degree %d (%s)",
+                                 case.ref, nterms - 1, terms_label(nterms)))
+        end
+
+        frame(anim, p)
     end
 
     out_name = "laurent$(case.id).gif"
@@ -276,8 +190,9 @@ function render_case(case::LaurentCase)
     println("Saved: " * out_name)
 end
 
-for case in cases
-    render_case(case)
+if abspath(PROGRAM_FILE) == @__FILE__
+    for case in CASES
+        render_case(case)
+    end
+    println("Generated $(length(CASES)) GIFs.")
 end
-
-println("Generated $(length(cases)) GIFs.")

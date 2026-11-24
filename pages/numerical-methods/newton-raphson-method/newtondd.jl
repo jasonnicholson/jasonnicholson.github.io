@@ -1,7 +1,8 @@
 # newtondd.jl
 # Newton-Raphson Method animation: NON Convergence — Cycling
 # f(x) = x^3 - x + 3, x0 = 0.0
-# Newton iterates cycle between ~0 and ~3 indefinitely
+# Newton iterates are attracted to a 4-cycle ≈ 0.0074 → 3.0005 → 1.9619 → 1.1475
+# The only real root, x* ≈ -1.6717, is never approached (window widened to show it)
 # Produces: newtondd.gif
 
 using Plots
@@ -15,8 +16,8 @@ fp(x) = 3*x^2 - 1
 x0      = 0.0
 n_iters = 10
 
-xlims = (-0.5, 3.5)
-ylims = (-3.0, 30.0)
+xlims = (-2.0, 3.5)
+ylims = (-4.0, 30.0)
 
 title_str = "Newton-Raphson: f(x) = x³ − x + 3"
 

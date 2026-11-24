@@ -15,15 +15,15 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1 — Fast Convergence, $f(x) = 3e^x - 4\cos(x)$, $p_0 = 1.0$, $p_1 = 0.9$
 
-**Behavior:** The secant method converges quickly to the root near $x \approx 0.456$. Both starting points are on the same side of the root and the function is well-behaved, so the secant line immediately produces a good approximation.
+**Behavior:** The secant method converges quickly to the root near $x \approx 0.2549$. Both starting points are on the same side of the root and the function is well-behaved. The first secant step lands at $p_2 \approx 0.456$, still 0.20 from the root; after that the error falls rapidly (0.066 at $p_3$, 0.0089 at $p_4$, $4.4 \times 10^{-4}$ at $p_5$, $3.1 \times 10^{-6}$ at $p_6$), consistent with the secant method's order $\approx 1.618$ at this simple root.
 
 [Julia source](secantmethodaa.jl)
 
-![Secant method animation for f(x)=3eˣ−4cos(x): secant line drawn through two iterates, x-intercept converges rapidly to the root near x=0.456](secantmethodaa.gif)
+![Secant method animation for f(x)=3eˣ−4cos(x): secant line drawn through two iterates, x-intercept converges rapidly to the root near x=0.2549](secantmethodaa.gif)
 
 ### Case 2 — Slow Convergence (Double Root), $f(x) = 1 - 10x + 25x^2$, $p_0 = 1.0$, $p_1 = 0.9$
 
-**Behavior:** The function $(1-5x)^2$ has a double root at $x = 0.2$ where $f'(0.2) = 0$. The secant method converges, but slowly — the double root causes the denominator $f(p_n) - f(p_{n-1})$ to shrink, giving small steps that creep toward the root over many iterations.
+**Behavior:** The function $(1-5x)^2$ has a double root at $x = 0.2$ where $f'(0.2) = 0$. The secant method converges, but only linearly: here $f(x) = 25(x-0.2)^2$, and the ratio of successive errors settles at $(\sqrt{5}-1)/2 \approx 0.618$, so each step removes only about 38% of the remaining error and the iterates creep toward the root over many iterations.
 
 [Julia source](secantmethodbb.jl)
 
@@ -31,7 +31,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 3 — Convergence with Oscillation, $f(x) = \arctan(x)$, $p_0 = 1.35$, $p_1 = 1.30$
 
-**Behavior:** The secant method converges to the root at $x = 0$, but the iterates oscillate — jumping to the opposite side of the root each step before settling. The relatively flat slope of $\arctan$ near the starting points causes the secant line to overshoot to negative $x$ on the first step.
+**Behavior:** The secant method converges to the root at $x = 0$, but the iterates oscillate — jumping to the opposite side of the root each step before settling. The relatively flat slope of $\arctan$ near the starting points causes the secant line to overshoot to negative $x$ on the first step. The animation ends at $p_8$, which double precision returns as exactly 0: at $p_6 \approx -6.9 \times 10^{-12}$ and $p_7 \approx 4.8 \times 10^{-25}$ the computed $\arctan(x)$ equals $x$, so the secant through them passes through the origin. In exact arithmetic $p_8 \approx -7.6 \times 10^{-48}$.
 
 [Julia source](secantmethodcc.jl)
 
@@ -47,15 +47,15 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 5 — NON Convergence (Diverging to Infinity), $f(x) = x e^{-x}$, $p_0 = 1.5$, $p_1 = 2.0$
 
-**Behavior:** Although $f(x) = x e^{-x}$ has a root at $x = 0$, the secant method diverges with these starting points. The function decreases toward zero for large $x$, so the secant line through points on the decaying tail has a shallow negative slope whose x-intercept falls far to the right — each step pushes the estimate further from the root.
+**Behavior:** Although $f(x) = x e^{-x}$ has a root at $x = 0$, the secant method diverges with these starting points. The function decreases toward zero for large $x$, so the secant line through points on the decaying tail has a shallow negative slope whose x-intercept falls to the right — each step pushes the estimate further from the root. The divergence is slow: after the first jump to $p_2 \approx 4.11$, each step moves right by less than 1 (the step tends to $\ln 2 \approx 0.693$). The animation stops at $p_{10} \approx 10.57$, the first iterate past the right edge of the window; $p_{16} \approx 15.11$.
 
 [Julia source](secantmethodee.jl)
 
-![Secant method animation for f(x)=xe⁻ˣ with p0=1.5, p1=2.0: the secant line's x-intercept steps progressively further right, demonstrating divergence to infinity](secantmethodee.gif)
+![Secant method animation for f(x)=xe⁻ˣ with p0=1.5, p1=2.0: the secant line's x-intercept steps progressively further right until p10≈10.57 leaves the window, illustrating slow divergence to infinity](secantmethodee.gif)
 
 ### Case 6 — Convergence, $f(x) = \arctan(x)$, $p_0 = 1.60$, $p_1 = 1.50$
 
-**Behavior:** With slightly larger starting values than Case 3, the method again converges to $x = 0$. Despite a larger first overshoot, subsequent steps quickly close in on the root, illustrating that the secant method converges super-linearly (order $\approx 1.618$) when the starting points are in the basin of convergence.
+**Behavior:** With slightly larger starting values than Case 3, the method again converges to $x = 0$. Despite a larger first overshoot, subsequent steps quickly close in on the root. The convergence is super-linear, but because $f''(0) = 0$ for arctan its asymptotic order here is 2 rather than the generic $\approx 1.618$.
 
 [Julia source](secantmethodff.jl)
 

@@ -33,19 +33,22 @@ As the degree increases from 2 to 5, RMS decreases, but this does not always mea
 
 ## Animations
 
-Each animation below shows the **term-by-term construction** of the least-squares polynomial fit for the same dataset. The blue points are the data, the gray dashed curve is the final fitted polynomial, and the solid colored curve is the partial polynomial built from terms up to degree $k$.
+Each animation below draws the degree-$m$ least-squares polynomial one partial sum at a time, for the same dataset. The blue points are the data, the gray dashed curve is the fitted polynomial $p_m$, and the solid colored curve is the partial sum $a_0+a_1x+\cdots+a_kx^k$ of its coefficients, with $k$ increasing frame by frame. Only the last frame ($k=m$) is a least-squares fit. The earlier partial sums are not the least-squares fits of degree $k$, because lowering the degree changes every coefficient: the degree-0 fit is the mean $3.8167$, while $a_0$ ranges from $4.629$ to $4.674$ across the four cases. Each of these earlier partial sums has a larger RMS than the degree-$k$ least-squares fit, and its RMS need not fall as terms are added: in Case 4 it rises from $0.17774$ at $k=2$ to $0.20267$ at $k=3$.
 
-Julia source scripts that generated these animations are linked under each case.
+Julia source scripts, which compute the coefficients from the normal equations and generated these animations, are linked under each case.
+
+The four cases animate Examples 2–5 of Mathews' Least Squares Polynomials module, which fit the least-squares quadratic, cubic, quartic and quintic to the six data points above.
+The module's Example 1, which fits a least-squares parabola to a different set of points, the graph in Example 6, which plots the quadratic to quintic fits together on an interval wide enough to show them separating outside the data, Example 7, which fits the same degrees to points sampled from a non-polynomial function to show polynomial wiggle, and Example 8, which recomputes the cubic fit to the same six points from the module's general linear least-squares theorem, are not animated here.
 
 ### Case 1 - Quadratic fit, $m=2$
 
-**Behavior:** The quadratic captures the main concave-down trend well, with small residuals near the center and slightly larger error near the ends. This is the baseline smooth fit used in the module.
+**Behavior:** The quadratic captures the main concave-down trend well, with all residuals below $0.1$ in size; the two largest are at the two leftmost points ($x=-4.5$ and $x=-3.2$). This is the baseline smooth fit used in the module.
 
 $$p_2(x)=4.67425 + 0.52861x - 0.07563x^2,\qquad \mathrm{RMS}\approx 0.05245.$$
 
 [Julia source](leastsqpolyaa.jl)
 
-![Animation showing least-squares quadratic construction term-by-term for six data points, ending with a smooth concave-down curve.](leastsqpolyaa.gif)
+![Animation drawing the least-squares quadratic for six data points as partial sums through x^0, x^1 and x^2, ending with the smooth concave-down fitted curve.](leastsqpolyaa.gif)
 
 ### Case 2 - Cubic fit, $m=3$
 
@@ -55,25 +58,25 @@ $$p_3(x)=4.66863 + 0.48939x - 0.07424x^2 + 0.00268x^3,\qquad \mathrm{RMS}\approx
 
 [Julia source](leastsqpolyab.jl)
 
-![Animation showing least-squares cubic construction term-by-term, with improved alignment to data compared with the quadratic model.](leastsqpolyab.gif)
+![Animation drawing the least-squares cubic as partial sums through x^0 to x^3, ending with the fitted cubic, whose RMS is lower than the quadratic's.](leastsqpolyab.gif)
 
 ### Case 3 - Quartic fit, $m=4$
 
 **Behavior:** The quartic noticeably reduces residuals and follows the subtle curvature changes between middle and right-side points. RMS drops by about a factor of four compared with the cubic.
 
-$$p_4(x)=4.62863 + 0.49669x - 0.05823x^2 + 0.00201x^3 - 0.00080x^4,\qquad \mathrm{RMS}\approx 0.00734.$$
+$$p_4(x)=4.62863 + 0.496687x - 0.0582343x^2 + 0.00201395x^3 - 0.000801378x^4,\qquad \mathrm{RMS}\approx 0.00734.$$
 
 [Julia source](leastsqpolyac.jl)
 
-![Animation showing least-squares quartic construction term-by-term, ending with a close fit to all six points.](leastsqpolyac.gif)
+![Animation drawing the least-squares quartic as partial sums through x^0 to x^4, ending with a close fit to all six points.](leastsqpolyac.gif)
 
 ### Case 4 - Quintic fit, $m=5$
 
-**Behavior:** With six data points and degree 5, the polynomial interpolates all points essentially exactly, so RMS is near machine precision. This illustrates why a degree-$n-1$ polynomial can match $n$ distinct points, but it may still be fragile for extrapolation.
+**Behavior:** With six data points at distinct $x$ values and degree 5, the least-squares polynomial interpolates all six points, so its RMS is exactly 0; the animation's floating-point solve shows roundoff of about $8\times 10^{-15}$. This illustrates why a degree-$n-1$ polynomial can match $n$ distinct points, but it may still be fragile for extrapolation.
 
-$$p_5(x)=4.63232 + 0.50885x - 0.06063x^2 - 0.00074x^3 - 0.00065x^4 + 0.00012x^5,\qquad \mathrm{RMS}\approx 2.9\times 10^{-15}.$$
+$$p_5(x)=4.63232 + 0.508854x - 0.0606259x^2 - 0.000737810x^3 - 0.000650515x^4 + 0.000116670x^5,\qquad \mathrm{RMS}=0\ \text{(exact interpolation; coefficients rounded to six significant figures)}.$$
 
 [Julia source](leastsqpolyad.jl)
 
-![Animation showing least-squares quintic construction term-by-term, ending in an exact-through-points polynomial for the six-point dataset.](leastsqpolyad.gif)
+![Animation drawing the least-squares quintic as partial sums through x^0 to x^5, ending with the polynomial that passes through all six data points.](leastsqpolyad.gif)
 

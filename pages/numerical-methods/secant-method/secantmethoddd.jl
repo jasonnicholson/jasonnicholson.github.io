@@ -1,7 +1,7 @@
 # secantmethoddd.jl
 # Secant Method animation: Convergence (oscillating path to real root)
 # f(x) = x³ - x + 3, p0=2.0, p1=1.0, n=16
-# Real root near x ≈ -1.6724
+# Real root near x ≈ -1.6717
 # Produces: secantmethoddd.gif
 
 using Plots
@@ -14,7 +14,7 @@ p1   = 1.0
 n_iters = 16
 
 xlims = (-3.2, 3.5)
-ylims = (-5.0, 32.0)
+ylims = (-25.0, 32.0)   # wide enough for f(p3) = -21 and f(p9) ≈ -21.9
 
 title_str = "Secant Method: f(x) = x³ − x + 3"
 

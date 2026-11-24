@@ -4,7 +4,7 @@
 # Method B: define h(x) = f(x)/f'(x); h has a SIMPLE root where f has a double root.
 # Newton on h(x) gives: x_{n+1} = x_n - f(x_n)*f'(x_n) / (f'(x_n)^2 - f(x_n)*f''(x_n))
 # Shows QUADRATIC (fast) convergence without needing to know the multiplicity m.
-# The animation plots h(x) and shows Newton tangent lines converging in ~2 steps.
+# The animation plots h(x) and its Newton tangent lines; x2 = 0.999994 and x3 equals 1 to six decimals.
 # Produces: accnewtoncc.gif
 
 using Plots
@@ -59,8 +59,9 @@ anim = @animate for frame in 0:n_iters
         xn  = xs[k]
         xn1 = xs[k+1]
         hn  = h_plot(xn)
-        # Tangent line from (xn, h(xn)) to (xn1, 0)
-        plot!([xn, xn1], [hn, 0.0]; color=:steelblue, lw=1.5, label="")
+        # Tangent line from (xn, h(xn)) to (xn1, 0); dashed black so it stands out
+        # where it lies almost on the nearly straight curve h
+        plot!([xn, xn1], [hn, 0.0]; color=:black, lw=1.5, ls=:dash, label="")
         hn1 = h_plot(xn1)
         plot!([xn1, xn1], [0.0, hn1]; color=:steelblue, lw=1.5, label="")
     end

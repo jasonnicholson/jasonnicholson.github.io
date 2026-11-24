@@ -1,6 +1,7 @@
 # fixpointdd.jl
-# Fixed Point Iteration animation: g(x) = x^2/4 + x/2, x0 = 1.5
-# Divergent case starting below fixed point: |g'(2)| = 3/2 > 1, staircase walks away
+# Fixed Point Iteration animation: g(x) = x^2/4 + x/2, x0 = 1.95 (Mathews' Example 8)
+# Starts below the repelling fixed point x* = 2 (g'(2) = 3/2 > 1): the staircase walks away
+# from x* = 2 and converges monotonically to the other fixed point x = 0 (g'(0) = 1/2)
 # Produces: fixpointdd.gif
 
 using Plots
@@ -8,20 +9,24 @@ gr()
 
 # --- Parameters ---
 g(x) = x^2 / 4 + x / 2
-x0 = 1.5
-n_iters = 8   # fewer iterations: diverges quickly off-scale
+x0 = 1.95
+n_iters = 16   # iterates decrease from 1.95 to x_16 = 0.0193, all inside the window
 
 xlims = (0.0, 4.0)
 ylims = (0.0, 4.0)
 
-title_str = "Fixed Point Iteration: g(x) = x²/4 + x/2, x₀ = 1.5"
+title_str = "Fixed Point Iteration: g(x) = x²/4 + x/2, x₀ = 1.95"
 
-# --- Pre-compute iterates (clamp to ylims to keep plot readable) ---
+# --- Pre-compute iterates ---
+# xs holds the true iterates. Every g evaluation, cobweb vertex and label uses them;
+# nothing is clamped in the computation. Path segments that leave the window are
+# clipped by the axes. Only the red marker of an off-scale iterate is drawn clamped,
+# just inside the window edge (xlims == ylims, so it stays on y = x), as a hollow
+# triangle with an "off-scale" note; its legend label keeps the true value.
 xs = Vector{Float64}(undef, n_iters + 1)
 xs[1] = x0
 for i in 1:n_iters
-    val = g(xs[i])
-    xs[i+1] = clamp(val, xlims[1], xlims[2])
+    xs[i+1] = g(xs[i])
 end
 
 # --- Cobweb path ---
@@ -59,8 +64,21 @@ anim = @animate for frame in 0:n_iters
     end
 
     x_cur = xs[frame+1]
-    scatter!([x_cur], [x_cur]; color=:red, ms=6,
-             label="x_$(frame) = $(round(x_cur; digits=4))")
+    if xlims[1] <= x_cur <= xlims[2]
+        scatter!([x_cur], [x_cur]; color=:red, ms=6,
+                 label="x_$(frame) = $(round(x_cur; digits=4))")
+    else
+        # off-scale: draw the marker just inside the window edge (clamped position
+        # only), pointing towards the true value, and keep the true value in the label
+        up = x_cur > xlims[2]
+        inset = 0.03 * (xlims[2] - xlims[1])
+        x_draw = up ? xlims[2] - inset : xlims[1] + inset
+        scatter!([x_draw], [x_draw]; color=:white, markerstrokecolor=:red,
+                 markerstrokewidth=2, ms=9, marker = up ? :utriangle : :dtriangle,
+                 label="x_$(frame) = $(round(x_cur; digits=4)) (off-scale, marker at edge)")
+        annotate!(x_draw + (up ? -inset : inset), x_draw,
+                  text(up ? "off-scale ↑" : "off-scale ↓", 9, :red, up ? :right : :left))
+    end
 end
 
 gif(anim, joinpath(@__DIR__, "fixpointdd.gif"); fps=2)

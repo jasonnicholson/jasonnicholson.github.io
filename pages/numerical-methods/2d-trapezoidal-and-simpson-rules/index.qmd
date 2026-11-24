@@ -10,7 +10,7 @@ Source inspiration: [@mathewsSite].
 ## Description
 
 This page studies numerical approximation of a rectangular double integral with the
-composite 2D Trapezoidal and 2D Simpson rules. The archived module examples use
+composite 2D Trapezoidal and 2D Simpson rules. Examples 1–6 of the archived module use
 
 $$
 I = \int_0^1 \int_0^1 8e^{-x^2-y^4}\,dy\,dx,
@@ -22,7 +22,7 @@ For a tensor-product grid, the 2D Trapezoidal rule applies endpoint/interior wei
 along each axis and sums weighted samples:
 
 $$
-I_{T} \approx hk\sum_{i=0}^{m}\sum_{j=0}^{n} w_i w_j f(x_i,y_j),
+I_{T} = hk\sum_{i=0}^{m}\sum_{j=0}^{n} w_i w_j f(x_i,y_j),
 \qquad
 w_0=w_m=\tfrac{1}{2},\ w_i=1\ (1\le i\le m-1),
 $$
@@ -30,13 +30,15 @@ $$
 and the 2D Simpson rule uses the product Simpson weights:
 
 $$
-I_{S} \approx \frac{hk}{9}\sum_{i=0}^{m}\sum_{j=0}^{n} a_i a_j f(x_i,y_j),
+I_{S} = \frac{hk}{9}\sum_{i=0}^{m}\sum_{j=0}^{n} a_i a_j f(x_i,y_j),
 \qquad
-a_0=a_m=1,\ a_i=4\ \text{(odd i)},\ a_i=2\ \text{(even i)}.
+a_0=a_m=1,\ a_i=4\ \text{(odd } i\text{)},\ a_i=2\ \text{(even } i,\ 0<i<m\text{)}.
 $$
 
-The archived snapshot is incomplete for some intermediate image IDs, so these
-animations are reconstructed from the available formula and checkpoint assets.
+Here the rectangle $[a,b]\times[c,d]$ is divided into $m$ panels of width $h=(b-a)/m$
+in $x$ and $n$ panels of width $k=(d-c)/n$ in $y$, with nodes $x_i=a+ih$ and
+$y_j=c+jk$; the weights $w_j$ and $a_j$ are defined in the same way with $n$ in place
+of $m$. For Simpson's rule $m$ and $n$ must be even.
 
 ## Animations
 
@@ -46,22 +48,34 @@ $I\approx 5.04756680717$.
 
 Julia source scripts that generated these animations are linked under each case.
 
+The archived snapshot is incomplete for some intermediate image IDs, so these
+animations are reconstructed from the available formula and checkpoint assets.
+The module's Example 7, which applies the composite Simpson's rule to a double integral
+whose inner limits of integration are functions of $x$ (a non-rectangular region), is
+not animated here.
+
 ### Case 1 - 2D Trapezoidal Rule, $f(x,y)=8e^{-x^2-y^4}$
 
 **Behavior:** The coarse-to-fine tensor grid updates over the whole square each frame.
 The approximation converges toward the archived reference value, with visible
-second-order error decay under refinement.
+second-order error decay under refinement. The black lines join the sample nodes with
+straight segments: they are the grid lines of the piecewise-bilinear interpolant,
+whose integral is the trapezoidal value $I_T$.
 
 [Julia source](trapezoidal2daa.jl)
 
-![2D Trapezoidal animation: surface over [0,1]x[0,1], full-grid refinement, and convergence to the archived benchmark integral](trapezoidal2daa.gif)
+![2D Trapezoidal animation: coloured surface of f over [0,1]x[0,1] with straight black grid lines through the sample nodes (the bilinear interpolant), full-grid refinement from 2x2 to 20x20, and convergence to the archived benchmark integral](trapezoidal2daa.gif)
 
 ### Case 2 - 2D Simpson Rule, $f(x,y)=8e^{-x^2-y^4}$
 
 **Behavior:** Simpson tensor-product weights are recomputed on each refined mesh.
 Compared with trapezoidal refinement, the Simpson estimate reaches high accuracy
-with fewer refinements.
+with fewer refinements. The black curves are the quadratics through the sample nodes
+over each pair of panels along every grid line: the grid lines of the
+piecewise-biquadratic interpolant (one patch per 2x2 block of panels), whose integral
+is the Simpson value $I_S$. On the 2x2 mesh they differ from the trapezoidal straight
+lines by up to 0.51 in $z$.
 
 [Julia source](simpson2daa.jl)
 
-![2D Simpson animation: tensor-product Simpson refinement over [0,1]x[0,1] and convergence toward the archived benchmark integral](simpson2daa.gif)
+![2D Simpson animation: coloured surface of f over [0,1]x[0,1] with black piecewise-quadratic grid curves through the sample nodes (the biquadratic interpolant), tensor-product Simpson refinement from 2x2 to 20x20, and convergence toward the archived benchmark integral](simpson2daa.gif)

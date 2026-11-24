@@ -9,7 +9,7 @@ Source inspiration:  [@mathewsSite].
 
 ## Description
 
-**Halley's method**, attributed to Edmond Halley (1656–1742), is a root-finding algorithm that extends Newton-Raphson by incorporating the second derivative $f''$. Where Newton-Raphson fits a tangent line at each iterate and finds its $x$-intercept, Halley's method fits an osculating (second-order Taylor) parabola and finds the root of that parabola nearest to the current point. This extra curvature information yields **cubic convergence** at simple roots — the number of accurate digits roughly triples each iteration, compared to doubling for Newton-Raphson.
+**Halley's method**, attributed to Edmond Halley (1656–1742), is a root-finding algorithm that extends Newton-Raphson by incorporating the second derivative $f''$. Where Newton-Raphson fits a tangent line at each iterate and finds its $x$-intercept, Halley's method fits an osculating hyperbola, a rational function $y = \dfrac{a + b(x - x_n)}{1 + c(x - x_n)}$ that matches $f$, $f'$ and $f''$ at $x_n$, and takes its $x$-intercept as $x_{n+1}$. (Taking the root of the second-order Taylor parabola instead gives a different iteration, Halley's irrational method.) This extra curvature information yields **cubic convergence** at simple roots — the number of accurate digits roughly triples each iteration, compared to doubling for Newton-Raphson.
 
 ### Iteration Formula
 
@@ -21,7 +21,7 @@ This can be rewritten to make the Newton-Raphson correction explicit:
 
 $$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)} \cdot \frac{1}{\displaystyle 1 - \frac{f(x_n)\, f''(x_n)}{2\bigl[f'(x_n)\bigr]^2}}$$
 
-The bracketed factor is a multiplicative correction to the Newton step. When $f''$ is small relative to $f'$, the denominator is close to 1 and Halley reduces to Newton-Raphson.
+The second factor, $1\big/\bigl(1 - f(x_n)\, f''(x_n)/(2[f'(x_n)]^2)\bigr)$, is a multiplicative correction to the Newton step. When $|f(x_n)\, f''(x_n)|$ is small compared with $2[f'(x_n)]^2$, which always happens close to a simple root, this factor is close to 1 and the Halley step nearly coincides with the Newton step.
 
 ### Convergence
 
@@ -37,13 +37,16 @@ At a multiple root of order $m \geq 2$, the cubic rate is lost and the method re
 
 ### Trade-offs
 
-Each Halley step requires three function evaluations — $f$, $f'$, and $f''$ — versus two for Newton-Raphson. Whether the extra evaluation is worthwhile depends on the cost of computing $f''$ and the required precision: for high-precision arithmetic (e.g., computing $\sqrt{2}$ to hundreds of digits), Halley's cubic rate makes it significantly faster overall.
+Each Halley step requires three function evaluations — $f$, $f'$, and $f''$ — versus two for Newton-Raphson. Because its digits triple rather than double, Halley needs only about $\log 2/\log 3 \approx 0.63$ times as many iterations for a high-precision result, but per function evaluation its efficiency index $3^{1/3} \approx 1.442$ is barely above Newton's $2^{1/2} \approx 1.414$, so whether it saves time depends on how costly $f''$ and the extra arithmetic are. Computing $\sqrt{2}$ from $x_0 = 2$ to 20,000 digits at fixed working precision with the first formula above, for example, Halley needs 10 iterations against Newton's 15 but takes about as long or slightly longer (the second form, evaluated as written, does two more divisions per step and takes about twice as long as Newton).
 
 ## Animations
 
-Each animation below illustrates the **tangent-line and osculatory-parabola construction** used by Newton-Raphson and Halley's method. At each step, the current iterate $x_n$ is marked on the curve; the tangent line (blue dotted) shows where Newton's method would jump next, while the osculatory (second-order Taylor) parabola (orange dashed) shows Halley's improved correction — yielding **cubic** rather than quadratic convergence at simple roots.
+Case 1a shows the Newton-Raphson **tangent-line construction** alone (tangent blue dashed) as a baseline. Cases 1b and 2 show the **osculating-hyperbola construction** of Halley's method: at each step the current iterate $x_n$ is marked on the curve, the tangent line (blue dotted) shows where Newton's method would jump next, and the osculating hyperbola (orange dashed) crosses the $x$-axis at the Halley iterate $x_{n+1}$ — yielding **cubic** rather than quadratic convergence at simple roots.
 
 Julia source scripts that generated these animations are linked under each case.
+
+Cases 1a, 1b and 2 follow Examples 1(a), 1(b) and 2(b) of Mathews' Halley's Method module.
+The module's Example 2(a), which applies Newton-Raphson iteration to the Case 2 function from the same starting value, is not animated here; Case 2's blue diamond shows only the Newton step from the current Halley iterate.
 
 ### Case 1a — Newton-Raphson baseline, $f(x) = x^2 - 2$, $x_0 = 2$
 
@@ -55,17 +58,16 @@ Julia source scripts that generated these animations are linked under each case.
 
 ### Case 1b — Halley's Method, $f(x) = x^2 - 2$, $x_0 = 2$
 
-**Behavior:** Starting at the same $x_0 = 2$, Halley's iteration uses both $f'$ and $f''$ to correct the Newton step. The orange diamond marks the Halley iterate; the blue diamond shows where Newton would land for comparison. Halley achieves $x_1 \approx 1.42857$ in one step (vs Newton's $x_1 = 1.5$), tripling accurate digits each iteration because $|g'''(x^*)| / 3! $ governs the asymptotic error rather than $|g''(x^*)| / 2!$.
+**Behavior:** Starting at the same $x_0 = 2$, Halley's iteration uses both $f'$ and $f''$ to correct the Newton step. The orange diamond marks the Halley iterate; the blue diamond shows where Newton would land for comparison. Halley achieves $x_1 \approx 1.42857$ in one step (vs Newton's $x_1 = 1.5$); from there the number of accurate digits roughly triples each iteration (about 1.8, 6.4 and 20 after steps 1, 2 and 3, in extended precision) because $|g'''(x^*)| / 3!$ governs the asymptotic error rather than $|g''(x^*)| / 2!$, where $g$ is the iteration map, $x_{n+1} = g(x_n)$.
 
 [Julia source](halleysab.jl)
 
-![Halley's Method applied to f(x) = x² - 2 with x₀ = 2. Each frame shows the osculatory parabola alongside the Newton tangent, with both next iterates marked on the x-axis to illustrate Halley's faster cubic convergence to √2.](halleysab.gif)
+![Halley's Method applied to f(x) = x² - 2 with x₀ = 2. Each frame shows the osculating hyperbola, whose x-intercept is the Halley iterate, alongside the Newton tangent, with both next iterates marked on the x-axis to illustrate Halley's faster cubic convergence to √2.](halleysab.gif)
 
 ### Case 2 — Halley's Method, $f(x) = x^3 - 3x + 2$, $x_0 = -2.2$
 
-**Behavior:** $f(x) = x^3 - 3x + 2 = (x+2)(x-1)^2$ has a simple root at $x = -2$ and a double root at $x = 1$. Starting at $x_0 = -2.2$ (near the simple root), Halley converges cubically: the first Halley step reaches $x_1 \approx -2.002$, while Newton only reaches $x_1 \approx -2.022$, demonstrating that Halley requires fewer iterations to attain high precision at simple roots. The orange dashed parabola visibly corrects the Newton overshoot.
+**Behavior:** $f(x) = x^3 - 3x + 2 = (x+2)(x-1)^2$ has a simple root at $x = -2$ and a double root at $x = 1$. Starting at $x_0 = -2.2$ (near the simple root), Halley converges cubically: the first Halley step reaches $x_1 \approx -2.002$, while Newton only reaches $x_1 \approx -2.022$. In extended precision, Newton's own iterates from $x_0 = -2.2$ have errors of about $2.2\times10^{-2}$, $3.2\times10^{-4}$, $6.9\times10^{-8}$ and $3.2\times10^{-15}$ after steps 1–4, against Halley's $2.1\times10^{-3}$, $2.9\times10^{-9}$ and $8.2\times10^{-27}$ after steps 1–3; in double precision Newton first reaches $-2$ exactly at $x_5$, Halley at $x_3$. Neither first step overshoots: both stay to the left of the root, on the same side as $x_0$, and Halley's lands within 0.0021 of it. The two first-step markers are only about 0.02 apart, so they overlap at this scale; the legend gives their values.
 
 [Julia source](halleysba.jl)
 
-![Halley's Method applied to f(x) = x³ - 3x + 2 with x₀ = -2.2. Each frame shows the osculatory parabola and tangent line, with Halley and Newton next iterates compared on the x-axis, demonstrating cubic convergence to the simple root x = -2.](halleysba.gif)
-
+![Halley's Method applied to f(x) = x³ - 3x + 2 with x₀ = -2.2. Each frame shows the osculating hyperbola, whose x-intercept is the Halley iterate, and the tangent line, with Halley and Newton next iterates marked on the x-axis, demonstrating cubic convergence to the simple root x = -2.](halleysba.gif)

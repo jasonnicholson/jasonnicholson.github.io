@@ -1,6 +1,6 @@
 # bezieraa.jl
 # Bézier Curve animation: de Casteljau construction for a cubic Bézier
-# Control points: P0=(0,0), P1=(1,2), P2=(3,2), P3=(4,0)
+# Control points (Mathews, Bézier Curve module, Example 3): P0=(2,2), P1=(1,1.5), P2=(3.5,0), P3=(4,1)
 # Animates parameter t ∈ [0,1], showing intermediate points and the curve being traced
 # Produces: bezieraa.gif
 
@@ -8,11 +8,10 @@ using Plots
 gr()
 
 # Control points as 2-vectors
-P = [[0.0, 0.0], [1.0, 2.0], [3.0, 2.0], [4.0, 0.0]]
+P = [[2.0, 2.0], [1.0, 1.5], [3.5, 0.0], [4.0, 1.0]]
 
-# Pre-compute full Bézier curve for backdrop
+# Number of samples on the full curve t ∈ [0,1] (the trace up to t uses a proportional share)
 n_curve = 300
-t_curve = range(0.0, 1.0, length=n_curve)
 
 function decasteljau_point(pts, t)
     pts_cur = deepcopy(pts)
@@ -22,10 +21,6 @@ function decasteljau_point(pts, t)
     end
     return pts_cur[1]
 end
-
-curve_pts = [decasteljau_point(P, t) for t in t_curve]
-curve_x   = [p[1] for p in curve_pts]
-curve_y   = [p[2] for p in curve_pts]
 
 # Control polygon
 px = [p[1] for p in P]
@@ -42,18 +37,17 @@ anim = @animate for (frame_idx, t) in enumerate(t_anim)
     L3 = [(1 - t) .* L2[i] .+ t .* L2[i + 1] for i in 1:1]
 
     plot(size=(700, 550),
-         xlims=(-0.2, 4.2), ylims=(-0.4, 2.5),
+         xlims=(-0.3, 4.3), ylims=(-1.3, 2.3),
          xlabel="x", ylabel="y",
-         title="Bézier Curve — de Casteljau  (t = $(round(t, digits=2)))",
-         legend=:topright, grid=true, framestyle=:box,
+         title="Bézier Curve (Example 3) — de Casteljau  (t = $(round(t, digits=2)))",
+         legend=:outerright, grid=true, framestyle=:box,
          background_color=:white)
 
-    # Curve traced so far
-    idx_end = min(frame_idx * div(n_curve, n_frames), n_curve)
-    if idx_end >= 2
-        plot!(curve_x[1:idx_end], curve_y[1:idx_end];
-              color=:steelblue, lw=3, label="Bézier curve")
-    end
+    # Curve traced so far: B(s) for s in [0, t], ending exactly at the red point
+    tt = range(0.0, t, length=max(2, round(Int, 1 + t * (n_curve - 1))))
+    trace = [decasteljau_point(P, s) for s in tt]
+    plot!([p[1] for p in trace], [p[2] for p in trace];
+          color=:steelblue, lw=3, label="Bézier curve")
 
     # Control polygon (dashed)
     plot!(px, py; color=:gray, lw=1, linestyle=:dash, label="control polygon")

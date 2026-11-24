@@ -2,8 +2,10 @@
 # Regula Falsi (False Position) animation: f(x) = x^3 + 4x^2 - 10, [a, b] = [-1, 2]
 # Matches the legacy Mathews module example.
 # The secant through (a, f(a)) and (b, f(b)) gives the new point c.
-# Note: one endpoint tends to stay fixed as the other converges (slower than bisection).
-# True root ≈ 1.3688
+# Note: one endpoint tends to stay fixed as the other converges, so convergence is only linear.
+# Here b = 2 stays fixed and the error ratio |c_{k+1} - x*| / |c_k - x*| settles at about 0.251
+# (bisection halves its bracket each step, a factor of 0.5).
+# True root ≈ 1.36523
 # Produces: regulafalsiaa.gif
 
 using Plots

@@ -9,12 +9,14 @@ using Plots
 gr()
 
 # --- Functions ---
-f(x)  = x^4 - x^3 - 3x^2 + 5x - 2
-fp(x) = 4x^3 - 3x^2 - 6x + 5
+# Factored forms: the expanded quartic loses all accuracy to cancellation near the
+# triple root (Float64 gives f(1 + 6.4e-7) = -8.9e-16 instead of +7.9e-19).
+f(x)  = (x - 1)^3 * (x + 2)
+fp(x) = (x - 1)^2 * (4x + 5)
 
 # --- Parameters ---
 x0      = 1.3
-n_iters = 5
+n_iters = 3   # x3 is within 1e-11 of the root; a 4th step would land on x = 1 exactly, then 0/0
 m       = 3   # multiplicity of the root
 
 xlims = (0.5, 1.6)
@@ -34,7 +36,7 @@ xplot = range(xlims[1], xlims[2], length=400)
 
 anim = @animate for frame in 0:n_iters
     plot(size=(640, 600), xlims=xlims, ylims=ylims,
-         xlabel="x", ylabel="y", title=title_str,
+         xlabel="x", ylabel="y", title=title_str, titlefontsize=12,
          legend=:topleft, grid=true, framestyle=:box,
          background_color=:white)
 

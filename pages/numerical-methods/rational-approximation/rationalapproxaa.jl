@@ -3,7 +3,7 @@
 # Frames compare [2/2] rational approximations from:
 #   (1) equally spaced interpolation nodes,
 #   (2) Chebyshev interpolation nodes,
-#   (3) MinMax-style relative-error optimization.
+#   (3) the minimax relative-error approximant, computed by Remez exchange.
 # Produces: rationalapproxaa.gif
 
 using Plots
@@ -52,35 +52,82 @@ function max_relative_error(c::Vector{Float64}, xg::Vector{Float64}, fg::Vector{
     return m
 end
 
-function minmax_search(c0::Vector{Float64}, xg::Vector{Float64}, fg::Vector{Float64}; max_iters=220)
-    c_best = copy(c0)
-    f_best = max_relative_error(c_best, xg, fg)
+relative_error(c::Vector{Float64}, x::Float64) = (f(x) - eval_rational(c, x)) / f(x)
 
-    scales = max.(abs.(c0), 0.05)
-    steps = 0.08 .* scales
-
-    for _ in 1:max_iters
-        improved = false
-        for j in eachindex(c_best)
-            for dir in (-1.0, 1.0)
-                c_try = copy(c_best)
-                c_try[j] += dir * steps[j]
-                f_try = max_relative_error(c_try, xg, fg)
-                if f_try < f_best
-                    c_best = c_try
-                    f_best = f_try
-                    improved = true
-                end
-            end
+# Remez step 1: at 6 reference points solve P(x_i) = f(x_i) (1 - s_i E) Q(x_i), s_i = (-1)^i,
+# for (a0, a1, a2, b1, b2, E) by Newton's method (the system is bilinear in b and E).
+function solve_reference(xr::Vector{Float64}, c::Vector{Float64}, E::Float64)
+    u = vcat(c, E)
+    for _ in 1:50
+        F = zeros(Float64, 6)
+        J = zeros(Float64, 6, 6)
+        a0, a1, a2, b1, b2, Ev = u
+        for (i, x) in enumerate(xr)
+            y = f(x)
+            s = iseven(i) ? 1.0 : -1.0
+            Q = 1 + b1 * x + b2 * x^2
+            w = y * (1 - s * Ev)
+            F[i] = a0 + a1 * x + a2 * x^2 - w * Q
+            J[i, :] = [1.0, x, x^2, -w * x, -w * x^2, y * s * Q]
         end
-        if !improved
-            steps .*= 0.72
-            if maximum(steps) < 1e-8
-                break
-            end
+        du = J \ F
+        u .-= du
+        if maximum(abs.(du)) < 1e-15
+            break
         end
     end
-    return c_best, f_best
+    return u[1:5], u[6]
+end
+
+# Remez step 2: new reference = the extremum of |relative error| on each interval of constant sign,
+# located on a fine grid and refined by golden-section search.
+function error_extrema(c::Vector{Float64}, xg::Vector{Float64})
+    e = [relative_error(c, x) for x in xg]
+    pts = Float64[]
+    start = 1
+    for k in 2:(length(e) + 1)
+        if k > length(e) || e[k] * e[start] < 0
+            seg = start:(k - 1)
+            j = seg[argmax(abs.(e[seg]))]
+            if j == 1 || j == length(xg)
+                push!(pts, xg[j])
+            else
+                lo, hi = xg[j - 1], xg[j + 1]
+                g = (sqrt(5) - 1) / 2
+                for _ in 1:80
+                    m1 = hi - g * (hi - lo)
+                    m2 = lo + g * (hi - lo)
+                    if abs(relative_error(c, m1)) > abs(relative_error(c, m2))
+                        hi = m2
+                    else
+                        lo = m1
+                    end
+                end
+                push!(pts, 0.5 * (lo + hi))
+            end
+            start = k
+        end
+    end
+    return pts
+end
+
+# Remez exchange for the minimax (equal-ripple) relative error, started from the Chebyshev extrema.
+function remez_minimax(c0::Vector{Float64}, E0::Float64; max_iters=20)
+    xr = [cos(pi * (5 - k) / 5) for k in 0:5]
+    xfine = collect(range(-1.0, 1.0, length=20001))
+    c, E = copy(c0), E0
+    for it in 1:max_iters
+        c, E = solve_reference(xr, c, E)
+        xr_new = error_extrema(c, xfine)
+        length(xr_new) == 6 || error("Remez: expected 6 alternation points, found $(length(xr_new))")
+        xr = xr_new
+        ev = abs.([relative_error(c, x) for x in xr])
+        println("Remez iteration $it: |E| = $(abs(E)), ripple spread = $(maximum(ev) - minimum(ev))")
+        if maximum(ev) - minimum(ev) < 1e-10 * maximum(ev)
+            break
+        end
+    end
+    return c, abs(E), xr
 end
 
 # Interval and node sets from Mathews-style examples
@@ -97,17 +144,19 @@ c_ch = fit_rational_interp(xs_ch, ys_ch)
 
 x_grid = collect(range(a, b, length=1201))
 f_grid = f.(x_grid)
-c_mm, err_mm = minmax_search(c_ch, x_grid, f_grid)
+c_mm, E_mm, xr_mm = remez_minimax(c_ch, max_relative_error(c_ch, x_grid, f_grid))
+err_mm = max_relative_error(c_mm, x_grid, f_grid)
 
 methods = [
     ("Equally spaced nodes", c_eq, xs_eq, ys_eq),
     ("Chebyshev nodes", c_ch, xs_ch, ys_ch),
-    ("MinMax relative-error search", c_mm, xs_ch, ys_ch),
+    ("Minimax (Remez)", c_mm, Float64[], Float64[]),
 ]
 
 println("Max relative error [equal]   = ", max_relative_error(c_eq, x_grid, f_grid))
 println("Max relative error [cheby]   = ", max_relative_error(c_ch, x_grid, f_grid))
 println("Max relative error [minmax]  = ", err_mm)
+println("Minimax level E = ", E_mm, " at alternation points ", xr_mm)
 
 x_plot = collect(range(a, b, length=700))
 f_plot = f.(x_plot)
@@ -125,9 +174,11 @@ anim = @animate for (label, c, xn, yn) in methods
     plot!(p1, x_plot, f_plot; color=:blue, lw=2.2, label="f(x) = exp(x)")
     plot!(p1, x_plot, r_plot; color=:darkgreen, lw=2.2, linestyle=:dash,
           label="R(x), max rel err = $(round(max_rel; digits=7))")
-    scatter!(p1, xn, yn; color=:red, ms=4.5, label="nodes")
+    if !isempty(xn)  # minimax has no prescribed nodes: its five crossings of f come out of the exchange
+        scatter!(p1, xn, yn; color=:red, ms=4.5, label="nodes")
+    end
 
-    p2 = plot(size=(760, 300), xlims=(a, b), ylims=(0.0, 0.01),
+    p2 = plot(size=(760, 300), xlims=(a, b), ylims=(0.0, 2.0e-4),
               xlabel="x", ylabel="|f-R|/|f|",
               title="Relative error over [-1,1]",
               legend=:topright, grid=true, framestyle=:box,

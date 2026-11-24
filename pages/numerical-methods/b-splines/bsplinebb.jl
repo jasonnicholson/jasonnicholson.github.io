@@ -42,7 +42,7 @@ anim = @animate for m in 1:n_ctrl
          xlims=(t_min, t_max), ylims=(-0.05, 1.25),
          xlabel="t (parameter)", ylabel="N_{i,4}(t)",
          title="Cubic B-Spline Basis Functions N₁,₄ … N_$m,₄",
-         legend=:topright, grid=true, framestyle=:box,
+         legend=:outerright, grid=true, framestyle=:box,
          background_color=:white)
 
     cumsum_b = zeros(length(t_vals))

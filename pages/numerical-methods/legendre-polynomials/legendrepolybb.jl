@@ -1,9 +1,11 @@
 # legendrepolybb.jl
-# Legendre Polynomial animation: partial-sum Legendre series approximation of cos(πx/2)
-# Adds one Legendre term per frame, showing convergence on [-1, 1]
+# Legendre Polynomial animation: partial-sum Legendre series approximation of exp(x)cos(πx/2)
+# (the function of Mathews' Example 8(b)). Adds one Legendre term per frame; f is neither even
+# nor odd, and every coefficient c_0 ... c_8 is nonzero. Shows convergence on [-1, 1]
 # Produces: legendrepolybb.gif
 
 using Plots
+using LinearAlgebra
 gr()
 
 # --- Legendre polynomial via recurrence ---
@@ -24,18 +26,22 @@ function legendre(n::Int, xv::AbstractVector)
     return P
 end
 
-# --- Legendre series coefficient (Gauss-Legendre quadrature with many points) ---
+# --- Gauss-Legendre nodes and weights on [-1, 1] (Golub-Welsch eigenvalue method) ---
+function gauss_legendre(m)
+    J = SymTridiagonal(zeros(m), [k / sqrt(4k^2 - 1) for k in 1:m-1])
+    E = eigen(J)
+    return E.values, 2 .* E.vectors[1, :] .^ 2
+end
+
+# --- Legendre series coefficient (20-point Gauss-Legendre quadrature) ---
 # c_n = (2n+1)/2 * integral_{-1}^{1} f(x)*P_n(x) dx
-function legendre_coeff(f, n; npts=1000)
-    # Trapezoid rule on [-1, 1]
-    xq = range(-1.0, 1.0, length=npts)
-    h  = 2.0 / (npts - 1)
-    integrand = f.(xq) .* legendre(n, xq)
-    integral  = h * (sum(integrand) - 0.5 * (integrand[1] + integrand[end]))
+function legendre_coeff(f, n; npts=20)
+    xq, wq = gauss_legendre(npts)
+    integral = sum(wq .* f.(xq) .* legendre(n, xq))
     return (2n + 1) / 2 * integral
 end
 
-f(x) = cos(π * x / 2)
+f(x) = exp(x) * cos(π * x / 2)
 
 x = range(-1.0, 1.0, length=500)
 fx = f.(x)
@@ -55,11 +61,11 @@ anim = @animate for n in 0:n_max
     plot(size=(700, 500),
          xlims=(-1.0, 1.0), ylims=(-1.3, 1.3),
          xlabel="x", ylabel="y",
-         title="Legendre Series for cos(πx/2) — $(n+1) term$(n==0 ? "" : "s")  (max err = $(round(err, sigdigits=3)))",
-         legend=:topright, grid=true, framestyle=:box,
+         title="Legendre Series for exp(x)cos(πx/2) — S_$n(x)  (max err = $(round(err, sigdigits=3)))",
+         titlefontsize=12, legend=:bottomright, grid=true, framestyle=:box,
          background_color=:white)
 
-    plot!(collect(x), fx; color=:blue, lw=2, label="f(x) = cos(πx/2)")
+    plot!(collect(x), fx; color=:blue, lw=2, label="f(x) = exp(x)cos(πx/2)")
     plot!(collect(x), S;  color=:red,  lw=2, linestyle=:dash,
           label="S_$n(x)")
 end

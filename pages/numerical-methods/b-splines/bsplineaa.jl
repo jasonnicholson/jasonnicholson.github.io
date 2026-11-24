@@ -1,7 +1,7 @@
 # bsplineaa.jl
 # B-Splines animation: cubic B-spline curve from 7 control points
-# Reveals the curve segment by segment (left to right) then shows
-# control polygon comparison
+# Traces the curve continuously as t runs from t_min to t_max;
+# control polygon shown throughout
 # Produces: bsplineaa.gif
 
 using Plots
@@ -44,7 +44,7 @@ ctrl_pts = [
 ]
 n_ctrl = length(ctrl_pts)     # 7 control points
 
-# Clamped uniform knot vector: k zeros, interior knots, k zeros
+# Clamped uniform knot vector: k copies of t_min, interior knots, k copies of t_max
 # For n=7 control points, order k=4: need n+k = 11 knots
 n_int = n_ctrl - k            # 3 interior knots
 t_knots = vcat(zeros(k),

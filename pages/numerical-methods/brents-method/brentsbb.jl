@@ -1,9 +1,10 @@
 # brentsbb.jl
 # Brent's Method animation: f(x) = tan(x) - 2x, interval [0.5, 1.5]
-# Non-trivial root ≈ 1.1656. Illustrates fast convergence vs slow Regula Falsi.
+# Root in [0.5, 1.5] (the smallest positive root of tan(x) = 2x) ≈ 1.1656. Shows the bracket and best estimate b at each step, labelled with the step's method.
 # Produces: brentsbb.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Parameters ---
@@ -19,75 +20,86 @@ ylims = (-1.8, 8.0)
 
 title_str = "Brent's Method: f(x) = tan(x) − 2x, [0.5, 1.5]"
 
-# --- Brent's Method: pre-compute iteration history ---
+# --- Brent's Method (Brent's ZEROIN, 1973): pre-compute iteration history ---
+# b = current best approximation, c = contrapoint (the root lies between b and c),
+# a = previous value of b (or a == c). Interpolation (IQI if a != c, secant if a == c)
+# is accepted only if it goes less than about 3/4 of the way from b to c and is smaller
+# than half the step before last; otherwise the step is a bisection.
 struct BrentStep
-    a::Float64
     b::Float64
+    c::Float64
     method::String
 end
 
 function run_brents(f, a, b, n_iters, tol)
     steps = BrentStep[]
     fa, fb = f(a), f(b)
-    if abs(fa) < abs(fb)
-        a, b = b, a
-        fa, fb = fb, fa
-    end
-    c = a
-    fc = fa
-    mflag = true
-    s = b
-    d = 0.0
+    c, fc = a, fa
+    d = e = b - a
+    method = "init"
 
-    push!(steps, BrentStep(a, b, "init"))
+    for it in 0:n_iters
+        # Keep the root between b and c
+        if fb * (fc / abs(fc)) > 0
+            c, fc = a, fa
+            d = e = b - a
+        end
+        # Make b the endpoint with the smaller |f|
+        if abs(fc) < abs(fb)
+            a, b, c = b, c, b
+            fa, fb, fc = fb, fc, fb
+        end
+        push!(steps, BrentStep(b, c, method))
 
-    for _ in 1:n_iters
-        fa, fb, fc = f(a), f(b), f(c)
-        if abs(fb) < tol || abs(b - a) < tol
+        tol1 = 2 * eps(Float64) * abs(b) + tol / 2
+        xm = (c - b) / 2
+        if abs(xm) <= tol1 || fb == 0 || it == n_iters
             break
         end
 
-        method = ""
-        if fa != fc && fb != fc
-            s = (a * fb * fc / ((fa - fb) * (fa - fc)) +
-                 b * fa * fc / ((fb - fa) * (fb - fc)) +
-                 c * fa * fb / ((fc - fa) * (fc - fb)))
-            method = "IQI"
+        method = "Bisection"
+        if abs(e) >= tol1 && abs(fa) > abs(fb)
+            s = fb / fa
+            if a == c
+                # Secant (only two distinct points)
+                p = 2 * xm * s
+                q = 1 - s
+                cand = "Secant"
+            else
+                # Inverse quadratic interpolation through a, b, c
+                q = fa / fc
+                r = fb / fc
+                p = s * (2 * xm * q * (q - r) - (b - a) * (r - 1))
+                q = (q - 1) * (r - 1) * (s - 1)
+                cand = "IQI"
+            end
+            if p > 0
+                q = -q
+            else
+                p = -p
+            end
+            # Brent's acceptance test — fall back to bisection if rejected
+            if 2p < 3 * xm * q - abs(tol1 * q) && p < abs(e * q / 2)
+                e = d
+                d = p / q
+                method = cand
+            else
+                d = xm
+                e = d
+            end
         else
-            s = b - fb * (b - a) / (fb - fa)
-            method = "Secant"
+            d = xm
+            e = d
         end
 
-        mid = (a + b) / 2
-        lo, hi = min(a, b), max(a, b)
-        cond1 = !(lo < s < hi)
-        cond2 = mflag  && abs(s - b) >= abs(b - c) / 2
-        cond3 = !mflag && abs(s - b) >= abs(c - d) / 2
-        cond4 = mflag  && abs(b - c) < tol
-        cond5 = !mflag && abs(c - d) < tol
-
-        if cond1 || cond2 || cond3 || cond4 || cond5
-            s = mid
-            method = "Bisection"
-            mflag = true
+        a, fa = b, fb
+        if abs(d) > tol1
+            b += d
         else
-            mflag = false
+            b += copysign(tol1, xm)   # step shorter than tol1: move by tol1 instead
+            method = "Min step"
         end
-
-        d = c
-        c = b
-
-        if f(a) * f(s) < 0
-            b = s
-        else
-            a = s
-        end
-
-        if abs(f(a)) < abs(f(b))
-            a, b = b, a
-        end
-
-        push!(steps, BrentStep(a, b, method))
+        fb = f(b)
     end
     return steps
 end
@@ -100,12 +112,12 @@ xplot = range(xlims[1], xlims[2], length=800)
 fplot = [abs(x - pi/2) < 0.04 ? NaN : clamp(f(x), ylims[1]-0.5, ylims[2]+0.5)
          for x in xplot]
 
-method_colors = Dict("IQI" => :darkorange, "Secant" => :steelblue, "Bisection" => :purple, "init" => :gray)
+method_colors = Dict("IQI" => :darkorange, "Secant" => :steelblue, "Bisection" => :purple, "Min step" => :gray, "init" => :gray)
 
 # --- Animation ---
 anim = @animate for i in 1:length(steps)
     st = steps[i]
-    a_cur, b_cur = min(st.a, st.b), max(st.a, st.b)
+    a_cur, b_cur = min(st.b, st.c), max(st.b, st.c)
 
     meth = i == 1 ? "Start" : st.method
     col  = get(method_colors, st.method, :gray)
@@ -130,10 +142,10 @@ anim = @animate for i in 1:length(steps)
     vline!([a_cur, b_cur]; color=:steelblue, lw=1.5, ls=:dash, label="bracket")
 
     # Best estimate
-    b_best = abs(f(st.a)) < abs(f(st.b)) ? st.a : st.b
+    b_best = st.b
     fb_best = clamp(f(b_best), ylims[1], ylims[2])
     scatter!([b_best], [fb_best]; color=:red, ms=8,
-             label="b = $(round(b_best; digits=6))")
+             label=@sprintf("b = %.10f, |c−b| = %.1e", st.b, abs(st.c - st.b)))
 
     annotate!(xlims[1] + 0.02*(xlims[2]-xlims[1]), ylims[2] - 0.04*(ylims[2]-ylims[1]),
               text("Step $(i-1): $meth", :left, 10, col))
