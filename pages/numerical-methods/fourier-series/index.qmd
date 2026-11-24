@@ -1,9 +1,9 @@
 ---
 title: "Fourier series"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -30,6 +30,78 @@ b_j = \frac{2}{n}\sum_{k=0}^{n-1} y_k\sin\!\left(\frac{j\pi x_k}{L}\right).
 $$
 
 These sums are the real and imaginary parts of the discrete Fourier transform of the data, which the fast Fourier transform (FFT) computes. $P_m$ is the least-squares trigonometric fit to the samples, and it passes through every sample when $n = 2m+1$. The examples use $L=\pi$, with $f(x) = \lvert x-\pi\rvert$ for Mathews' five examples and the functions of his animations for the rest.
+
+## Animations
+
+Each animation draws one period, $0 \le x \le 2\pi$, of a function with period $2\pi$ and adds one degree per frame. The first frame shows the function or the data alone, and the last frame is held. Cases 1–5 show the Fourier polynomials $S_m$ of (3), with the coefficients of Example 2, as Mathews drew them: $f$ in blue and $S_m$ in magenta. The second line of each title gives one number for the frame. For a function whose periodic extension is continuous (Cases 1 and 4) it is the largest error $\max_x \lvert f(x) - S_m(x)\rvert$. For one whose periodic extension jumps (Cases 2, 3 and 5) it is the largest value $\max_x S_m(x)$, to compare with the least upper bound of $f$; the excess is the Gibbs overshoot. Cases 6–8 show the trigonometric polynomials $P_m$ of (8) for the $n = 36$ samples of Example 7, as in Mathews' animations: the samples are red dots, $P_m$ is magenta, and a pale pink dot marks the periodic copy $(2\pi, y_0)$ of the first sample, which is not itself a sample. The thin grey graph of $f$ is an addition, so that the samples at the jumps can be compared with the one-sided limits. The scripts evaluate the sums (6)–(7) directly rather than calling an FFT routine; both give the same coefficients up to rounding.
+
+Mathews' module links ten animations, five of Fourier series and five of discrete Fourier series ("FFT"), for the functions $\lvert x-\pi\rvert$, $x-\pi$, a unit step, $(x-\pi)^2$ and $x-\lvert x-\pi\rvert$. Four GIFs survive: the Fourier series of $x-\lvert x-\pi\rvert$ and the discrete series of the step, $(x-\pi)^2$ and $x-\lvert x-\pi\rvert$. Cases 5–8 rebuild them with the degrees read from their frames and with his sample points, including the midpoint values at the jumps. Cases 1–4 (marked "rebuilt") stand in for his lost Fourier-series animations of the first four functions. Their functions are listed on his index page, but their frames are lost, so they take the picture and the range $m \le 25$ from the surviving animation (Case 5) and the values $\mp 1$ of the step from Case 6; Cases 1 and 3 show odd $m$ only, because the even-$j$ coefficients of those functions are zero and $S_m = S_{m-1}$ for even $m$. His first two discrete-series animations are not rebuilt: their formula images are lost along with the GIFs, so their functions cannot be read. Mathews' five worked examples (Examples 1 and 3–6 here) have static graphs and are not animated, although $S_5$ of Example 1 appears as a frame of Case 1. Every case has a Mathews original, surviving or lost; none is new.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — $f(x) = \lvert x-\pi\rvert$, $S_m$ for $m = 1, 3, \ldots, 25$ (rebuilt)
+
+**Behavior:** The periodic extension of $f$ is continuous, so $S_m \to f$ uniformly. Every $a_j$ with even $j \ge 2$ is zero, so the frames show odd $m$. The error is largest at the corners $x = 0$, $\pi$ and $2\pi$, where all the terms of $f - S_m$ have the same sign, and there it equals the tail sum $\tfrac{4}{\pi}\sum_{j>m,\ j\ \text{odd}} j^{-2}$. It falls at every frame, from $0.2976$ for $m = 1$ to $0.1052$ for $m = 5$ (Example 1) and $0.02447$ for $m = 25$.
+
+[Julia source](fourierseriesaa.jl)
+
+![Fourier partial sums S_m of f(x) = |x − π| over one period for m = 1, 3, …, 25: the magenta curve closes onto the blue V, and the largest error, at the corners x = 0, π and 2π, falls from 0.2976 to 0.02447](fourierseriesaa.gif)
+
+### Case 2 — $f(x) = x-\pi$, $S_m$ for $m = 1, 2, \ldots, 25$ (rebuilt)
+
+**Behavior:** The series has only sine terms, $b_j = -2/j$, so $S_m(0) = S_m(\pi) = S_m(2\pi) = 0$ for every $m$. At $x = 0$ and $2\pi$ this is the midpoint of the jump of the periodic extension from $\pi$ down to $-\pi$, and at $x = \pi$ it is $f(\pi)$. Beside the jump at $2\pi$, $S_m$ peaks at $x = 2\pi - \pi/(m+1)$; the peak value rises at every frame, from $2$ for $m = 1$ to $3.582$ for $m = 25$. Measured from the line $f$ below it, the overshoot at the peak is $0.5477$ for $m = 5$ and $0.5615$ for $m = 25$, close to the Gibbs value $0.0895 \times 2\pi = 0.5623$: it moves toward the jump but does not shrink. Since $S_m(2\pi - x) = -S_m(x)$, the same undershoot appears beside $x = 0$.
+
+[Julia source](fourierseriesbb.jl)
+
+![Fourier partial sums S_m of f(x) = x − π for m = 1 to 25: the magenta sine sums follow the blue line, pass through 0 at x = 0, π and 2π, and overshoot beside the jumps at 0 and 2π by an amount that approaches 0.56 while moving toward the jumps](fourierseriesbb.gif)
+
+### Case 3 — Mathews' unit step, $f = -1$ on $(0, \pi)$ and $1$ on $(\pi, 2\pi)$, $S_m$ for $m = 1, 3, \ldots, 25$ (rebuilt)
+
+**Behavior:** Only the sine terms with odd $j$ are nonzero, so the frames show odd $m$, and $S_m(0) = S_m(\pi) = S_m(2\pi) = 0$, the midpoints of the jumps, for every $m$. The graph of $f$ is broken at $x = \pi$ and has no value drawn there. The largest value of $S_m$ falls at every frame, from $4/\pi \approx 1.273$ for $m = 1$ to $1.188$ for $m = 5$ and $1.179$ for $m = 25$, staying above the Gibbs value $1 + 0.0895 \times 2 = 1.179$ (more precisely $1.17898$, against $1.17947$ for $m = 25$). The peaks sit a distance $\pi/(m+1)$ from the jumps, so they move toward them, but the overshoot of about $9\%$ of the jump remains.
+
+[Julia source](fourierseriescc.jl)
+
+![Fourier partial sums S_m of the unit step, −1 on (0, π) and 1 on (π, 2π), for m = 1, 3, …, 25: the magenta curve becomes a square wave through 0 at each jump, with peaks that close in on the jumps but stay above 1.179](fourierseriescc.gif)
+
+### Case 4 — $f(x) = (x-\pi)^2$, $S_m$ for $m = 1, 2, \ldots, 25$ (rebuilt)
+
+**Behavior:** The periodic extension is continuous, with corners at $x = 0$ and $2\pi$, so $S_m \to f$ uniformly. Every coefficient $a_j = 4/j^2$ is positive, so all the terms of $f - S_m = \sum_{j>m} 4\cos(jx)/j^2$ equal their largest value at $x = 0$ and $2\pi$, where the error is the tail sum $4\sum_{j>m} j^{-2}$. It falls at every frame, from $2.580$ for $m = 1$ to $0.7253$ for $m = 5$ and $0.1568$ for $m = 25$.
+
+[Julia source](fourierseriesdd.jl)
+
+![Fourier partial sums S_m of f(x) = (x − π)² for m = 1 to 25: the magenta curve settles onto the blue parabola, and the largest error, at x = 0 and 2π, falls from 2.580 to 0.1568](fourierseriesdd.gif)
+
+### Case 5 — $f(x) = x-\lvert x-\pi\rvert$, $S_m$ for $m = 1, 2, \ldots, 25$ (Mathews' animation)
+
+**Behavior:** The frames follow Mathews' sequence $S_1, S_2, \ldots, S_{25}$; Example 2 works this function in full. Inside the period $f$ is continuous, with a corner at $x = \pi$; its periodic extension jumps from $\pi$ down to $-\pi$ at $x = 0$ and $2\pi$. Unlike Case 2, the cosine terms do not vanish there, so $S_m(0) = \tfrac{\pi}{2} - \tfrac{4}{\pi}\sum_{j\ \text{odd} \le m} j^{-2}$ is not $0$ but tends to it, from $0.2976$ for $m = 1$ to $0.02447$ for $m = 25$. The largest value of $S_m$ is $3.942$ for $m = 1$; from $m = 2$ on it stays between $3.673$ and $3.734$, without a monotone trend, around the Gibbs value $\pi + 0.0895 \times 2\pi = 3.704$, and for $m = 25$ it is $3.702$, beside the jump at $x \approx 6.160$.
+
+[Julia source](fourierseriesee.jl)
+
+![Rebuild of Mathews' animation of the Fourier partial sums S_m of f(x) = x − |x − π| for m = 1 to 25: the magenta curve approaches the blue ramp-and-plateau, while the peak beside the jump at 2π stays between 0.53 and 0.59 above π from m = 2 on and moves toward the jump](fourierseriesee.gif)
+
+### Case 6 — Discrete series of the unit step, $n = 36$, $P_m$ for $m = 1, 3, \ldots, 17$ (Mathews' animation)
+
+**Behavior:** The frames follow Mathews' sequence of degrees $1, 3, \ldots, 17$. The samples at the jumps, $x_0 = 0$ and $x_{18} = \pi$, are the midpoints $y_0 = y_{18} = 0$. The data satisfy $y_{36-k} = -y_k$ and $y_{k+18} = -y_k$, so every $a_j$ and every $b_j$ with even $j$ is zero: $P_m$ is a sum of odd sines, with $P_m(0) = P_m(\pi) = 0$ for every $m$. Its largest value falls at every frame, from $1.270$ for $m = 1$ to $1.065$ for $m = 17$. Since $2m + 1 = 35$ and the alternating sum in (9) is zero, $P_{17}$ passes through all 36 samples, and its peak, $1.065$, is well below the $1.180$ of the Fourier polynomial $S_{17}$: interpolating midpoint samples damps the overshoot (Example 7).
+
+[Julia source](fourierfftcc.jl)
+
+![Rebuild of Mathews' discrete Fourier series animation for 36 samples of the unit step, with value 0 at the jumps: trigonometric polynomials of degree 1, 3, …, 17 approach the red sample dots, and degree 17 passes through all of them with a peak of only 1.065](fourierfftcc.gif)
+
+### Case 7 — Discrete series of $f(x) = (x-\pi)^2$, $n = 36$, $P_m$ for $m = 1, 2, \ldots, 17$ (Mathews' animation)
+
+**Behavior:** The frames follow Mathews' sequence of degrees $1, 2, \ldots, 17$. $f$ is continuous, so the samples are $y_k = f(x_k)$, and $P_m$ is the least-squares fit of degree $m$. Even $P_{17}$ does not interpolate: $n = 36 = 2 \cdot 17 + 2$, and the alternating sum in (9) gives $a_{18} = 0.030462$, so $P_{17}$ misses every sample by $0.015231$, alternately above and below. The largest error $\max_x \lvert f(x) - P_m(x)\rvert$ falls from $2.564$ for $m = 1$ to $0.1856$ for $m = 12$, then grows slightly, to $0.2042$ for $m = 17$, at $x \approx 0.074$ beside the corner of the periodic extension at $x = 0$. That is still below the $0.2285$ of the Fourier polynomial $S_{17}$ (Example 7).
+
+[Julia source](fourierfftdd.jl)
+
+![Rebuild of Mathews' discrete Fourier series animation for 36 samples of f(x) = (x − π)²: least-squares trigonometric polynomials of degree 1 to 17 settle onto the red sample dots, with a largest error that falls to 0.1856 at degree 12 and ends at 0.2042](fourierfftdd.gif)
+
+### Case 8 — Discrete series of $f(x) = x-\lvert x-\pi\rvert$, $n = 36$, $P_m$ for $m = 1, 2, \ldots, 17$ (Mathews' animation)
+
+**Behavior:** The frames follow Mathews' sequence of degrees $1, 2, \ldots, 17$. The sample at the jump $x_0 = 0$ is the midpoint $y_0 = 0$ of $f(0^+) = -\pi$ and $f(2\pi^-) = \pi$. The alternating sum in (9) is zero, so $P_{17}$ passes through all 36 samples, and in particular $P_{17}(0) = 0$. The largest value of $P_m$ is $3.939$ for $m = 1$; it is not monotone over the first frames, but from $m = 5$ on it falls at every frame, to $3.365$ for $m = 17$, below the $3.702$ of the Fourier polynomial $S_{17}$ in Case 5. The lowest value of $P_{17}$ is $-2.880$, at $x \approx 0.215$, so the samples keep $P_{17}$ above $-\pi$ beside the jump.
+
+[Julia source](fourierfftee.jl)
+
+![Rebuild of Mathews' discrete Fourier series animation for 36 samples of f(x) = x − |x − π|, with value 0 at the jump: trigonometric polynomials of degree 1 to 17 approach the red sample dots, and degree 17 passes through all of them, peaking at 3.365](fourierfftee.gif)
 
 ## Fourier Series
 
