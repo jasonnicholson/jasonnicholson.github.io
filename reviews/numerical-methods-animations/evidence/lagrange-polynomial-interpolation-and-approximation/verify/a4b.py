@@ -1,8 +1,0 @@
-exec(open('a4.py').read().split('for tr in')[0])
-run("sqrt hull trimmed",mp.sqrt,0,2,0.03,[6,10,16],ev(0.06,1.94))
-run("sqrt hull untrimmed",mp.sqrt,0,2,0.0,[6,10,16],ev(0,2))
-run("sqrt trimmed, err on [0,0.06] only",mp.sqrt,0,2,0.03,[16],ev(0,0.06,201))
-run("sqrt trimmed, err on [0.2,1.94]",mp.sqrt,0,2,0.03,[16],ev(0.2,1.94,501))
-run("sqrt untrimmed, err on [0.2,2]",mp.sqrt,0,2,0.0,[16],ev(0.2,2,501))
-run("runge trimmed, err on [-0.9,0.9]",lambda x:1/(1+10*x**2),-1,1,0.03,[16],ev(-0.9,0.9,801))
-run("runge untrimmed, err on [-0.9,0.9]",lambda x:1/(1+10*x**2),-1,1,0.0,[16],ev(-0.9,0.9,801))
