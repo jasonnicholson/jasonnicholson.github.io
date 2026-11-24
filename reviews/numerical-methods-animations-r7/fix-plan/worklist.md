@@ -260,7 +260,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 1 alt text says the level-1 and level-2 points trace the curve | unverified | open |
+| F1 | Minor | Page match | Case 1 alt text says the level-1 and level-2 points trace the curve | unverified | fixed — [fix record](../fixes/bezier-curves.md) |
 
 ### Catenary — `catenary` · [round-7 report](../catenary.md)
 
