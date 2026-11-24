@@ -1,9 +1,9 @@
 ---
 title: "Monte Carlo Integration"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -21,6 +21,38 @@ The error is random. Its standard deviation, the **standard error**, is $(b-a)\,
 That rate does not depend on the dimension, whereas a product midpoint rule with $n$ points in $d$ dimensions has error $O(n^{-2/d})$ for smooth integrands; for $d>4$ the Monte Carlo rate is the faster one.
 Mathews' module uses only the sample-mean estimator; the hit-or-miss variant, which counts the random points that land under the graph, is on the Monte Carlo Pi page.
 Every run gives a different estimate, so each single-run estimate on this page is one sample run, made with NumPy's `default_rng` generator (PCG64) and the seed stated, and is quoted with its estimated standard error; the repeat studies give their seeds too, and Mathews' own runs are quoted as his runs.
+
+## Animations
+
+Both animations are new. Mathews' Monte Carlo Integration module has no animation of its own: its Animations link opens his Midpoint Rule animation.
+Each animation follows **one seeded run** of the sample-mean estimator, made in Julia with the standard library's `Xoshiro` generator and the seed stated. These are not the NumPy runs quoted in the examples below, so the numbers differ; every number in a frame is the Julia run's own.
+Each frame adds points, stepping through $n=2,\dots,10$ and then ten sample sizes per decade (Case 2 adds the frames $n=m^5$), and the last frame is held. One panel shows the running estimate with a band of $\pm$ one estimated standard error (formula (4), or (7) in five dimensions) and the exact or reference value. Once $n$ is large the band is too narrow to see there, so a second panel plots, on log-log axes, the size of the actual error, the estimated standard error and the true standard deviation, which falls with slope $-\tfrac12$. The size of the error dips sharply wherever the error changes sign; the deepest dips leave the bottom of that panel.
+
+Case 1 animates Example 3 and Case 2 animates Example 14. Not animated: the mean value theorem of Example 1, the one-dimensional midpoint rule of Example 2 (Case 2 shows the midpoint rule only in five dimensions), Examples 4 and 5, the double integrals of Examples 6 and 7, Examples 8–13 (Example 13 is the integral of Example 14), and the repeat studies.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 3, $\int_0^4\sqrt x\,dx=\tfrac{16}{3}$, $n=2$ to $10\,000$ (seed 3)
+
+**Behavior:** The top panel puts each sampled point on the graph of $\sqrt x$, newest points in red, under the rectangle of base 4 whose height is the mean of the sampled values $f(x_i)$; its area is the estimate, and its height settles toward the exact average height $\tfrac43$.
+In this run the estimate is $6.846$ at $n=2$, $5.692$ at $n=10$, $5.444\pm0.05756$ at $n=1000$ (error $+0.1111$, 1.93 estimated standard errors) and $5.343\pm0.01895$ at $n=10\,000$ (error $+0.009405$, 0.50 estimated standard errors).
+At $n=2$ the two points happen to lie close together, so formula (4) gives an estimated error of only $0.03967$ against a true standard deviation of $1.333$, and the actual error, $+1.513$, is 38 estimated standard errors: with very few points the error estimate is unreliable.
+From $n=100$ on, the estimated standard error stays within 5.3% of the true value $1.886/\sqrt n$, so in the bottom panel it runs along the dashed line of slope $-\tfrac12$, and from $n=10$ on the actual error is never more than 2.24 estimated standard errors (the largest is 2.23, at $n=726$).
+
+[Julia source](montecarloaa.jl)
+
+![One seeded Julia Monte Carlo run for the integral of √x from 0 to 4: random points appear on the graph of √x under a rectangle whose height, the mean of the sampled values, approaches 4/3; the running estimate and its band of ± one estimated standard error narrow toward 16/3, ending at 5.343 ± 0.019 for n = 10000, and a log-log panel shows the estimated standard error following the line 1.886/√n of slope −1/2](montecarloaa.gif)
+
+### Case 2 — Example 14, Monte Carlo against the midpoint rule in five dimensions, $n=2$ to $16\,807$ (seed 14)
+
+**Behavior:** The product midpoint rule with $m=2,\dots,7$ midpoints per axis uses $n=m^5=32,\ 243,\ 1024,\ 3125,\ 7776,\ 16\,807$ points; each midpoint value (purple) appears when the Monte Carlo run reaches the same $n$. All six are above the reference value $1.1887833$, from $1.2006958$ at $m=2$ down to $1.1897660$ at $m=7$, and on the log-log axes their errors fall less steeply than the Monte Carlo standard deviation $0.07596/\sqrt n$.
+That standard deviation is larger than the midpoint error at $n=32$ ($0.01343$ against $0.01191$) and smaller at $m=3,\dots,7$, where the midpoint error is $1.09$ times it at $n=243$, growing to $1.68$ times at $n=16\,807$.
+In this run the Monte Carlo error is smaller than the midpoint error at $n=32$, $243$, $1024$, $3125$ and $7776$, but not at $n=16\,807$, where the estimate $1.1877085\pm0.0005841$ has error $-0.001075$ (1.84 estimated standard errors) against the midpoint error $+0.0009827$.
+The repeat study in Example 14 found the midpoint rule ahead in 9.1% of runs at $n=16\,807$, and this run falls in that minority, in keeping with Mathews' remark that Monte Carlo has the smaller error *most of the time*, not always.
+
+[Julia source](montecarlobb.jl)
+
+![One seeded Julia Monte Carlo run for the five-dimensional integral of Example 14 against the product midpoint rule with 2 to 7 midpoints per axis: the midpoint values decrease toward the reference 1.1887833 from above while the Monte Carlo band narrows, and a log-log panel shows the Monte Carlo standard deviation falling with slope −1/2, more steeply than the midpoint errors; at n = 16807 this run's error, −0.001075, is larger in size than the midpoint error 0.0009827](montecarlobb.gif)
 
 ## Background: The Average Value of a Function
 
