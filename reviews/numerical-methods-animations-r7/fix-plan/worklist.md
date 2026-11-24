@@ -224,7 +224,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the description of Mathews' program omits his point-selection rule, which changes his iterates from $p_7$ on | unverified | open |
+| F1 | Minor | Page match | the description of Mathews' program omits his point-selection rule, which changes his iterates from $p_7$ on | unverified | fixed — [fix record](../fixes/mullers-method.md) |
 
 ### Newton-Raphson Method — `newton-raphson-method` · [round-7 report](../newton-raphson-method.md)
 
