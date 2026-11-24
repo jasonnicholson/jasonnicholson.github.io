@@ -14,8 +14,47 @@ You are a specialist at building Julia animation pages for the jasonhnicholson.c
 - NEVER guess animation parameters — view the legacy GIF files first to determine function shape, domain, x₀, and convergence character.
 - ALWAYS create a `## Description` section in each topic page, placed before `## Animations`.
 - If legacy animated GIFs are missing, reconstruct animation parameters from worked examples, equations, and static graphs from the module links before scripting.
-- Treat available legacy animated GIFs as ground truth for motion and pacing; treat static example solution pages as ground truth for equations and numeric parameters.
+- **Mathematics is the ground truth.** The legacy archive tells you what each example was meant to be (function, interval, starting values, step, order, behaviour), but its numbers are claims to compute, not facts to copy. Where the archive and the mathematics disagree, the page follows the mathematics and says so in one sentence.
 - Always use `@__DIR__` for GIF output paths in Julia scripts so the GIF saves next to the script regardless of working directory.
+- NEVER run MATLAB. Python (`/usr/bin/python3` with numpy, scipy, sympy, mpmath) and Julia are the tools for checking.
+- Follow the **Accuracy standard** below. It is not optional: it lists the mistakes nine independent review rounds found in the first 53 pages.
+
+## Accuracy standard (lessons from nine review rounds)
+
+The first 53 pages were reviewed nine times. Almost none of the errors were crashes. They were plausible sentences and numbers that nobody computed. Every page you build must avoid each of these.
+
+**Numbers and claims**
+- Compute every number that goes on the page, in a title, legend or alt text, with an independent check (mpmath, sympy or scipy, or a second Julia routine), and state it only to the precision the check supports. Typical misses were a root wrong in the third decimal and an integral quoted to more digits than were computed.
+- Check every behaviour word against the computed sequence: converges, diverges, oscillates, alternates, monotone, overshoots, "fast", "tracks the reference". "Monotone" was written for alternating sequences more than once.
+- Quantifiers and comparatives must be exactly true over the whole range they cover: "every iterate", "always", "coarser steps become unstable".
+- Do not attach a textbook result to a case it does not fit. A convergence order, error constant or stability bound is stated for this problem only after you measure it. For example, step-halving ratios on a non-smooth integrand give order 5/3, not the rule's textbook order. A general statement may stay only when labelled as general ("for smooth f").
+- Verify every reference curve or value: an "exact" solution must satisfy the equation and the initial condition, and a numerical reference must be accurate enough for the comparison it supports.
+- Avoid timing claims. If one is needed, say what was measured, with what tool, and that it depends on the machine.
+
+**Method**
+- The code must run the method the page names. When it runs a variant (for example Netlib `zeroin` instead of Brent's ALGOL test, a real-part variant of Muller, or Mathews' "Modified Euler", which is the midpoint method), name the variant on the page.
+- For ODE methods, check stability at the chosen step before drawing conclusions. Mathews' ODE animations sweep the step count m and print y at the end point. Reproduce his printed values as the check, and describe exactly which m are unstable and which converge.
+
+**What the picture shows**
+- Labels use significant figures, never fixed decimals that round a nonzero value to `0.0` or print `-0.0`. Use `@sprintf("%.3g", x)` (with `using Printf`) or switch formats below 1e-3. An iterate that is exactly 0.0 in Float64 is labelled as a double-precision result, and no frame may show an iterate the method never computed.
+- Do not clamp silently. A diverging or off-scale value keeps its true value in the computation and in its label. Only the drawn position may be limited, and the clamp must be visible: draw the curve to one y-span beyond the axes so it visibly leaves the frame, and never draw a clamped run as a flat line along the frame edge.
+- Break curves at poles explicitly. List every pole in the window, insert a NaN there, and do not rely on a grid point happening to land on the pole.
+- The feature the text describes must be visible in every frame it is described for. Zoom per frame when the action shrinks, as on Muller's Method.
+- Titles, legends and labels must fit inside the frame and not hide the feature. Read the first, middle and last frames at full size.
+
+**Fidelity to Mathews**
+- Follow Mathews for the parameters of each example (function, interval, starting point, centre, step, maximum order or degree) and for the picture elements his animation had (sample-point markers, bars, tolerance bands). Depart only when his version would be mathematically wrong, and then say why in one sentence on the page.
+- When the archive has an example or animation that the page does not animate, add one sentence to the Animations introduction, before Case 1, saying what is left out. Check that sentence against **every** example in the module, not just the ones that look relevant.
+- Do not write "legacy GIF missing" without searching `a2001/Animations/` as well as `n2003/`. If archive images are missing, attribute nothing to Mathews that you could not read.
+- When a whole animation is new, with no Mathews original, say so in the Animations introduction.
+
+**Consistency and wiring**
+- Each case's heading, Behavior paragraph, alt text and the GIF's own title must agree with the script's parameters and with each other. In table-driven scripts, check every row, not a sample.
+- A script shared between pages stays byte-identical in every copy.
+- Every committed GIF must be exactly what its committed script produces: regenerate, then check with `git status` that only the intended files changed.
+
+**Your build ledger**
+Before you report a page as done, write a claim ledger in your scratch folder, not the repository. List every sentence, heading, alt text, title and label on the page that states a number or a behaviour. Next to each, record the computation that confirms it (command and output). A claim you cannot confirm is removed or reworded. When the batch is done, have it checked by the `review-animations` skill.
 
 ## Folder Structure
 
@@ -35,6 +74,8 @@ All legacy module pages live under:
 ```
 /home/jason/Desktop/math-fullerton/baseline/mathews/n2003/
 ```
+
+Legacy **animations** are mostly elsewhere, under `/home/jason/Desktop/math-fullerton/baseline/mathews/a2001/Animations/<Area>/<Topic>/` (for example `OrdinaryDE/Milne1/Milneaa.gif`). Module pages link to them in their Animations paragraph. Some linked animation folders hold only HTML, which means the GIF is lost. Complex-analysis modules are under `c2003/`. The plan in `plans/numerical-methods-animation-plan.md` lists what survives for each page that has no animations yet.
 
 For a topic named `FooBar`, the layout is:
 ```
@@ -101,6 +142,10 @@ When asked to process around five pages in one run:
 9. **Verify each GIF** with `view_image` in the main agent (these count against the main 20-image budget — verify all at once after generating)
 10. **Add or update a Description section** in `index.qmd` with a concise method overview and key mathematical context.
 11. **Add an Animations section** to `index.qmd` using the .qmd template below — above the "Derivation Notes" section
+12. **Write the build ledger** (see the Accuracy standard) and fix or remove every claim it cannot confirm.
+13. **Render the page** with `quarto render pages/numerical-methods/<topic>/index.qmd`.
+14. **When the batch is finished,** review it with the `review-animations` skill, scoped to the batch (`batch=<N>` or its slugs, with `out=reviews/batch-<N>`), before it is merged.
+15. **Fix from the review.** Reproduce each finding before changing anything, fix it under this skill's Accuracy standard (or record it as not reproduced, with evidence), then re-review the changed pages into a new folder (`out=reviews/batch-<N>-r2`). Repeat until a round has no Error or Misleading findings.
 
 ## .qmd Description Section Template
 
@@ -122,7 +167,11 @@ Insert before the "Animations" section:
 # Produces: <prefix><id>.gif
 
 using Plots
+using Printf
 gr()
+
+# Significant-figure label: never rounds a nonzero value to 0.0, never prints -0.0
+fmt(x) = x == 0 ? "0" : @sprintf("%.6g", x)
 
 # --- Parameters ---
 g(x) = ...           # iteration function
@@ -169,7 +218,7 @@ anim = @animate for frame in 0:n_iters
 
     x_cur = xs[frame+1]
     scatter!([x_cur], [x_cur]; color=:red, ms=6,
-             label="x_$(frame) = $(round(x_cur; digits=4))")
+             label="x_$(frame) = $(fmt(x_cur))")
 end
 
 gif(anim, joinpath(@__DIR__, "<prefix><id>.gif"); fps=2)
@@ -178,7 +227,7 @@ println("Saved: <prefix><id>.gif")
 
 **Notes:**
 - `fps=2` gives slow, readable playback — increase for faster topics
-- For diverging cases, use `clamp(val, xlims[1], xlims[2])` on iterates to keep the plot readable and reduce `n_iters` (e.g., 8)
+- For diverging cases, reduce `n_iters` (e.g., 8) and keep every iterate's true value in its label. Limit only the drawn position, visibly, as the Accuracy standard describes; never `clamp` the iterate itself
 - For non-cobweb topics (Newton's method, bisection), replace the cobweb path section with the topic-specific geometric construction
 
 ## .qmd Animations Section Template

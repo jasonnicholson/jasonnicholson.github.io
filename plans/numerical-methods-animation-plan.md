@@ -22,19 +22,16 @@ Written 2026-11-24, after the nine review rounds of the 53 animation pages were 
 - **17 pages stay text-only**, marked "—" in the table. These are direct linear-algebra algorithms (elimination, factorizations, Horner, Householder and similar), where an animation would only redraw a matrix. Three of them are still skeletons and need the `content-page` skill.
 - **For a skeleton page, run `content-page` first**, so that the text and worked example exist, and then `animation-page`. Of the 41 animation pages, 37 are skeletons and 4 already have text.
 
-## Before the first batch
+## Before the first batch (done 2026-11-24)
 
-1. **Fold the review lessons into the `animation-page` skill.** The nine review rounds found the same kinds of mistake again and again. The skill should require, for every number and behaviour sentence on a page, a computation recorded at build time.
-   - **Numbers:** a root or value quoted to more digits than were computed, or wrong in the third digit.
-   - **Behaviour:** "monotone" for an alternating sequence, or a textbook convergence order attached to a case that does not have it.
-   - **Labels:** legend labels that round to `0.0` or `-0.0`. Use significant figures.
-   - **Clamping:** clamped or off-scale values drawn or labelled as if real. Clamping must be visible and disclosed.
-   - **Window:** the feature the text describes falling outside the plot window.
-   - **Method:** a method variant run under another variant's name.
-   - **Case tables:** in table-driven scripts, case headings, captions and GIF titles that disagree.
-   - **Fidelity:** silent departures from Mathews: a different function, interval, step size, maximum order, or a dropped case.
-   - **Timings:** claims that depend on the machine.
-2. **Decide how new batches are checked.** The review and fix commands that checked the existing 53 pages were removed in `37a1c08`. Restore `review-animations` from `37a1c08^:.claude/commands/` (as a skill, if preferred) to review each new batch the same way, with its rule not to run MATLAB.
+1. **The `animation-page` skill carries the review lessons.** Its Accuracy standard lists the mistakes the nine review rounds found, and requires a build ledger: a recorded computation for every number and behaviour sentence on a page.
+   - The old advice to clamp diverging iterates and the `round(x; digits=4)` label template were removed. Both caused findings.
+2. **New batches are reviewed with the `review-animations` skill.** It was restored from history and adapted:
+   - It takes `batch=<N>`.
+   - It writes to a per-batch folder such as `reviews/batch-1`.
+   - It forbids MATLAB.
+
+   Fixes go back through `animation-page`, followed by a re-review into `reviews/batch-<N>-r2`, until a round has no Error or Misleading findings. The old `fix-animations` command was tied to the first 53 pages' fix plan, so it was not restored. It is in history at `37a1c08^` if needed.
 
 ## Batches
 
