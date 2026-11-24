@@ -218,7 +218,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | in Case 2's zoomed frames the "second Δx" cannot be seen, because earlier steps paint the whole axis green | verified | open |
+| F1 | Misleading | Page match | in Case 2's zoomed frames the "second Δx" cannot be seen, because earlier steps paint the whole axis green | verified | fixed — [fix record](../fixes/madsen-reid-method.md) |
 
 ### Muller's Method — `mullers-method` · [round-7 report](../mullers-method.md)
 

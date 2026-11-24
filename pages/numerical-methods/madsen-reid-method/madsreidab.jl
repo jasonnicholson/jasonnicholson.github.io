@@ -219,8 +219,11 @@ anim = @animate for frame in 0:n_frames
         xn1 = xs[k+1]
         fxn = f(xn)
         # tangent line down to the Newton point, then along the axis to x - kΔx
+        # (zoomed frames draw only the current step's axis part, so older
+        # steps' thick segments do not cover the window)
         plot!([xn, xt[k]], [fxn, 0.0]; color=col, lw=1.5, label="")
-        xt[k] != xn1 && plot!([xt[k], xn1], [0.0, 0.0]; color=col, lw=3, label="")
+        (frame < 2 || k == frame) && xt[k] != xn1 &&
+            plot!([xt[k], xn1], [0.0, 0.0]; color=col, lw=3, label="")
         plot!([xn1, xn1], [0.0, f(xn1)]; color=col, lw=1.5, label="")
     end
 
