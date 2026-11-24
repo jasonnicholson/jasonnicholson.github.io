@@ -65,9 +65,9 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 1 | [Milne-Simpson's Method](../pages/numerical-methods/milne-simpsons-method/) | written; **done (batch 1):** 2 animations (rebuild of Mathews' m-sweep for y' = 1 − t∛y, new weak-stability error plot) | survives: `OrdinaryDE/Milne1/Milneaa.gif` (38 frames) | 12 | 40 |
 | 1 | [Fourier series](../pages/numerical-methods/fourier-series/) | written; **done (batch 1):** 8 animations (rebuilds of all 5 Fourier-series cases and the 3 surviving discrete ones; the module links 10 animations, not 9; the 2 lost discrete ones are not rebuilt) | 4 of 9 survive: `FourierFFT{cc,dd,ee}.gif`, `FourierSeriesee.gif` | 6 | 30 |
 | 1 | [Monte Carlo Integration](../pages/numerical-methods/monte-carlo-integration/) | written; **done (batch 1):** 2 new animations (Example 3 running estimate, Example 14 Monte Carlo vs midpoint rule in 5-D) | none (module links the Midpoint animation by mistake) | 15 | 111 |
-| 2 | [Golden Ratio Search](../pages/numerical-methods/golden-ratio-search.qmd) | skeleton | lost (portal HTML only) | 7 | 38 |
-| 2 | [Quadratic Interpolative Search](../pages/numerical-methods/quadratic-interpolative-search.qmd) | skeleton | lost (Quadratic and Cubic portals, HTML only) | 5 | 44 |
-| 2 | [Newton's Search Method](../pages/numerical-methods/newtons-search-method.qmd) | skeleton | none | 7 | 55 |
+| 2 | [Golden Ratio Search](../pages/numerical-methods/golden-ratio-search.qmd) | skeleton | lost (portal HTML only: `Optimization/GoldenRatio1/GoldenRatioaa.html`; module `n2003/GoldenRatioSearchMod.html`) | 7 | 38 |
+| 2 | [Quadratic Interpolative Search](../pages/numerical-methods/quadratic-interpolative-search.qmd) | skeleton | lost (Quadratic and Cubic portals, HTML only: `Optimization/Quadratic1/Quadraticaa.html`, `Optimization/Cubic1/Cubicaa.html`; module `n2003/QuadraticSearchMod.html`) | 5 | 44 |
+| 2 | [Newton's Search Method](../pages/numerical-methods/newtons-search-method.qmd) | skeleton | none (module `n2003/NewtonSearchMod.html`) | 7 | 55 |
 | 3 | [Steepest Descent - Gradient Search](../pages/numerical-methods/steepest-descent-gradient-search.qmd) | skeleton | lost (portal HTML only) | 7 | 61 |
 | 3 | [Nelder Mead Method](../pages/numerical-methods/nelder-mead-method.qmd) | skeleton | lost (portal HTML only) | 5 | 33 |
 | 3 | [Powell's Method](../pages/numerical-methods/powells-method.qmd) | skeleton | lost (two items, HTML only) | 9 | 62 |
