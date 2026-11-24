@@ -86,10 +86,6 @@ anim = @animate for state in frame_states
                   linecolor=:red, lw=0.8)
         end
 
-        for i in eachindex(x_nodes)
-            plot!([x_nodes[i], x_nodes[i]], [0.0, f(x_nodes[i])]; color=:red, lw=0.6)
-        end
-
         sample_x = x_nodes
         sample_text = "Sample Points = $n"
         approx_text = @sprintf("Approximation = %.6f", approx)

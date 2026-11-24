@@ -71,7 +71,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Node stems in the bar colour make each bar look like two bars | unverified | open |
+| F1 | Minor | Page match | Node stems in the bar colour make each bar look like two bars | unverified | fixed — [fix record](../fixes/gauss-legendre-quadrature.md) |
 
 ### Midpoint Rule — `midpoint-rule` · [round-7 report](../midpoint-rule.md)
 
