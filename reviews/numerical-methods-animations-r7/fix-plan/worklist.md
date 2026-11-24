@@ -46,7 +46,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the rule definitions write `≈` where the page means `=` | unverified | open |
+| F1 | Minor | Page match | the rule definitions write `≈` where the page means `=` | unverified | fixed — [fix record](../fixes/2d-trapezoidal-and-simpson-rules.md) |
 
 ### Adaptive Simpson's Rule — `adaptive-simpsons-rule` · [round-7 report](../adaptive-simpsons-rule.md)
 
