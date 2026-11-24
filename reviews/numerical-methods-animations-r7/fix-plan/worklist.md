@@ -27,18 +27,18 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F3 | Misleading | Implementation | clamping draws false flat tops on the interpolant between the nodes | verified | open |
-| F1 | Minor | Page match | the "degree" in the titles and intro is the nominal degree, and for symmetric cases the polynomial drawn has lower degree | unverified | open |
-| F2 | Minor | Fidelity | Cases 18 and 20 use wider node intervals than Mathews' worked examples for those animations, with no reason given | unverified | open |
+| F3 | Misleading | Implementation | clamping draws false flat tops on the interpolant between the nodes | verified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
+| F1 | Minor | Page match | the "degree" in the titles and intro is the nominal degree, and for symmetric cases the polynomial drawn has lower degree | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
+| F2 | Minor | Fidelity | Cases 18 and 20 use wider node intervals than Mathews' worked examples for those animations, with no reason given | unverified | fixed — [fix record](../fixes/lagrange-polynomial-interpolation-and-approximation.md) |
 
 ### Newton Interpolation Polynomial — `newton-interpolation-polynomial` · [round-7 report](../newton-interpolation-polynomial.md)
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Implementation | clamping draws false flat tops on the interpolant between the nodes | verified | open |
-| F2 | Minor | Implementation | outside the nodes the clamped interpolant runs along the plot border | unverified | open |
-| F3 | Minor | Page match | 54 of 290 frames are titled with a degree above the polynomial's exact degree | unverified | open |
-| F4 | Minor | Fidelity | Case 18 uses nodes on [-2.2, 2.2]; Mathews' linked example uses [-2, 2] | unverified | open |
+| F1 | Misleading | Implementation | clamping draws false flat tops on the interpolant between the nodes | verified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F2 | Minor | Implementation | outside the nodes the clamped interpolant runs along the plot border | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F3 | Minor | Page match | 54 of 290 frames are titled with a degree above the polynomial's exact degree | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
+| F4 | Minor | Fidelity | Case 18 uses nodes on [-2.2, 2.2]; Mathews' linked example uses [-2, 2] | unverified | fixed — [fix record](../fixes/newton-interpolation-polynomial.md) |
 
 ## WP-C
 

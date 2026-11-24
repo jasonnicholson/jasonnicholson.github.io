@@ -48,9 +48,11 @@ cases = InterpCase[
     auto_span("15", "exp(x)", x -> exp(x), (-2.0, 3.0)),
     auto_span("16", "cos(x)*exp(-x)", x -> cos(x) * exp(-x), (-2.0, 4.0)),
     auto_span("17", "cosh(x)", x -> cosh(x), (-4.0, 4.0)),
-    auto_span("18", "atan(x)", x -> atan(x), (-2.2, 2.2)),
+    # Cases 18 and 20: nodes as in Mathews' static examples linked to those
+    # animations, inside the wider plot window.
+    with_span("18", "atan(x)", x -> atan(x), (-2.2, 2.2), (-2.0, 2.0)),
     with_span("19", "asin(x)", x -> asin(x), (-1.5, 1.5), (-1.0, 1.0)),
-    auto_span("20", "besselj(0,x)", x -> besselj(0, x), (-10.2, 10.2)),
+    with_span("20", "besselj(0,x)", x -> besselj(0, x), (-10.2, 10.2), (-10.0, 10.0)),
     auto_span("21", "besselj(1,x)", x -> besselj(1, x), (-10.2, 10.2)),
     auto_span("22", "normal_pdf(x)", x -> exp(-x^2 / 2) / sqrt(2pi), (-3.0, 3.0)),
     auto_span("23", "normal_cdf(x)", x -> 0.5 + 0.5 * erf(x / sqrt(2.0)), (-3.0, 3.0)),
@@ -191,11 +193,15 @@ function render_case(case::InterpCase)
         m = 0.12 * max(hi - lo, 1e-9)
         ylims = (lo - m, hi + m)
     end
-    ytrue_clip = [isfinite(y) ? clamp(y, ylims[1], ylims[2]) : NaN for y in ytrue]
+    # Limit off-scale values to one y-span beyond the axes, not to the axes,
+    # so a curve leaves the frame instead of running along its edge.
+    yspan = ylims[2] - ylims[1]
+    offscale(y) = isfinite(y) ? clamp(y, ylims[1] - yspan, ylims[2] + yspan) : NaN
+    ytrue_clip = offscale.(ytrue)
     xf, yf = xplot, ytrue_clip
     if has_pole
         # Unclamped f with a NaN point at each pole, so the curve breaks there
-        # instead of drawing a segment along the window edge or across the pole.
+        # instead of drawing a segment across the pole.
         xf = sort(vcat(xplot, case.poles))
         yf = [x in case.poles ? NaN : safe_eval(case.f, x) for x in xf]
     end
@@ -208,7 +214,7 @@ function render_case(case::InterpCase)
         xs, ys_nodes = equal_nodes(case.f, span, n_nodes)
         w = barycentric_weights(xs)
         yinterp = [barycentric_eval(x, xs, ys_nodes, w) for x in xplot]
-        yinterp = clamp.(yinterp, ylims[1], ylims[2])
+        yinterp = offscale.(yinterp)
 
         pplot = plot(size=(760, 520),
                      xlims=xaxis, ylims=ylims,
