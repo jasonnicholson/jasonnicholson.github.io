@@ -248,7 +248,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "The intermediate entries differ" hides that the two tableaux share their whole diagonal | verified | open |
+| F1 | Misleading | Page match | "The intermediate entries differ" hides that the two tableaux share their whole diagonal | verified | fixed — [fix record](../fixes/aitkens-and-nevilles-interpolation.md) |
 
 ### B-Splines — `b-splines` · [round-7 report](../b-splines.md)
 
