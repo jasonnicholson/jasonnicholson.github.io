@@ -174,7 +174,7 @@ anim = @animate for (label, c, xn, yn) in methods
     plot!(p1, x_plot, f_plot; color=:blue, lw=2.2, label="f(x) = exp(x)")
     plot!(p1, x_plot, r_plot; color=:darkgreen, lw=2.2, linestyle=:dash,
           label="R(x), max rel err = $(round(max_rel; digits=7))")
-    if !isempty(xn)  # the minimax approximant has no interpolation nodes
+    if !isempty(xn)  # minimax has no prescribed nodes: its five crossings of f come out of the exchange
         scatter!(p1, xn, yn; color=:red, ms=4.5, label="nodes")
     end
 

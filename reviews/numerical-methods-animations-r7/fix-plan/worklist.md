@@ -301,7 +301,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | source comment says the minimax approximant has no interpolation nodes | unverified | open |
+| F1 | Minor | Implementation | source comment says the minimax approximant has no interpolation nodes | unverified | fixed — [fix record](../fixes/rational-approximation.md) |
 
 ### The Tangent Parabola — `the-tangent-parabola` · [round-7 report](../the-tangent-parabola.md)
 
