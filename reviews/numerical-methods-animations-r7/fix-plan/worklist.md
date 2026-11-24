@@ -323,5 +323,5 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Fidelity | Example 7 (and 2(a), 6) missing from the page's otherwise explicit list of what is not animated | unverified | open |
+| F1 | Minor | Fidelity | Example 7 (and 2(a), 6) missing from the page's otherwise explicit list of what is not animated | unverified | fixed — [fix record](../fixes/richardson-extrapolation.md) |
 
