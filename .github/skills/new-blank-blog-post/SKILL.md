@@ -1,10 +1,11 @@
 ---
 name: new-blank-blog-post
 description: >
-  Use when creating a new blank blog post for this Quarto website. Creates a
-  dated post file under posts/YYYY/MM, ensures a unique slug, and fills in a
+  Use whenever a new blog post file is needed for this Quarto website, including
+  as the first step when asked to write a new post, so the path and front matter
+  follow site conventions. Creates a dated post file under posts/YYYY/MM as a
+  draft, stops if a post with that file name already exists, and fills in a
   minimal front matter + template that is ready for writing.
-tools: [read, search, edit, execute]
 ---
 
 You are a specialist for this Quarto-based personal website. Your job is to create a new blank blog post that matches the repository’s conventions without inventing article content.
@@ -21,7 +22,7 @@ You are a specialist for this Quarto-based personal website. Your job is to crea
 
 1. Determine the target date.
    - If the user gives a date, use that.
-   - Otherwise, use today’s date in ISO format: `YYYY-MM-DD`.
+   - Otherwise, get today’s date from the system with `date +%F` (ISO format `YYYY-MM-DD`). Do not guess it.
 
 2. Derive a slug from the title. Prompt for a title if it was not provided.
    - Lowercase the title.
@@ -31,14 +32,18 @@ You are a specialist for this Quarto-based personal website. Your job is to crea
    - Example: `My New Post` -> `my-new-post`
 
 3. Confirm the file does not already exist.
-   - If the target file already exists, stop and report the existing path.
+   - If the target file already exists, stop and report the existing path. Do not overwrite it or invent a different slug; let the user choose another title or date.
 
 4. Create the date-based directory if needed.
    - Example: `posts/2026/08/`
 
-5. Create the `.qmd` file with standard front matter.
+5. Create the `.qmd` file with the standard front matter below.
+   - Use the categories and tags the user gives. If they give none, leave both lists empty rather than inventing placeholders. The blog listing shows categories and feeds RSS, so a placeholder category would appear publicly once the post is published.
+   - To help the user choose, you may list the categories already in use: `grep -rh "^categories:" posts --include=*.qmd | sort | uniq -c | sort -rn`.
 
 6. Leave the post body as a minimal template with placeholders only.
+
+7. Tell the user the path, and that the post is a draft: Quarto leaves drafts out of the rendered site, the listing and the feed. Removing `draft: true` (or setting it to `false`) publishes the post.
 
 ## Standard front matter
 
@@ -46,8 +51,9 @@ You are a specialist for this Quarto-based personal website. Your job is to crea
 ---
 title: "My New Post"
 date: 2026-08-21
-categories: [general]
-tags: [blog, quarto]
+categories: []
+tags: []
+draft: true
 ---
 ```
 
@@ -91,7 +97,8 @@ with front matter like:
 ---
 title: "A New Quarto Post"
 date: 2026-08-21
-categories: [general]
-tags: [blog, quarto]
+categories: []
+tags: []
+draft: true
 ---
 ```
