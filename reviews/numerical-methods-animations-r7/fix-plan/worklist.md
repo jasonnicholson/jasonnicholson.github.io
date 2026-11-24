@@ -204,7 +204,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Timing claim holds for only one of the two displayed Halley formulas | unverified | open |
+| F1 | Minor | Page match | Timing claim holds for only one of the two displayed Halley formulas | unverified | fixed — [fix record](../fixes/halleys-method.md) |
 
 ### Improved Newton Method — `improved-newton-method` · [round-7 report](../improved-newton-method.md)
 
