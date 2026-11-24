@@ -123,9 +123,9 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "each step multiplies the error ... by $1+h\,\partial f/\partial y<-1$" is false once the error is large | verified | open |
-| F2 | Minor | Page match | the shaded band is evaluated on the reference solution, but neither the page nor the frame says so | unverified | open |
-| F3 | Minor | Page match | "about halves when $m$ doubles" holds only from $m=45$, but the sentence is written for the whole sweep | unverified | open |
+| F1 | Misleading | Page match | "each step multiplies the error ... by $1+h\,\partial f/\partial y<-1$" is false once the error is large | verified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
+| F2 | Minor | Page match | the shaded band is evaluated on the reference solution, but neither the page nor the frame says so | unverified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
+| F3 | Minor | Page match | "about halves when $m$ doubles" holds only from $m=45$, but the sentence is written for the whole sweep | unverified | fixed — [fix record](../fixes/eulers-method-for-odes.md) |
 
 ### Runge-Kutta-Fehlberg Method — `runge-kutta-fehlberg-method` · [round-7 report](../runge-kutta-fehlberg-method.md)
 
