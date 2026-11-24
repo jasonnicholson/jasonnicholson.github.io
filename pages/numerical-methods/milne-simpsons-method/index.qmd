@@ -1,9 +1,9 @@
 ---
 title: "Milne-Simpson's Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -32,6 +32,77 @@ Runge-Kutta method (RK4) and the same step $h$. The local error of each step is
 $O(h^5)$ and the global error is $O(h^4)$. However, the Simpson corrector makes the method
 only *weakly stable*: on a decaying solution, a small $h$ can let a spurious, sign-alternating
 error grow (Example 2).
+
+## Animations
+
+Both animations run the method exactly as in the Algorithm below: RK4 for $y_1, y_2, y_3$,
+then the predictor (2) and the corrector (3), with two evaluations of $f$ per step. As in
+the worked examples, $e_k = y(t_k) - y_k$ is the error, exact (or reference) minus computed.
+
+Mathews' module has eleven examples and one animation. Case 1 rebuilds that animation,
+which solves his Example 11 (Example 4 below) for 21 values of $m$. Case 2 is new, with no
+Mathews original: it animates Example 2 (his Examples 5–8), whose solution has only static
+error plots. Example 1 ($y' = 1 - ty$, his Examples 1–4) and Example 3
+($y' = t^2 + y^2$ and its asymptote, his Examples 9–10) are not animated. The images of
+his worked solution of Example 11 are lost, so his animation is the only record of what he
+computed for that problem.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Mathews' animation, Example 4: $y' = 1 - t\sqrt[3]{y}$, $y(0) = 1$ on $[0, 5]$, $m = 12$ to $150$
+
+The top panel keeps the picture of Mathews' animation: the computed points $(t_k, y_k)$
+joined by a magenta polyline, the initial point $(0, 1)$ in red, the number of
+subintervals $m$, and the end value $y_m \approx y(5)$. There is one frame for each of his
+21 values $m = 12, 14, 16, 18, 20, 24, 28, \ldots, 56, 60, 70, 80, 90, 100, 120, 150$; his
+opening frame, which shows only the initial point, is left out, and the last frame is
+held. New here are a green reference solution, which agrees with the reference of Example 4
+($y(5) = 0.008119920$), orange markers on the RK4 starting values, and the lower panel. It
+plots $|e_k|$ on a log scale with a dashed line at $0.01$, and its title gives $e_m$ and
+the largest $|e_k|$ with its $t$. Mathews' fixed window was about $-0.2 \le y \le 1.72$,
+which the runs with $m = 12$, $14$ and $16$ leave; the window here, $-0.9 \le y \le 2.1$,
+holds every computed value. The cube root is the real cube root, so $f$ is defined when a
+run goes negative. With it the computed $y_m$ agree with all 21 values printed on Mathews'
+frames (he printed seven decimal places without trailing zeros, the animation prints
+seven significant figures) and with the Example 4 table.
+
+**Behavior:** Every run stays within $5 \times 10^{-4}$ of the reference up to $t = 2.5$.
+For each $m \le 56$ the run breaks away in the tail: $|e_k|$ crosses $0.01$ after
+$t = 3.2$, the end values range from $1.927$ ($m = 12$) to $-0.7571$ ($m = 16$), and the
+runs with $m = 12, 14, 16, 18, 20, 24$ and $36$ go below zero. Refining does not improve
+the end value steadily: $|e_m|$ is larger for $m = 18$ than for $16$, for $36$ than for
+$32$, for $52$ than for $48$, and for $70$ than for $60$. For $m = 40$ to $56$ the tail
+error is at most $0.082$, hard to see in the top panel, so the lower panel carries it.
+From $m = 60$ on, $|e_k| < 0.01$ everywhere. At $m = 60$ the end value is off by only
+$1.1 \times 10^{-5}$, while the run is off by $3.5 \times 10^{-3}$ at $t \approx 4.92$. For
+$m = 100$, $120$ and $150$ the largest error is below $3.4 \times 10^{-6}$, near $t = 3.3$.
+
+[Julia source](milneaa.jl)
+
+![Milne-Simpson solutions of y′ = 1 − t∛y, y(0) = 1 on [0, 5] for m = 12 to 150 subintervals: for m up to 56 the computed points follow the reference hump and then oscillate in the tail, ending between −0.757 and 1.927 instead of y(5) ≈ 0.00812; a lower log-scale panel shows the error |e_k|, which stays below 0.01 everywhere from m = 60 on](milneaa.gif)
+
+### Case 2 — Weak stability, Example 2: $y' = 30 - 5y$, $y(0) = 1$ on $[0, 5]$, $h = 0.1$ and $h = 0.05$ (new)
+
+The animation plots $|e_k|$ for both of Mathews' runs, $m = 50$ (blue) and $m = 100$
+(orange-red), on a log scale against the exact solution $y = 6 - 5e^{-5t}$. It advances $0.1$ in
+$t$ per frame, and the last frame is held. Filled markers mark $e_k > 0$ and open markers
+$e_k < 0$. Mathews' Examples 7 and 8 plot $|e_k|$ on a linear scale, one step size per
+plot, which hides the sign; the log scale here also keeps the small late errors of the
+$h = 0.1$ run visible. The first three points of each run are the RK4 starting values, and
+the labels give $e_k$ at the current $t$.
+
+**Behavior:** With $h = 0.1$, $h\lambda = -0.5$ lies inside $(-0.8443, -0.3)$, where all
+roots of (6) are inside the unit circle. The error peaks at $|e_6| = 3.30 \times 10^{-3}$
+at $t = 0.6$ and then dies out, with ups and downs, to $2.25 \times 10^{-8}$ at $t = 5$.
+With $h = 0.05$, $h\lambda = -0.25$ lies outside that interval. The error is smaller at
+every common grid point up to $t = 0.6$, changes sign at every step from $t = 0.6$ on, and
+from $t = 2$ on grows at every step: by the factor $1.01823$ per step over the last ten steps, the size of the parasitic
+root $-1.01823$, to $e_{100} = -2.97 \times 10^{-4}$ at $t = 5$. From $t = 1.8$ on, the
+$h = 0.05$ error is the larger of the two at every common grid point.
+
+[Julia source](milnebb.jl)
+
+![Log-scale error |e_k| of Milne-Simpson on y′ = 30 − 5y, y(0) = 1, drawn step by step to t = 5: with h = 0.1 the error peaks at 3.3e−3 at t = 0.6 and decays to 2.2e−8, while with h = 0.05 the markers alternate between filled and open from t = 0.6 (the sign flips every step) and from t = 2 the error grows steadily to 3.0e−4 in size](milnebb.gif)
 
 ## The Milne-Simpson Method
 
