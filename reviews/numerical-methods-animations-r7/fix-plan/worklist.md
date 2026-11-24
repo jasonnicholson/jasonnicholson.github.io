@@ -18,8 +18,8 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | 21 frames draw a true pole as a short finite spike | unverified | open |
-| F2 | Minor | Fidelity | the Mathews convergence-interval display and higher orders are dropped without saying so | unverified | open |
+| F1 | Minor | Implementation | 21 frames draw a true pole as a short finite spike | unverified | deferred — owner decision (R5-C, R7-A) — [fix record](../fixes/pade-approximation.md) |
+| F2 | Minor | Fidelity | the Mathews convergence-interval display and higher orders are dropped without saying so | unverified | fixed — [fix record](../fixes/pade-approximation.md) |
 
 ## WP-B
 
