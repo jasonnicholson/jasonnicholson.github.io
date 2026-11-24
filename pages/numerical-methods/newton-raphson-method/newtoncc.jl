@@ -5,6 +5,7 @@
 # Produces: newtoncc.gif
 
 using Plots
+using Printf
 gr()
 
 # --- Functions ---
@@ -26,6 +27,10 @@ xs[1] = x0
 for i in 1:n_iters
     xs[i+1] = xs[i] - f(xs[i]) / fp(xs[i])
 end
+
+# Legend format: 5 decimals for |x| >= 1e-3, otherwise 3 significant figures.
+# An iterate that is exactly 0.0 is a double-precision result, not the exact Newton iterate.
+fmt_x(x) = x == 0 ? "0 (double-precision result)" : abs(x) >= 1e-3 ? string(round(x; digits=5)) : @sprintf("%.2e", x)
 
 # --- Animation ---
 xplot = range(xlims[1], xlims[2], length=400)
@@ -55,10 +60,10 @@ anim = @animate for frame in 0:n_iters
     x_cur = xs[frame + 1]
     if xlims[1] <= x_cur <= xlims[2]
         scatter!([x_cur], [f(x_cur)]; color=:red, ms=6,
-                 label="x₍$(frame)₎ = $(round(x_cur; digits=5))")
+                 label="x₍$(frame)₎ = $(fmt_x(x_cur))")
     else
         scatter!(Float64[], Float64[]; color=:red, ms=6,
-                 label="x₍$(frame)₎ = $(round(x_cur; digits=5))")
+                 label="x₍$(frame)₎ = $(fmt_x(x_cur))")
     end
 end
 
