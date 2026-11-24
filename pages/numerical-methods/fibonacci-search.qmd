@@ -7,43 +7,311 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Fibonacci search finds the minimum of a function $f$ on an interval $[a_0, b_0]$ using only function values, no derivatives. It needs $f$ to be **unimodal** on the interval: decreasing up to a single minimiser $p$ and increasing after it. Each step evaluates $f$ at two interior points $c_k < d_k$ and throws away the part of the interval that cannot contain $p$. If $f(c_k) \le f(d_k)$ the minimiser lies in $[a_k, d_k]$, otherwise it lies in $[c_k, b_k]$. The points are placed so that the surviving interior point becomes an interior point of the next interval, so every step after the first costs only one new function evaluation.
 
-### Planned animation ideas
+Unlike the golden ratio search, which shrinks the interval by the same factor every time, Fibonacci search fixes the number of steps in advance and changes the factor at every step. With the Fibonacci numbers $F_0 = 0$, $F_1 = 1$, $F_n = F_{n-1} + F_{n-2}$ and a tolerance $\varepsilon$, choose the smallest $n$ with $F_n > (b_0 - a_0)/\varepsilon$. For $k = 0, 1, \ldots, n-3$, interval $[a_k, b_k]$ gets the interior points
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+$$
+c_k = a_k + (1 - r_k)(b_k - a_k), \qquad d_k = a_k + r_k (b_k - a_k), \qquad r_k = \frac{F_{n-1-k}}{F_{n-k}},
+$$
 
-## Derivation Notes (Planned)
+and for $k \le n-4$ the next interval is $r_k$ times as long. At the last step $r_{n-3} = F_2/F_3 = \tfrac12$, so the two interior points meet at the midpoint of an interval of length $2(b_0 - a_0)/F_n$. That midpoint is within $(b_0 - a_0)/F_n < \varepsilon$ of the minimiser.
 
-Short derivations will be added to explain the core equations and assumptions.
+## Unimodal Functions and Bracketing
 
-## Worked Example (Planned)
+::: {.callout-note appearance="simple"}
+## Definition — Unimodal function
+The function $f$ is *unimodal* on $I = [a, b]$ if there is a unique number $p \in I$ such that $f$ is decreasing on $[a, p]$ and increasing on $[p, b]$.
+:::
 
-A compact numerical example with intermediate steps will be included.
+A bracketing search keeps an interval $[a_k, b_k]$ that is known to contain $p$ and shrinks it by comparing $f$ at two interior points $c_k < d_k$:
 
-## Implementation Notes (Planned)
+- If $f(c_k) \le f(d_k)$, the minimum cannot lie to the right of $d_k$. *Squeeze from the right*: set $a_{k+1} = a_k$, $b_{k+1} = d_k$.
+- If $f(c_k) > f(d_k)$, the minimum cannot lie to the left of $c_k$. *Squeeze from the left*: set $a_{k+1} = c_k$, $b_{k+1} = b_k$.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+A tie $f(c_k) = f(d_k)$ puts $p$ between $c_k$ and $d_k$, so either choice is safe; the rule above keeps $[a_k, d_k]$. The method uses only comparisons of function values, so it also works when $f$ is not differentiable.
 
-## Legacy Animation Inventory (Stub)
+## Derivation of the Fibonacci Ratios
 
-- Legacy module page: [Fibonacci Search](http://localhost:8000/n2003/FibonacciSearchMod.html) (ok)
-- Animation links found in module Animations paragraph: 2
-- Unique animation portals: 1
+Write the interior points of $[a_0, b_0]$ as
 
-### Animation Portals
+$$
+c_0 = a_0 + (1 - r_0)(b_0 - a_0), \qquad d_0 = a_0 + r_0 (b_0 - a_0), \qquad \tfrac12 < r_0 < 1,
+\tag{1}
+$$
 
-1. [Fibonacci Search](http://localhost:8000/a2001/Animations/Optimization/Fibonacci1/Fibonacci.html) (ok)
+so that $c_0 < d_0$. Suppose $f(c_0) \le f(d_0)$, so the new interval is $[a_1, b_1] = [a_0, d_0]$. To need only one new evaluation, the old point $c_0$ must be reused as the right interior point $d_1$ of the new interval. Since $b_1 = d_0$ and $d_1 = c_0$,
 
-- Animation item links found: 1
+$$
+b_1 - d_1 = d_0 - c_0.
+\tag{2}
+$$
 
-### Animation Items
+From (1), $d_0 - c_0 = (2r_0 - 1)(b_0 - a_0)$. In the new interval, with its own ratio $r_1$, $b_1 - d_1 = (1 - r_1)(b_1 - a_1)$, and the interval has shrunk by the factor $r_0$, so $b_1 - a_1 = r_0 (b_0 - a_0)$. Substituting into (2) and cancelling $b_0 - a_0$,
 
-1. [Fibonacci Search](http://localhost:8000/a2001/Animations/Optimization/Fibonacci1/Fibonacciaa.html) (ok)
-- Main animated GIF count: 1
-- http://localhost:8000/a2001/Animations/Optimization/Fibonacci1/Fibonacciaa.gif
+$$
+2r_0 - 1 = (1 - r_1)\, r_0
+\qquad\Longrightarrow\qquad
+r_1 = \frac{1 - r_0}{r_0}.
+\tag{3}
+$$
 
+The case $f(c_0) > f(d_0)$, where $d_0$ is reused as $c_1$, gives the same equation. The golden ratio search keeps $r_1 = r_0$, which forces $r^2 + r - 1 = 0$ and $r = (\sqrt5 - 1)/2$. Fibonacci search instead starts with $r_0 = F_{n-1}/F_n$. Then (3) gives
+
+$$
+r_1 = \frac{1 - F_{n-1}/F_n}{F_{n-1}/F_n} = \frac{F_n - F_{n-1}}{F_{n-1}} = \frac{F_{n-2}}{F_{n-1}},
+$$
+
+and by induction
+
+$$
+r_k = \frac{F_{n-1-k}}{F_{n-k}}, \qquad k = 0, 1, \ldots, n-3.
+\tag{4}
+$$
+
+The last ratio is $r_{n-3} = F_2/F_3 = \tfrac12$: both interior points sit at the midpoint, and no new point can be added. The search therefore has exactly $n - 2$ steps, $k = 0, 1, \ldots, n-3$.
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Interval lengths in Fibonacci search
+If $f$ is unimodal on $[a_0, b_0]$, every interval $[a_k, b_k]$ contains the minimiser $p$, and the product of the ratios telescopes:
+
+$$
+b_k - a_k = r_{k-1} \cdots r_1 r_0\, (b_0 - a_0) = \frac{F_{n-k}}{F_n}\,(b_0 - a_0).
+$$
+
+In particular the last interval has length $b_{n-3} - a_{n-3} = F_3 (b_0 - a_0)/F_n = 2(b_0 - a_0)/F_n$, and its midpoint $c_{n-3} = d_{n-3}$ is within $(b_0 - a_0)/F_n$ of $p$. Splitting that last interval in half as well would leave a bracket of length $r_0 r_1 \cdots r_{n-3}(b_0 - a_0) = (b_0 - a_0)/F_n$.
+:::
+
+To locate $p$ within a tolerance $\varepsilon$ we need $(b_0 - a_0)/F_n < \varepsilon$, so $n$ is the smallest integer with
+
+$$
+F_n > \frac{b_0 - a_0}{\varepsilon}.
+\tag{5}
+$$
+
+The interior points of $[a_k, b_k]$ come from (1) with $r_k$ from (4):
+
+$$
+c_k = a_k + \left(1 - \frac{F_{n-1-k}}{F_{n-k}}\right)(b_k - a_k),
+\tag{6}
+$$
+
+$$
+d_k = a_k + \frac{F_{n-1-k}}{F_{n-k}}\,(b_k - a_k).
+\tag{7}
+$$
+
+### Fibonacci numbers and the golden ratio
+
+The Fibonacci numbers start $0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, \ldots$ and have the closed form
+
+$$
+F_n = \frac{(1 + \sqrt5)^n - (1 - \sqrt5)^n}{2^n \sqrt5},
+$$
+
+which helps to estimate $n$ in (5). The ratios $r_k$ themselves still need the Fibonacci numbers $F_0, F_1, \ldots, F_n$. As $n \to \infty$ the ratio $F_{n-1}/F_n$ tends to the golden ratio constant
+
+$$
+\rho = \frac{\sqrt5 - 1}{2} = 0.6180339887\ldots,
+$$
+
+which is the constant ratio of the golden ratio search. For $n = 21$ (used in Example 1) the ratios are
+
+$$
+r_0, \ldots, r_{18} = \frac{6765}{10946}, \frac{4181}{6765}, \frac{2584}{4181}, \frac{1597}{2584}, \frac{987}{1597}, \frac{610}{987}, \frac{377}{610}, \ldots, \frac{8}{13}, \frac{5}{8}, \frac{3}{5}, \frac{2}{3}, \frac{1}{2}.
+$$
+
+The first six, $r_0$ to $r_5$, all equal $\rho$ to six decimals ($0.618034$). The difference grows toward the end: $r_6 = 0.618033$, $r_{10} = 0.617978$, $r_{14} = 0.615385$, and the last four are $0.625$, $0.6$, $0.666667$ and $0.5$. So the two methods place almost the same points in the early steps and differ only in the last few.
+
+## Algorithm
+
+::: {.callout-important appearance="simple"}
+## Algorithm — Fibonacci search for a minimum
+Given $f$ unimodal on $[a_0, b_0]$ and a tolerance $\varepsilon$:
+
+1. Find the smallest $n$ with $F_n > (b_0 - a_0)/\varepsilon$.
+2. Compute $c_0$ and $d_0$ from (6) and (7) and evaluate $f(c_0)$, $f(d_0)$.
+3. For $k = 0, 1, \ldots, n-4$:
+    - if $f(c_k) \le f(d_k)$: set $a_{k+1} = a_k$, $b_{k+1} = d_k$, $d_{k+1} = c_k$, and compute the new $c_{k+1}$ from (6);
+    - otherwise: set $a_{k+1} = c_k$, $b_{k+1} = b_k$, $c_{k+1} = d_k$, and compute the new $d_{k+1}$ from (7);
+    - evaluate $f$ at the one new point (for $k = n-4$ the new point coincides with the reused one, so no evaluation is needed).
+4. At $k = n-3$ the formula gives $c_{n-3} = d_{n-3}$, the midpoint of $[a_{n-3}, b_{n-3}]$, which has already been evaluated. Return $p \approx c_{n-3}$; its error is at most $(b_0 - a_0)/F_n < \varepsilon$.
+:::
+
+Steps 2 and 3 use $2 + (n-4) = n - 2$ function evaluations. To split the last interval as well, Mathews introduces a small **distinguishability constant** $e$: replace $c_{n-3}$ by
+
+$$
+c_{n-3}' = a_{n-3} + \left(\tfrac12 - e\right)(b_{n-3} - a_{n-3}),
+$$
+
+evaluate $f$ there (evaluation number $n-1$) and compare with $f(d_{n-3})$ as before. The final bracket is $[a_{n-3}, d_{n-3}]$, of length $(b_0 - a_0)/F_n$, or $[c_{n-3}', b_{n-3}]$, of length $(1 + 2e)(b_0 - a_0)/F_n$.
+
+## Example 1 — Minimise $x^2 - \sin x$ on $[0, 1]$
+
+Find the minimum of the unimodal function
+
+$$
+f(x) = x^2 - \sin x
+$$
+
+on $[0, 1]$ with tolerance $\varepsilon = 10^{-4}$ and distinguishability constant $e = 0.01$. The function is unimodal there because $f''(x) = 2 + \sin x \ge 2 > 0$ on $[0, 1]$.
+
+**Step 1** (number of steps): by (5) we need
+
+$$
+F_n > \frac{b_0 - a_0}{\varepsilon} = \frac{1 - 0}{10^{-4}} = 10000.
+$$
+
+Since $F_{20} = 6765$ and $F_{21} = 10946$, take $n = 21$. The search has $n - 2 = 19$ steps, $k = 0, \ldots, 18$.
+
+**Step 2** (first interior points): $r_0 = F_{20}/F_{21} = 6765/10946 \approx 0.618034$, so
+
+$$
+c_0 = 0 + (1 - 0.618034)(1 - 0) = 0.381966, \qquad d_0 = 0 + 0.618034\,(1 - 0) = 0.618034,
+$$
+
+$$
+f(c_0) = f(0.381966) = -0.2268475, \qquad f(d_0) = f(0.618034) = -0.1974679.
+$$
+
+**Step 3** (first squeeze): $f(c_0) \le f(d_0)$, so squeeze from the right: $[a_1, b_1] = [0, 0.618034]$ and $d_1 = c_0 = 0.381966$. The new point comes from (6) with $r_1 = F_{19}/F_{20} = 4181/6765$:
+
+$$
+c_1 = 0 + \left(1 - \tfrac{4181}{6765}\right)(0.618034 - 0) = 0.236068, \qquad f(c_1) = -0.1781534.
+$$
+
+**Step 4** (second squeeze): $f(c_1) = -0.1781534 > f(d_1) = -0.2268475$, so squeeze from the left: $[a_2, b_2] = [c_1, b_1] = [0.236068, 0.618034]$, $c_2 = d_1 = 0.381966$, and the new $d_2$ comes from (7).
+
+Continuing in the same way gives the full table. Every interval length is $F_{21-k}/10946$, and every endpoint and interior point in the table is a multiple of $1/F_{21} = 1/10946$.
+
+| $k$ | $r_k$ | $a_k$ | $c_k$ | $d_k$ | $b_k$ | $f(c_k)$ | $f(d_k)$ | keep |
+|---|---|---|---|---|---|---|---|---|
+| 0 | $6765/10946$ | 0.0000000 | 0.3819660 | 0.6180340 | 1.0000000 | -0.2268474834 | -0.1974679348 | $[a_k,d_k]$ |
+| 1 | $4181/6765$ | 0.0000000 | 0.2360680 | 0.3819660 | 0.6180340 | -0.1781533822 | -0.2268474834 | $[c_k,b_k]$ |
+| 2 | $2584/4181$ | 0.2360680 | 0.3819660 | 0.4721359 | 0.6180340 | -0.2268474834 | -0.2318772414 | $[c_k,b_k]$ |
+| 3 | $1597/2584$ | 0.3819660 | 0.4721359 | 0.5278641 | 0.6180340 | -0.2318772414 | -0.2250488195 | $[a_k,d_k]$ |
+| 4 | $987/1597$ | 0.3819660 | 0.4376941 | 0.4721359 | 0.5278641 | -0.2322759435 | -0.2318772414 | $[a_k,d_k]$ |
+| 5 | $610/987$ | 0.3819660 | 0.4164078 | 0.4376941 | 0.4721359 | -0.2310823769 | -0.2322759435 | $[c_k,b_k]$ |
+| 6 | $377/610$ | 0.4164078 | 0.4376941 | 0.4508496 | 0.4721359 | -0.2322759435 | -0.2324650350 | $[c_k,b_k]$ |
+| 7 | $233/377$ | 0.4376941 | 0.4508496 | 0.4589804 | 0.4721359 | -0.2324650350 | -0.2323712526 | $[a_k,d_k]$ |
+| 8 | $144/233$ | 0.4376941 | 0.4458250 | 0.4508496 | 0.4589804 | -0.2324424565 | -0.2324650350 | $[c_k,b_k]$ |
+| 9 | $89/144$ | 0.4458250 | 0.4508496 | 0.4539558 | 0.4589804 | -0.2324650350 | -0.2324482420 | $[a_k,d_k]$ |
+| 10 | $55/89$ | 0.4458250 | 0.4489311 | 0.4508496 | 0.4539558 | -0.2324636654 | -0.2324650350 | $[c_k,b_k]$ |
+| 11 | $34/55$ | 0.4489311 | 0.4508496 | 0.4520373 | 0.4539558 | -0.2324650350 | -0.2324613906 | $[a_k,d_k]$ |
+| 12 | $21/34$ | 0.4489311 | 0.4501188 | 0.4508496 | 0.4520373 | -0.2324655700 | -0.2324650350 | $[a_k,d_k]$ |
+| 13 | $13/21$ | 0.4489311 | 0.4496620 | 0.4501188 | 0.4508496 | -0.2324652439 | -0.2324655700 | $[c_k,b_k]$ |
+| 14 | $8/13$ | 0.4496620 | 0.4501188 | 0.4503928 | 0.4508496 | -0.2324655700 | -0.2324655219 | $[a_k,d_k]$ |
+| 15 | $5/8$ | 0.4496620 | 0.4499360 | 0.4501188 | 0.4503928 | -0.2324655005 | -0.2324655700 | $[c_k,b_k]$ |
+| 16 | $3/5$ | 0.4499360 | 0.4501188 | 0.4502101 | 0.4503928 | -0.2324655700 | -0.2324655743 | $[c_k,b_k]$ |
+| 17 | $2/3$ | 0.4501188 | 0.4502101 | 0.4503015 | 0.4503928 | -0.2324655743 | -0.2324655582 | $[a_k,d_k]$ |
+| 18 | $1/2$ | 0.4501188 | 0.4502101 | 0.4502101 | 0.4503015 | -0.2324655743 | -0.2324655743 | $c_k = d_k$ |
+
+From $k = 14$ on, the two function values differ only in the eighth or ninth decimal place (at $k = 16$ by $4.3 \times 10^{-9}$), so the comparisons need the full working precision.
+
+**Step 5** (result): at $k = 18$ the interior points meet at the midpoint of
+
+$$
+[a_{18}, b_{18}] = \left[\tfrac{4927}{10946}, \tfrac{4929}{10946}\right] = [0.450118765,\ 0.450301480],
+$$
+
+an interval of length $2/F_{21} = 1.83 \times 10^{-4}$. The approximation to the minimiser is
+
+$$
+\boxed{\,p \approx c_{18} = d_{18} = \tfrac{4928}{10946} = 0.450210122, \qquad f(p) = -0.232465574\,}
+$$
+
+with guaranteed error at most $1/F_{21} = 9.14 \times 10^{-5} < 10^{-4}$. This took $19$ function evaluations.
+
+**Step 6** (optional split with $e = 0.01$): the extra point is
+
+$$
+c_{18}' = a_{18} + (0.5 - 0.01)(b_{18} - a_{18}) = 0.450208295, \qquad f(c_{18}') = -0.232465574416,
+$$
+
+against $f(d_{18}) = -0.232465574302$. The two values agree to nine decimals, which is all that Mathews prints, but $f(c_{18}') < f(d_{18})$ by $1.1 \times 10^{-10}$, so the final bracket is $[a_{18}, d_{18}] = [0.450118765,\ 0.450210122]$, of length $1/F_{21} = 9.14 \times 10^{-5}$, after $20$ evaluations.
+
+**Verification:** the minimiser solves $f'(x) = 2x - \cos x = 0$. Solving this independently to high precision gives
+
+| Quantity | Value |
+|---|---|
+| True minimiser $p$ | $0.4501836113$ |
+| True minimum $f(p)$ | $-0.2324655752$ |
+| Fibonacci estimate $c_{18}$ | $0.4502101224$ |
+| Error $\lvert c_{18} - p \rvert$ | $2.65 \times 10^{-5} \le 9.14 \times 10^{-5}$ $\checkmark$ |
+| $f(c_{18}) - f(p)$ | $8.6 \times 10^{-10}$ |
+| $f'$ at the final bracket ends | $f'(0.450118765) = -1.6 \times 10^{-4} < 0$, $f'(0.450210122) = 6.5 \times 10^{-5} > 0$ $\checkmark$ |
+
+The sign change of $f'$ confirms that the final bracket contains the minimiser, and $p$ lies inside every interval $[a_k, b_k]$ of the table.
+
+## Example 2 — Minimise $\tfrac12 + x^5 - \tfrac45 x$ on $[0, 1]$
+
+Find the minimum of
+
+$$
+f(x) = \frac12 + x^5 - \frac45\,x
+$$
+
+on $[0, 1]$. Mathews runs this example with tolerance $\varepsilon = 7 \times 10^{-3}$. The function is unimodal on $[0, 1]$ because $f''(x) = 20x^3 > 0$ for $0 < x \le 1$.
+
+**Step 1**: $(b_0 - a_0)/\varepsilon = 1/0.007 = 142.86$. Since $F_{11} = 89$ and $F_{12} = 144$, take $n = 12$; the search has $n - 2 = 10$ steps, $k = 0, \ldots, 9$, and every point is a multiple of $1/144$.
+
+**Step 2**: $r_0 = 89/144 = 0.618056$, so $c_0 = 55/144 = 0.381944$ and $d_0 = 89/144 = 0.618056$, with $f(c_0) = 0.2025728$ and $f(d_0) = 0.0957412$.
+
+**Step 3**: $f(c_0) > f(d_0)$, so squeeze from the left: $[a_1, b_1] = [0.381944, 1]$, $c_1 = d_0 = 0.618056$, and the new point is $d_1 = a_1 + \tfrac{55}{89}(b_1 - a_1) = 0.763889$.
+
+The remaining steps follow the same pattern:
+
+| $k$ | $r_k$ | $a_k$ | $c_k$ | $d_k$ | $b_k$ | $f(c_k)$ | $f(d_k)$ | keep |
+|---|---|---|---|---|---|---|---|---|
+| 0 | $89/144$ | 0.000000 | 0.381944 | 0.618056 | 1.000000 | 0.2025728 | 0.0957412 | $[c_k,b_k]$ |
+| 1 | $55/89$ | 0.381944 | 0.618056 | 0.763889 | 1.000000 | 0.0957412 | 0.1489952 | $[a_k,d_k]$ |
+| 2 | $34/55$ | 0.381944 | 0.527778 | 0.618056 | 0.763889 | 0.1187279 | 0.0957412 | $[c_k,b_k]$ |
+| 3 | $21/34$ | 0.527778 | 0.618056 | 0.673611 | 0.763889 | 0.0957412 | 0.0998015 | $[a_k,d_k]$ |
+| 4 | $13/21$ | 0.527778 | 0.583333 | 0.618056 | 0.673611 | 0.1008769 | 0.0957412 | $[c_k,b_k]$ |
+| 5 | $8/13$ | 0.583333 | 0.618056 | 0.638889 | 0.673611 | 0.0957412 | 0.0953342 | $[c_k,b_k]$ |
+| 6 | $5/8$ | 0.618056 | 0.638889 | 0.652778 | 0.673611 | 0.0953342 | 0.0963074 | $[a_k,d_k]$ |
+| 7 | $3/5$ | 0.618056 | 0.631944 | 0.638889 | 0.652778 | 0.0952291 | 0.0953342 | $[a_k,d_k]$ |
+| 8 | $2/3$ | 0.618056 | 0.625000 | 0.631944 | 0.638889 | 0.0953674 | 0.0952291 | $[c_k,b_k]$ |
+| 9 | $1/2$ | 0.625000 | 0.631944 | 0.631944 | 0.638889 | 0.0952291 | 0.0952291 | $c_k = d_k$ |
+
+**Result**: after $10$ function evaluations the last interval is $[a_9, b_9] = [90/144,\ 92/144] = [0.625,\ 0.638889]$, of length $2/144 = 0.0139$, and
+
+$$
+\boxed{\,p \approx c_9 = d_9 = \tfrac{91}{144} = 0.631944, \qquad f(p) = 0.0952291\,}
+$$
+
+with guaranteed error at most $1/F_{12} = 1/144 = 6.94 \times 10^{-3} < 7 \times 10^{-3}$.
+
+**Verification:** here $f'(x) = 5x^4 - \tfrac45 = 0$ gives the minimiser exactly, $p = (4/25)^{1/4} = \sqrt{10}/5$.
+
+| Quantity | Value |
+|---|---|
+| True minimiser $p = \sqrt{10}/5$ | $0.6324555320$ |
+| True minimum $f(p)$ | $0.0952284595$ |
+| Fibonacci estimate $c_9$ | $0.6319444444$ |
+| Error $\lvert c_9 - p \rvert$ | $5.11 \times 10^{-4} \le 6.94 \times 10^{-3}$ $\checkmark$ |
+| $f(c_9) - f(p)$ | $6.6 \times 10^{-7}$ |
+| $f'$ at the last interval ends | $f'(0.625) = -0.037 < 0$, $f'(0.638889) = 0.033 > 0$ $\checkmark$ |
+
+Mathews stops this example at the midpoint. Splitting the last interval with $e = 0.01$ would evaluate $f(0.631806) = 0.0952295 > f(d_9) = 0.0952291$ and keep $[0.631806,\ 0.638889]$, a bracket of length $(1 + 2e)/144 = 0.00708$. That still contains $p$, but it is slightly longer than $\varepsilon = 0.007$: the error bound $(b_0 - a_0)/F_n < \varepsilon$ belongs to the midpoint estimate, not to the bracket left after the split.
+
+## Fibonacci Versus Golden Ratio Search
+
+Both methods shrink a bracket with one new function evaluation per step, and their ratios differ noticeably only in the last few steps: for $n = 21$ the first eleven ratios $r_0, \ldots, r_{10}$ are within $10^{-4}$ of $\rho$, while the last four differ from it by $0.007$ to $0.12$. The difference is that the Fibonacci ratios are chosen for a fixed number of evaluations. With $N$ evaluations, the golden ratio search leaves a bracket of length $\rho^{N-1}(b_0 - a_0)$. Fibonacci search with $n = N + 1$ (including the split with $e$) leaves at most $(1 + 2e)(b_0 - a_0)/F_n$.
+
+| Example | Evaluations $N$ | Fibonacci bracket (bound) | Golden ratio bracket | Ratio |
+|---|---|---|---|---|
+| 1 ($n = 21$) | 20 | $9.32 \times 10^{-5}$ | $1.07 \times 10^{-4}$ | 0.871 |
+| 2 ($n = 12$) | 11 | $7.08 \times 10^{-3}$ | $8.13 \times 10^{-3}$ | 0.871 |
+
+With $e = 0.01$ this ratio stays between $0.864$ and $0.874$ for every $n$ from 5 to 44 and tends to $(1 + 2e)\sqrt5/\phi^2 \approx 0.871$, where $\phi = (1 + \sqrt5)/2$. Mathews says that for large $n$ the two methods are almost identical. That is true of the points they place in the early steps, but for the same number of evaluations the Fibonacci bracket stays about 13% shorter however large $n$ is.
+
+## Implementation Notes
+
+- **Fix $n$ first.** The number of steps comes from (5) before any function is evaluated, and the ratios $r_k$ depend on it. Unlike the golden ratio search, the method cannot simply be continued for more accuracy; a tighter tolerance means starting again with a larger $n$.
+- **Reuse the surviving point.** Keep the surviving interior point and its function value from the previous step, and compute only the new point from (6) or (7). This is what makes each step cost one evaluation.
+- **The last step is degenerate.** At $k = n-3$ the ratio is $\tfrac12$ and the two interior points coincide. Either stop at the midpoint, or split once more with a small $e$ as above.
+- **Ties and close values.** Keep $[a_k, d_k]$ when $f(c_k) = f(d_k)$; for a unimodal $f$ the minimiser then lies between the two points. Near the minimum the two values can agree to many digits (Example 1 compares values that differ by $10^{-10}$), so rounding in $f$ can send a comparison the wrong way when the tolerance approaches the square root of machine precision ($\approx 1.5 \times 10^{-8}$ in double precision). For Example 1 in double precision, $f$ is still seen to decrease and then increase on seven points spaced $10^{-8}$ apart around the minimiser, but not on points spaced $10^{-9}$ apart.
+- **Unimodality is required.** If $f$ has several local minima in $[a_0, b_0]$, the comparisons can discard the interval containing the global minimum. The method still returns a point, but there is no guarantee about which minimum it approaches.
