@@ -4,7 +4,7 @@
 # Starting values: p0=0.8, p1=0.9, p2=1.0
 # The three points close in on sqrt(2) (within 0.1 of it from frame 5 on), so
 # each frame is zoomed to the current points and the next iterate, as in
-# mullersaa.jl, and an inset magnifies the step from p2 to the parabola's
+# mullersaa.jl, and an inset shows the step from p2 to the parabola's
 # axis crossing (from frame 7 on, under 7% of the main panel's width).
 # Produces: mullersbb.gif
 
@@ -96,7 +96,7 @@ anim = @animate for frame in 1:(n_iters + 1)
     scatter!([q2], [f(q2)]; color=:red, ms=7,
              label="p₂ = $(round(q2; digits=5))")
 
-    # Inset: magnified view of the step from p₂ to the axis crossing
+    # Inset: view of the step from p₂ to the axis crossing
     s = q3 - q2
     xin = range(q2 - 0.15s, q3 + 0.8s, length=300)
     F = f(q2)

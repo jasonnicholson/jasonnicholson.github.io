@@ -7,7 +7,7 @@
 # next iterate would be complex. This animation instead takes the real part of
 # that complex root, which is the x-coordinate of the parabola's vertex.
 # The vertex height shrinks from 0.8 to about 5e-13 over the frames, so each
-# frame is zoomed to the current points and an inset magnifies the vertex.
+# frame is zoomed to the current points and an inset shows the vertex.
 # The run stops after 7 steps (8 frames): an 8th step, in a 9th frame, would
 # have a vertex height (about 1e-17) below the rounding error of f near the
 # double root.
@@ -105,7 +105,7 @@ anim = @animate for frame in 1:(n_iters + 1)
     scatter!([q2], [f(q2)]; color=:red, ms=7,
              label=@sprintf("p₂ = %.10g", q2))
 
-    # Inset: magnified view around the vertex
+    # Inset: view around the vertex
     w = 1.4 * sqrt(2h / a)
     xin = range(q3 - w, q3 + w, length=300)
     plot!(; inset=(1, bbox(0.04, 0.10, 0.40, 0.38)), subplot=2,
