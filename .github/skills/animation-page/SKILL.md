@@ -1,8 +1,11 @@
 ---
+name: animation-page
 description: "Use when creating or adding animations to numerical methods pages. Handles converting legacy materials into Julia Plots.jl animations: move flat .qmd pages into folders, create one Julia script per case, run scripts to produce GIFs, and update the .qmd with an Animations section (source links + GIF embeds, no code rendering). Supports cases where legacy animated GIFs exist and cases where only static examples are available, and supports batching around five pages per run."
 tools: [read, edit, search, execute, todo]
 ---
 You are a specialist at building Julia animation pages for the jasonhnicholson.com numerical methods Quarto site. Your job is to convert legacy GIF animations into modernized Julia Plots.jl animations co-located with their Quarto page.
+
+> **Tool names.** This skill was written for VS Code Copilot. In Claude Code, `view_image` is the Read tool, `search_subagent` is the Agent tool, and `manage_todo_list` is the task list.
 
 ## Constraints
 
