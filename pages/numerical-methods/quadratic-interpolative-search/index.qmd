@@ -1,9 +1,9 @@
 ---
 title: "Quadratic Interpolative Search"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -25,6 +25,30 @@ F = f(p_1) - f(p_0), \quad G = h\bigl(f'(p_1) - f'(p_0)\bigr), \quad \alpha = G 
 $$
 
 Then $(p_0, p_1)$ is replaced by $(p_1, p_2)$ and the step repeats. The cubic search does not keep a bracket: in both of Mathews' examples its first point $p_1$ lies outside $[a, b]$. The examples below keep Mathews' numbers. Examples 1 and 3 use the quadratic search and Examples 2 and 4 the cubic search. Examples 1 and 2 minimise the same function, and so do Examples 3 and 4.
+
+## Animations
+
+Both animations run Mathews' examples on $f(x) = \tfrac12 + x^5 - \tfrac45 x$, whose minimiser is $p = \sqrt{10}/5 \approx 0.6325$ (the dashed green line in both panels). The top panel keeps the picture of the graphs in Mathews' solutions of Examples 3 and 4: the graph of $f$ in magenta, red dots on the points the current step works from and a blue dot on the newest point. The bottom panel is new. It zooms on the current points and plots $f(x) - f(p)$, evaluated in high precision, so the steps stay visible after they have become too small to see in the top panel. Points are labelled with enough significant figures to tell them apart, so the labels gain digits as the steps shrink, and the last frame is held. The scripts run Mathews' two subroutines line by line in double precision, and every point they compute agrees with the Example 3 and Example 4 tables.
+
+Mathews' module has two animations, a quadratic search linked from Example 3 and a cubic search linked from Example 4. Both GIFs are lost: the archive keeps only their HTML pages. Cases 1 and 2 rebuild them from his subroutines and from the graphs of his Example 3 and Example 4 solutions, which survive (twelve graphs for Example 3, eight for Example 4); how many frames his GIFs had is not recorded. The parabola, the cubic, the slopes and the zoom panel are new. Examples 1 and 2, which run the same two searches on $x^2 - \sin x$, and the secant-method comparison in Example 2 are not animated.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Mathews' quadratic search animation, Example 3, $f(x) = \tfrac12 + x^5 - \tfrac45 x$ on $[0, 1]$, $\delta = \varepsilon = 10^{-6}$
+
+**Behavior:** There is one frame for each event of Mathews' subroutine, $15$ in all: each new triple $p_0,\ p_0 + h,\ p_0 + 2h$, each halving or doubling of $h$, and each vertex. These are the $23$ rows of the Example 3 table, with the three points of a new triple shown together. The pink span with the red arc is the interval of the current triple, and the bottom title gives the test that decides the next move. In a vertex frame the dashed parabola $Q$ through the triple is drawn with its vertex (open circle) and the new point $p_{3k+3}$ on $f$ (blue). The run uses all three cases of the bracketing loop: the triples of outer steps $k = 0$ and $k = 2$ are bracketed at once, step $k = 1$ doubles twice, to $0.66$ and $0.8733$, and step $k = 3$ halves five times, down to $h = 8.838 \times 10^{-4}$. During those halvings the triple shrinks to a width of $1.77 \times 10^{-3}$, and its dots overlap in the top panel while the zoom keeps them apart. In the last frame $Q$ and $f$ differ by at most $1.1 \times 10^{-9}$ over the zoom window, less than $0.03\%$ of its height, so the two curves coincide there. The search stops after four vertex steps and $23$ calls of $f$, when $\mathrm{Err} = 5.34 \times 10^{-8} \le 10^{-6}$, at $p_{12} = 0.63245496$, which is $5.67 \times 10^{-7}$ from $p$.
+
+[Julia source](quadraticaa.jl)
+
+![Rebuild of Mathews' quadratic search animation on f(x) = 1/2 + x⁵ − 4x/5 over [0, 1]: 15 frames show each triple, the two doublings to 0.66 and 0.8733, the five halvings and the four parabola vertices, ending at p12 = 0.63245496 near the minimiser √10/5 ≈ 0.6325, with a lower panel zoomed on the current triple](quadraticaa.gif)
+
+### Case 2 — Mathews' cubic search animation, Example 4, $f(x) = \tfrac12 + x^5 - \tfrac45 x$, `CubicSearch[0, 1, 7]`
+
+**Behavior:** Frame $m = 1$ shows the start, $p_0 = 0$ and $p_1 = p_0 + h_0 = -0.5$, and frames $m = 2, \ldots, 8$ show the seven cubic steps, the rows of the Example 4 table. In each step the two red points carry the slopes $f'$ as short dark red segments, and the step moves to the blue point $(p_m, f(p_m))$. For $m = 2, \ldots, 6$ the frame also draws, in both panels, the cubic $P$ (dashed) that matches $f$ and $f'$ at the red points, with its local minimum at $p_m$ (open circle). Mathews' graphs show only $[0, 1]$; the window here is widened to $[-0.6, 1.05]$ so that $p_1 = -0.5$ can be seen, and the bottom panel plots against $x - p$. The iterates $p_2 = 0.4954$ and $p_3 = 0.7628$ lie on opposite sides of $p$, and from $p_4$ on they alternate sides while the error falls from $8.27 \times 10^{-5}$ to $1.94 \times 10^{-6}$ and then $1.29 \times 10^{-14}$ at $p_6$. The last two steps work at the level of rounding, and their frames say so. In step $m = 7$ the double-precision $\alpha = 6.7 \times 10^{-17}$ is rounding noise (the same formula in high precision at the same points gives $-2.9 \times 10^{-17}$), so the shape of $P$ away from the two points means nothing and $P$ is drawn only in the zoom, where its $\alpha$ term is less than $10^{-5}$ of the panel height. The step still lands on $p_7$, the double nearest $p$. In step $m = 8$, $f(p_6)$ and $f(p_7)$ round to the same double, so $F = 0$ (in high precision $F = -4.19 \times 10^{-28}$), and $\alpha$ and $\gamma = 1/3$ are rounding noise. No cubic is drawn, and $p_8$ is $8.53 \times 10^{-15}$ from $p$.
+
+[Julia source](cubicaa.jl)
+
+![Rebuild of Mathews' cubic search animation on f(x) = 1/2 + x⁵ − 4x/5: from p0 = 0 and p1 = −0.5, seven steps each move to the local minimum of the cubic that matches f and f′ at two points; p6 is within 1.3e−14 of √10/5 ≈ 0.6325, and a lower panel zoomed on each step marks where F and α become rounding noise in the last two steps](cubicaa.gif)
 
 ## Unimodal Functions and the Derivative Test
 
