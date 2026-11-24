@@ -166,7 +166,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 2's walk away from the root depends on an unstated tie rule | unverified | open |
+| F1 | Minor | Page match | Case 2's walk away from the root depends on an unstated tie rule | unverified | fixed — [fix record](../fixes/bisection-method.md) |
 
 ### Brent's Method — `brents-method` · [round-7 report](../brents-method.md)
 
