@@ -57,7 +57,7 @@ $$\mathbf{X}^{(1)} = \mathbf{X}^{(0)} - B_0^{-1}\,\mathbf{F}\!\left(\mathbf{X}^{
 
 ### Convergence
 
-Broyden's method converges **superlinearly** near a simple root — faster than linear, but slower than Newton's quadratic rate. In practice, because each iteration is far cheaper than a full Newton step, Broyden's method often reaches a given accuracy in less total work than Newton's method, especially in high dimensions. Convergence can fail if the starting point is far from a root or if the approximate Jacobian becomes ill-conditioned.
+Broyden's method converges **superlinearly** near a simple root — faster than linear, but slower than Newton's quadratic rate. Each iteration after the first avoids the $n^2$ derivative evaluations, so when evaluating the Jacobian dominates the cost, Broyden's method can reach a given accuracy in less total work than Newton's method. As written, step 3 still solves a linear system, which costs $O(n^3)$ for a dense matrix, the same order as the solve in Newton's method; the arithmetic per iteration falls to $O(n^2)$ when $B_k^{-1}$ or a factorization of $B_k$ is updated instead, for example with the Sherman–Morrison formula. Convergence can fail if the starting point is far from a root or if the approximate Jacobian becomes ill-conditioned.
 
 ## Animations
 
@@ -82,8 +82,8 @@ The module's Newton's-method and pseudo-Newton examples (Examples 1 and 3), its 
 
 ### Case B — Convergent, $\mathbf{X}^{(0)} = (1.5,\,-0.5)$, root $\approx (1.556,\,-0.576)$
 
-**Behavior:** Starting close to the lower-right intersection, the same Broyden algorithm converges to that lower-right solution. $\|\mathbf{F}\|$ falls at every step, from $7.3\times10^{-1}$ at $\mathbf{X}^{(0)}$ to $3.0\times10^{-14}$ at $\mathbf{X}^{(7)}$, but unevenly: by a factor of only about 5 from $\mathbf{X}^{(3)}$ to $\mathbf{X}^{(4)}$, then by more than 1000 times in each of the last two steps. This case illustrates that the method is starting-point dependent: a different initial guess finds a different root.
+**Behavior:** Starting close to the lower-right intersection, the same Broyden algorithm converges to that lower-right solution. $\|\mathbf{F}\|$ falls at every step, from $7.3\times10^{-1}$ at $\mathbf{X}^{(0)}$ to about $3\times10^{-14}$ at $\mathbf{X}^{(7)}$, but unevenly: by a factor of only about 5 from $\mathbf{X}^{(3)}$ to $\mathbf{X}^{(4)}$, then by more than 1000 times in each of the last two steps. This case illustrates that the method is starting-point dependent: a different initial guess finds a different root.
 
 [Julia source](broydenbb.jl)
 
-![Broyden's method animation starting at (1.5, -0.5) on the system f1=0 (blue) and f2=0 (red): the left panel shows the iterates closing on the root near (1.556, -0.576), with only the first step large enough to see, and the right panel shows ||F(X_k)|| on a log scale falling at every step from 7.3e-1 to 3.0e-14 in seven steps](broydenbb.gif)
+![Broyden's method animation starting at (1.5, -0.5) on the system f1=0 (blue) and f2=0 (red): the left panel shows the iterates closing on the root near (1.556, -0.576), with only the first step large enough to see, and the right panel shows ||F(X_k)|| on a log scale falling at every step from 7.3e-1 to about 3e-14 in seven steps](broydenbb.gif)

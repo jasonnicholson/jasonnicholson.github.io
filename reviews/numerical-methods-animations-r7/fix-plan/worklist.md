@@ -178,9 +178,9 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "each iteration is far cheaper" does not hold for the algorithm the page gives | verified | open |
-| F2 | Minor | Page match | Case B's final residual is quoted to a digit that rounding decides | unverified | open |
-| F3 | Minor | Implementation | false comment about term size in `broydenbb.jl` | unverified | open |
+| F1 | Misleading | Page match | "each iteration is far cheaper" does not hold for the algorithm the page gives | verified | fixed — [fix record](../fixes/broydens-method.md) |
+| F2 | Minor | Page match | Case B's final residual is quoted to a digit that rounding decides | unverified | fixed — [fix record](../fixes/broydens-method.md) |
+| F3 | Minor | Implementation | false comment about term size in `broydenbb.jl` | unverified | fixed — [fix record](../fixes/broydens-method.md) |
 
 ### False Position or Regula Falsi Method — `false-position-or-regula-falsi-method` · [round-7 report](../false-position-or-regula-falsi-method.md)
 

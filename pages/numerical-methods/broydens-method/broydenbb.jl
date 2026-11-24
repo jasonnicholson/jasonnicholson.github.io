@@ -79,7 +79,7 @@ Z1 = [1 - 4*xi + 2*xi^2 - 2*yi^3       for yi in yg, xi in xg]
 Z2 = [-4 + xi^4 + 4*yi + 4*yi^4        for yi in yg, xi in xg]
 
 # Right-panel title. Below 1e-14 the residual is at the rounding level of evaluating F
-# (terms of size up to 4, eps ≈ 2.2e-16), so only its order of magnitude is shown.
+# (terms of size up to about 6, eps ≈ 2.2e-16), so only its order of magnitude is shown.
 resid_title(k, r) = r < 1e-14 ?
     @sprintf("||F(X_%d)|| ≈ 1e%d (machine precision)", k, round(Int, log10(r))) :
     @sprintf("||F(X_%d)|| = %.2e", k, r)
