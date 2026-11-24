@@ -254,7 +254,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Implementation | the legend hides the running sum where the partition of unity is being shown | unverified | open |
+| F1 | Minor | Implementation | the legend hides the running sum where the partition of unity is being shown | unverified | fixed — [fix record](../fixes/b-splines.md) |
 
 ### Bézier Curves — `bezier-curves` · [round-7 report](../bezier-curves.md)
 
