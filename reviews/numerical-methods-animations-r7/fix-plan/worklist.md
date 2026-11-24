@@ -65,7 +65,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "Each frame" includes an opening frame that has no spline | unverified | open |
+| F1 | Minor | Page match | "Each frame" includes an opening frame that has no spline | unverified | fixed — [fix record](../fixes/cubic-spline-quadrature.md) |
 
 ### Gauss-Legendre Quadrature — `gauss-legendre-quadrature` · [round-7 report](../gauss-legendre-quadrature.md)
 
