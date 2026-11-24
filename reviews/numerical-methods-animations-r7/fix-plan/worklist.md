@@ -97,7 +97,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "Each frame adds one Romberg row" is not true of the opening frame | unverified | open |
+| F1 | Minor | Page match | "Each frame adds one Romberg row" is not true of the opening frame | unverified | fixed — [fix record](../fixes/romberg-integration.md) |
 
 ### Simpson's 3/8 Rule for Numerical Integration — `simpsons-3-8-rule-for-numerical-integration` · [round-7 report](../simpsons-3-8-rule-for-numerical-integration.md)
 
