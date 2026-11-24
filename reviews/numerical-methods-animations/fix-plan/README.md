@@ -195,6 +195,21 @@ These apply when fixing from `reviews/numerical-methods-animations-r6`. They tak
 - **R6-D — Maclaurin F1 (order cutoff): leave.** Mark it `deferred` (owner decision).
 - **R6-E — The other round-6 Minor findings are fixed as reported:** Padé F1 (off-scale curve clamped to the frame edge), Chebyshev F1 (mark the approximation interval), B-Splines F1 (option b: add the reason to the disclosure sentence) and Tangent Parabola F1 (duplicate legend entry). The Padé pole lines stay as they are under R5-C.
 
+## Round 7 decisions (Jason: "Fix all", 2026-11-23)
+
+These apply when fixing from `reviews/numerical-methods-animations-r7`. They take precedence over earlier decisions. Jason's instruction was "Fix all". The specifics below are the director's defaults under that instruction and the R2-A rule, and Jason can overrule any of them.
+
+- **R7-A — Scope.** Fix every round-7 finding except the two that repeat an earlier owner decision: Maclaurin F1 (R6-D) and Padé F1 (R5-C). Mark those two `deferred` (owner decision).
+- **R7-B — Fidelity findings follow R2-A.**
+  - **Catenary F1:** switch the case to Mathews' form $y = c\cosh(x/c) - c$ in the script, GIF and text, with his parabola $x^2/(2c)$. The review's text-only alternative is not used.
+  - **Chebyshev F2:** Case 26 uses [0.05, 5], as Mathews' animation does.
+  - **Lagrange F2 and Newton Interpolation F4:** Cases 18 and 20 use Mathews' node intervals, [−2, 2] and [−10, 10], once the archive confirms them. If a node would then land on a singularity, keep the page's interval and say why in one sentence.
+  - **Adaptive Simpson F1:** reproduce Mathews' split order at that stage if every other stage stays the same. Otherwise add the review's sentence.
+  - **Numerical Differentiation F1:** add Example 14's parabola and centre line to Case 2.
+  - **Padé F2 and Richardson F1:** add one sentence each. Do not add the dropped displays or examples.
+- **R7-C — Lagrange and Newton Interpolation clamp.** Stop drawing clamped runs of the interpolant, between the nodes or outside them. Use the Padé approach from R6-E: clamp to one y-span beyond the axes so the curve visibly leaves the frame. One fixer owns both pages, and the two copies of `lagnewt_animations_all.jl` stay byte-identical. The notes kept under R4-D stay unless a changed interval makes them false.
+- **R7-D — Where a finding offers options,** take the smallest correct one, under D7. Text is corrected and the animation is left alone unless the finding says the picture itself misleads.
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
