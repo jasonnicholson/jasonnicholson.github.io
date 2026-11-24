@@ -230,9 +230,9 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "convex side of the root" gives the wrong reason for monotone convergence | verified | open |
-| F2 | Minor | Page match | Case 3 heading names the wrong feature | unverified | open |
-| F3 | Minor | Page match | the introduction's summary does not fit half the cases | unverified | open |
+| F1 | Misleading | Page match | "convex side of the root" gives the wrong reason for monotone convergence | verified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F2 | Minor | Page match | Case 3 heading names the wrong feature | unverified | fixed — [fix record](../fixes/newton-raphson-method.md) |
+| F3 | Minor | Page match | the introduction's summary does not fit half the cases | unverified | fixed — [fix record](../fixes/newton-raphson-method.md) |
 
 ### Nonlinear Systems — `nonlinear-systems` · [round-7 report](../nonlinear-systems.md)
 
