@@ -266,7 +266,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Fidelity | the page uses a different catenary from Mathews' without saying so, and line 17 cannot hold for the page's formula | verified | open |
+| F1 | Misleading | Fidelity | the page uses a different catenary from Mathews' without saying so, and line 17 cannot hold for the page's formula | verified | fixed — [fix record](../fixes/catenary.md) |
 
 ### Chebyshev Approximation Polynomial — `chebyshev-approximation-polynomial` · [round-7 report](../chebyshev-approximation-polynomial.md)
 
