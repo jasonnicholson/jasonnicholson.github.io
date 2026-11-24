@@ -197,8 +197,8 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the scripts do not "square the coefficients" | unverified | open |
-| F2 | Minor | Page match | "halved each iteration" is not true of the first two steps | unverified | open |
+| F1 | Minor | Page match | the scripts do not "square the coefficients" | unverified | fixed — [fix record](../fixes/graeffes-method.md) |
+| F2 | Minor | Page match | "halved each iteration" is not true of the first two steps | unverified | fixed — [fix record](../fixes/graeffes-method.md) |
 
 ### Halley's Method — `halleys-method` · [round-7 report](../halleys-method.md)
 
