@@ -43,3 +43,8 @@ None. Rests on: the diff is a one-phrase text change on one line; all numbers in
 - Outside the page folder, only reviews/numerical-methods-animations/fix-plan/README.md is modified, and it was already modified in the session-start snapshot (owner decisions file), not part of this fix.
 
 **Final status:** committed
+
+### Follow-up (Jason, 2026-11-24): give both ratios
+
+- **Change.** "(though $y(5)$ is still 2.6 times the exact value)" → "(an error 1.6 times the exact value, so $y(5)$ is 2.6 times it)". This was Jason's choice.
+- **Check.** Fixer and checker each computed $y(5)=0.0214088$ and an exact value of $0.0081199205$, with an error of $0.0132889$. The two ratios are $y/e = 2.6366$ and $(y-e)/e = 1.6366$, so "1.6" and "2.6" are both right to the stated precision.
