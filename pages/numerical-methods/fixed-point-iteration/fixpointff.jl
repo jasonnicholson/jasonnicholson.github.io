@@ -13,9 +13,9 @@ g(x) = -x^2 / 4 - x / 2 + 4
 x0 = 1.97
 n_iters = 32   # by x_29 ... x_32 the orbit is within 0.004 of the 4-cycle
 
-# window holds the whole true orbit (it stays in [-2.639, 4.250]). Nothing is drawn where
+# window holds the whole true orbit (it stays in [-2.641, 4.250]). Nothing is drawn where
 # x > -3.3125 and y < -3.3125: the min of g on the window is g(4.5) = -3.3125, y = x is
-# below -3.3125 only for x < -3.3125, and the orbit's min is -2.639. So the legend goes
+# below -3.3125 only for x < -3.3125, and the orbit's min is -2.641. So the legend goes
 # bottom-right.
 xlims = (-4.5, 4.5)
 ylims = (-4.5, 4.5)

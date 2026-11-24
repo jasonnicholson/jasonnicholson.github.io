@@ -190,8 +190,8 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | Case 1 attributes convergence from $x_0 = 0.1$ to the slope at $x^$ | verified | open |
-| F2 | Minor | Implementation | code comment), Minor: Case 6 orbit bound is wrong in the third decimal | unverified | open |
+| F1 | Misleading | Page match | Case 1 attributes convergence from $x_0 = 0.1$ to the slope at $x^$ | verified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
+| F2 | Minor | Implementation | code comment), Minor: Case 6 orbit bound is wrong in the third decimal | unverified | fixed — [fix record](../fixes/fixed-point-iteration.md) |
 
 ### Graeffe's Method — `graeffes-method` · [round-7 report](../graeffes-method.md)
 
