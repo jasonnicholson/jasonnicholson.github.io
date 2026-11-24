@@ -172,7 +172,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | Case 1 alt text says the bracket narrows to the root, but it stops 3.2e-4 wide | unverified | open |
+| F1 | Minor | Page match | Case 1 alt text says the bracket narrows to the root, but it stops 3.2e-4 wide | unverified | fixed — [fix record](../fixes/brents-method.md) |
 
 ### Broyden's Method — `broydens-method` · [round-7 report](../broydens-method.md)
 
