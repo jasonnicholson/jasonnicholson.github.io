@@ -59,7 +59,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | "in this set" has no referent on this page | unverified | open |
+| F1 | Minor | Page match | "in this set" has no referent on this page | unverified | fixed — [fix record](../fixes/booles-rule.md) |
 
 ### Cubic Spline Quadrature — `cubic-spline-quadrature` · [round-7 report](../cubic-spline-quadrature.md)
 
