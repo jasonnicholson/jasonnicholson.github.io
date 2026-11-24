@@ -16,8 +16,10 @@ using Plots
 using Printf
 gr()
 
-# Significant-figure label: never rounds a nonzero value to 0.0, never prints -0.0
-fmt(x) = x == 0 ? "0 (double-precision zero)" : @sprintf("%.4g", x)
+# Significant-figure label: never rounds a nonzero value to 0.0, never prints -0.0.
+# Five significant figures, trailing zeros kept ("1.1800"): with four, max S_15 to
+# max S_23 all print as "1.18" although they fall at every frame.
+fmt(x) = x == 0 ? "0 (double-precision zero)" : @sprintf("%#.5g", x)
 
 # Unicode subscript for frame labels: 17 -> "₁₇"
 sub(n) = join(Char(0x2080 + d) for d in reverse(digits(n)))

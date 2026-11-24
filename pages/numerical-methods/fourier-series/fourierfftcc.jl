@@ -96,7 +96,7 @@ frames = vcat([0, 0], ms, fill(ms[end], 3))
 
 function make_frame(i)
     m = frames[i]
-    t2 = m == 0 ? "n = $n samples yₖ = f(xₖ), xₖ = kπ/$(n ÷ 2); then Pₘ, m = $(ms[1]), $(ms[2]), …, $(ms[end])" :
+    t2 = m == 0 ? "n = $n samples yₖ = f(kπ/$(n ÷ 2)), jump midpoints y₀ = y$(sub(n ÷ 2)) = 0" :
                   "P$(sub(m))(x):  " * value_str(m)
     p = plot(size = (640, 480), xlims = (-0.15, 2π + 0.15), ylims = ylims,
              xticks = xticks_vals, yticks = yticks_vals,
