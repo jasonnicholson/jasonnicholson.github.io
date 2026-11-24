@@ -50,7 +50,7 @@ cases = ChebyCase[
     auto_span("23", "normal_cdf(x)", x -> 0.5 + 0.5 * erf(x / sqrt(2.0)), (-3.0, 3.0)),
     with_span("24", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.05, 2.0)),
     with_span("25", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.05, 4.0)),
-    with_span("26", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.5, 5.0)),
+    with_span("26", "gamma(x)", x -> gamma(x), (-0.2, 5.2), (0.05, 5.0)),
     with_span("27", "bessely(0,x)", x -> bessely(0, x), (0.0, 22.0), (0.5, 20.0)),
     with_span("28", "bessely(0,x)", x -> bessely(0, x), (0.0, 22.0), (0.5, 10.0)),
     with_span("29", "bessely(0,x)", x -> bessely(0, x), (0.0, 22.0), (0.5, 4.0)),

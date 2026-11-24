@@ -272,8 +272,8 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Minor | Page match | the blue curve also leaves the frame inside the interval | unverified | open |
-| F2 | Minor | Fidelity | Case 26 uses [0.5, 5], but the legacy animation itself uses [0.05, 5] | unverified | open |
+| F1 | Minor | Page match | the blue curve also leaves the frame inside the interval | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
+| F2 | Minor | Fidelity | Case 26 uses [0.5, 5], but the legacy animation itself uses [0.05, 5] | unverified | fixed — [fix record](../fixes/chebyshev-approximation-polynomial.md) |
 
 ### Cubic Splines — `cubic-splines` · [round-7 report](../cubic-splines.md)
 
