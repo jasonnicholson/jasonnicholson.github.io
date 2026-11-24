@@ -217,6 +217,13 @@ These apply when fixing from `reviews/numerical-methods-animations-r8`. They tak
 - **R8-A — Scope.** Fix the two Minor findings, Adams-Bashforth-Moulton F1 and Newton Interpolation F1. Maclaurin F1 (order cutoff) repeats R6-D and is marked `deferred` (owner decision).
 - **R8-B — Newton Interpolation F1 takes the text option, under R7-D.** One sentence in the introduction says what Mathews' animations showed and these frames do not: his higher degrees and his ±0.05 convergence band. The script and GIFs are unchanged. The Lagrange page shows the same animations from the same script, so it gets the same sentence, and the two copies of `lagnewt_animations_all.jl` stay byte-identical. One fixer owns both pages.
 
+## Round 9 decisions (director's defaults, 2026-11-24)
+
+These apply when fixing from `reviews/numerical-methods-animations-r9`. They take precedence over earlier decisions, and Jason can overrule either of them.
+
+- **R9-A — Scope.** Fix the two Minor findings, Newton-Raphson F1 and Lagrange F1. Maclaurin F1 (order cutoff) repeats R6-D and is marked `deferred` (owner decision).
+- **R9-B — Lagrange F1 takes the smaller option, under R7-D: correct the comment, not the case table.** The pictures are right, so the GIFs stay as they are. The `poles` field comment, and a short comment on rows 24–26, must say truthfully how Γ's pole at $x = 0$ is handled. The two copies of `lagnewt_animations_all.jl` stay byte-identical, both pages' GIFs must regenerate byte-identical, and one fixer owns both pages. The alternative, `poles=[0.0]` on rows 24–26, would also change those cases' y-limits and their six GIFs. It is left for Jason to choose.
+
 ## Work packages and order
 
 The worklist groups the findings into seven packages. The order matters where pages share code or where one page sets the pattern for others.
