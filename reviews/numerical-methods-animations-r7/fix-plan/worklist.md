@@ -117,7 +117,7 @@ No findings in round 7.
 
 | ID | Severity | Kind | Finding | Check | Status |
 |---|---|---|---|---|---|
-| F1 | Misleading | Page match | "a close end value" at m = 12 is 2.6 times the exact value | verified | open |
+| F1 | Misleading | Page match | "a close end value" at m = 12 is 2.6 times the exact value | verified | fixed — [fix record](../fixes/adams-bashforth-moulton-method.md) |
 
 ### Euler's Method for ODE's — `eulers-method-for-odes` · [round-7 report](../eulers-method-for-odes.md)
 
