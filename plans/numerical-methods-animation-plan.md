@@ -95,12 +95,12 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 7 | [Crank-Nicolson Method](../pages/numerical-methods/crank-nicolson-method/) | written (all examples); **done (batch 7):** 4 new animations (forward differences at r = 0.5 and 0.875, Crank-Nicolson at r = 1 and 2, a sawtooth at r = 2) | none (module `n2003/CrankNicolsonMod.html`) | 5 | 17 |
 | 7 | [Finite Difference Method](../pages/numerical-methods/finite-difference-method/) | written (the wave equation; corrects the d'Alembert proviso); **done (batch 7):** 3 new animations (Example 1's second row, the plucked string against d'Alembert, the growing sawtooth at r = 1.02) | none (module `n2003/FiniteDifferencePDEMod.html`) | 4 | 15 |
 | 7 | [Elliptic PDE's](../pages/numerical-methods/elliptic-pdes/) | written (all 6 examples); **done (batch 7):** 4 new animations (SOR on 9 × 9, the insulated edge, SOR against Gauss-Seidel on 21 × 21, the error against Laplace's equation) | none (module `n2003/EllipticPDEMod.html`) | 7 | 25 |
-| 8 | [Power method](../pages/numerical-methods/power-method.qmd) | skeleton | none | 6 | 23 |
-| 8 | [Jacobi method](../pages/numerical-methods/jacobi-method.qmd) | skeleton | none | 7 | 30 |
-| 8 | [QR method](../pages/numerical-methods/qr-method.qmd) | skeleton | none | 9 | 36 |
-| 8 | [Eigenvalues and Eigenvectors](../pages/numerical-methods/eigenvalues-and-eigenvectors.qmd) | skeleton | none | 13 | 173 |
-| 8 | [Jacobi and Gauss-Seidel Iteration](../pages/numerical-methods/jacobi-and-gauss-seidel-iteration.qmd) | written | none | 8 | 6 |
-| 8 | [Successive Over Relaxation - SOR](../pages/numerical-methods/successive-over-relaxation-sor.qmd) | written | none | 4 | 41 |
+| 8 | [Power method](../pages/numerical-methods/power-method.qmd) | skeleton | none (module `n2003/PowerMethodMod.html`) | 6 | 23 |
+| 8 | [Jacobi method](../pages/numerical-methods/jacobi-method.qmd) | skeleton | none as a GIF, but the module shows Mathews' "eigenvalue movie" as still frames (module `n2003/JacobiMethodMod.html`) | 7 | 30 |
+| 8 | [QR method](../pages/numerical-methods/qr-method.qmd) | skeleton | none (module `n2003/QRMethodMod.html`) | 9 | 36 |
+| 8 | [Eigenvalues and Eigenvectors](../pages/numerical-methods/eigenvalues-and-eigenvectors.qmd) | skeleton | none (module `n2003/EigenvaluesMod.html`) | 13 | 173 |
+| 8 | [Jacobi and Gauss-Seidel Iteration](../pages/numerical-methods/jacobi-and-gauss-seidel-iteration.qmd) | written | none (module `n2003/GaussSeidelMod.html`) | 8 | 6 |
+| 8 | [Successive Over Relaxation - SOR](../pages/numerical-methods/successive-over-relaxation-sor.qmd) | written | none (module `n2003/SORmethodMod.html`) | 4 | 41 |
 | 9 | [Frobenius Series Solution](../pages/numerical-methods/frobenius-series-solution.qmd) | skeleton | none | 12 | 175 |
 | 9 | [Power Series](../pages/numerical-methods/power-series.qmd) | skeleton | none; no archive module | 0 | 0 |
 | 9 | [Circle of Curvature](../pages/numerical-methods/circle-of-curvature.qmd) | written | none | 13 | 104 |
