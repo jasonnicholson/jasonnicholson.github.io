@@ -443,11 +443,30 @@ $n = 30$ the imaginary parts of the roots reach $3.2$ and $7.0$.
 
 At $n = 20$ the polynomial is, up to rounding, Wilkinson's polynomial
 $(\lambda-1)(\lambda-2)\cdots(\lambda-20)$, and its coefficients range from
-$p_1 \approx 210$ to $|p_{18}| \approx 1.4\times 10^{19}$. Rounding the 120-digit
-coefficients to double precision and finding the roots still gives eigenvalue
-errors of $0.14$, while finding the roots of the 120-digit coefficients in high
-precision gives the eigenvalues to about $2\times 10^{-14}$. So at $n = 20$ the loss comes mainly from
-problem 2, the sensitivity of the roots, rather than from the recursion itself.
+$p_1 \approx 210$ to $|p_{18}| \approx 1.4\times 10^{19}$. To separate the sources
+of error, we repeated the $n = 20$ experiment with 320 random $Q$, also rounding the
+120-digit coefficients to double precision, and finding the roots either with a
+standard double-precision root finder or in high precision (120 digits, so that the
+root finder adds no error of its own):
+
+- the roots of the 120-digit coefficients, found in high precision, give the
+  eigenvalues to about $10^{-14}$;
+- the roots of the coefficients rounded to double precision, found in high
+  precision, are off by about $2\times 10^{-4}$ to $3\times 10^{-2}$;
+- the roots of the double-precision recursion's coefficients (relative errors about
+  $2\times 10^{-10}$ to $7\times 10^{-8}$), found in high precision, are off by about
+  $10^{-3}$ to $0.4$, in most cases several times more than rounding alone;
+- the double-precision root finder by itself moves the roots of the rounded
+  coefficients by about $0.005$ to $0.5$.
+
+So at $n = 20$ both problems matter. The roots are so sensitive (problem 2) that
+every small error is magnified to between about $10^{-4}$ and a few tenths: the
+recursion's coefficient errors (problem 1), the rounding of the coefficients to
+double precision, and the root finder's own rounding. With a double-precision root
+finder, the correctly rounded coefficients give eigenvalue errors of about $0.01$
+to $0.4$, much the same as the recursion's own coefficients (about $0.01$ to $0.5$); computing the
+coefficients more accurately does not help unless the roots are also found in
+higher precision.
 
 This is why practical eigenvalue software never forms the characteristic polynomial.
 For a few eigenvalues use the [power method](power-method/); for all of them, reduce
