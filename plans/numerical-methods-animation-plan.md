@@ -60,19 +60,17 @@ The `reviews/` folders were removed after merging. They are still in history: ba
   - **3 were never written:** Householder Transformations, Hessenberg Factorization and Faddeev-Leverrier Method. Each still has "Animation Focus" and three "(Planned)" sections. All three have Mathews modules (`n2003/HouseholderMod.html`, `HessenbergMod.html`, `FaddeevLeverrierMod.html`).
   - **14 were written on 2026-04-26,** before the Accuracy standard and the claim ledger existed. None of them has been reviewed. Two pages written alongside them (Jacobi and Gauss-Seidel, SOR) needed four errors corrected and a broken `\tag` fixed when batch 8 rewrote them.
   - **Cholesky, Doolittle and Crout Factorizations has broken markup.** `\t` was read as a tab, which turned `\tag{…}` into a tab plus "ag{…}" on lines 42, 47 and 52, and `\tfrac` into a tab plus "frac" on lines 160, 162 and 163. No other page has control characters.
-- **One skeleton is outside the plan:** `fft-and-trigonometric-polynomials/`. It has "(Planned)" sections and a legacy stub whose `localhost:8000` links are dead on the published site. Its module, `FourierSeriesMod.html` ("The Fast Fourier Transform (FFT)"), is the one the Fourier series page already covers in full, including the FFT example and the discrete-series animations. `TrigPolyMod.html` is an empty placeholder.
+- **One skeleton is outside the original plan, and it is not needed:** `fft-and-trigonometric-polynomials/`. It has "(Planned)" sections and a legacy stub whose `localhost:8000` links are dead on the published site. Its only module is `FourierSeriesMod.html`, titled "The Fast Fourier Transform (FFT)", and the Fourier series page already covers that module in full: all five of Mathews' examples (FFT included), the discrete series, and every animation that can be rebuilt. `TrigPolyMod.html` is an empty placeholder, so there is nothing else to write from. Nothing links to the folder except the section index (line 86 of `pages/numerical-methods/index.qmd`, under Curve Fitting). Batch 14 retires it.
 
-### Decisions for Jason
+### Decisions (Jason accepted A–E on 2026-11-25)
 
-Questions to answer before batch 10:
-
-- **A. The FFT page.** Recommended: retire it. Delete the folder and point its index entry (line 86 of `pages/numerical-methods/index.qmd`) at `fourier-series/`, because the Fourier series page already covers the whole module. The alternative is to write it as a text-only FFT page and move Fourier Cases 6–8 into it.
-- **B. The 14 written text-only pages.** Recommended: review them and fix what the review finds (batches 11–13). At the very least, Cholesky's six broken lines need fixing.
-- **C. How to review a text-only page.** No skill does this today: `review-animations` excludes flat pages, and `run-animation-batch` assumes animations. Recommended: adapt both skills before batch 10, as was done before batch 1:
+- **A. Retire the FFT page.** Delete the folder. Point its Curve Fitting index entry at the discrete-series section of `fourier-series/` so that the topic can still be found there. Add a Quarto `aliases` entry to the Fourier series page so that the old published URL redirects. No page in the site uses `aliases` yet, so check that the redirect page renders.
+- **B. Review the 14 written text-only pages** and fix what the reviews find (batches 11–13). Cholesky's broken markup is fixed in batch 11.
+- **C. Adapt the two skills for text-only pages before batch 10,** on their own branch, as was done before batch 1:
   - `review-animations` accepts flat pages in a batch. For a flat page, the reviewer keeps a claim ledger for the whole page and reports Page-text and Fidelity findings only, and the calibration error is planted in the text.
   - `run-animation-batch` skips Phase 2 for these pages and leaves them flat (so no index changes are needed). It runs Phase 1 only for skeletons. Fixes follow `content-page`'s Accuracy standard instead of `animation-page` step 15. A page counts as done when it has no "(Planned)" section and its last review round found no Error or Misleading findings.
-- **D. `references.bib`.** Powell (1964) and Lambert (1991) are cited in plain text because the bibliography has no entries for them. Lambert's order theorem was attributed from memory (batch 4), so the citation needs checking when it is added.
-- **E. Optional:** rebuild the two lost discrete-series animations FFT1 and FFT2 (|x−π| and x−π) on the Fourier series page (batch 1).
+- **D. Add Powell (1964) and Lambert (1991) to `references.bib`** and cite them with keys on Powell's Method and Predictor-Corrector Methods (batch 14). Batch 4 attributed Lambert's order theorem from memory, so check the theorem against the book, or reword it as a standard result, before citing it.
+- **E. Rebuild the two lost discrete-series animations** on the Fourier series page (batch 14). These are Mathews' FFT1 and FFT2, for |x−π| and x−π at n = 36, built the same way as Cases 6–8.
 
 Decisions already taken on Jason's behalf, recorded in the batch notes and stated on the pages. Revisit any of these if wanted:
 
@@ -94,22 +92,21 @@ Decisions already taken on Jason's behalf, recorded in the batch notes and state
 
 ### Remaining batches
 
-All four batches are text-only (no animations). Each page is handled by `content-page`, either to write it or to fix review findings, and reviewed with `review-animations` as adapted under C.
+Batches 10–13 are text-only (no animations). Each of their pages is handled by `content-page`, either to write it or to fix review findings, and reviewed with `review-animations` as adapted under C. Batch 14 uses the existing skills, so it can run before C is done.
 
-| Batch | Pages | First step |
+| Batch | Pages | Skill and first step |
 |---|---|---|
 | 10 | Householder Transformations, Hessenberg Factorization, Faddeev-Leverrier Method (eigenvalue support; link to the QR method page's Householder-then-QR animation rather than repeat it) | `content-page` writes each page (Phase 1), then review |
 | 11 | Triangular Systems and Back Substitution, Gauss-Jordan Elimination and Pivoting, LU Factorization, Cholesky Doolittle and Crout Factorizations, Pivoting Methods (elimination and factorization) | review first; fix with `content-page` |
 | 12 | Inverse Matrix, Tri-Diagonal Matrices, Row Reduced Echelon Form, Homogeneous Linear Systems, Iterative Refinement (structure of linear systems) | review first; fix with `content-page` |
 | 13 | Kirchoff's Law, Leontief Model, Horner's Method, Conic Fit (applications and polynomials) | review first; fix with `content-page` |
-
-If B is declined, batches 11–13 are dropped, and batch 10 also fixes Cholesky's broken markup.
+| 14 | Fourier series and loose ends: retire FFT and Trigonometric Polynomials (A); Fourier series gets the FFT1 and FFT2 rebuilds (E); Powell's Method and Predictor-Corrector Methods get the bibliography keys (D) | `animation-page` for the two Fourier cases and their page text; the director makes the index, alias and folder changes; `review-animations` reviews Fourier series in full; the two citation edits get an independent check (Phase 4 style) instead of a full re-review |
 
 ### How to run them
 
-1. Settle A–D. If C is accepted, make the two skill changes on their own branch and merge them first.
-2. For each batch in order, start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`. It works on a `batch-<N>` branch, reviews into `reviews/batch-<N>`, `-r2` and so on until a round has no Error or Misleading findings, and stops before merging. The four batches touch disjoint files and do not change the index, so they can also be stacked, as batches 3–9 were.
-3. After batch 13, render the whole section (`quarto render pages/numerical-methods/`), mark the pages done here, and update the index status note.
+1. Make the two skill changes (C) on their own branch and merge them.
+2. For each batch, start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`. Name batch 14 by number, because `next` treats Fourier series as done already. Each run works on a `batch-<N>` branch, reviews into `reviews/batch-<N>`, `-r2` and so on until a round has no Error or Misleading findings, and stops before merging. Batches 10–13 touch disjoint files and do not change the index, so they can be stacked, as batches 3–9 were. Batch 14 changes the index and the Fourier series page, so run it on its own.
+3. After the last batch, render the whole section (`quarto render pages/numerical-methods/`), mark the pages done here, and update the index status note.
 
 ## Batches
 
@@ -128,6 +125,7 @@ If B is declined, batches 11–13 are dropped, and batch 10 also fixes Cholesky'
 | 11 | Text-only: review elimination and factorization pages |
 | 12 | Text-only: review structure-of-linear-systems pages |
 | 13 | Text-only: review applications and polynomial pages |
+| 14 | Fourier series and loose ends: retire the FFT page, rebuild FFT1 and FFT2, add the bibliography keys |
 
 ## Every page
 
@@ -137,7 +135,7 @@ If B is declined, batches 11–13 are dropped, and batch 10 also fixes Cholesky'
 |---|---|---|---|---|---|
 | 1 | [Fibonacci Search](../pages/numerical-methods/fibonacci-search/) | written; **done (batch 1):** 3 animations (rebuild of Mathews' n = 32 animation, his Example 2 tolerance, new Example 1) | survives: `Optimization/Fibonacci1/Fibonacciaa.gif` (39 frames) | 4 | 17 |
 | 1 | [Milne-Simpson's Method](../pages/numerical-methods/milne-simpsons-method/) | written; **done (batch 1):** 2 animations (rebuild of Mathews' m-sweep for y' = 1 − t∛y, new weak-stability error plot) | survives: `OrdinaryDE/Milne1/Milneaa.gif` (38 frames) | 12 | 40 |
-| 1 | [Fourier series](../pages/numerical-methods/fourier-series/) | written; **done (batch 1):** 8 animations (rebuilds of all 5 Fourier-series cases and the 3 surviving discrete ones; the module links 10 animations, not 9; the 2 lost discrete ones are not rebuilt) | 4 of 9 survive: `FourierFFT{cc,dd,ee}.gif`, `FourierSeriesee.gif` | 6 | 30 |
+| 1 | [Fourier series](../pages/numerical-methods/fourier-series/) | written; **done (batch 1):** 8 animations (rebuilds of all 5 Fourier-series cases and the 3 surviving discrete ones; the module links 10 animations, not 9; the 2 lost discrete ones are not rebuilt; **batch 14** rebuilds them) | 4 of 9 survive: `FourierFFT{cc,dd,ee}.gif`, `FourierSeriesee.gif` | 6 | 30 |
 | 1 | [Monte Carlo Integration](../pages/numerical-methods/monte-carlo-integration/) | written; **done (batch 1):** 2 new animations (Example 3 running estimate, Example 14 Monte Carlo vs midpoint rule in 5-D) | none (module links the Midpoint animation by mistake) | 15 | 111 |
 | 2 | [Golden Ratio Search](../pages/numerical-methods/golden-ratio-search/) | written; **done (batch 2):** 3 animations (rebuild of Mathews' lost Example 6 animation from his plotting program, new Example 1, new non-unimodal run of Example 2's function on [−1, 1]) | lost (portal HTML only: `Optimization/GoldenRatio1/GoldenRatioaa.html`; module `n2003/GoldenRatioSearchMod.html`) | 7 | 38 |
 | 2 | [Quadratic Interpolative Search](../pages/numerical-methods/quadratic-interpolative-search/) | written (quadratic and cubic search, as the module); **done (batch 2):** 2 animations (rebuilds of Mathews' lost Quadratic (Example 3) and Cubic (Example 4) animations) | lost (Quadratic and Cubic portals, HTML only: `Optimization/Quadratic1/Quadraticaa.html`, `Optimization/Cubic1/Cubicaa.html`; module `n2003/QuadraticSearchMod.html`) | 5 | 44 |
@@ -193,3 +191,4 @@ If B is declined, batches 11–13 are dropped, and batch 10 also fixes Cholesky'
 | 10 (text) | [Householder Transformations](../pages/numerical-methods/householder-transformations.qmd) | skeleton | none | 6 | 64 |
 | 10 (text) | [Hessenberg Factorization](../pages/numerical-methods/hessenberg-factorization.qmd) | skeleton | none | 10 | 50 |
 | 10 (text) | [Faddeev-Leverrier Method](../pages/numerical-methods/faddeev-leverrier-method.qmd) | skeleton | none | 4 | 20 |
+| 14 | [FFT and Trigonometric Polynomials](../pages/numerical-methods/fft-and-trigonometric-polynomials/) | skeleton, outside the original plan; **to be retired (batch 14)**: the Fourier series page covers its module | none of its own; same module as Fourier series (`n2003/FourierSeriesMod.html`) | (Fourier series) | (Fourier series) |
