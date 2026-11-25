@@ -47,3 +47,12 @@ treeHash=$(git rev-parse 'origin/gh-pages^{tree}')
 commitHash=$(git commit-tree "$treeHash" -m "Reset gh-pages history")
 git push --force origin "$commitHash:refs/heads/gh-pages"
 ```
+
+PowerShell:
+
+```powershell
+git fetch origin gh-pages
+$treeHash = git rev-parse 'origin/gh-pages^{tree}'
+$commitHash = git commit-tree $treeHash -m "Reset gh-pages history"
+git push --force origin "${commitHash}:refs/heads/gh-pages"
+```
