@@ -1,9 +1,9 @@
 ---
 title: "Galerkin's Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -22,6 +22,38 @@ $$
 $$
 
 Because $L$ is linear, these are $n$ linear equations $\mathbf{A}\mathbf{c} = \mathbf{B}$ in the $n$ unknown coefficients, with $a_{ij} = \int_a^b \phi_i\,L[\phi_j]\,dx$ and $b_i = -\int_a^b \phi_i\,\bigl(L[\phi_0] + f\bigr)\,dx$. Solving them gives the Galerkin solution $u(x)$. Mathews solves one initial value problem with the polynomial basis $x, x^2, \ldots, x^7$, and four boundary value problems, two with polynomials that vanish at both ends and two with the sine functions $\sin kx$. In every example below the Galerkin solution is compared with the exact solution; the largest errors range from about $5 \times 10^{-9}$ to $1.5 \times 10^{-2}$, depending on how well the chosen basis can represent the exact solution.
+
+## Animations
+
+Each animation below shows **Galerkin solutions with more and more basis functions**, one value of $n$ per frame, against the exact solution. The left panel is the graph Mathews draws for the example, over his interval and with his colours for the exact solution (magenta) and the Galerkin solution (blue); red dots mark the initial or boundary values, and in Cases 1 and 3 the earlier Galerkin solutions are gray. The middle panel is new. Where Mathews plots the signed error $y - u$ for his one value of $n$, it plots the error $|y(x) - u_n(x)|$ on a logarithmic scale, and its title gives the largest error on the interval. The error is zero at the initial or boundary points and at each change of sign, where its curve dips sharply; how deep a dip is drawn depends on how close a grid point falls to the zero, and an exact zero is drawn below the bottom of the panel. The right panel is new as well and is described with each case. Each frame is shown for one second, and the last for three. The scripts check their coefficients against Mathews' values given on this page, evaluate the errors in 256- or 512-bit arithmetic on the grids used in the examples (6001 points on $[0, 3]$ and $[0, 1]$, 20001 points on $[0, \pi]$), and refine each largest error by a golden-section search around the largest grid value.
+
+Mathews' module has no animations, and his animation archive has none for Galerkin's method, so all three animations are new, with no Mathews original. They animate his Examples 2, 3 (b) and 4 (b) with his equations, intervals and bases, and run $n$ past the value he uses, except in Case 2, where his basis has only five functions. Not animated are Example 1, which computes inner products and solves no differential equation; Example 3 (a), where Mathews' three polynomials already give an error of $5.12 \times 10^{-9}$; Example 4 (a), which uses the sine basis of Case 3 with the odd sines only, because its even coefficients are zero; and the equation stated for Example 2, $y' + 2y + 6 + 4x = 0$, which Mathews' notebook does not solve.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Polynomial basis for an initial value problem (Example 2), $y' + 5y - 1 - x + \sin 2x = 0$, $y(0) = 1$, $u_n = 1 + c_1 x + \cdots + c_n x^n$, $n = 1$ to $16$ on $0 \le x \le 3$
+
+**Behavior:** The Galerkin systems are solved in 512-bit arithmetic. The largest error falls at every step, from $0.7296$ for $n = 1$ through $0.01478$ for Mathews' $n = 7$ to $2.374 \times 10^{-7}$ for $n = 16$, and the point where it occurs moves toward the initial point, from $x = 0.668$ to $x = 0.0327$. The right panel plots these largest errors against $n$ (left axis) and the price paid for them, the condition number $\operatorname{cond}_\infty(\mathbf{A}_n)$ (right axis). It grows from $179$ at $n = 2$ to $1.169 \times 10^{28}$ at $n = 16$, by a factor between $65$ and $86$ for each added basis function, and is $3.316 \times 10^{11}$ at $n = 7$, as Mathews computes. The orange diamonds, and the dashed orange curve in the middle panel, come from rounding $\mathbf{A}$ and $\mathbf{B}$ to double precision and solving with Julia's LU solver. Up to $n = 9$ the largest error of that solution agrees with the exact Galerkin solution's to four significant figures, although $\operatorname{cond}_\infty(\mathbf{A}_9) = 1.478 \times 10^{15}$. From $n = 12$ on it no longer follows the Galerkin error down: it stays between $4.4 \times 10^{-5}$ and $1.8 \times 10^{-3}$, rising and falling from one $n$ to the next. These double-precision values depend on the linear-algebra library; NumPy's solver gives different values of the same size, $1.4 \times 10^{-4}$ to $6.4 \times 10^{-4}$ for $n = 12$ to $16$.
+
+[Julia source](galerkinaa.jl)
+
+![Galerkin solutions u_n = 1 + c1 x + … + cn x^n for y′ + 5y − 1 − x + sin 2x = 0, y(0) = 1, with n = 1 to 16 basis functions, appearing one per frame against the exact solution on [0, 3], with a log-scale panel of the error |y − u_n| and a panel of the largest error and the condition number against n: the largest error falls from 0.7296 to 2.374 × 10^−7 while cond∞(A_n) grows from 1 to 1.169 × 10^28, and from n = 12 on the largest error of the double-precision solution stays between 4.4 × 10^−5 and 1.8 × 10^−3](galerkinaa.gif)
+
+### Case 2 — Two bases for a boundary value problem (Example 3 (b)), $y'' + y + 2x(1 - x) = 0$, $y(0) = 0$, $y(1) = \tfrac12$, $n = 1$ to $5$ on $0 \le x \le 1$
+
+**Behavior:** Each frame solves the problem twice, exactly, with $n$ basis functions: the first $n$ of Mathews' five (blue), and $x(x - 1), x^2(x - 1), \ldots, x^n(x - 1)$ (orange, "complete basis"), which span all polynomials of degree at most $n + 1$ that vanish at $0$ and $1$. For $n = 1$ both bases are $x(x - 1)$ and give the same largest error, $0.005616$. After that the complete basis pulls away: at $n = 5$ its largest error is $2.069 \times 10^{-8}$, about $5 \times 10^4$ times smaller than the $0.001014$ of Mathews' basis, whose error barely moves from $n = 3$ to $n = 4$ ($0.001824$ to $0.001823$). The numbers in brackets in the legend show why, as explained in Example 3 (b): every trial function built from Mathews' basis has $u'(0) + u'(1) = 1$, while the exact solution has $y'(0) + y'(1) = 0.9152$; with the complete basis the sum is free, and it is $0.9146$ for $n = 2$ and $3$ and $0.9152$ for $n = 4$ and $5$. For $n = 5$ the error of Mathews' basis peaks next to the ends, at $-0.001014$ at $x = 0.0595$ and $+0.001014$ at $x = 0.9405$. In the left panel the three curves lie almost on top of each other, as in Mathews' graph.
+
+[Julia source](galerkinbb.jl)
+
+![Galerkin solutions for y″ + y + 2x(1 − x) = 0, y(0) = 0, y(1) = 1/2, with n = 1 to 5 basis functions taken from Mathews' basis and from the complete basis x(x − 1), x²(x − 1), …, appearing one per frame against the exact solution on [0, 1], with a log-scale panel of both errors and a panel of the largest errors against n: the two bases agree at n = 1, after which the largest error of Mathews' basis stays between 0.001014 and 0.001824 from n = 3 on, while the complete basis reaches 2.069 × 10^−8 at n = 5](galerkinbb.gif)
+
+### Case 3 — Sine basis (Example 4 (b)), $y'' + 2y + 2x(x - \pi) = 0$, $y(0) = 0$, $y(\pi) = 1$, $u_n = x/\pi + c_1 \sin x + \cdots + c_n \sin nx$, $n = 1$ to $15$ on $0 \le x \le \pi$
+
+**Behavior:** The Galerkin matrix is diagonal, so adding $\sin nx$ to the basis adds the coefficient $c_n$ and leaves $c_1, \ldots, c_{n-1}$ unchanged; the right panel gains one point per frame. Each $c_k$ (blue dot) sits inside the circle of the Fourier sine coefficient of $y - x/\pi$, computed separately by Simpson's rule from the exact solution; the two agree to better than one part in $10^{12}$, as the callout above Example 4 (b) shows they must. The coefficients alternate in sign and decay like $1/k^3$: $|c_k|$ is within $2\%$ of $4/(\pi k^3)$ for $k \ge 10$. The slow decay comes from the right end. The function $y - x/\pi$ vanishes at both ends and its second derivative is $0$ at $x = 0$ but $-2$ at $x = \pi$, and three integrations by parts of its Fourier coefficient then give $c_k \approx -4(-1)^k/(\pi k^3)$ for large $k$. The error is largest near $x = \pi$: from $n = 2$ on, the largest error is at a point between $x = 2.81$ and $3.09$ that moves toward $\pi$ as $n$ grows. It falls at every step, but slowly, from $0.3397$ for $n = 1$ through $0.008702$ for Mathews' $n = 7$ to $0.002034$ for $n = 15$, roughly like $1/n^2$: $n^2$ times the largest error stays between $0.40$ and $0.46$ for $n = 5$ to $15$.
+
+[Julia source](galerkincc.jl)
+
+![Galerkin solutions u_n = x/π + c1 sin x + … + cn sin nx for y″ + 2y + 2x(x − π) = 0, y(0) = 0, y(π) = 1, with n = 1 to 15 sines, appearing one per frame against the exact solution on [0, π], with a log-scale panel of the error, largest near x = π, and a panel of the coefficients |c_k|, which coincide with the Fourier sine coefficients of y − x/π and follow 4/(πk³): the largest error falls from 0.3397 to 0.002034](galerkincc.gif)
 
 ## Inner Products
 
