@@ -50,6 +50,7 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 - **Batch 9 done 2026-11-25** on branch `batch-9` (stacked on `batch-8`): all seven pages have written text and animations. Two independent review rounds (`reviews/batch-9`, `-r2`); round 1 found one Error (a step quoted between the wrong frames on the Power Series page) and two Misleading findings (Circle of Curvature, Nonlinear Curve Fitting), round 2 found no Error or Misleading findings, and every finding of both rounds was fixed or shown not reproducible and independently checked. See `reviews/batch-9/README.md`.
 - **Batch 10 done 2026-11-25** on branch `batch-10`: the three eigenvalue-support skeletons (Householder Transformations, Hessenberg Factorization, Faddeev-Leverrier Method) are written as flat text-only pages. Three independent review rounds (`reviews/batch-10`, `-r2`, `-r3`); round 1 found one Error (a Corollary hypothesis left to a nearby caution) and five Minor findings, no worked-example number was wrong, round 2 one Misleading finding (an unsupported attribution in the Faddeev-Leverrier floating-point discussion), round 3 none; every finding was fixed and independently checked. See `reviews/batch-10/README.md`.
 - **Batch 11 done 2026-11-25** on branch `batch-11` (stacked on `batch-10`): the five elimination and factorization pages reviewed in text-only mode and fixed. Two independent review rounds (`reviews/batch-11`, `-r2`); round 1 found 6 Errors (one the nine lost `\t`s on the Cholesky page) and 5 Misleading findings, round 2 none, and every finding of both rounds was fixed and independently checked. See `reviews/batch-11/README.md`.
+- **Batch 12 done 2026-11-25** on branch `batch-12` (stacked on `batch-11`): the five structure-of-linear-systems pages reviewed in text-only mode and fixed. Two independent review rounds (`reviews/batch-12`, `-r2`); round 1 found 7 Errors and 5 Misleading findings (among them a wrong least-squares polynomial and unmeasured floating-point claims on Inverse Matrix, and mis-copied Mathematica digits on Iterative Refinement), round 2 none, and every finding of both rounds was fixed and independently checked. See `reviews/batch-12/README.md`.
 
 The `reviews/` folders were removed after merging. They are still in history: batch 1 at `4bc9c3f^`, batch 2 at `d3cdb0a^`, and batches 3–9 at `c8eefc8^`.
 
@@ -180,14 +181,14 @@ Batches 10–13 are text-only (no animations). Each of their pages is handled by
 | 11 (text) | [Gauss-Jordan Elimination and Pivoting](../pages/numerical-methods/gauss-jordan-elimination-and-pivoting.qmd) | written; **done (batch 11):** reviewed and fixed, two review rounds | none | 7 | 15 |
 | 11 (text) | [LU Factorization](../pages/numerical-methods/lu-factorization.qmd) | written; **done (batch 11):** reviewed and fixed, two review rounds | none | 9 | 22 |
 | 11 (text) | [Cholesky, Doolittle and Crout Factorizations](../pages/numerical-methods/cholesky-doolittle-and-crout-factorizations.qmd) | written; **done (batch 11):** reviewed and fixed, two review rounds | none | 9 | 65 |
-| 12 (text) | [Inverse Matrix](../pages/numerical-methods/inverse-matrix.qmd) | written | none | 7 | 36 |
-| 12 (text) | [Tri-Diagonal Matrices](../pages/numerical-methods/tri-diagonal-matrices.qmd) | written | none | 9 | 21 |
+| 12 (text) | [Inverse Matrix](../pages/numerical-methods/inverse-matrix.qmd) | written; **done (batch 12):** reviewed and fixed, two review rounds | none | 7 | 36 |
+| 12 (text) | [Tri-Diagonal Matrices](../pages/numerical-methods/tri-diagonal-matrices.qmd) | written; **done (batch 12):** reviewed and fixed, two review rounds | none | 9 | 21 |
 | 11 (text) | [Pivoting Methods](../pages/numerical-methods/pivoting-methods.qmd) | written; **done (batch 11):** reviewed and fixed, two review rounds | none | 10 | 110 |
-| 12 (text) | [Row Reduced Echelon Form](../pages/numerical-methods/row-reduced-echelon-form.qmd) | written | none | 6 | 32 |
-| 12 (text) | [Homogeneous Linear Systems](../pages/numerical-methods/homogeneous-linear-systems.qmd) | written | none | 6 | 33 |
+| 12 (text) | [Row Reduced Echelon Form](../pages/numerical-methods/row-reduced-echelon-form.qmd) | written; **done (batch 12):** reviewed and fixed, two review rounds | none | 6 | 32 |
+| 12 (text) | [Homogeneous Linear Systems](../pages/numerical-methods/homogeneous-linear-systems.qmd) | written; **done (batch 12):** reviewed and fixed, two review rounds | none | 6 | 33 |
 | 13 (text) | [Kirchoff's Law](../pages/numerical-methods/kirchoffs-law.qmd) | written | none | 7 | 24 |
 | 13 (text) | [Leontief Model](../pages/numerical-methods/leontief-model.qmd) | written | none | 5 | 44 |
-| 12 (text) | [Iterative Refinement](../pages/numerical-methods/iterative-refinement.qmd) | written | none | 11 | 141 |
+| 12 (text) | [Iterative Refinement](../pages/numerical-methods/iterative-refinement.qmd) | written; **done (batch 12):** reviewed and fixed, two review rounds | none | 11 | 141 |
 | 13 (text) | [Horner's Method](../pages/numerical-methods/horners-method.qmd) | written | none | 10 | 46 |
 | 13 (text) | [Conic Fit](../pages/numerical-methods/conic-fit.qmd) | written | none | 13 | 30 |
 | 10 (text) | [Householder Transformations](../pages/numerical-methods/householder-transformations.qmd) | written (all 5 of Mathews' cases; links the QR page's Householder-then-QR animation); **done (batch 10):** text-only, three review rounds | none | 6 | 64 |

@@ -32,3 +32,27 @@ Fidelity findings: Inverse F8; Tri-Diagonal F3; RREF F3, F4; Homogeneous F2; Ite
 - **Numerical-precision claims nobody measured** (Inverse Matrix's "double precision fails", Iterative Refinement's bound): the page asserts what floating point does instead of computing it.
 - **Summary or algorithm statements wider than what the page proves** (Homogeneous's "full rank", RREF's algorithm, Inverse Matrix's LU comparison).
 - **Mathews' examples dropped silently** on four of five pages, including the ones that demonstrate the module's warning (the chopped Hilbert matrix, $H_6$–$H_{10}$, the middle-column free variable).
+
+## Closing (batch 12 run, 2026-11-25)
+
+**Pages:** Inverse Matrix, Tri-Diagonal Matrices, Row Reduced Echelon Form, Homogeneous Linear Systems, Iterative Refinement (all flat text-only pages; none were skeletons).
+
+**Findings by round:**
+
+| Round | Error | Misleading | Minor | Report |
+|---|---|---|---|---|
+| 1 | 7 | 5 | 10 | `reviews/batch-12` |
+| 2 | 0 | 0 | 3 | `reviews/batch-12-r2` |
+
+Every round-1 Error and Misleading finding was confirmed by an independent check. Every finding of both rounds was fixed, and each fix was checked by a fresh checker who did not see the fixer's reasoning. Fix-checks raised three further Minor points, all fixed and covered by round 2 or rechecked: Inverse Matrix's κ(H₁₂) (1.7×10¹⁶, not numpy's 1.8×10¹⁶) and its "8%" figure, and Iterative Refinement's second-step size. Nothing is open.
+
+**What was fixed (main items):** Inverse Matrix's wrong least-squares polynomial (it held Taylor coefficients), the false $c_1 = \cos 0$, and three unmeasured claims about floating point. Those claims are now measured, and Mathews' rounded-Hilbert example (an error of 28259 in one entry) backs the warning. Iterative Refinement's six mis-copied Mathematica digits, its error inequality (now an ∞-norm estimate with its hypothesis), and the missing point that refinement needs higher-precision residuals, with Mathews' caveat. RREF's mislabelled "RREF" in Example 2 and its algorithm, which had no rule for a column without a pivot. Homogeneous Linear Systems' "full rank" summary. Tri-Diagonal's matrix markup, plus a correct statement of the uniqueness theorem (Mathews' own version is false) and his 31×31 example.
+
+**Decisions taken for Jason (revisit if wanted):**
+- Inverse Matrix: Mathews' "chopped" Hilbert matrix is added as Example 2, and the least-squares example renumbered to 3. The page calls the matrix rounded, because its entries are rounded, and notes his name for it.
+- Iterative Refinement: Mathews' printed $\mathbf r^{(1)}$ (about 10⁻¹⁴) is dropped, because it cannot be reproduced from his printed $\mathbf x^{(1)}$ (that gives about 5×10⁻¹³). The page gives the residual of his printed digits instead. Inequality (7) is restated in the ∞-norm.
+- Tri-Diagonal: the theorem now has nonzero off-diagonals, strict end rows and ≥ in the interior rows, plus a strict-dominance variant. Mathews' false all-≥ version is not mentioned.
+- RREF: Mathews' Example 5 is added as the page's Example 4, and his Example 4 is left out with a sentence.
+- Homogeneous Linear Systems: Mathews' Example 4 (a free variable between pivot columns) is added.
+
+**Commits on `batch-12`:** Add batch 12 review; Fix Homogeneous Linear Systems; Fix Row Reduced Echelon Form; Fix Tri-Diagonal Matrices; Fix Inverse Matrix; Fix Iterative Refinement; Add batch 12 review, round 2; Fix Tri-Diagonal Matrices (round 2); Fix Inverse Matrix (round 2); Mark batch 12 done.
