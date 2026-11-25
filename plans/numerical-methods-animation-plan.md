@@ -2,6 +2,19 @@
 
 Written 2026-11-24, after the nine review rounds of the 53 animation pages were merged into `main`.
 
+## Finished (2026-11-25)
+
+All 14 batches are done and merged into `main` (merge `50e916f`), and the whole section renders without errors. Nothing in this plan is left to do.
+
+- **41 pages have animations** (batches 1–9, plus the two Fourier series rebuilds of batch 14). **17 pages are text-only** and stay flat `.qmd` files (batches 10–13). No page has a "(Planned)" section left.
+- **The FFT and Trigonometric Polynomials page is retired** (batch 14). Its index entry points at the Fourier series page.
+- **Kirchhoff's Law** is now at `kirchhoffs-law.qmd`. The old `kirchoffs-law` URL was deliberately left to break, with no redirect.
+- **The section index status note** was updated on 2026-11-25.
+- **Jason reviewed the decisions taken on his behalf** (listed under Follow-on plan, and in the batch 10–14 READMEs) on 2026-11-25 and kept them all.
+- **Two GIFs stay over the 3 MB target** (`gradientcc.gif`, 3.2 MB; `nelderbb.gif`, 3.1 MB). Jason accepted them, since the GIFs are stored with Git LFS.
+
+The rest of this file is the record of how the work was planned and run. Sections that speak of future work were written before it was done.
+
 ## Where things stand
 
 - **58 topic pages** in `pages/numerical-methods/` are still flat `.qmd` files with no animations.
@@ -54,11 +67,11 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 - **Batch 13 done 2026-11-25** on branch `batch-13` (stacked on `batch-12`): the four applications and polynomial pages reviewed in text-only mode and fixed. Two independent review rounds (`reviews/batch-13`, `-r2`); round 1 found 4 Errors and 2 Misleading findings (among them a false derivative identity on Horner's Method), round 2 none, and every finding of both rounds was fixed and independently checked. Kirchoff's Law is now titled Kirchhoff's Law, and its file is now `kirchhoffs-law.qmd` (the old URL no longer exists). See `reviews/batch-13/README.md`.
 - **Batch 14 done 2026-11-25** on branch `batch-14` (stacked on `batch-13`): the FFT and Trigonometric Polynomials page is retired (folder deleted, index entry pointed at the Fourier series page's discrete-series section, Quarto alias redirecting the old URL); the Fourier series page has Mathews' two lost discrete-series animations rebuilt as Cases 6 and 7; Powell (1964) and Lambert (1991) are in `references.bib` and cited by key, with the predictor-corrector order theorem relabelled a standard result because it could not be confirmed in Lambert's book. One review round of the whole Fourier series page (`reviews/batch-14`) found no findings; the citation edits were independently checked. See `reviews/batch-14/README.md`.
 
-The `reviews/` folders were removed after merging. They are still in history: batch 1 at `4bc9c3f^`, batch 2 at `d3cdb0a^`, and batches 3–9 at `c8eefc8^`.
+The `reviews/` folders were removed after merging. They are still in history: batch 1 at `4bc9c3f^`, batch 2 at `d3cdb0a^`, batches 3–9 at `c8eefc8^`, and batches 10–14 at `dfd3604^`. The `reviews/batch-N/README.md` files named above, with each batch's decisions, are at those commits.
 
 ## Follow-on plan (written 2026-11-25)
 
-### What is left (checked against the repository on 2026-11-25)
+### What was left before batches 10–14 (checked against the repository on 2026-11-25; all done since, see Finished)
 
 - **All 41 animation pages are done.** Each one is a folder with an `## Animations` section and 2–8 GIFs, and none has a "(Planned)" section left.
 - **The 17 text-only pages are still flat `.qmd` files:**
@@ -77,7 +90,7 @@ The `reviews/` folders were removed after merging. They are still in history: ba
 - **D. Add Powell (1964) and Lambert (1991) to `references.bib`** and cite them with keys on Powell's Method and Predictor-Corrector Methods (batch 14). Batch 4 attributed Lambert's order theorem from memory, so check the theorem against the book, or reword it as a standard result, before citing it.
 - **E. Rebuild the two lost discrete-series animations** on the Fourier series page (batch 14). These are Mathews' FFT1 and FFT2, for |x−π| and x−π at n = 36, built the same way as Cases 6–8.
 
-Decisions already taken on Jason's behalf, recorded in the batch notes and stated on the pages. Revisit any of these if wanted:
+Decisions already taken on Jason's behalf, recorded in the batch notes and stated on the pages. Jason reviewed them on 2026-11-25 and kept them all:
 
 - **Places where the pages follow the mathematics, not Mathews:**
   - Newton search keeps 3 saddle steps instead of Mathews' 5.
@@ -92,10 +105,10 @@ Decisions already taken on Jason's behalf, recorded in the batch notes and state
   - Monte Carlo Example 14 keeps its figures from the continued random stream.
   - Fibonacci Case 3 explains the overlapping points in a note rather than being re-zoomed.
   - Newton Case 1 titles use `%.4g`.
-  - Two GIFs are over the 3 MB target: `gradientcc.gif` (3.2 MB) and `nelderbb.gif` (3.1 MB).
-- **Housekeeping:** the section index status note (line 11, "60–80% done") is out of date.
+  - Two GIFs are over the 3 MB target: `gradientcc.gif` (3.2 MB) and `nelderbb.gif` (3.1 MB). Accepted, since the GIFs are stored with Git LFS.
+- **Housekeeping:** the section index status note (line 11, "60–80% done") was out of date. Updated on 2026-11-25.
 
-### Remaining batches
+### Batches 10–14 (all done 2026-11-25)
 
 Batches 10–13 are text-only (no animations). Each of their pages is handled by `content-page`, either to write it or to fix review findings, and reviewed with `review-animations` as adapted under C. Batch 14 uses the existing skills, so it can run before C is done.
 
@@ -107,7 +120,7 @@ Batches 10–13 are text-only (no animations). Each of their pages is handled by
 | 13 | Kirchhoff's Law, Leontief Model, Horner's Method, Conic Fit (applications and polynomials) | review first; fix with `content-page` |
 | 14 | Fourier series and loose ends: retire FFT and Trigonometric Polynomials (A); Fourier series gets the FFT1 and FFT2 rebuilds (E); Powell's Method and Predictor-Corrector Methods get the bibliography keys (D) | `animation-page` for the two Fourier cases and their page text; the director makes the index, alias and folder changes; `review-animations` reviews Fourier series in full; the two citation edits get an independent check (Phase 4 style) instead of a full re-review |
 
-### How to run them
+### How they were to be run (all steps done)
 
 1. Make the two skill changes (C) on their own branch and merge them.
 2. For each batch, start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`. Name batch 14 by number, because `next` treats Fourier series as done already. Each run works on a `batch-<N>` branch, reviews into `reviews/batch-<N>`, `-r2` and so on until a round has no Error or Misleading findings, and stops before merging. Batches 10–13 touch disjoint files and do not change the index, so they can be stacked, as batches 3–9 were. Batch 14 changes the index and the Fourier series page, so run it on its own.
