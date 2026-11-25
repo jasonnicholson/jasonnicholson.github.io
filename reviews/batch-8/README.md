@@ -56,3 +56,70 @@ Power method was the calibration page. Its reviewer worked on a scratch copy wit
 ## Phase 1 inventory
 
 All 21 scripts ran from scratch copies against the global Julia environment (Plots 1.41.2) and reproduced all 21 committed GIFs byte for byte. Every page reference resolves.
+
+---
+
+# Batch 8: closing summary (2026-11-25)
+
+## Pages built
+
+| Page | Text (Phase 1) | Animations (Phase 2) |
+|---|---|---|
+| [Power method](../../pages/numerical-methods/power-method/) | written from `PowerMethodMod`, all examples; tables in exact rationals | 4 new: Examples 1 and 2, the shifted-inverse method against the power method, the Markov chains of Examples 4 and 5 |
+| [Jacobi and Gauss-Seidel Iteration](../../pages/numerical-methods/jacobi-and-gauss-seidel-iteration/) | already written; the builder corrected four errors in the old text (a broken `\tag`, the spectral-radius statement, a residual attribution) | 3 new: the two methods in the plane, Mathews' Example 6, Examples 2 and 4 in another equation order |
+| [Successive Over Relaxation - SOR](../../pages/numerical-methods/successive-over-relaxation-sor/) | already written; the builder corrected a mix of ω = 1.25 and 1.5 and a broken `\tag` | 3 new: Jacobi, Gauss-Seidel and SOR on Example 1, the ω sweep with ω_opt = 1.528, Laplace's equation on a 5 × 5 grid |
+| [Eigenvalues and Eigenvectors](../../pages/numerical-methods/eigenvalues-and-eigenvectors/) | written from `EigenvaluesMod`; adds a section on the powers AʲX₀ for the animation | 4 new: invariant directions, scaled powers, Newton–Raphson on the characteristic polynomial, rounded polynomial roots against an eigenvalue routine |
+| [QR method](../../pages/numerical-methods/qr-method/) | written from `QRMethodMod`, all examples | 3 new: unshifted QR on Example 3, Householder reduction then QR on Example 4, shifts and deflation on Example 5 |
+| [Jacobi method](../../pages/numerical-methods/jacobi-method/) | written from `JacobiMethodMod`, all examples | 4: classical and cyclic Jacobi on Example 1, a rebuild of Mathews' "eigenvalue movie" (Example 6, which survives as still frames in the module), and the same matrix to ε = 10⁻¹¹ |
+
+Every GIF regenerates byte for byte from its committed script (checked by each builder, by the director, and in the review's Phase 1). Power method was the Phase 2 pilot and passed unchanged.
+
+## Findings by round and severity
+
+| Round | Folder | Error | Misleading | Minor | Calibration pilot (planted errors caught) |
+|---|---|---|---|---|---|
+| 1 | `reviews/batch-8` | 0 | 0 | 13 | Power method (2 of 2) |
+
+With no Error or Misleading finding in round 1, no second round was required.
+
+## What was fixed
+
+All 13 Minor findings were reproduced, fixed and judged by a different checker who saw only the findings and the diff. Power method: Case 2's log panel described without the predicted slopes (the fixer reworded rather than adding slopes to the GIF). Jacobi and Gauss-Seidel: the 4.437–6.012 range attributed to sweeps 1–2. SOR: where Case 2 gives ρ (reworded). Eigenvalues: Example 11's 2.8 × 10⁻⁸; Case 3's bounds 7 % and 11 %; run (b)'s first step; "the table below"; two of Mathews' Example 8 eigenvectors are the negatives of the page's (the same eigenvectors). QR: d₂ and d₄ both overshoot (alt text and Behavior paragraph); the opening and closing frames of Case 3. Jacobi method: the zeroed entries include negative ones; which diagonal dots are visibly off their ticks (measured in pixels); the cyclic run passes Mathews' relative stopping test. No GIF changed.
+
+## Open
+
+Nothing.
+
+## Decisions taken for Jason to revisit
+
+1. **Eigenvalues F1 reclassified** from Error to Minor (2.9 × 10⁻⁸ for 2.849 × 10⁻⁸ is a last-digit rounding slip), as batch 4 did for 0.972.
+2. **Plan corrections:** Jacobi method's legacy animation is not "none": Mathews' eigenvalue movie survives as still frames in the module and is rebuilt as Case 3 (recorded in the plan).
+3. **`\tag` corruption:** the old Jacobi-Gauss-Seidel and SOR pages had a `\tag` broken into a tab character plus "ag{"; both were fixed here. The same corruption is still present in `cholesky-doolittle-and-crout-factorizations.qmd`, which is in no batch.
+
+## Process notes
+
+- Reviewers returned reports as text; the director wrote them. MATLAB was not run; quarto only by the director.
+- As in batches 6 and 7, the page states were committed from saved copies after the review loop finished; the final state was rendered with `quarto render pages/numerical-methods/`, which completed without errors (warnings only for section-index links to batch 9 pages, which are moved in the working tree and linked in batch 9's commits).
+
+## Commits on `batch-8`
+
+```
+1b75775 Record batch 8 archive paths in the plan
+723ea8d Write Power method page text (batch 8)
+d37e96f Write Jacobi method page text (batch 8)
+ba89645 Write QR method page text (batch 8)
+f837912 Write Eigenvalues and Eigenvectors page text (batch 8)
+d828128 Add Power method animations (batch 8)
+de1ff9c Add Jacobi and Gauss-Seidel Iteration animations (batch 8)
+741b9b6 Add Jacobi method animations (batch 8)
+cb4b90a Add QR method animations (batch 8)
+a52062d Add Eigenvalues and Eigenvectors animations (batch 8)
+8f4e418 Add Successive Over Relaxation - SOR animations (batch 8)
+5d6d12f Add batch 8 review
+693e615 Fix Power method (batch 8 review)
+ea5224c Fix Jacobi and Gauss-Seidel Iteration (batch 8 review)
+ace0b0b Fix Successive Over Relaxation - SOR (batch 8 review)
+eda0a19 Fix Eigenvalues and Eigenvectors (batch 8 review)
+8dfd1bf Fix QR method (batch 8 review)
+45fd23a Fix Jacobi method (batch 8 review)
+```
