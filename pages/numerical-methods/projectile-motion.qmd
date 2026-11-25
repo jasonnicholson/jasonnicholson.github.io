@@ -7,24 +7,353 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+A projectile moves under gravity and, in a real medium, under air resistance that opposes its velocity. Without air resistance the equations of motion can be integrated by hand and the path is a parabola. With air resistance proportional to the velocity there is still a closed-form solution, but with resistance proportional to the square or the $\tfrac32$ power of the speed the formulas become awkward or unavailable, and a numerical solution is the practical route. Each model is a second-order differential equation, or a pair of them, for the position.
 
-### Planned animation ideas
+The method is the classical fourth-order Runge–Kutta method (RK4), applied to the first-order system obtained by introducing the velocity as a second unknown. For one second-order equation $y'' = f(t, y, y')$ with $y(a) = \alpha$, $y'(a) = \beta$, write $\mathbf{Z} = (y, v)$ with $v = y'$ and $\mathbf{F}(t, \mathbf{Z}) = \bigl(v,\ f(t, y, v)\bigr)$, and step with $h = (b - a)/n$:
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+$$
+\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16\left(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\right),
+\qquad
+\begin{aligned}
+\mathbf{k}_1 &= h\,\mathbf{F}(t_j, \mathbf{Z}_j), &
+\mathbf{k}_2 &= h\,\mathbf{F}\bigl(t_j + \tfrac h2, \mathbf{Z}_j + \tfrac12\mathbf{k}_1\bigr),\\
+\mathbf{k}_3 &= h\,\mathbf{F}\bigl(t_j + \tfrac h2, \mathbf{Z}_j + \tfrac12\mathbf{k}_2\bigr), &
+\mathbf{k}_4 &= h\,\mathbf{F}(t_j + h, \mathbf{Z}_j + \mathbf{k}_3).
+\end{aligned}
+$$
 
-## Derivation Notes (Planned)
+Mathews' module has two parts. In the first (Examples 1–4) an arrow is shot straight up at $300$ ft/s and the four drag laws are compared through the ascent time, the maximum height, the descent time and the impact velocity. In the second (Examples 5–8) the same method, applied to two coupled second-order equations for $x(t)$ and $y(t)$, traces the flight of a long-hit baseball. Throughout, $g = 32$ ft/s² and lengths are in feet.
 
-Short derivations will be added to explain the core equations and assumptions.
+## Motion without air resistance
 
-## Worked Example (Planned)
+If a projectile leaves the origin with speed $v_0$ at angle $\theta$ to the horizontal and only gravity acts, its position is
 
-A compact numerical example with intermediate steps will be included.
+$$
+x(t) = v_0 \cos(\theta)\, t, \tag{1}
+$$
 
-## Implementation Notes (Planned)
+$$
+y(t) = v_0 \sin(\theta)\, t - \tfrac12 g t^2. \tag{2}
+$$
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+Solving (1) for $t = \dfrac{\sec(\theta)}{v_0}\, x$ and substituting in (2) gives the parabola
+
+$$
+y = \tan(\theta)\, x - \frac{g \sec^2(\theta)}{2 v_0^2}\, x^2 .
+$$
+
+The highest point is reached when $y'(t) = v_0 \sin(\theta) - g t = 0$, at time $t_1$, and the projectile is back at height $0$ at time $t_2$:
+
+$$
+t_1 = \frac{v_0 \sin(\theta)}{g}, \qquad
+y_{\max} = y(t_1) = \frac{v_0^2 \sin^2(\theta)}{2g}, \qquad
+t_2 = \frac{2 v_0 \sin(\theta)}{g} = 2 t_1 .
+$$
+
+So without air resistance the descent takes exactly as long as the ascent. The range is
+
+$$
+x_{\text{range}} = x(t_2) = \frac{v_0^2}{g}\,\sin(2\theta).
+$$
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Angle of maximum range
+For a fixed launch speed $v_0$, no air resistance, and launch and landing at the same height, the range $x_{\text{range}} = \frac{v_0^2}{g}\sin(2\theta)$ is largest when $\theta = \pi/4$. The conditions matter: with drag, or with a launch point above the landing level, the best angle differs from $45^\circ$. For a ball hit at $127$ ft/s from $3$ ft above the ground (Example 5 below) the longest carry comes at $\theta = 44.83^\circ$, and at $207$ ft/s with the linear drag of Example 6 at $\theta = 31.8^\circ$.
+:::
+
+For example, with $v_0 = 300$ ft/s the range is $2812.5$ ft at $\theta = 45^\circ$ and $2435.70$ ft at both $30^\circ$ and $60^\circ$.
+
+## Vertical motion with air resistance
+
+Now fire the projectile straight up, so $x(t) = 0$, and let $y(t)$ be its height and $v = y'$ its velocity. The drag force $F_R$ always opposes the motion. A very slow object in a viscous fluid feels a drag proportional to its speed; faster objects (and Millikan's oil drops, as Mathews notes) are better described by a drag proportional to the square of the speed. The Reynolds number decides which regime applies. Mathews compares four laws.
+
+::: {.callout-note appearance="simple"}
+## Definition — Vertical drag models (Projectile Motion I)
+With mass $m$ and drag constant $k > 0$:
+
+(i) No air resistance: $\; m \dfrac{dv}{dt} = -mg$, $\quad y'' = -g$.
+
+(ii) Drag proportional to the velocity: $\; m \dfrac{dv}{dt} = -kv - mg$, $\quad y'' = -\dfrac{k}{m}\, y' - g$.
+
+(iii) Drag proportional to the square of the velocity: $\; m \dfrac{dv}{dt} = -kv^2 - mg$ on the ascent ($v > 0$) and $m \dfrac{dv}{dt} = kv^2 - mg$ on the descent ($v < 0$); both are the single equation $\; y'' = -\dfrac{k}{m}\, y' \lvert y' \rvert - g$.
+
+(iv) Drag proportional to the $\tfrac32$ power of the speed: $\; y'' = -\dfrac{k}{m}\, y' \sqrt{\lvert y' \rvert} - g$.
+:::
+
+The factor $y'\lvert y'\rvert$ in (iii) is what makes the drag point the right way: it is $+v^2$ going up and $-v^2$ coming down. Writing $-k v^2$ for both halves of the flight is a mistake that Example 3 examines.
+
+When the drag grows with the speed, a falling object approaches a **terminal velocity** at which drag balances gravity: $-mg/k$ for law (ii), $-\sqrt{mg/k}$ for law (iii), and $-(mg/k)^{2/3}$ for law (iv). (These are the limits of the descent equations as $t \to \infty$; an arrow that hits the ground first never reaches them.)
+
+### Runge–Kutta solution
+
+Mathews solves each case with the RK4 scheme of the Description, starting from $y(0) = 0$, $y'(0) = 300$. In Examples 2–4 he uses $[a, b] = [0, 20]$ with $n = 100$ steps, so $h = 0.2$ s, and plots the height $y(t)$ in the window $0 \le t \le 20$, $0 \le y \le 1500$; the images of Example 1's inputs and plots are lost. In Examples 1–3 he finds the top of the flight and the moment of impact by solving $v(t) = 0$ and $y(t) = 0$ with a root finder (`FindRoot` in Mathematica) applied to the closed-form solution. The values below were located in the same way: from the closed forms with a root finder, and checked against an independent high-accuracy integration (scipy's DOP853 with relative tolerance $10^{-13}$ and event detection) and, for Example 4, against quadrature formulas.
+
+### Example 1 — No air resistance
+
+An arrow is shot upward from the origin at $300$ ft/s with no air resistance: $m\,\dfrac{dv}{dt} = -mg$, that is
+
+$$
+y'' = -32, \qquad y(0) = 0, \quad y'(0) = 300 .
+$$
+
+Find the velocity and position, the ascent time, the descent time, the maximum height and the impact velocity.
+
+**Step 1**: Integrate twice:
+
+$$
+v(t) = 300 - 32t, \qquad y(t) = 300t - 16t^2 .
+$$
+
+**Step 2**: The top of the flight is where $v(t) = 0$:
+
+$$
+t_{\max} = \frac{300}{32} = 9.375 \text{ s}, \qquad y_{\max} = y(9.375) = 1406.25 \text{ ft}.
+$$
+
+**Step 3**: Impact is where $y(t) = 0$ with $t > 0$:
+
+$$
+t_{\text{impact}} = \frac{300}{16} = 18.75 \text{ s}, \qquad v(18.75) = -300 \text{ ft/s}.
+$$
+
+The descent time is $18.75 - 9.375 = 9.375$ s, equal to the ascent time, and the arrow lands at the speed it was fired, as the formulas of the previous section require. Mathews notes that the maximum comes near $t = 9$ and the impact near $t = 19$.
+
+**Verification:** $v' = -32$, $y(0) = 0$, $v(0) = 300$. The exact solution is a polynomial of degree two, and RK4 with $h = 0.2$ (the step of Examples 2–4) reproduces it at every grid point on $[0, 20]$ to within $1.3 \times 10^{-12}$ ft (rounding error). (The legacy pages for this example have lost their output images, so Mathews' printed values cannot be compared.)
+
+### Example 2 — Drag proportional to the velocity
+
+The same arrow, with drag $F_R = 0.04\,m v$, so $k/m = 0.04 = \tfrac1{25}$:
+
+$$
+y'' = -32 - \frac{y'}{25}, \qquad y(0) = 0, \quad y'(0) = 300 .
+$$
+
+**Step 1**: The velocity equation $v' = -32 - v/25$ is linear. With $v(0) = 300$,
+
+$$
+v(t) = -800 + 1100\, e^{-t/25}.
+$$
+
+**Step 2**: Integrate from $0$ with $y(0) = 0$:
+
+$$
+y(t) = 27500 - 27500\, e^{-t/25} - 800\, t .
+$$
+
+**Step 3**: Top of the flight: $v(t) = 0$ gives $e^{-t/25} = \tfrac{8}{11}$, so
+
+$$
+t_{\max} = 25 \ln\tfrac{11}{8} = 7.96134 \text{ s}, \qquad y_{\max} = 1130.93 \text{ ft}.
+$$
+
+**Step 4**: Impact: the root of $y(t) = 0$ near $t = 17$ is
+
+$$
+t_{\text{impact}} = 16.8675 \text{ s}, \qquad v(t_{\text{impact}}) = -239.760 \text{ ft/s}.
+$$
+
+The descent time is $16.8675 - 7.96134 = 8.90615$ s, longer than the ascent time, and the impact speed is below the launch speed. As $t \to \infty$, $v(t) \to -800$ ft/s, the terminal velocity $-mg/k$; at impact the arrow is still far from it. Mathews' values ($7.96134$, $1130.93$, $16.8675$, $-239.76$, $8.90615$) agree.
+
+**Verification:** $v'(t) = -44\, e^{-t/25} = -\tfrac1{25}\bigl(v(t) + 800\bigr) = -32 - \tfrac{v(t)}{25}$ and $v(0) = -800 + 1100 = 300$. Mathews' RK4 solution ($h = 0.2$) differs from $y(t)$ by at most $3.4 \times 10^{-7}$ ft at the grid points of $[0, 20]$, so the two curves coincide in his comparison plot.
+
+### Example 3 — Drag proportional to the square of the velocity
+
+The same arrow, with drag $F_R = \tfrac{1}{2048}\, m v^2$, so $k/m = \tfrac1{2048}$:
+
+$$
+m \frac{dv}{dt} = \mp k v^2 - mg, \qquad y'' = -\frac{y'\lvert y'\rvert}{2048} - 32, \qquad y(0) = 0,\ y'(0) = 300,
+$$
+
+with the upper sign on the ascent and the lower sign on the descent.
+
+**Step 1 (ascent)**: On the way up, $v' = -32 - v^2/2048$, whose solution with $v(0) = 300$ is
+
+$$
+V(t) = 256 \tan\!\left(\frac{t_{\max} - t}{8}\right), \qquad t_{\max} = 8 \arctan\tfrac{75}{64},
+$$
+
+and integrating with $Y(0) = 0$,
+
+$$
+Y(t) = 2048 \ln\!\left(\frac{\sqrt{9721}}{64}\, \cos\!\left(\frac{t_{\max} - t}{8}\right)\right).
+$$
+
+**Step 2 (top)**: $V(t_{\max}) = 0$, with
+
+$$
+t_{\max} = 8 \arctan\tfrac{75}{64} = 6.91496 \text{ s}, \qquad y_{\max} = Y(t_{\max}) = 1024 \ln\frac{9721}{4096} = 885.020 \text{ ft}.
+$$
+
+**Step 3 (the wrong continuation)**: Mathews first uses the ascent formula $Y(t)$ for the whole flight, as if the drag kept pointing down. Then $Y$ is symmetric about $t_{\max}$: it returns to $0$ at $t = 2t_{\max} = 13.8299$ s with $V = -300$ ft/s, so the ascent and descent times are both $6.91496$ s, as with no air at all. Worse, $V(t)$ has a vertical asymptote at $t = t_{\max} + 4\pi = 19.4813$ s, where $V \to -\infty$: a "drag" that pulls downward makes the fall accelerate without limit. With air resistance the descent must take longer than the ascent, and on the descent the $v^2$ term must have a positive sign.
+
+**Step 4 (descent)**: On the way down, $u' = -32 + u^2/2048$ with $u(t_{\max}) = 0$ and $Z(t_{\max}) = y_{\max}$. Its solution is
+
+$$
+U(t) = -256 \tanh\!\left(\frac{t - t_{\max}}{8}\right), \qquad Z(t) = y_{\max} - 2048 \ln \cosh\!\left(\frac{t - t_{\max}}{8}\right).
+$$
+
+Mathews prints these as $U(t) = \dfrac{256\,(1 - e^{(t - t_{\max})/4})}{1 + e^{(t - t_{\max})/4}}$ and $Z(t) = 4074.82 + 256\,t - 2048 \ln\bigl(5.63355 + e^{t/4}\bigr)$, where $5.63355 = e^{t_{\max}/4}$ and $4074.82$ is $y_{\max} + 256\, t_{\max} + 2048 \ln 2 = 4074.816$ rounded.
+
+**Step 5 (impact)**: $Z(t) = 0$ when $\cosh\bigl((t - t_{\max})/8\bigr) = e^{y_{\max}/2048}$, so the descent time is
+
+$$
+t_{\text{impact}} - t_{\max} = 8\, \operatorname{arccosh}\!\left(e^{y_{\max}/2048}\right) = 7.98274 \text{ s},
+\qquad t_{\text{impact}} = 14.8977 \text{ s}, \qquad U(t_{\text{impact}}) = -194.736 \text{ ft/s}.
+$$
+
+Now the descent is longer than the ascent, and as $t \to \infty$, $U(t) \to -256$ ft/s $= -\sqrt{mg/k}$, a finite terminal velocity. Mathews' values ($6.91496$, $885.02$, $14.8977$, $-194.736$, $7.98274$) agree. He notes the maximum near $t = 7$ and the impact near $t = 15$.
+
+**Step 6 (Runge–Kutta)**: None of this case analysis is needed numerically. The single equation $y'' = -32 - y'\lvert y'\rvert/2048$ switches the sign of the drag by itself when $y'$ changes sign, and Mathews' RK4 solution with $h = 0.2$ follows the two-piece closed form $Y$, $Z$ to within $1.7 \times 10^{-4}$ ft at every grid point while the arrow is in the air ($0 \le t \le 14.8$). He plots the analytic curves alone in $[0, 17] \times [0, 1200]$, and the RK4 and analytic solutions together in $[0, 15] \times [0, 900]$.
+
+**Verification:** $V' = -32 \sec^2\!\bigl(\tfrac{t_{\max} - t}{8}\bigr) = -32\bigl(1 + \tfrac{V^2}{65536}\bigr) = -32 - \tfrac{V^2}{2048}$, and $V(0) = 256 \cdot \tfrac{75}{64} = 300$. Likewise $U' = -32\,\operatorname{sech}^2\!\bigl(\tfrac{t - t_{\max}}{8}\bigr) = -32 + \tfrac{U^2}{2048}$, with $U(t_{\max}) = 0$.
+
+### Example 4 — Drag proportional to the 3/2 power of the velocity
+
+The same arrow, with drag of magnitude $0.005\, m \lvert v \rvert^{3/2}$, so $k/m = \tfrac1{200}$:
+
+$$
+y'' = -\frac{1}{200}\, y' \sqrt{\lvert y'\rvert} - 32, \qquad y(0) = 0, \quad y'(0) = 300 .
+$$
+
+Mathews' attempt at a closed-form solution with Mathematica's `DSolve` does not produce a usable formula (dropping the initial condition gets it only a little further), so he relies on the RK4 solution ($[0, 20]$, $n = 100$, $h = 0.2$), plotted in $[0, 20] \times [0, 1500]$. He asks for the velocity, the position and a plot; we also located the top and the impact.
+
+**Step 1**: Top of the flight and impact (event detection on a DOP853 solution, confirmed by quadrature: $t_{\max} = \int_0^{300} \frac{dv}{32 + 0.005\,v^{3/2}}$ and $y_{\max} = \int_0^{300} \frac{v\,dv}{32 + 0.005\,v^{3/2}}$, then the impact speed $U$ from $\int_0^{U} \frac{u\,du}{32 - 0.005\,u^{3/2}} = y_{\max}$):
+
+$$
+t_{\max} = 7.31383 \text{ s}, \quad y_{\max} = 984.199 \text{ ft}, \quad t_{\text{impact}} = 15.7413 \text{ s}, \quad v(t_{\text{impact}}) = -210.634 \text{ ft/s}.
+$$
+
+The descent time is $8.42746$ s, longer than the ascent. The terminal speed of the descent equation is $(32 \cdot 200)^{2/3} = 344.7$ ft/s.
+
+**Step 2**: Mathews expects the graph to lie between those of Examples 2 and 3, and it does; his comparison plot shows the three curves in $[0, 20] \times [0, 1500]$. On a grid of $200\,001$ points in $0.001 \le t \le 20$, $y_3(t) < y_4(t) < y_2(t)$ at every point. This is not obvious from the drag laws, because the forces are not ordered at every speed: $0.005\,v^{3/2}$ exceeds $v^2/2048$ below $v = 104.86$ ft/s and is less than $0.04\,v$ below $v = 64$ ft/s. Along these trajectories the ordering of the heights still holds throughout.
+
+**Verification:** Mathews' RK4 heights differ from the high-accuracy solution by at most $1.3 \times 10^{-3}$ ft at the grid points while the arrow is in the air, and the two independent locations of $t_{\max}$, $y_{\max}$, $t_{\text{impact}}$ and $v(t_{\text{impact}})$ agree to the digits shown.
+
+### Comparison of the four models
+
+| Model | Ascent time (s) | Max height (ft) | Descent time (s) | Impact time (s) | Impact velocity (ft/s) |
+|---|---|---|---|---|---|
+| (i) no drag | $9.375$ | $1406.25$ | $9.375$ | $18.75$ | $-300$ |
+| (ii) $0.04\,mv$ | $7.96134$ | $1130.93$ | $8.90615$ | $16.8675$ | $-239.760$ |
+| (iii) $mv^2/2048$ | $6.91496$ | $885.020$ | $7.98274$ | $14.8977$ | $-194.736$ |
+| (iv) $0.005\,m\lvert v\rvert^{3/2}$ | $7.31383$ | $984.199$ | $8.42746$ | $15.7413$ | $-210.634$ |
+
+In each of the three models with drag the descent takes longer than the ascent and the arrow lands slower than it was fired. Mathews' comparison plot shows models (i)–(iii) together in $[0, 20] \times [0, 1500]$.
+
+## The trajectory of a baseball
+
+Now the projectile moves in the plane, with horizontal position $x(t)$ and height $y(t)$. Air resistance acts along the velocity $\mathbf{v} = (x', y')$, opposite to it. If its magnitude is $k\lvert\mathbf{v}\rvert^2$ per unit mass, its direction is $-\mathbf{v}/\lvert\mathbf{v}\rvert$ and the force per unit mass is $-k\lvert\mathbf{v}\rvert\,\mathbf{v}$, whose components are
+
+$$
+-k\, x' \sqrt{(x')^2 + (y')^2} \quad\text{and}\quad -k\, y' \sqrt{(x')^2 + (y')^2}.
+$$
+
+::: {.callout-note appearance="simple"}
+## Definition — Planar drag models (Projectile Motion II)
+(v) No air resistance: $\quad x'' = 0, \qquad y'' = -g$.
+
+(vi) Drag proportional to the velocity: $\quad x'' = -k x', \qquad y'' = -k y' - g$.
+
+(vii) Drag proportional to the square of the velocity:
+
+$$
+x'' = -k\, x' \sqrt{(x')^2 + (y')^2}, \qquad y'' = -k\, y' \sqrt{(x')^2 + (y')^2} - g .
+$$
+:::
+
+Models (v) and (vi) separate into one equation for $x$ and one for $y$; model (vii) couples them through the speed.
+
+### Runge–Kutta method for two second-order equations
+
+For $x'' = f(t, x, x', y, y')$, $y'' = f_2(t, x, x', y, y')$ with $x(a) = \alpha$, $x'(a) = \beta$, $y(a) = \gamma$, $y'(a) = \delta$, the state is $\mathbf{Z} = (x, x', y, y')$ and $\mathbf{F}(t, \mathbf{Z}) = \bigl(x',\ f,\ y',\ f_2\bigr)$. The RK4 step is the same formula as in the Description, applied to these four components. Mathews launches the ball from $(0, Y_0)$ with speed $V$ (ft/s) at angle $\theta$ (degrees), so $x'(0) = V\cos\theta$ and $y'(0) = V\sin\theta$. Each case runs from $a = 0$ to a final time $b$ with $n = 100$ steps and prints the final point $(x(b), y(b))$ and the launch speed in miles per hour, $V \cdot 60/88$. His trajectory plots of $y$ against $x$ use Mathematica's automatic plot ranges.
+
+Mathews aims the cases at four long hits that he quotes: Willie Stargell's blasts out of Dodger Stadium of $506.5$ ft (1969) and $470$ ft (1973), which give landing points $(506.5, 0)$ and $(470, 0)$, and two balls that struck high above the field, Mickey Mantle's of May 22, 1963 at $370$ ft from home plate and $115$ ft up, and Dick Allen's of July 6, 1974 at $415$ ft and $85$ ft, which give the points $(370, 115)$ and $(415, 85)$.
+
+### Example 5 — No air resistance
+
+$$
+x''(t) = 0, \qquad y''(t) = -32 .
+$$
+
+The exact solution is $x = V\cos(\theta)\, t$, $y = Y_0 + V\sin(\theta)\, t - 16t^2$. Mathews' five cases and the final points (RK4, $n = 100$):
+
+| Case | $Y_0$ | $V$ (ft/s) | mph | $\theta$ | $b$ | Final point $(x(b), y(b))$ | Highest point $y$ |
+|---|---|---|---|---|---|---|---|
+| 1 | 3 | 127 | 86.59 | $43^\circ$ | 5.447778 | $(506.0,\ 0.0)$ | 120.2 |
+| 2 | 3 | 127 | 86.59 | $47^\circ$ | 5.837241 | $(505.6,\ 0.0)$ | 137.8 |
+| 3 | 3 | 122 | 83.18 | $45^\circ$ | 5.426243 | $(468.1,\ 0.0)$ | 119.3 |
+| 4 | 0 | 128 | 87.27 | $49^\circ$ | 4.4 | $(369.5,\ 115.3)$ | 145.8 |
+| 5 | 0 | 129 | 87.95 | $45^\circ$ | 4.545 | $(414.6,\ 84.1)$ | 130.0 |
+
+In cases 1–3 the time $b$ is the landing time; in cases 4 and 5 the final point is the data point, reached on the way down (the top comes at $t = 3.019$ and $2.851$ s). Cases 1 and 2 both carry the ball to Stargell's $506$ ft. Mathews asks whether those balls would clear the outfield wall: at $x = 400$ ft the ball of case 1 is $79.3$ ft high, and that of case 2 is $90.7$ ft high. (Mathews says "about 94 feet" for case 2; the exact solution gives $90.7$ ft.)
+
+These frictionless fits need launch speeds of only $83$–$88$ mph, while a power hitter is believed to hit the ball at $120$–$136$ mph (Mathews' figures). That is the reason for adding air resistance.
+
+**Verification:** For this model RK4 is exact up to rounding, because the solution is a polynomial of degree two in $t$: each printed final point agrees with the exact solution to within $10^{-12}$ ft. Each landing time $b$ in cases 1–3 is within $2 \times 10^{-6}$ s of the root of $y(t) = 0$ ($5.447780$, $5.837241$, $5.426243$ s).
+
+### Example 6 — Drag proportional to the velocity
+
+$$
+x''(t) = -k\,x'(t), \qquad y''(t) = -k\,y'(t) - 32, \qquad k = 0.25 .
+$$
+
+Mathews remarks that $k = 0.25$ was chosen arbitrarily. The exact solution is
+
+$$
+x(t) = \frac{V\cos\theta}{k}\bigl(1 - e^{-kt}\bigr), \qquad
+y(t) = Y_0 + \frac{1}{k}\left(V\sin\theta + \frac{g}{k}\right)\bigl(1 - e^{-kt}\bigr) - \frac{g}{k}\, t .
+$$
+
+| Case | $Y_0$ | $V$ (ft/s) | mph | $\theta$ | $b$ | Final point $(x(b), y(b))$ | Highest point $y$ |
+|---|---|---|---|---|---|---|---|
+| 1 | 3 | 207 | 141.1 | $42^\circ$ | 6.84889 | $(504.3,\ 0.0)$ | 181.5 |
+| 2 | 3 | 193 | 131.6 | $39^\circ$ | 6.139 | $(470.7,\ 0.0)$ | 147.2 |
+| 3 | 0 | 187 | 127.5 | $44^\circ$ | 4.65 | $(369.8,\ 113.8)$ | 160.9 |
+| 4 | 0 | 192 | 130.9 | $39^\circ$ | 4.75 | $(414.8,\ 83.8)$ | 143.0 |
+
+The four cases come close to Mathews' four data points with launch speeds of $127.5$–$141.1$ mph; three of them lie in the $120$–$136$ mph range he quotes for power hitters, and case 1 lies above it. Drag bends the descent more steeply than the ascent, so the highest point now lies past the middle of the flight: in case 1 at $x = 319.8$ ft of a $504.3$ ft flight. Mathews notes that these trajectories climb higher than those of Example 5; aimed at the same data point, each drag trajectory here peaks higher than the frictionless ones (for Stargell's $506$ ft, $181.5$ ft against $120.2$ and $137.8$ ft).
+
+**Verification:** Each RK4 final point agrees with the exact solution to within $2.4 \times 10^{-7}$ ft. The landing times in cases 1 and 2 are $6.848891$ and $6.139004$ s.
+
+### Example 7 — Drag proportional to the square of the velocity
+
+$$
+x''(t) = -k\, x'(t)\sqrt{(x'(t))^2 + (y'(t))^2}, \qquad
+y''(t) = -k\, y'(t)\sqrt{(x'(t))^2 + (y'(t))^2} - 32, \qquad k = 0.002 .
+$$
+
+Mathews again chooses $k = 0.002$ arbitrarily and fits four cases to the same four data points. He gives no closed-form solution for this coupled system; the RK4 solution is used. As $t \to \infty$ the velocity of a ball in this model tends to $(0, -\sqrt{g/k})$, a terminal speed of $\sqrt{g/k} = 126.5$ ft/s.
+
+The launch values of Mathews' four cases are lost: the archive keeps none of the images of his inputs and outputs for this example. The cases below are therefore our reconstruction, not Mathews' numbers. We keep the launch height and the angle of the matching case of Example 6 and solve, with a root finder, for the launch speed $V$ that puts the trajectory through the data point (on the way down). With Example 6's first launch unchanged ($207$ ft/s at $42^\circ$ from $3$ ft), this model already lands at $x = 506.97$ ft, within half a foot of Stargell's $506.5$ ft.
+
+| Case | $Y_0$ | $\theta$ | $V$ (ft/s) | mph | Reaches the data point at $t$ (s) | Highest point $(x, y)$ | Lands at $x$ |
+|---|---|---|---|---|---|---|---|
+| 1 | 3 | $42^\circ$ | 206.79 | 140.99 | $(506.5, 0)$ at $6.3536$ | $(296.71,\ 165.96)$ | 506.5 |
+| 2 | 3 | $39^\circ$ | 189.67 | 129.32 | $(470, 0)$ at $5.7234$ | $(271.67,\ 134.71)$ | 470.0 |
+| 3 | 0 | $44^\circ$ | 187.84 | 128.07 | $(370, 115)$ at $4.4053$ | $(265.53,\ 153.93)$ | 457.58 |
+| 4 | 0 | $39^\circ$ | 196.32 | 133.85 | $(415, 85)$ at $4.5314$ | $(282.23,\ 137.69)$ | 484.11 |
+
+The speeds are shown to two decimals; the computations use the root finder's values. Running Mathews' RK4 with $n = 100$ on $[0, b]$, $b$ the time in the sixth column, ends at the data point to four decimals in every case. The ball of case 1 lands at only $95.51$ ft/s after leaving the bat at $206.79$ ft/s.
+
+**Verification:** The speeds $V$, the highest points and the landing points were found from a DOP853 solution (relative tolerance $10^{-12}$) and confirmed with an independent Radau solution with event detection, which agrees to the digits shown.
+
+### Example 8 — A model that is not quadratic drag
+
+Mathews contrasts the quadratic drag model of Example 7 with the plausible-looking but wrong system
+
+$$
+x''(t) = -k\,\bigl(x'(t)\bigr)^2, \qquad y''(t) = -k\,\bigl(y'(t)\bigr)^2 - 32, \qquad k = 0.002,
+$$
+
+with the same initial conditions as the first case of Example 7. (Mathews' text introduces it as "the model in Example 3", but the comparison and his concluding sentence refer to Example 7.) As Example 7's inputs are lost, we use our reconstructed case 1: $Y_0 = 3$, $V = 206.79$ ft/s, $\theta = 42^\circ$.
+
+**Step 1**: Compare the two at the time $t = 6.3536$ s at which the quadratic drag ball lands at $(506.5, 0)$. The wrong model's ball is then at $(541.37,\ 30.55)$, still in the air. It peaks at $(348.73,\ 199.73)$ instead of $(296.71,\ 165.96)$ and lands at $x = 553.27$ ft at $t = 6.5850$ s.
+
+**Step 2**: Why it differs. The quadratic drag force per unit mass is $-k\lvert\mathbf{v}\rvert\,\mathbf{v}$, whose components were derived above: the speed $\lvert\mathbf{v}\rvert = \sqrt{(x')^2 + (y')^2}$ multiplies each velocity component. The wrong model replaces $\lvert\mathbf{v}\rvert\, x'$ by $(x')^2$, which equals $\lvert x'\rvert\, x'$ while $x' > 0$, and $\lvert\mathbf{v}\rvert\, y'$ by $(y')^2 = \lvert y'\rvert^2$, which has the wrong sign whenever $y' < 0$. So:
+
+- Its drag is too small: $\lvert x'\rvert$ and $\lvert y'\rvert$ are each at most the speed, so on the way up the ball is slowed less, climbs higher and travels farther.
+- On the way down its vertical "drag" $-k(y')^2$ points down instead of up. The vertical equation is then $y'' = -g - k(y')^2$, the ascent equation of Example 3 used on the descent, whose velocity $-\sqrt{g/k}\,\tan\bigl(\sqrt{gk}\,(t - t_{\text{top}})\bigr)$ would become infinite at $t = 9.491$ s. The ball lands with vertical velocity $-139.89$ ft/s, already faster than the terminal speed $126.5$ ft/s of the correct model, at a total speed of $148.84$ ft/s against $95.51$ ft/s for the correct model.
+
+**Verification:** The wrong model's position at $t = 6.3536$ s from Mathews' RK4 with $n = 100$ agrees with the DOP853 solution to four decimals, and the vertical velocity at landing from the closed form above, $-139.89$ ft/s, agrees with the numerical value.
