@@ -7,24 +7,562 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Galerkin's method finds an approximate solution of a linear differential equation $L[y(x)] + f(x) = 0$ on an interval $[a, b]$, where $L$ is a linear differential operator such as $L[y] = y'' + y$, together with an initial condition or two boundary conditions. Instead of looking for $y$ among all functions, it looks only among the *trial functions*
 
-### Planned animation ideas
+$$
+u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x),
+$$
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+where $\phi_0$ satisfies the initial or boundary conditions and the *basis functions* $\phi_1, \ldots, \phi_n$ satisfy the homogeneous versions of them, so every trial function satisfies the conditions whatever the coefficients $c_j$ are. A trial function cannot usually make the *residual* $r(x) = L[u(x)] + f(x)$ zero everywhere, so Galerkin's method asks for the next best thing: the residual must be orthogonal to every basis function,
 
-## Derivation Notes (Planned)
+$$
+\int_a^b \phi_i(x)\,\bigl(L[u(x)] + f(x)\bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+$$
 
-Short derivations will be added to explain the core equations and assumptions.
+Because $L$ is linear, these are $n$ linear equations $\mathbf{A}\mathbf{c} = \mathbf{B}$ in the $n$ unknown coefficients, with $a_{ij} = \int_a^b \phi_i\,L[\phi_j]\,dx$ and $b_i = -\int_a^b \phi_i\,\bigl(L[\phi_0] + f\bigr)\,dx$. Solving them gives the Galerkin solution $u(x)$. Mathews solves one initial value problem with the polynomial basis $x, x^2, \ldots, x^7$, and four boundary value problems, two with polynomials that vanish at both ends and two with the sine functions $\sin kx$. In every example below the Galerkin solution is compared with the exact solution; the largest errors range from about $5 \times 10^{-9}$ to $1.5 \times 10^{-2}$, depending on how well the chosen basis can represent the exact solution.
 
-## Worked Example (Planned)
+## Inner Products
 
-A compact numerical example with intermediate steps will be included.
+::: {.callout-note appearance="simple"}
+## Definition — Inner product
+Consider the vector space of real functions whose domain is the closed interval $[a, b]$. The *inner product* of two functions $f(x)$ and $g(x)$ is
 
-## Implementation Notes (Planned)
+$$
+\langle f, g \rangle = \int_a^b f(x)\,g(x)\,dx.
+\tag{1}
+$$
+:::
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+The inner product is a continuous, infinite-dimensional analogue of the dot product of linear algebra. If $\langle f, g \rangle = 0$, then $f$ and $g$ are said to be *orthogonal* on $[a, b]$. All the functions used here are assumed to be *square-integrable*, that is, $\langle f, f \rangle = \int_a^b f(x)^2\,dx < \infty$.
+
+### Example 1 (a) — $f(x) = x^2 - 3x + 3$ and $g(x) = 2x^3 + x^2 + 5x - 5$ over $[0, 2]$
+
+**Step 1** (multiply out):
+
+$$
+f(x)\,g(x) = 2x^5 - 5x^4 + 8x^3 - 17x^2 + 30x - 15.
+$$
+
+**Step 2** (antiderivative):
+
+$$
+P(x) = \frac{x^6}{3} - x^5 + 2x^4 - \frac{17x^3}{3} + 15x^2 - 15x.
+$$
+
+**Step 3** (evaluate):
+
+$$
+\boxed{\ \langle f, g \rangle = P(2) - P(0) = 6 - 0 = 6\ }
+$$
+
+**Verification:** a symbolic integration of $f g$ over $[0, 2]$ returns $6$, as in Mathews' output.
+
+### Example 1 (b) — the same $f$ and $g$ over $[-1, 1]$
+
+Over a symmetric interval the odd powers in $f g$ integrate to zero, and only the even part $-5x^4 - 17x^2 - 15$ contributes:
+
+$$
+\boxed{\ \langle f, g \rangle = \int_{-1}^{1} \bigl(-5x^4 - 17x^2 - 15\bigr)\,dx = 2\left(-1 - \frac{17}{3} - 15\right) = -\frac{130}{3} \approx -43.3333\ }
+$$
+
+**Verification:** with $P$ from Example 1 (a), $P(1) - P(-1) = -\tfrac{13}{3} - 39 = -\tfrac{130}{3}$.
+
+::: {.callout-warning appearance="simple"}
+## Mathews' solution uses a different pair
+Mathews states Example 1 (b) with the same $f$ and $g$ as part (a), but his solution notebook integrates a different pair over $[-1, 1]$: $f(x) = 5x^3 - 3x^2 - 3x + 1$ and $g(x) = 35x^4 - 30x^2 + 7x + 3$. That pair is orthogonal: the antiderivative of $f g$ takes the value $-\tfrac58$ at both $x = 1$ and $x = -1$, so $\langle f, g \rangle = 0$, which is his printed answer and agrees with a symbolic integration. For the pair in the problem statement the inner product is $-\tfrac{130}{3}$, as above.
+:::
+
+### Example 1 (c) — $f(x) = \cos x + \sin 2x$ and $g(x) = \sin 2x + \cos 3x$ over $[0, 2\pi]$
+
+Multiplying out gives four products. Over a full period $[0, 2\pi]$, $\int_0^{2\pi} \cos x \sin 2x\,dx$, $\int_0^{2\pi} \cos x \cos 3x\,dx$ and $\int_0^{2\pi} \sin 2x \cos 3x\,dx$ are all $0$, and only the square survives:
+
+$$
+\boxed{\ \langle f, g \rangle = \int_0^{2\pi} \sin^2 2x\,dx = \pi\ }
+$$
+
+**Verification:** a symbolic integration of $f g$ over $[0, 2\pi]$ returns $\pi$, which is Mathews' printed answer. (The step-by-step panel that follows it in his notebook works with $g(x) = \cos 2x + \sin x$ instead, which is orthogonal to $f$ on $[0, 2\pi]$ and gives $0$.)
+
+::: {.callout-tip appearance="simple"}
+## Lemma
+If $f$ is continuous on $[a, b]$ and $\langle w, f \rangle = 0$ for every function $w$, then $f(x) \equiv 0$ on $[a, b]$. (Take $w = f$: then $\int_a^b f(x)^2\,dx = 0$.)
+:::
+
+### Basis for a vector space
+
+A *complete basis* for a vector space $V$ of functions is a set $S = \{\phi_i(x)\}_{i=0}^{\infty}$ of linearly independent functions such that every $f \in V$ can be written uniquely as a linear combination
+
+$$
+f(x) = \sum_{j=0}^{\infty} c_j\,\phi_j(x).
+$$
+
+For example, if $V$ is the set of all polynomials and power series, a complete basis is $S = \{\phi_i(x) = x^i\}_{i=0}^{\infty}$.
+
+::: {.callout-tip appearance="simple"}
+## Property (stated without proof)
+If $f \in V$ and $\langle \phi_i, f \rangle = 0$ for all $\phi_i \in S$, then $f(x) \equiv 0$.
+:::
+
+Mathews mentions the lemma and this property only as background. Together they motivate Galerkin's method: a function orthogonal to *every* basis function is zero, so a residual orthogonal to the *first $n$* basis functions should be small.
+
+## Weighted Residual Methods
+
+A weighted residual method uses a finite set of functions $\{\phi_i(x)\}_{i=0}^{n}$. Consider the differential equation
+
+$$
+L[y(x)] + f(x) = 0 \quad \text{over } a \le x \le b,
+\tag{2}
+$$
+
+where $L[y(x)]$ denotes a linear differential operator. Multiplying (2) by an arbitrary *weight function* $w(x)$ and integrating over $[a, b]$ gives
+
+$$
+\int_a^b w(x)\,\bigl(L[y(x)] + f(x)\bigr)\,dx = 0 \quad \text{for every } w(x).
+\tag{3}
+$$
+
+Equations (2) and (3) are equivalent when $L[y] + f$ is continuous: (2) gives (3) at once, and (3) for every $w$ gives (2) by the lemma above. Now introduce a trial solution of the form
+
+$$
+u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x),
+\tag{4}
+$$
+
+and replace $y(x)$ with $u(x)$ on the left side of (2). The *residual* is
+
+$$
+r(x) = L[u(x)] + f(x).
+\tag{5}
+$$
+
+Unless $y$ happens to be one of the trial functions, $r(x)$ cannot be zero everywhere. The goal is to choose the coefficients so that $u$ satisfies (3) at least for *some* choices of the weight function:
+
+$$
+\int_a^b w(x)\,\bigl(L[u(x)] + f(x)\bigr)\,dx = 0 \quad \text{for some choices of } w(x).
+\tag{6}
+$$
+
+## Galerkin's Method
+
+One of the most important weighted residual methods is due to the Russian mathematician Boris Grigoryevich Galerkin (1871–1945). Galerkin's method takes the weight functions from the basis functions themselves, $w(x) \in \{\phi_i(x)\}_{i=1}^{n}$.
+
+::: {.callout-important appearance="simple"}
+## Galerkin's equations
+Choose the coefficients $c_1, \ldots, c_n$ of the trial solution (4) so that
+
+$$
+\int_a^b \phi_i(x)\,\bigl(L[u(x)] + f(x)\bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+\tag{7}
+$$
+:::
+
+Substituting (4) and using the linearity of $L$ turns (7) into
+
+$$
+\sum_{j=1}^{n} c_j \int_a^b \phi_i(x)\,L[\phi_j(x)]\,dx = -\int_a^b \phi_i(x)\,\bigl(L[\phi_0(x)] + f(x)\bigr)\,dx, \qquad i = 1, \ldots, n,
+$$
+
+which is the linear system
+
+$$
+\mathbf{A}\mathbf{c} = \mathbf{B}, \qquad a_{ij} = \langle \phi_i, L[\phi_j] \rangle, \qquad b_i = -\langle \phi_i, L[\phi_0] + f \rangle.
+\tag{8}
+$$
+
+Mathews obtains the coefficients both ways: he solves the equations (7) directly, and he sets up the matrix $\mathbf{A}$ and the vector $\mathbf{B}$ of (8) and solves $\mathbf{A}\mathbf{c} = \mathbf{B}$. Both give the same coefficients in every example.
+
+### Algorithm
+
+1. Write the equation as $L[y] + f = 0$ and choose $\phi_0$ to satisfy the initial or boundary conditions.
+2. Choose basis functions $\phi_1, \ldots, \phi_n$ that satisfy the homogeneous conditions, so that every trial solution (4) satisfies the original ones.
+3. Form the residual $r(x) = L[u(x)] + f(x)$ of the trial solution.
+4. Compute the integrals in (8) and solve $\mathbf{A}\mathbf{c} = \mathbf{B}$ for $c_1, \ldots, c_n$.
+5. The Galerkin solution is $u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x)$.
+
+::: {.callout-warning appearance="simple"}
+## Conditioning of the Galerkin system
+The system (8) can be *ill conditioned*: its solution can be very sensitive to rounding errors in $\mathbf{A}$ and $\mathbf{B}$. Mathews computes the condition number $\operatorname{cond}(\mathbf{A}) = \lVert \mathbf{A} \rVert\,\lVert \mathbf{A}^{-1} \rVert$ for each example and uses the estimate
+
+$$
+\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim \lVert \mathbf{c} \rVert\,\operatorname{cond}(\mathbf{A})\,\epsilon
+$$
+
+for the error of the computed solution $\hat{\mathbf{c}}$ when the entries of $\mathbf{A}$ and $\mathbf{B}$ are rounded to machine precision $\epsilon = 2^{-52} \approx 2.22 \times 10^{-16}$. In words: the computed coefficients lose about $\log_{10} \operatorname{cond}(\mathbf{A})$ of their sixteen or so decimal digits. This is a first-order estimate of the typical size of the error, not a guaranteed bound. Mathews' condition numbers are in the maximum-row-sum ($\infty$-)norm, and the values quoted on this page are too.
+:::
+
+## Galerkin's Method for an Initial Value Problem
+
+Suppose we wish to solve the initial value problem
+
+$$
+L[y(x)] + f(x) = 0, \qquad y(a) = y_0, \qquad a \le x \le b.
+\tag{9}
+$$
+
+Take $\phi_0(x) = y_0$ and the trial function
+
+$$
+u(x) = y_0 + \sum_{j=1}^{n} c_j\,\phi_j(x),
+\tag{10}
+$$
+
+with basis functions that vanish at the initial point, $\phi_j(a) = 0$, so that $u(a) = y_0$ for every choice of the coefficients. There are $n$ equations to solve for $\{c_i\}_{i=1}^{n}$:
+
+$$
+\int_a^b \phi_i(x)\,\Bigl(L\Bigl[\sum_{j=1}^{n} c_j\,\phi_j(x)\Bigr] + L[y_0] + f(x)\Bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+\tag{11}
+$$
+
+### Example 2 — $y' + 5y - 1 - x + \sin 2x = 0$, $y(0) = 1$, over $[0, 3]$
+
+::: {.callout-warning appearance="simple"}
+## Two versions of Example 2
+Mathews' module states Example 2 as $y' + 2y + 6 + 4x = 0$ with $y(0) = 1$, but his solution notebook solves a different equation, $y' + 5y - 1 - x + \sin 2x = 0$ with $y(0) = 1$ on $[0, 3]$. This page works the equation of the solution, which is the one his numbers belong to, and gives the result for the stated equation at the end of the example.
+:::
+
+**Step 1** (operator and data): $L[y] = y' + 5y$, $f(x) = -1 - x + \sin 2x$, $a = 0$, $b = 3$, $y_0 = 1$.
+
+**Step 2** (basis and trial solution): Mathews takes $n = 7$ and the powers $\phi_i(x) = x^i$, which all vanish at $x = 0$:
+
+$$
+u(x) = 1 + c_1 x + c_2 x^2 + c_3 x^3 + c_4 x^4 + c_5 x^5 + c_6 x^6 + c_7 x^7.
+$$
+
+**Step 3** (residual):
+
+$$
+r(x) = u'(x) + 5u(x) - 1 - x + \sin 2x = 4 - x + \sin 2x + \sum_{j=1}^{7} c_j\,\bigl(j x^{j-1} + 5x^j\bigr).
+$$
+
+**Step 4** (Galerkin system): since $L[\phi_0] = L[1] = 5$, the entries of (8) are
+
+$$
+a_{ij} = \int_0^3 x^i\bigl(j x^{j-1} + 5x^j\bigr)\,dx = \frac{j\,3^{i+j}}{i+j} + \frac{5 \cdot 3^{i+j+1}}{i+j+1}, \qquad
+b_i = -\int_0^3 x^i\,\bigl(4 - x + \sin 2x\bigr)\,dx.
+$$
+
+For example $a_{11} = \tfrac92 + 45 = 49.5$, $a_{77} = \tfrac{14348907}{2} \approx 7.17445 \times 10^6$ and $b_1 = -9 + \tfrac32\cos 6 - \tfrac14\sin 6 \approx -7.48989$. The entries of $\mathbf{A}$ span more than five orders of magnitude, and $\mathbf{A}$ is not symmetric ($a_{12} = \tfrac{477}{4}$, $a_{21} = \tfrac{441}{4}$).
+
+**Step 5** (solve): the solution of the $7 \times 7$ system, computed exactly and rounded to six significant figures, is
+
+$$
+\mathbf{c} = (-3.65784,\ 6.84171,\ -7.37284,\ 4.88613,\ -1.84964,\ 0.363990,\ -0.0289550),
+$$
+
+which agrees with Mathews' printed values. The Galerkin solution is
+
+$$
+\boxed{\ u(x) = 1 - 3.65784\,x + 6.84171\,x^2 - 7.37284\,x^3 + 4.88613\,x^4 - 1.84964\,x^5 + 0.363990\,x^6 - 0.0289550\,x^7\ }
+$$
+
+**Verification:** the exact solution is
+
+$$
+y(x) = \frac{1}{725}\Bigl(116 + 559\,e^{-5x} + 145x + 50\cos 2x - 125\sin 2x\Bigr),
+$$
+
+which satisfies the differential equation and $y(0) = 1$ (checked symbolically). Substituting the exact coefficients back into (7) gives $0$ for all seven integrals.
+
+| $x$ | exact $y(x)$ | Galerkin $u(x)$ | error $y - u$ |
+|-----|--------------|-----------------|---------------|
+| 0 | 1 | 1 | 0 |
+| 0.5 | 0.215471 | 0.212945 | 0.00253 |
+| 1.0 | 0.179720 | 0.182557 | −0.00284 |
+| 1.5 | 0.367820 | 0.365456 | 0.00236 |
+| 2.0 | 0.645439 | 0.647270 | −0.00183 |
+| 2.5 | 0.844898 | 0.843385 | 0.00151 |
+| 3.0 | 0.874394 | 0.874269 | 0.000125 |
+
+On a grid of 6001 points over $[0, 3]$, the error $y - u$ ranges from $-0.0148$ (near $x = 0.11$) to $0.00255$ (near $x = 0.49$), and it changes sign seven times. The Galerkin solution follows the exact one to within about $0.015$.
+
+**Conditioning.** For this system $\operatorname{cond}(\mathbf{A}) \approx 3.31641 \times 10^{11}$ and $\lVert \mathbf{c} \rVert_2 \approx 11.9154$, so Mathews' estimate gives
+
+$$
+\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim (11.9154)(3.31641 \times 10^{11})(2.22045 \times 10^{-16}) \approx 0.000877,
+$$
+
+a loss of about $11.5$ of the sixteen digits. In practice the loss is smaller: solving the system in double precision with NumPy, from $\mathbf{A}$ and $\mathbf{B}$ rounded to double precision, gives coefficients that differ from the exact ones by at most $9.6 \times 10^{-8}$, and the resulting $u(x)$ differs from the exact Galerkin solution by at most $6.6 \times 10^{-10}$ on $[0, 3]$. The rounding errors in the coefficients nearly cancel in $u$.
+
+**The equation as stated.** For $y' + 2y + 6 + 4x = 0$, $y(0) = 1$, the exact solution is $y(x) = -2 - 2x + 3e^{-2x}$. With the same basis $x, \ldots, x^7$ on the same interval $[0, 3]$ (the statement gives no interval), the Galerkin coefficients are $\mathbf{c} \approx (-7.97678,\ 5.85485,\ -3.63230,\ 1.50569,\ -0.403588,\ 0.0627804,\ -0.00427078)$, the largest error on a 6001-point grid is $0.00125$ near $x = 0.13$, and $\operatorname{cond}(\mathbf{A}) \approx 2.45 \times 10^{11}$.
+
+## Galerkin's Method for a Boundary Value Problem
+
+Suppose we wish to solve a boundary value problem over $[a, b]$:
+
+$$
+L[y(x)] + f(x) = 0, \qquad y(a) = z_a, \quad y(b) = z_b.
+\tag{12}
+$$
+
+Define $\phi_0$ as the straight line between the boundary points,
+
+$$
+\phi_0(x) = z_a + (z_b - z_a)\,\frac{x - a}{b - a},
+\tag{13}
+$$
+
+and use the trial function
+
+$$
+u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x).
+\tag{14}
+$$
+
+The basis functions must all vanish at both ends,
+
+$$
+\phi_i(a) = 0 \quad \text{and} \quad \phi_i(b) = 0, \qquad i = 1, 2, \ldots, n,
+$$
+
+so that $u(a) = z_a$ and $u(b) = z_b$ for every choice of the coefficients. There are $n$ equations to solve for $\{c_i\}_{i=1}^{n}$:
+
+$$
+\int_a^b \phi_i(x)\,\Bigl(L\Bigl[\sum_{j=1}^{n} c_j\,\phi_j(x)\Bigr] + L[\phi_0(x)] + f(x)\Bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+\tag{15}
+$$
+
+For an operator $L[y] = y'' + q\,y$ with a constant $q$, as in Examples 3 and 4, integrating by parts and using $\phi_i(a) = \phi_i(b) = 0$ gives $a_{ij} = \int_a^b \bigl(q\,\phi_i \phi_j - \phi_i' \phi_j'\bigr)\,dx$, so the matrix $\mathbf{A}$ is symmetric in those examples.
+
+### Example 3 (a) — $y'' + y + 2x(1 - x) = 0$, $y(0) = 0$, $y(1) = 0$
+
+**Step 1** (operator and data): $L[y] = y'' + y$, $f(x) = 2x(1 - x)$, $[a, b] = [0, 1]$, $z_a = z_b = 0$, so $\phi_0(x) = 0$.
+
+**Step 2** (basis and trial solution): $n = 3$, with $\phi_1 = x(x - 1)$, $\phi_2 = x^2(x - 1)^2$, $\phi_3 = x^3(x - 1)^3$:
+
+$$
+u(x) = c_1\,x(x - 1) + c_2\,x^2(x - 1)^2 + c_3\,x^3(x - 1)^3.
+$$
+
+**Step 3** (Galerkin system): the integrals (15) give
+
+$$
+\begin{pmatrix} -\tfrac{3}{10} & \tfrac{5}{84} & -\tfrac{4}{315} \\[1mm] \tfrac{5}{84} & -\tfrac{11}{630} & \tfrac{61}{13860} \\[1mm] -\tfrac{4}{315} & \tfrac{61}{13860} & -\tfrac{73}{60060} \end{pmatrix}
+\begin{pmatrix} c_1 \\ c_2 \\ c_3 \end{pmatrix}
+=
+\begin{pmatrix} \tfrac{1}{15} \\[1mm] -\tfrac{1}{70} \\[1mm] \tfrac{1}{315} \end{pmatrix}.
+$$
+
+**Step 4** (solve):
+
+$$
+c_1 = -\frac{1370}{7397} \approx -0.185210, \qquad c_2 = \frac{50688}{273689} \approx 0.185203, \qquad c_3 = -\frac{132}{21053} \approx -0.00626989.
+$$
+
+These are Mathews' values. The Galerkin solution is
+
+$$
+\boxed{\ u(x) = -\frac{1370}{7397}\,x(x - 1) + \frac{50688}{273689}\,x^2(x - 1)^2 - \frac{132}{21053}\,x^3(x - 1)^3\ }
+$$
+
+**Verification:** the exact solution is
+
+$$
+y(x) = 2\Bigl(-2 - x + x^2 + 2\cos x + 2\sin x\,\tan\tfrac12\Bigr),
+$$
+
+which satisfies the equation and both boundary conditions (checked symbolically).
+
+| $x$ | exact $y(x)$ | Galerkin $u(x)$ | error $y - u$ |
+|-----|--------------|-----------------|---------------|
+| 0 | 0 | 0 | 0 |
+| 0.25 | 0.0412792826 | 0.0412792861 | $-3.47 \times 10^{-9}$ |
+| 0.5 | 0.0579757093 | 0.0579757042 | $5.12 \times 10^{-9}$ |
+| 0.75 | 0.0412792826 | 0.0412792861 | $-3.47 \times 10^{-9}$ |
+| 1 | 0 | 0 | 0 |
+
+On a 6001-point grid the error lies between $-4.89 \times 10^{-9}$ (near $x = 0.30$ and $x = 0.70$) and $5.12 \times 10^{-9}$ (at $x = 0.5$). With only three coefficients the Galerkin solution is accurate to about eight decimal places.
+
+**Conditioning:** $\operatorname{cond}(\mathbf{A}) \approx 9841.63$ and $\lVert \mathbf{c} \rVert_2 \approx 0.261997$, so the estimate is $\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim 5.73 \times 10^{-13}$, a loss of about $4$ digits.
+
+### Example 3 (b) — the same equation with $y(0) = 0$, $y(1) = \tfrac12$
+
+**Step 1** (data): the line through $(0, 0)$ and $(1, \tfrac12)$ is $\phi_0(x) = \tfrac{x}{2}$, and $L[\phi_0] = \tfrac{x}{2}$.
+
+**Step 2** (basis): Mathews takes $n = 5$, with
+
+$$
+\phi_1 = x(x - 1),\quad \phi_2 = x^2(x - 1)^2,\quad \phi_3 = x^2(x - 1)^3,\quad \phi_4 = x^3(x - 1)^3,\quad \phi_5 = x^4(x - 1)^3,
+$$
+
+and $u(x) = \tfrac{x}{2} + \sum_{j=1}^{5} c_j\,\phi_j(x)$.
+
+**Step 3** (Galerkin system):
+
+$$
+\begin{pmatrix}
+-\tfrac{3}{10} & \tfrac{5}{84} & -\tfrac{5}{168} & -\tfrac{4}{315} & -\tfrac{2}{315} \\[1mm]
+\tfrac{5}{84} & -\tfrac{11}{630} & \tfrac{11}{1260} & \tfrac{61}{13860} & \tfrac{61}{27720} \\[1mm]
+-\tfrac{5}{168} & \tfrac{11}{1260} & -\tfrac{41}{6930} & -\tfrac{61}{27720} & -\tfrac{47}{60060} \\[1mm]
+-\tfrac{4}{315} & \tfrac{61}{13860} & -\tfrac{61}{27720} & -\tfrac{73}{60060} & -\tfrac{73}{120120} \\[1mm]
+-\tfrac{2}{315} & \tfrac{61}{27720} & -\tfrac{47}{60060} & -\tfrac{73}{120120} & -\tfrac{17}{45045}
+\end{pmatrix}
+\begin{pmatrix} c_1 \\ c_2 \\ c_3 \\ c_4 \\ c_5 \end{pmatrix}
+=
+\begin{pmatrix} \tfrac{13}{120} \\[1mm] -\tfrac{19}{840} \\[1mm] \tfrac{3}{280} \\[1mm] \tfrac{5}{1008} \\[1mm] \tfrac{13}{5040} \end{pmatrix}.
+$$
+
+**Step 4** (solve):
+
+$$
+\begin{aligned}
+c_1 &= -\tfrac{9521}{29588} \approx -0.321786, & c_2 &= \tfrac{4950923615}{7458572628} \approx 0.663790, & c_3 &= \tfrac{12727}{13626} \approx 0.934023, \\
+c_4 &= -\tfrac{774530317}{573736356} \approx -1.34998, & c_5 &= \tfrac{18304}{6813} \approx 2.68663, &&
+\end{aligned}
+$$
+
+which agree with Mathews' values. The Galerkin solution is
+
+$$
+\boxed{\ u(x) = \frac{x}{2} - 0.321786\,\phi_1 + 0.663790\,\phi_2 + 0.934023\,\phi_3 - 1.34998\,\phi_4 + 2.68663\,\phi_5\ }
+$$
+
+**Verification:** the exact solution is
+
+$$
+y(x) = -4 - 2x + 2x^2 + 4\cos x - 4\cot(1)\sin x + \tfrac92\csc(1)\sin x,
+$$
+
+which satisfies the equation, $y(0) = 0$ and $y(1) = \tfrac12$ (checked symbolically).
+
+| $x$ | exact $y(x)$ | Galerkin $u(x)$ | error $y - u$ |
+|-----|--------------|-----------------|---------------|
+| 0 | 0 | 0 | 0 |
+| 0.25 | 0.188286 | 0.188515 | $-2.29 \times 10^{-4}$ |
+| 0.5 | 0.342849 | 0.342849 | $5.4 \times 10^{-9}$ |
+| 0.75 | 0.446307 | 0.446079 | $2.29 \times 10^{-4}$ |
+| 1 | 0.5 | 0.5 | 0 |
+
+On a 6001-point grid the error reaches $-0.00101$ near $x = 0.06$ and $+0.00101$ near $x = 0.94$. That is about $2 \times 10^5$ times the error of part (a), with two more basis functions.
+
+::: {.callout-warning appearance="simple"}
+## Why part (b) is less accurate: the basis
+Every one of Mathews' five basis functions has the form $x(x - 1)\,p(x)$ with $p(0) = p(1)$ (the factors $p$ are $1$, $x(x-1)$, $x(x-1)^2$, $x^2(x-1)^2$ and $x^3(x-1)^2$). The derivative of $x(x-1)p(x)$ is $-p(0)$ at $x = 0$ and $p(1)$ at $x = 1$, so every trial function satisfies $u'(0) + u'(1) = 2\,\phi_0' = 1$. The exact solution has $y'(0) + y'(1) \approx 0.915244$, so no choice of the coefficients can reproduce it. In part (a) the same restriction does no harm: there $\phi_0 = 0$ and the exact solution, which is symmetric about $x = \tfrac12$, has $y'(0) + y'(1) = 0$. With the five functions $x^i(x - 1)$, $i = 1, \ldots, 5$ (all polynomials of degree at most $6$ that vanish at $0$ and $1$) in place of Mathews' basis, the largest error on the same grid falls to $2.07 \times 10^{-8}$.
+:::
+
+**Conditioning:** $\operatorname{cond}(\mathbf{A}) \approx 87277.4$ and $\lVert \mathbf{c} \rVert_2 \approx 3.23372$, so the estimate is $\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim 6.27 \times 10^{-11}$, a loss of about $5$ digits.
+
+### Example 4 (a) — $y'' + 2y + 2x(x - \pi) = 0$, $y(0) = 0$, $y(\pi) = 0$
+
+**Step 1** (operator and data): $L[y] = y'' + 2y$, $f(x) = 2x(x - \pi)$, $[a, b] = [0, \pi]$, $\phi_0(x) = 0$.
+
+**Step 2** (basis): Mathews takes $n = 3$ and the odd sines $\phi_1 = \sin x$, $\phi_2 = \sin 3x$, $\phi_3 = \sin 5x$, which vanish at $0$ and $\pi$:
+
+$$
+u(x) = c_1 \sin x + c_2 \sin 3x + c_3 \sin 5x.
+$$
+
+**Step 3** (Galerkin system): since $L[\sin kx] = (2 - k^2)\sin kx$ and the functions $\sin kx$ are orthogonal on $[0, \pi]$ with $\int_0^\pi \sin^2 kx\,dx = \tfrac{\pi}{2}$, the matrix is diagonal, $a_{kk} = (2 - k^2)\tfrac{\pi}{2}$. The right-hand side is $b_k = -\int_0^\pi \sin kx \cdot 2x(x - \pi)\,dx = \tfrac{8}{k^3}$ for odd $k$, and the equations are
+
+$$
+\frac{\pi}{2}\,c_1 = 8, \qquad -\frac{7\pi}{2}\,c_2 = \frac{8}{27}, \qquad -\frac{23\pi}{2}\,c_3 = \frac{8}{125}.
+$$
+
+**Step 4** (solve):
+
+$$
+c_1 = \frac{16}{\pi} \approx 5.09296, \qquad c_2 = -\frac{16}{189\pi} \approx -0.0269469, \qquad c_3 = -\frac{16}{2875\pi} \approx -0.00177146,
+$$
+
+so
+
+$$
+\boxed{\ u(x) = \frac{16\sin x}{\pi} - \frac{16\sin 3x}{189\pi} - \frac{16\sin 5x}{2875\pi}\ }
+$$
+
+These agree with Mathews' values. For even $k$ the right-hand side $b_k$ is $0$ (the forcing $2x(x - \pi)$ is symmetric about $x = \tfrac{\pi}{2}$ and $\sin kx$ is antisymmetric about it), so adding $\sin 2x$ and $\sin 4x$ to the basis would give them zero coefficients; that is why Mathews skips them.
+
+**Verification:** the exact solution is
+
+$$
+y(x) = 1 + \pi x - x^2 - \cos\bigl(\sqrt2\,x\bigr) - \sin\bigl(\sqrt2\,x\bigr)\tan\frac{\pi}{\sqrt2},
+$$
+
+which satisfies the equation (checked symbolically) and both boundary conditions (checked to 40 digits).
+
+| $x$ | exact $y(x)$ | Galerkin $u(x)$ | error $y - u$ |
+|-----|--------------|-----------------|---------------|
+| 0 | 0 | 0 | 0 |
+| $\pi/4$ | 3.583613 | 3.583464 | $1.50 \times 10^{-4}$ |
+| $\pi/2$ | 5.118384 | 5.118134 | $2.50 \times 10^{-4}$ |
+| $3\pi/4$ | 3.583613 | 3.583464 | $1.50 \times 10^{-4}$ |
+| $\pi$ | 0 | 0 | 0 |
+
+On a 20001-point grid the error lies between $-4.29 \times 10^{-4}$ (near $x = 0.19$) and $3.24 \times 10^{-4}$ (near $x = 0.62$), small beside the size of the solution, whose maximum is $y(\pi/2) \approx 5.118$. The matrix is diagonal, so $\operatorname{cond}(\mathbf{A}) = \tfrac{23\pi/2}{\pi/2} = 23$: this system is well conditioned.
+
+::: {.callout-tip appearance="simple"}
+## Sine basis: Galerkin coefficients are Fourier coefficients
+In Example 4 the basis functions are eigenfunctions of $L$ with the same boundary conditions: for any $v$ with $v(0) = v(\pi) = 0$, integrating by parts twice gives $\langle \sin kx, L[v] \rangle = (2 - k^2)\langle \sin kx, v \rangle$. Applying this to $v = y - \phi_0$ turns Galerkin's equation for $c_k$ into $(2 - k^2)\tfrac{\pi}{2}\,c_k = (2 - k^2)\langle \sin kx, y - \phi_0 \rangle$, so
+
+$$
+c_k = \frac{2}{\pi}\int_0^\pi \bigl(y(x) - \phi_0(x)\bigr)\sin kx\,dx,
+$$
+
+the Fourier sine coefficient of $y - \phi_0$ (this needs $2 - k^2 \ne 0$, which holds for every integer $k$). The Galerkin solution is the truncated Fourier sine series of the exact solution, plus $\phi_0$. Numerical quadrature of the exact solutions of Examples 4 (a) and 4 (b) reproduces every coefficient on this page to ten significant figures.
+:::
+
+### Example 4 (b) — the same equation with $y(0) = 0$, $y(\pi) = 1$
+
+**Step 1** (data): $\phi_0(x) = \tfrac{x}{\pi}$, and $L[\phi_0] = \tfrac{2x}{\pi}$.
+
+**Step 2** (basis): Mathews now uses all seven sines $\phi_k = \sin kx$, $k = 1, \ldots, 7$, odd and even (the even ones get nonzero coefficients here, see Step 3):
+
+$$
+u(x) = \frac{x}{\pi} + \sum_{k=1}^{7} c_k \sin kx.
+$$
+
+**Step 3** (Galerkin system): $\mathbf{A}$ is again diagonal with $a_{kk} = (2 - k^2)\tfrac{\pi}{2}$, and
+
+$$
+b_k = -\int_0^\pi \sin kx\,\Bigl(\frac{2x}{\pi} + 2x(x - \pi)\Bigr)\,dx = \frac{2(-1)^k}{k} + \begin{cases} \dfrac{8}{k^3}, & k \text{ odd}, \\[1mm] 0, & k \text{ even}, \end{cases}
+$$
+
+so $\mathbf{B} = \bigl(6,\ 1,\ -\tfrac{10}{27},\ \tfrac12,\ -\tfrac{42}{125},\ \tfrac13,\ -\tfrac{90}{343}\bigr)$.
+
+**Step 4** (solve), $c_k = b_k / a_{kk}$:
+
+| $k$ | $a_{kk}$ | $b_k$ | $c_k$ | $c_k$ (decimal) |
+|-----|----------|-------|-------|-----------------|
+| 1 | $\pi/2$ | $6$ | $12/\pi$ | $3.81972$ |
+| 2 | $-\pi$ | $1$ | $-1/\pi$ | $-0.318310$ |
+| 3 | $-7\pi/2$ | $-10/27$ | $20/(189\pi)$ | $0.0336836$ |
+| 4 | $-7\pi$ | $1/2$ | $-1/(14\pi)$ | $-0.0227364$ |
+| 5 | $-23\pi/2$ | $-42/125$ | $84/(2875\pi)$ | $0.00930018$ |
+| 6 | $-17\pi$ | $1/3$ | $-1/(51\pi)$ | $-0.00624137$ |
+| 7 | $-47\pi/2$ | $-90/343$ | $180/(16121\pi)$ | $0.00355411$ |
+
+These agree with Mathews' values, and the Galerkin solution is
+
+$$
+\boxed{\ u(x) = \frac{x}{\pi} + \frac{12\sin x}{\pi} - \frac{\sin 2x}{\pi} + \frac{20\sin 3x}{189\pi} - \frac{\sin 4x}{14\pi} + \frac{84\sin 5x}{2875\pi} - \frac{\sin 6x}{51\pi} + \frac{180\sin 7x}{16121\pi}\ }
+$$
+
+**Verification:** the exact solution is
+
+$$
+y(x) = 1 + \pi x - x^2 - \cos\bigl(\sqrt2\,x\bigr) + \cot\bigl(\sqrt2\,\pi\bigr)\sin\bigl(\sqrt2\,x\bigr),
+$$
+
+which satisfies the equation (checked symbolically), $y(0) = 0$ and $y(\pi) = 1$ (checked to 40 digits).
+
+| $x$ | exact $y(x)$ | Galerkin $u(x)$ | error $y - u$ |
+|-----|--------------|-----------------|---------------|
+| 0 | 0 | 0 | 0 |
+| $\pi/4$ | 2.654039 | 2.653609 | $4.30 \times 10^{-4}$ |
+| $\pi/2$ | 4.292892 | 4.291781 | $1.11 \times 10^{-3}$ |
+| $3\pi/4$ | 3.780125 | 3.777746 | $2.38 \times 10^{-3}$ |
+| $\pi$ | 1 | 1 | 0 |
+
+On a 20001-point grid the error lies between $-0.00477$ (near $x = 2.67$) and $0.00870$ (near $x = 3.02$, close to the right end). Even with seven sines the error is about $20$ times that of part (a) with three. The condition number of the diagonal matrix is $\tfrac{47\pi/2}{\pi/2} = 47$.
+
+## Summary of the Examples
+
+| Example | Basis | $n$ | $\operatorname{cond}(\mathbf{A})$ | largest $\lvert y - u \rvert$ |
+|---------|-------|-----|-----------------------------------|-------------------------------|
+| 2, IVP on $[0, 3]$ | $x^i$ | 7 | $3.32 \times 10^{11}$ | $0.0148$ |
+| 3 (a), BVP on $[0, 1]$ | $x^i(x - 1)^i$ | 3 | $9.84 \times 10^{3}$ | $5.12 \times 10^{-9}$ |
+| 3 (b), BVP on $[0, 1]$ | Mathews' five polynomials | 5 | $8.73 \times 10^{4}$ | $1.01 \times 10^{-3}$ |
+| 4 (a), BVP on $[0, \pi]$ | $\sin x, \sin 3x, \sin 5x$ | 3 | $23$ | $4.29 \times 10^{-4}$ |
+| 4 (b), BVP on $[0, \pi]$ | $\sin kx$, $k = 1, \ldots, 7$ | 7 | $47$ | $8.70 \times 10^{-3}$ |
+
+The condition numbers are in the $\infty$-norm, as Mathews computes them, and the largest errors are taken over a grid of 6001 points ($[0, 3]$ and $[0, 1]$) or 20001 points ($[0, \pi]$).
