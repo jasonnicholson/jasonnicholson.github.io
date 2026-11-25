@@ -1,9 +1,9 @@
 ---
 title: "Lorenz Attractor"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -17,13 +17,45 @@ $$
 
 With Lorenz's parameter values $\sigma = 10$, $r = 28$, $b = 8/3$ a typical solution does not settle down to a steady state or a periodic motion. It winds around two unstable equilibrium points, switching from one to the other at irregular times, and two solutions that start close together separate, on average, exponentially fast. The set the solutions are drawn to is the *Lorenz attractor*, a famous example of a strange attractor and of chaos.
 
-No formula gives the solution, so it is computed numerically. Mathews solves the initial value problem $\mathbf{Z}' = \mathbf{F}(t, \mathbf{Z})$, $\mathbf{Z}(t_0) = \mathbf{Z}_0$, with $\mathbf{Z} = (x, y, z)$, with the classical fourth-order [Runge-Kutta method](runge-kutta-method/) applied to the whole vector at once, with a fixed step $h$:
+No formula gives the solution, so it is computed numerically. Mathews solves the initial value problem $\mathbf{Z}' = \mathbf{F}(t, \mathbf{Z})$, $\mathbf{Z}(t_0) = \mathbf{Z}_0$, with $\mathbf{Z} = (x, y, z)$, with the classical fourth-order [Runge-Kutta method](../runge-kutta-method/) applied to the whole vector at once, with a fixed step $h$:
 
 $$
 \mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr),
 $$
 
 and also with Mathematica's adaptive solver over a longer interval. The same tools then draw the Rössler attractor, a simpler-looking system with only one nonlinear term. Because these solutions are chaotic, every computed trajectory on this page was checked against an independent high-accuracy solution (for the chaotic runs, a high-order Taylor series method in 50-digit arithmetic), and the page reports how long each numerical solution stays close to the true one.
+
+## Animations
+
+Each animation below traces solutions of these systems **in three dimensions or in a projection**, beside their **coordinate functions against time** and, for the Lorenz system, the **distance between two solutions on a log scale**. Because the motion is chaotic, a numerical path is not drawn as if it were the solution. Cases 1 and 3 draw the Runge-Kutta path (5) that Mathews computes (orange) over the true solution (navy) and report the distance between them; Case 2 draws two true solutions. Each "true solution" is a reference computed in the script itself by a Taylor series method of order $30$ with step $0.01$ in $200$-bit (about $60$-digit) arithmetic; it agrees with the independent references used in the examples below to within $2.2 \times 10^{-14}$ over $0 \le t \le 50$. The last frame of each animation is held for three seconds.
+
+Mathews' module links no animation, and his animation archive has none for the Lorenz or Rössler systems, so all three animations are new, with no Mathews original. Their equations and starting values are those of Examples 1, 2, 5 and 6, with Mathews' "about 1000" Runge-Kutta steps; the intervals are this page's choice, since Mathews' were lost. Not animated are Examples 3 and 4 at $r = 470/19$, whose starting values are lost (their tables describe the runs from this page's starts A and B); the adaptive `NDSolve` runs of Example 2, which leave the true solution part way through the interval (Case 2 shows why, with true solutions on that interval instead); and some of Mathews' graphs of the solutions that are animated: the projections on the coordinate planes in Examples 1, 5 and 6, $y(t)$ in those three examples, $z(t)$ in Example 1, and the 3-D curve of Example 2.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 1: Runge-Kutta path against the true solution, $r = 28$, $\mathbf{Z}_0 = (10, -10, 20)$, $m = 1000$, $h = 0.02$ on $[0, 20]$
+
+**Behavior:** Five Runge-Kutta steps are drawn per frame. At first the orange path and the navy true solution lie on top of each other, winding around $C_+$ and $C_-$ in turn. The distance between them, checked at every step, first exceeds $0.01$ at $t = 1.72$ (purple dot) and does not grow steadily: it is $0.164$ at $t = 2$ and $0.0394$ at $t = 5$. It first exceeds $1$ at $t = 6.86$ (red dot), and from then on it stays above $1$, reaching $44.2$ at $t = 15.90$: the two curves now visibly separate in the 3-D view and in $x(t)$. The Runge-Kutta path keeps winding around the same two equilibria, inside the box of the true solution, but along a different path. It changes the sign of $x$ $10$ times instead of $12$ and ends at $\mathbf{Z}_{1000} = (3.613, 3.758, 20.98)$, a distance $8.24$ from the true value $(5.666, 1.866, 28.74)$.
+
+[Julia source](lorenzaa.jl)
+
+![Runge-Kutta path of the Lorenz system with σ = 10, r = 28, b = 8/3 from (10, −10, 20), with m = 1000 steps of h = 0.02 on [0, 20], traced in orange in 3-D over the navy true solution, around the equilibria C₊ and C₋, with x(t) of both and the distance between them on a log scale; the distance first exceeds 0.01 at t = 1.72 and 1 at t = 6.86, after which the two curves separate, and at t = 20 the Runge-Kutta point (3.613, 3.758, 20.98) is 8.24 from the true point (5.666, 1.866, 28.74)](lorenzaa.gif)
+
+### Case 2 — Example 2's interval $[0, 50]$: true solutions from $(10, -10, 20)$ and $(10 + 10^{-10}, -10, 20)$
+
+**Behavior:** Both solutions are computed in $60$-digit arithmetic, so what separates them is the change of $10^{-10}$ in $x(0)$, not numerical error. The left panel is the projection on the $xy$-plane and the top right panel $x(t)$, the graphs Mathews draws in Example 2; the last $1.5$ time units are bold. The distance between the solutions grows roughly like $10^{-10} e^{0.90\,t}$ (dashed line), where $0.90$ is the largest Lyapunov exponent found in Example 1, though not steadily (a least-squares fit of $\ln(\text{distance})$ on $2 \le t \le 24.97$ has slope $0.853$). It first exceeds $10^{-6}$ at $t = 7.09$, $10^{-2}$ at $t = 18.93$ and $1$ at $t = 24.97$ (red dot), when the two $x(t)$ curves begin to part. From then on it stays between $0.49$ and $45.35$, the size of the attractor, and the two solutions wind around $C_+$ and $C_-$ in the same region but at different times: on $[0, 50]$ the solution from $(10, -10, 20)$ changes the sign of $x$ $28$ times and the other $31$ times, and at $t = 50$ they are at $(2.067, 3.591, 19.02)$ and $(-8.053, -1.247, 33.64)$. An initial error of $10^{-10}$, far below anything a plot can show, is all it takes to lose the solution halfway through Example 2's interval.
+
+[Julia source](lorenzbb.jl)
+
+![Two true solutions of the Lorenz system with σ = 10, r = 28, b = 8/3 on [0, 50], from (10, −10, 20) in navy and from (10 + 10⁻¹⁰, −10, 20) in red, traced in the xy-plane with the last 1.5 time units in bold, with x(t) of both and the distance between them on a log scale against the line 10⁻¹⁰ e^(0.90 t); the distance first exceeds 1 at t = 24.97, after which the two x(t) curves differ](lorenzbb.gif)
+
+### Case 3 — Examples 5 and 6: Rössler attractors, $(a, b, c) = (0.2, 0.2, 5.7)$ and $(0.343, 1.82, 9.75)$, $\mathbf{Z}_0 = (9, 0, 1)$, $m = 1000$, $h = 0.05$ on $[0, 50]$
+
+**Behavior:** The two Runge-Kutta solutions are traced together, five steps per frame, Example 5 on the left and Example 6 on the right. Each spirals outward around the $z$-axis close to the $xy$-plane, and each spike of $z$ above $5$ comes about $0.3$ to $0.6$ time units after $x$ reaches a maximum above $c$. Example 5 has four such spikes on $[0, 50]$, the tallest $23.65$ at $t = 6.26$. Example 6 has eight; the four tallest, from $51.77$ to $65.95$, make its attractor much taller. The largest distance so far between the orange Runge-Kutta path and the navy true solution is printed in each title: it ends at $0.057$ for Example 5 and $0.47$ for Example 6, whose distance first exceeds $0.1$ at $t = 26.50$. Unlike the Lorenz runs, these paths stay close to the true solutions over the whole interval.
+
+[Julia source](lorenzcc.jl)
+
+![Runge-Kutta paths of the Rössler system x′ = −(y + z), y′ = x + a y, z′ = b + x z − c z from (9, 0, 1) with m = 1000 steps of h = 0.05 on [0, 50], for Example 5 (a = b = 0.2, c = 5.7, left) and Example 6 (a = 0.343, b = 1.82, c = 9.75, right), traced in orange in 3-D over the navy true solution, with x(t) and z(t) below; each spirals outward near the xy-plane and spikes in z, up to 23.65 in Example 5 and 65.95 in Example 6, and the largest distance from the true solution is 0.057 and 0.47](lorenzcc.gif)
 
 ## The Lorenz Equations
 
