@@ -1,15 +1,15 @@
 ---
 title: "Powell's Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
 ## Description
 
-Powell's method looks for a local minimum of a function $f(\mathbf{X})$ of $n$ variables, $\mathbf{X} = (x_1, \ldots, x_n)$, using only values of $f$: no derivatives are needed. It is built from *line searches*. From a point $\mathbf{P}$ in the direction $\mathbf{U}$, the function $\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U})$ depends on the single variable $\gamma$, and can be minimised with a one-variable method such as the [golden ratio search](golden-ratio-search/) or the [Fibonacci search](fibonacci-search/). The simplest scheme, which Mathews calls the *taxi-cab method*, searches along the $n$ coordinate directions in turn, over and over. Its path is a staircase of segments parallel to the axes, and it can be slow when the level curves of $f$ are tilted, elongated ellipses.
+Powell's method looks for a local minimum of a function $f(\mathbf{X})$ of $n$ variables, $\mathbf{X} = (x_1, \ldots, x_n)$, using only values of $f$: no derivatives are needed. It is built from *line searches*. From a point $\mathbf{P}$ in the direction $\mathbf{U}$, the function $\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U})$ depends on the single variable $\gamma$, and can be minimised with a one-variable method such as the [golden ratio search](../golden-ratio-search/) or the [Fibonacci search](../fibonacci-search/). The simplest scheme, which Mathews calls the *taxi-cab method*, searches along the $n$ coordinate directions in turn, over and over. Its path is a staircase of segments parallel to the axes, and it can be slow when the level curves of $f$ are tilted, elongated ellipses.
 
 Powell's method adds two steps to each sweep. After the $n$ line searches have taken the point $\mathbf{P}_0$ to $\mathbf{P}_n$, the "average direction" of the sweep, $\mathbf{P}_n - \mathbf{P}_0$, replaces the oldest search direction, and one more line search is made along it:
 
@@ -22,6 +22,38 @@ $$
 where each $\gamma_k$ and $\gamma$ minimises $f$ along its line. Instead of a zig-zag, each iteration follows a "dog-leg" path. On a quadratic function with a positive definite Hessian and exact line searches, the directions this produces are *conjugate*, and the minimum of a two-variable quadratic is reached exactly within two iterations (Example 3), where the taxi-cab method only creeps towards it (Example 1).
 
 Mathews does every line search with Mathematica's `FindMinimum`, started at $\gamma = 0$. In the runs below, every line search has been recomputed in 60-digit arithmetic and taken to the local minimum of $\varphi$ that is reached by going downhill from $\gamma = 0$. Mathews' printed points in Examples 1–6 differ from these by at most $6 \times 10^{-8}$ in any coordinate.
+
+## Animations
+
+Each animation below shows the **path of the line searches on a contour plot** of $f$, one line search per frame. The left panel is a fixed window. It has cyan contours of $f$, the dashed line along which the current search runs, and the segment from where each search starts to where it stops: magenta for the searches of a sweep, orange for Powell's dog-leg search along $\mathbf{P}_n - \mathbf{P}_0$. Red dots mark the points found so far, and blue contours of $f$ pass through them (in Case 3, through the current point only). The right panel is new. It zooms on the current line search, so that searches far too small for the left panel stay visible. Its axes are offsets from the minimum, multiplied by the power of ten in the axis label, and its cyan contours are spread to fill each window. A hollow circle marks where the search starts and a red dot where it stops. The blue contour through the new point touches the dashed search line there, because at the minimum along a line the gradient is perpendicular to the line (formula (1) below); at the exact minimum $(3, 2)$ in the last frame of Case 2 that contour shrinks to a point and is not drawn. The title gives the step $\gamma$ and the new point. As in the worked examples, every line search goes to the first local minimum of $\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U})$ reached by going downhill from $\gamma = 0$. In Cases 1 and 2, $\varphi$ is a parabola and the scripts compute its vertex exactly, in rational arithmetic. In Case 3 the script steps downhill from $\gamma = 0$, doubling the step until $\varphi$ rises, and finish with a golden ratio search, in 256-bit arithmetic.
+
+Mathews' module links two animations, Animation 1 from his Example 7 and Animation 2 from his Example 8, but both archived animation pages show only an "Under Construction" banner and no animation, so it is not known whether he ever made them. Cases 1 and 2 rebuild them from the plotting programs of Examples 7 and 8, which survive (see [Mathews' Graphical Runs](#mathews-graphical-runs-examples-7-and-8) below): the same function, starting point, window $[2.5, 3.05] \times [1.6, 2.15]$, cyan contour levels, colours and seven points. One thing is drawn differently. Mathews joins the points with one polygon, so his dog-leg segment runs from $\mathbf{P}_2$ to $\mathbf{X}_1$; here each search is drawn from where it starts, so the dog-leg runs from $\mathbf{P}_0$ through $\mathbf{P}_2$ to $\mathbf{X}_1$, on the same line. Case 3 is new, with no Mathews original. Not animated are Example 2 (three variables), Examples 5 and 6, the iterations of Example 1 after the third and of Example 3 after the second (which stays at $(3, 2)$), and the enhanced method, which has no worked example.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Taxi-cab method (Mathews' Example 7), $f(x, y) = x^2 - 4x + y^2 - y - xy$, $\mathbf{X}_0 = (2.55,\ 1.75)$, $3$ iterations
+
+**Behavior:** The six line searches alternate between the $x$ and $y$ directions, so the path is a staircase, and each one stops where its line touches a contour of $f$. The steps are $\gamma = 13/40$ and $3/16$, and from then on each step is half the one before, down to $3/256$. Each sweep after the first divides the distance to the minimum $(3, 2)$ by $4$, the factor $b^2/(ac) = \tfrac14$ of formula (2): it is $0.1398$ at $\mathbf{X}_1$, $0.03494$ at $\mathbf{X}_2$ and $0.008735$ at $\mathbf{X}_3 = (2.9921875,\ 1.99609375)$, where $f + 7 = 4.578 \times 10^{-5}$. The staircase is still short of the minimum after three iterations, and the zoom panel's window shrinks with every search after the first.
+
+[Julia source](powellaa.jl)
+
+![Rebuild of Mathews' taxi-cab animation (Example 7) for f = x² − 4x + y² − y − xy from (2.55, 1.75): six line searches along the x and y directions make a magenta staircase towards the minimum (3, 2), ending at (2.9921875, 1.99609375), 0.008735 from it, with a right panel zoomed on each search](powellaa.gif)
+
+### Case 2 — Powell's method (Mathews' Example 8), the same $f$ and $\mathbf{X}_0$, $2$ iterations
+
+**Behavior:** The first two searches are those of Case 1. The dog-leg search then runs from $\mathbf{P}_0 = \mathbf{X}_0$ along $\mathbf{U}_2 = \mathbf{P}_2 - \mathbf{P}_0 = (0.325,\ 0.1875)$, and its step $\gamma = 706/511 \approx 1.382$ carries it past $\mathbf{P}_2$ to $\mathbf{X}_1 = (2.999021526,\ 2.009050881)$. After three line searches Powell's method is $0.009104$ from the minimum, where the taxi-cab method of Case 1 is $0.06988$ from it. The two searches of iteration 2, along $(0, 1)$ and $(0.325,\ 0.1875)$, end $0.001094$ and $7.126 \times 10^{-5}$ from $(3, 2)$, too close to tell apart in the left panel; the zoom panel separates them. The new direction $(0.0009708,\ -0.00898)$ is conjugate to $(0.325,\ 0.1875)$, and the dog-leg search along it, with $\gamma = 511/507$, lands exactly on $(3, 2)$, where $f + 7 = 0$.
+
+[Julia source](powellbb.jl)
+
+![Rebuild of Mathews' Powell's method animation (Example 8) for f = x² − 4x + y² − y − xy from (2.55, 1.75): two coordinate searches, an orange dog-leg search past P₂ to (2.999021526, 2.009050881), two more searches and a second dog-leg that lands exactly on the minimum (3, 2), with a right panel zoomed on each search](powellbb.gif)
+
+### Case 3 — Rosenbrock's parabolic valley (Example 4), $f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2$, $\mathbf{X}_0 = (0.99,\ 1.01)$, $4$ iterations (new)
+
+**Behavior:** The left panel shows the window $[0.985, 1.015] \times [0.985, 1.015]$ and the valley floor $y = x^2$ (dotted). The first search, along $x$, moves $0.01498$ to $\mathbf{P}_1$, next to the valley floor ($y - x^2 = 2.475 \times 10^{-5}$). The next four points ($\mathbf{P}_2$ and $\mathbf{X}_1$ of iteration 1, $\mathbf{P}_1$ and $\mathbf{P}_2$ of iteration 2) all lie within $5.6 \times 10^{-5}$ of $\mathbf{P}_1$, and the distance to $(1, 1)$ falls only from $0.01117$ to $0.01111$. These steps show only in the zoom panel. The dog-leg search of iteration 1 starts at $\mathbf{X}_0$ and runs at $0.095^\circ$ to the first search, so in the left panel it covers it, and it stops $1.226 \times 10^{-5}$ short of $\mathbf{P}_2$ ($\gamma = 0.9992$). The dog-leg search of iteration 2 is the breakthrough: its direction is only $2.752 \times 10^{-5}$ long, but its slope $2.015$ is close to the slope $2$ of the valley floor at $(1, 1)$, and $\gamma = 402.7$ carries it $0.01108$ down the valley to $\mathbf{X}_2$, $5.871 \times 10^{-5}$ from the minimum. From then on the left panel hardly changes, and the zoom panel follows iterations 3 and 4 down to $\mathbf{X}_3$, $3.467 \times 10^{-9}$ from $(1, 1)$, and $\mathbf{X}_4$, $2.607 \times 10^{-24}$ from it.
+
+[Julia source](powellcc.jl)
+
+![Powell's method on Rosenbrock's function from (0.99, 1.01): a search along x to the valley floor y = x², four line searches that barely move the point along the valley, then a dog-leg search with γ = 402.7 that jumps to within 5.871e−5 of the minimum (1, 1), and two more iterations that the right zoom panel follows down to 2.607e−24 from it](powellcc.gif)
 
 ## Line Searches
 
@@ -36,7 +68,7 @@ $$
 and moves to the point $\mathbf{P} + \gamma^*\,\mathbf{U}$. The step $\gamma$ may be positive or negative.
 :::
 
-If $f$ is unimodal along the line, the [golden ratio search](golden-ratio-search/) or the [Fibonacci search](fibonacci-search/) finds $\gamma^*$ on a bracketing interval. When $\varphi$ has several local minima, different line-search methods can stop at different ones, and Mathews notes that a golden ratio or Fibonacci search can give slightly different results from `FindMinimum`.
+If $f$ is unimodal along the line, the [golden ratio search](../golden-ratio-search/) or the [Fibonacci search](../fibonacci-search/) finds $\gamma^*$ on a bracketing interval. When $\varphi$ has several local minima, different line-search methods can stop at different ones, and Mathews notes that a golden ratio or Fibonacci search can give slightly different results from `FindMinimum`.
 
 For a quadratic function the line search can be done exactly. If $f(\mathbf{X}) = c + \mathbf{b}\cdot\mathbf{X} + \tfrac12\,\mathbf{X}^{T}\!\mathbf{A}\,\mathbf{X}$ with a symmetric matrix $\mathbf{A}$ (the Hessian of $f$), then $\varphi(\gamma) = f(\mathbf{P}) + \gamma\,\nabla f(\mathbf{P})\cdot\mathbf{U} + \tfrac12\gamma^2\,\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{U}$ is a parabola in $\gamma$.
 
@@ -443,7 +475,7 @@ Mathews' Examples 7 and 8 repeat the first three iterations of Example 1 (taxi-c
 | 6 | $(2.9921875,\ 1.984375)$ | $-6.99982$ | $\mathbf{P}_2 = (2.999992341,\ 2.000070848)$ | $-7.00000$ |
 | 7 | $\mathbf{X}_3 = (2.9921875,\ 1.99609375)$ | $-6.99995$ | $\mathbf{X}_2 = (3,\ 2)$ | $-7$ |
 
-The Powell program collects ten points (the last three are iteration 3, all at $(3, 2)$), but the plotting loop draws only the first seven. Because the list is drawn as one polygon, the dog-leg segment is drawn from $\mathbf{P}_2$ to $\mathbf{X}_1$, although the search that produced $\mathbf{X}_1$ ran along the line from $\mathbf{P}_0$ through $\mathbf{P}_2$; the two segments lie on the same line. After three iterations the taxi-cab path is still $0.00873$ from the minimum, while Powell's path has reached it.
+The Powell program collects ten points (the last three are iteration 3, all at $(3, 2)$), but the plotting loop draws only the first seven. Because the list is drawn as one polygon, the dog-leg segment is drawn from $\mathbf{P}_2$ to $\mathbf{X}_1$, although the search that produced $\mathbf{X}_1$ ran along the line from $\mathbf{P}_0$ through $\mathbf{P}_2$; the two segments lie on the same line. After three iterations the taxi-cab path is still $0.00873$ from the minimum, while Powell's path has reached it. Cases 1 and 2 of the [Animations](#animations) above rebuild these two runs.
 
 ## Implementation Notes
 
@@ -451,4 +483,4 @@ The Powell program collects ten points (the last three are iteration 3, all at $
 - **Accuracy of the line search.** In general, $\varphi$ is flat near its minimum, so a line search in floating-point arithmetic locates the minimiser only to about the square root of the machine precision (about $10^{-8}$ relative, in double precision). The differences of up to $6 \times 10^{-8}$ between Mathews' printed points and the exact ones are of this size.
 - **Stopping.** Mathews' programs run a fixed number of iterations. A practical code stops when $\lVert \mathbf{X}_i - \mathbf{X}_{i-1} \rVert$ or the decrease of $f$ over an iteration falls below a tolerance, and must not search along a zero direction $\mathbf{P}_n - \mathbf{P}_0$.
 - **Direction sets.** The basic method can lose a direction when the set becomes nearly linearly dependent; the enhanced method above, or periodically resetting the directions to $\mathbf{E}_1, \ldots, \mathbf{E}_n$, guards against this.
-- **Comparison with derivative methods.** Powell's method needs only values of $f$. When the gradient and Hessian are available, [Newton's search method](newtons-search-method/) minimises a quadratic in one step and converges quadratically near a minimum with a positive definite Hessian, at the cost of computing those derivatives.
+- **Comparison with derivative methods.** Powell's method needs only values of $f$. When the gradient and Hessian are available, [Newton's search method](../newtons-search-method/) minimises a quadratic in one step and converges quadratically near a minimum with a positive definite Hessian, at the cost of computing those derivatives.
