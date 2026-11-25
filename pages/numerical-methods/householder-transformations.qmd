@@ -43,7 +43,7 @@ To create zeros we choose $\mathbf{Y}$ to agree with $\mathbf{X}$ in its first $
 
 ::: {.callout-note appearance="simple"}
 ## Corollary — Householder matrix
-Let $\mathbf{X} = (x_1, \ldots, x_n)^{T}$ and let $k$ be an integer with $1 \le k \le n - 2$. Define
+Let $\mathbf{X} = (x_1, \ldots, x_n)^{T}$, let $k$ be an integer with $1 \le k \le n - 2$, and assume $(x_{k+1}, \ldots, x_n) \neq \mathbf{0}$. Define, with $\operatorname{sign}(0)$ taken as $+1$,
 
 $$
 S = \operatorname{sign}(x_{k+1})\sqrt{x_{k+1}^2 + x_{k+2}^2 + \cdots + x_n^2}, \qquad R = \sqrt{2\,(x_{k+1} + S)\,S},
@@ -63,7 +63,7 @@ $$
 $$
 :::
 
-This is the theorem with $\mathbf{Y} = (x_1, \ldots, x_k, -S, 0, \ldots, 0)^{T}$, which has the same norm as $\mathbf{X}$. Then $\mathbf{X} - \mathbf{Y} = (0, \ldots, 0, x_{k+1} + S, x_{k+2}, \ldots, x_n)^{T}$, and its squared length is $(x_{k+1} + S)^2 + (S^2 - x_{k+1}^2) = 2(x_{k+1} + S)S = R^2$, so $\mathbf{W}_k = (\mathbf{X} - \mathbf{Y})/R$ is the unit vector of (1). Because $\mathbf{W}_k$ is zero in its first $k$ components, $\mathbf{P}_k$ has an identity block in its upper-left $k \times k$ corner and leaves the first $k$ rows and columns of anything it multiplies unchanged.
+This is the theorem with $\mathbf{Y} = (x_1, \ldots, x_k, -S, 0, \ldots, 0)^{T}$, which has the same norm as $\mathbf{X}$ and differs from it, because $x_{k+1}$ and $S$ never have opposite signs, so $\lvert x_{k+1} + S\rvert = \lvert x_{k+1}\rvert + \lvert S\rvert > 0$. Then $\mathbf{X} - \mathbf{Y} = (0, \ldots, 0, x_{k+1} + S, x_{k+2}, \ldots, x_n)^{T}$, and its squared length is $(x_{k+1} + S)^2 + (S^2 - x_{k+1}^2) = 2(x_{k+1} + S)S = R^2$, so $\mathbf{W}_k = (\mathbf{X} - \mathbf{Y})/R$ is the unit vector of (1). Because $\mathbf{W}_k$ is zero in its first $k$ components, $\mathbf{P}_k$ has an identity block in its upper-left $k \times k$ corner and leaves the first $k$ components of any vector unchanged, so $\mathbf{P}_k\mathbf{A}$ keeps the first $k$ rows of $\mathbf{A}$, $\mathbf{A}\mathbf{P}_k$ keeps the first $k$ columns, and $\mathbf{P}_k\mathbf{A}\mathbf{P}_k$ keeps the leading $k \times k$ block.
 
 **Notation on the QR method page.** The [QR method](qr-method/#reduction-to-tridiagonal-hessenberg-form) page writes the same matrix as $\mathbf{P} = \mathbf{I} - 2\mathbf{v}\mathbf{v}^{T}/(\mathbf{v}^{T}\mathbf{v})$ with $\mathbf{v} = \mathbf{x} - \alpha\mathbf{e}_1$ and $\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert$, where $\mathbf{x}$ is the part of the column below the diagonal. The two are identical: $\alpha = -S$, the full-length $\mathbf{v}$ of that page (zero in its first $k$ components) is $R\,\mathbf{W}_k$, $\mathbf{v}^{T}\mathbf{v} = R^2$, and the new subdiagonal entry $\alpha$ is the $-S$ of (4).
 
@@ -71,7 +71,7 @@ This is the theorem with $\mathbf{Y} = (x_1, \ldots, x_k, -S, 0, \ldots, 0)^{T}$
 ## Caution — the sign of $S$
 The sign of $S$ is chosen equal to the sign of $x_{k+1}$ so that $x_{k+1} + S$ is a sum of two numbers of the same sign; then $R^2 = 2\left(|x_{k+1}| + \lVert\mathbf{x}\rVert\right)\lVert\mathbf{x}\rVert \ge 2\lVert\mathbf{x}\rVert^2$, where $\mathbf{x} = (x_{k+1}, \ldots, x_n)$. The opposite sign would also satisfy the theorem in exact arithmetic, but $x_{k+1} - \operatorname{sign}(x_{k+1})\lVert\mathbf{x}\rVert$ can cancel. For $\mathbf{x} = (1, 10^{-8})$ in double precision, $\lVert\mathbf{x}\rVert$ rounds to exactly $1$; the recommended sign gives $\mathbf{v} = (2, 10^{-8})$ and $\mathbf{P}\mathbf{x} = (-1, 0)$, while the other sign gives $\mathbf{v} = (0, 10^{-8})$ and $\mathbf{P}\mathbf{x} = (1, -10^{-8})$, which has not been reduced at all.
 
-Two special cases need care in a program. If $x_{k+1} = 0$, the sign must be taken as $+1$: Mathews' step subroutine uses Mathematica's `Sign`, which returns $0$ there and makes $R = 0$, while his loop program (Example 4) tests `A1[[k+1,k]] < 0` and so uses $+1$. If $x_{k+1} = \cdots = x_n = 0$, the column is already reduced and the step is skipped ($\mathbf{P}_k = \mathbf{I}$). None of Mathews' examples meets either case.
+Two special cases need care in a program. If $x_{k+1} = 0$, the sign must not be taken as $0$; take $+1$ (any $\pm 1$ works, since then $(x_{k+1} + S)S = S^2 > 0$ and there is nothing to cancel). Mathews' step subroutine uses Mathematica's `Sign`, which returns $0$ there and makes $R = 0$, while his loop program (Example 4) tests `A1[[k+1,k]] < 0` and so uses $+1$. If $x_{k+1} = \cdots = x_n = 0$, the column is already reduced and the step is skipped ($\mathbf{P}_k = \mathbf{I}$). None of Mathews' examples meets either case.
 :::
 
 ## Householder's Method
@@ -212,7 +212,7 @@ Both matrices have the eigenvalues $4 \pm \sqrt7 \approx 6.645751,\ 1.354249$ an
 
 ## Example 2 — The same matrix with the step subroutine
 
-Mathews next packages Steps 1–5 as a Mathematica subroutine, `HouseholderStep[k]`. It takes column $k$ of $\mathbf{A}_{k-1}$, computes $S$ (with $\operatorname{sign}$ as in (2)), $R$, $\mathbf{W}$, $\mathbf{V}$, $c$ and $\mathbf{Q}$, forms $\mathbf{A}_k = \mathbf{A}_{k-1} - 2\mathbf{W}\mathbf{Q}^{T} - 2\mathbf{Q}\mathbf{W}^{T}$, replaces entries that are rounding noise by zero, and prints every intermediate quantity. His Example 2 calls it for $k = 1$ and $k = 2$ on the matrix of Example 1, so it prints the same numbers: $S = 3$, $R = \sqrt{30}$, $c = -0.9$ and $\mathbf{A}_1$ in the first call, $S \approx -3.162278$, $R \approx 6.036874$, $c \approx -1.264911$ and the matrix $\mathbf{H}$ of Example 1 in the second. The verification of Example 1 therefore covers Example 2 too.
+Mathews next packages Steps 1–5 as a Mathematica subroutine, `HouseholderStep[k]`. It takes column $k$ of $\mathbf{A}_{k-1}$, computes $S$ (with Mathematica's `Sign`; see the caution above), $R$, $\mathbf{W}$, $\mathbf{V}$, $c$ and $\mathbf{Q}$, forms $\mathbf{A}_k = \mathbf{A}_{k-1} - 2\mathbf{W}\mathbf{Q}^{T} - 2\mathbf{Q}\mathbf{W}^{T}$, replaces entries that are rounding noise by zero, and prints every intermediate quantity. His Example 2 calls it for $k = 1$ and $k = 2$ on the matrix of Example 1, so it prints the same numbers: $S = 3$, $R = \sqrt{30}$, $c = -0.9$ and $\mathbf{A}_1$ in the first call, $S \approx -3.162278$, $R \approx 6.036874$, $c \approx -1.264911$ and the matrix $\mathbf{H}$ of Example 1 in the second. The verification of Example 1 therefore covers Example 2 too.
 
 ## Example 3 — A $5 \times 5$ matrix
 
@@ -318,6 +318,6 @@ Accumulating $\mathbf{U} = \mathbf{P}_1\mathbf{P}_2\mathbf{P}_3\mathbf{P}_4$ and
 
 - **Never form $\mathbf{P}_k$.** Store $\mathbf{W}$ and use (6)–(7); keep $\mathbf{W}$ (or $\mathbf{v}$) for each step if eigenvectors are wanted, since $\mathbf{U}\mathbf{y} = \mathbf{P}_1(\mathbf{P}_2(\cdots\mathbf{P}_{n-2}\mathbf{y}))$ can be applied one reflection at a time.
 - **Work on the trailing block.** As in Mathews' loop program, step $k$ only needs rows and columns $k, \ldots, n$, and symmetry halves the work again.
-- **Choose the sign of $S$ to match $x_{k+1}$**, use $+1$ when $x_{k+1} = 0$, and skip a step whose subcolumn is already zero (see the caution above).
+- **Choose the sign of $S$ to match $x_{k+1}$**, use $+1$ (never $0$) when $x_{k+1} = 0$, and skip a step whose subcolumn is already zero (see the caution above).
 - **Set the created zeros explicitly.** In floating point they come out as rounding noise (at most $1.1 \times 10^{-15}$ in the three examples above).
 - **Nonsymmetric matrices.** Without symmetry the left and right products no longer clear the same entries, but the same $\mathbf{P}_k$ still make column $k$ zero below the subdiagonal; the result is upper Hessenberg rather than tridiagonal. See [Hessenberg Factorization](hessenberg-factorization.qmd) and the [QR method](qr-method/), whose iterations keep both forms.
