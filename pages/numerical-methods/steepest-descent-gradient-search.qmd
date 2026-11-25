@@ -7,42 +7,408 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+The gradient method, also called the method of steepest descent, looks for a local minimum of a function $f(\mathbf{X})$ of $n$ variables, $\mathbf{X} = (x_1, \ldots, x_n)$, whose first partial derivatives can be evaluated. At the current point $\mathbf{P}_k$ the gradient $\nabla f(\mathbf{P}_k)$ points in the direction in which $f$ increases fastest, so the unit vector opposite to it is the direction of steepest descent. The method searches along the line through $\mathbf{P}_k$ in that direction for the lowest value of $f$ and moves there:
 
-### Planned animation ideas
+$$
+\mathbf{S}_k = -\frac{\nabla f(\mathbf{P}_k)}{\lVert \nabla f(\mathbf{P}_k) \rVert}, \qquad
+\mathbf{P}_{k+1} = \mathbf{P}_k + h_k\,\mathbf{S}_k, \qquad
+h_k \approx \operatorname*{arg\,min}_{\gamma \ge 0}\, f(\mathbf{P}_k + \gamma\,\mathbf{S}_k).
+$$
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+Each iteration needs only the gradient and a one-variable minimisation along a line. When that line minimisation is exact, $f$ decreases at every step and each new search direction is perpendicular to the previous one, so the path to the minimum is a zigzag. In a long, narrow valley the zigzag steps are short and the method is slow. Mathews carries out the line search with a single quadratic interpolation per step (the [quadratic interpolative search](quadratic-interpolative-search/) idea), and his examples work in two variables, $\mathbf{P}_k = (x_k, y_k)$: a quadratic, Rosenbrock's banana-shaped valley, a quartic with three local minima and a rational function. Every run below was recomputed with his line search and stopping rule in 60-digit arithmetic and agrees with a 120-digit run to more than 50 digits.
 
-## Derivation Notes (Planned)
+## The Gradient and the Direction of Steepest Descent
 
-Short derivations will be added to explain the core equations and assumptions.
+::: {.callout-note appearance="simple"}
+## Definition — Gradient
+Let $z = f(\mathbf{X})$ be a function of $\mathbf{X} = (x_1, x_2, \ldots, x_n)$ such that $\partial f(\mathbf{X})/\partial x_k$ exists for $k = 1, 2, \ldots, n$. The *gradient* of $f$ is the vector
 
-## Worked Example (Planned)
+$$
+\nabla f(\mathbf{X}) = \left( \frac{\partial f(\mathbf{X})}{\partial x_1},\ \frac{\partial f(\mathbf{X})}{\partial x_2},\ \ldots,\ \frac{\partial f(\mathbf{X})}{\partial x_n} \right).
+\tag{1}
+$$
+:::
 
-A compact numerical example with intermediate steps will be included.
+::: {.callout-tip appearance="simple"}
+## Theorem — Direction of steepest descent (general)
+Let $f$ be differentiable at $\mathbf{P}$ with $\nabla f(\mathbf{P}) \neq \mathbf{0}$. The rate of change of $f$ at $\mathbf{P}$ in the direction of a unit vector $\mathbf{u}$ is $\nabla f(\mathbf{P}) \cdot \mathbf{u}$. By the Cauchy–Schwarz inequality it lies between $-\lVert \nabla f(\mathbf{P}) \rVert$ and $\lVert \nabla f(\mathbf{P}) \rVert$, with the largest value for $\mathbf{u} = \nabla f(\mathbf{P}) / \lVert \nabla f(\mathbf{P}) \rVert$ and the smallest for
 
-## Implementation Notes (Planned)
+$$
+\mathbf{u} = -\frac{\nabla f(\mathbf{P})}{\lVert \nabla f(\mathbf{P}) \rVert}.
+$$
+:::
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+So locally $f$ increases fastest along $\nabla f$ and decreases fastest along $-\nabla f$. The decrease is local only: a long step in the direction $-\nabla f$ can overshoot, which is why the method looks for the best step length along the line.
 
-## Legacy Animation Inventory (Stub)
+### Illustrations — two gradients
 
-- Legacy module page: [Steepest Descent - Gradient Search](http://localhost:8000/n2003/GradientSearchMod.html) (ok)
-- Animation links found in module Animations paragraph: 2
-- Unique animation portals: 1
+Mathews starts by finding the gradients of two functions that reappear in the examples.
 
-### Animation Portals
+For the quartic of Example 3,
 
-1. [Gradient Search](http://localhost:8000/a2001/Animations/Optimization/Gradient1/Gradient.html) (ok)
+$$
+f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x, \qquad
+\nabla f(x, y) = \bigl(10x + 4x^3 - 18xy + \tfrac14,\ \ -9x^2 + 6y + 8y^3\bigr).
+$$
 
-- Animation item links found: 1
+For the rational function of Example 4, the quotient rule gives
 
-### Animation Items
+$$
+f(x, y) = \frac{x - y}{x^2 + y^2 + 2}, \qquad
+\nabla f(x, y) = \left( \frac{-x^2 + 2xy + y^2 + 2}{(x^2 + y^2 + 2)^2},\ \ \frac{-x^2 - 2xy + y^2 - 2}{(x^2 + y^2 + 2)^2} \right),
+$$
 
-1. [Gradient Search](http://localhost:8000/a2001/Animations/Optimization/Gradient1/Gradientaa.html) (error)
-- Main animated GIF count: 0
+and at the point $(-3, -2)$, where $x^2 + y^2 + 2 = 15$,
 
+$$
+\nabla f(-3, -2) = \left( \frac{9}{225},\ -\frac{19}{225} \right) = \left( \frac{1}{25},\ -\frac{19}{225} \right) \approx (0.04,\ -0.0844444).
+$$
+
+**Verification:** both gradients were checked symbolically against direct differentiation (the differences simplify to $0$), and the value at $(-3, -2)$ was computed in exact rational arithmetic.
+
+## The Gradient Method
+
+Start at $\mathbf{P}_0$ and search along the line through $\mathbf{P}_0$ in the direction $\mathbf{S}_0 = -\nabla f(\mathbf{P}_0)/\lVert \nabla f(\mathbf{P}_0) \rVert$. The point $\mathbf{P}_1$ is where $f$, restricted to the line $\mathbf{X} = \mathbf{P}_0 + \gamma\,\mathbf{S}_0$, has a local minimum. Then compute $\mathbf{S}_1$ from $\nabla f(\mathbf{P}_1)$, search along the line through $\mathbf{P}_1$, and so on.
+
+::: {.callout-important appearance="simple"}
+## Outline of the gradient method
+Suppose $\mathbf{P}_k$ has been found.
+
+1. Evaluate the gradient vector $\nabla f(\mathbf{P}_k)$.
+2. Compute the search direction $\mathbf{S}_k = -\nabla f(\mathbf{P}_k) / \lVert \nabla f(\mathbf{P}_k) \rVert$.
+3. Minimise the function of one variable
+   $$\varphi_k(\gamma) = f(\mathbf{P}_k + \gamma\,\mathbf{S}_k) \tag{2}$$
+   on an interval $[0, b]$, where $b$ is large. This gives a value $\gamma = h_k$ at which $\varphi_k$ has a local minimum, so $f(\mathbf{P}_k + h_k \mathbf{S}_k)$ is a minimum of $f$ along the search line.
+4. Construct the next point $\mathbf{P}_{k+1} = \mathbf{P}_k + h_k\,\mathbf{S}_k$.
+5. Termination test: are $f(\mathbf{P}_k)$ and $f(\mathbf{P}_{k+1})$ close enough, and is the distance $\lVert \mathbf{P}_{k+1} - \mathbf{P}_k \rVert$ small enough? If not, repeat.
+:::
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Properties with an exact line search (general)
+Let $f$ be continuously differentiable and let each $h_k > 0$ be an exact local minimiser of $\varphi_k$ in (2), with $\nabla f(\mathbf{P}_k) \neq \mathbf{0}$.
+
+1. *Descent.* $\varphi_k'(0) = \nabla f(\mathbf{P}_k) \cdot \mathbf{S}_k = -\lVert \nabla f(\mathbf{P}_k) \rVert < 0$, so $f$ decreases strictly: $f(\mathbf{P}_0) > f(\mathbf{P}_1) > \cdots > f(\mathbf{P}_k) > \cdots$.
+2. *Zigzag.* $\varphi_k'(h_k) = \nabla f(\mathbf{P}_{k+1}) \cdot \mathbf{S}_k = 0$, and $\mathbf{S}_{k+1}$ is a negative multiple of $\nabla f(\mathbf{P}_{k+1})$, so $\mathbf{S}_{k+1} \cdot \mathbf{S}_k = 0$: consecutive search directions are perpendicular.
+3. *Limit.* Every limit point $\mathbf{P}$ of the sequence $\{\mathbf{P}_k\}$ satisfies $\nabla f(\mathbf{P}) = \mathbf{0}$.
+:::
+
+Mathews states that if $\mathbf{P}_k \to \mathbf{P}$ then $f(\mathbf{P})$ is a local minimum. That is what happens in every run on this page, but in general the theory guarantees only a stationary point. Because $f$ decreases at every step, the limit cannot be a strict local maximum, but a saddle point can be reached from special starting points: for $f(x, y) = x^2 - y^2$ from $(1, 0)$, the first exact line search lands on the saddle point $(0, 0)$, where the gradient is zero and the method stops. With an approximate line search such as Mathews' single quadratic fit, properties 1 and 2 hold exactly only when $\varphi_k$ is a quadratic, as in Example 1. In the other examples they hold approximately, and each case says how closely.
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Rate on a quadratic (general)
+Let $f(\mathbf{X}) = f^{*} + \tfrac12 (\mathbf{X} - \mathbf{X}^{*})\,\mathbf{A}\,(\mathbf{X} - \mathbf{X}^{*})^{T}$, where $\mathbf{A}$ is symmetric positive definite with smallest and largest eigenvalues $\lambda_{\min}$ and $\lambda_{\max}$, and let $\kappa = \lambda_{\max}/\lambda_{\min}$. With exact line searches the gradient method satisfies
+
+$$
+f(\mathbf{P}_{k+1}) - f^{*} \le \left( \frac{\kappa - 1}{\kappa + 1} \right)^{2} \bigl( f(\mathbf{P}_k) - f^{*} \bigr).
+$$
+:::
+
+When $\kappa$ is large, the level curves of $f$ are long, thin ellipses and the factor is close to $1$.
+
+::: {.callout-warning appearance="simple"}
+## Slow convergence
+Convergence to a minimum can be slow. In Mathews' words, the geometry of a minimum often makes $h_k$ small, so the method returns to the line search (step 3) many times. In four of the six runs below (Examples 1, 2, 3(ii) and 3(iii)) Mathews' program reaches its work limit before its tolerance.
+:::
+
+## Mathews' Implementation
+
+Mathews' Mathematica program has two parts: a line search that takes one step along $\mathbf{S}_k$, and an outer loop that repeats it.
+
+**Line search.** It carries a trial step $h$ from one iteration to the next ($h = 1$ at the start of a run). With $Y_0 = \varphi_k(0)$, $Y_1 = \varphi_k(h)$ and $Y_2 = \varphi_k(2h)$ it repeats, at most $15$ times:
+
+- if $Y_0 \le Y_1$, the step is too long: halve $h$ (the old middle point becomes the new right point) and evaluate the new middle point;
+- otherwise, if $Y_2 < Y_1$, $\varphi_k$ is still falling at $2h$: double $h$ (the old right point becomes the middle point) and evaluate the new right point;
+- otherwise $Y_1 < Y_0$ and $Y_1 \le Y_2$, so the points $0$, $h$, $2h$ bracket a minimum: stop.
+
+The step is the vertex of the parabola through $(0, Y_0)$, $(h, Y_1)$, $(2h, Y_2)$,
+
+$$
+h_k = \frac{h\,(4Y_1 - 3Y_0 - Y_2)}{2\,(2Y_1 - Y_0 - Y_2)},
+\tag{3}
+$$
+
+and $\mathbf{P}_{k+1} = \mathbf{P}_k + h_k \mathbf{S}_k$. This is one quadratic fit, not repeated: $h_k$ is the exact minimiser of $\varphi_k$ only when $\varphi_k$ is itself a quadratic. The trial step for the next iteration is the smallest of $h$, $|h_k|$, $|h_k - h|$ and $|h_k - 2h|$.
+
+**Outer loop and stopping rule.** The program keeps $\mathrm{Err}$, the smallest nonzero difference $|Y_i - f(\mathbf{P}_{k+1})|$ ($i = 0, 1, 2$) met so far in the run, starting from $\mathrm{Err} = 1$. It stops as soon as both $h \le \delta$ and $\mathrm{Err} \le \varepsilon$, or when a work counter reaches $60$; each iteration adds $j + 1$ to the counter, where $j$ is the number of passes through the bracketing loop. Mathews uses $\delta = \varepsilon = 10^{-10}$ in Examples 1, 2, 3(i) and 4, and $\delta = \varepsilon = 10^{-14}$ in Examples 3(ii) and 3(iii).
+
+In the tables below $h_k$ is the step taken from $\mathbf{P}_k$; since $\lVert \mathbf{S}_k \rVert = 1$ it is also the distance from $\mathbf{P}_k$ to $\mathbf{P}_{k+1}$. $\mathbf{P}^{*}$ is the minimum the run approaches. Mathews' own tables, computed in machine arithmetic, print $12$ decimal places (in scientific notation for the smallest values). Each example says how far they agree with the recomputation. In every one of his tables the first line pairs $\mathbf{P}_0$ with a function value left over from the previous computation (his program prints $f(\mathbf{P}_0)$ before evaluating it), so the tables here give the correct $f(\mathbf{P}_0)$.
+
+## Example 1 — A quadratic, $f(x, y) = x^2 - 4x + y^2 - y - xy$, from $(0.99, 1.01)$
+
+Use the gradient method to find the minimum of
+
+$$
+f(x, y) = x^2 - 4x + y^2 - y - xy, \qquad \mathbf{P}_0 = (0.99,\ 1.01).
+$$
+
+**Step 0** (gradient and Hessian):
+
+$$
+\nabla f(x, y) = (2x - y - 4,\ \ 2y - x - 1), \qquad
+\mathbf{H} = \begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}.
+$$
+
+The only stationary point is $(3, 2)$, and $\mathbf{H}$ has eigenvalues $1$ and $3$, so it is positive definite and $(3, 2)$ is the global minimum, with $f(3, 2) = -7$.
+
+**Step 1** (first search direction): $f(\mathbf{P}_0) = -3.9697$ and
+
+$$
+\nabla f(\mathbf{P}_0) = (-3.03,\ 0.03), \quad \lVert \nabla f(\mathbf{P}_0) \rVert = \sqrt{9.1818} = 3.030149, \quad
+\mathbf{S}_0 = \frac{(3.03,\ -0.03)}{3.030149} = (0.999951,\ -0.009900505).
+$$
+
+**Step 2** (the function on the search line): because $f$ is quadratic, so is $\varphi_0$:
+
+$$
+\varphi_0(\gamma) = f(0.99 + 0.999951\,\gamma,\ \ 1.01 - 0.009900505\,\gamma) = -3.9697 - 3.030149\,\gamma + 1.009900\,\gamma^2 .
+$$
+
+**Step 3** (line search): with $h = 1$, $Y_0 = -3.9697$, $Y_1 = \varphi_0(1) = -5.989948$ and $Y_2 = \varphi_0(2) = -5.990397$. Since $Y_2 < Y_1$, $h$ doubles to $2$, giving $Y_1 = -5.990397$ and $Y_2 = \varphi_0(4) = 0.068106$, which brackets the minimum. Formula (3) gives
+
+$$
+h_0 = \frac{2\,\bigl(4(-5.990397) - 3(-3.9697) - 0.068106\bigr)}{2\,\bigl(2(-5.990397) + 3.9697 - 0.068106\bigr)} = 1.500222 .
+$$
+
+The parabola through three points of a quadratic is the quadratic itself, so this is the exact minimiser of $\varphi_0$, $h_0 = \lVert \nabla f(\mathbf{P}_0) \rVert / (\mathbf{S}_0 \mathbf{H} \mathbf{S}_0^{T}) = 3.030149 / 2.019800$.
+
+**Step 4** (new point):
+
+$$
+\mathbf{P}_1 = (0.99,\ 1.01) + 1.500222\,(0.999951,\ -0.009900505) = (2.490149,\ 0.9951470), \qquad f(\mathbf{P}_1) = -6.242648 .
+$$
+
+In exact arithmetic $\mathbf{P}_1 = (25656/10303,\ 10253/10303)$ and $f(\mathbf{P}_1) = -64318/10303$. The next trial step is $|h_0 - 2| = 0.4997780$.
+
+**Step 5** (second iteration): $\nabla f(\mathbf{P}_1) = (-153/10303,\ -15453/10303) \approx (-0.01485004,\ -1.499854)$, so $\mathbf{S}_1 = (0.009900505,\ 0.999951)$. This is $\mathbf{S}_0$ turned through a right angle, as the zigzag property predicts. The line search doubles $h$ once, to $0.9995559$, and gives $h_1 = 0.7574629$, so
+
+$$
+\mathbf{P}_2 = (2.497648,\ 1.752573), \qquad f(\mathbf{P}_2) = -6.810718 .
+$$
+
+**Step 6** (the full run): Mathews' program continues until the work counter reaches $64$, after $16$ iterations. The tolerance test is never met.
+
+| $k$ | $x_k$ | $y_k$ | $f(\mathbf{P}_k)$ | $\lVert \mathbf{P}_k - \mathbf{P}^{*} \rVert$ | $h_k$ |
+|---:|---:|---:|---:|---:|---:|
+| 0 | $0.99$ | $1.01$ | $-3.9697$ | $2.241$ | $1.50022$ |
+| 1 | $2.490148500$ | $0.9951470446$ | $-6.242647772$ | $1.127$ | $0.757463$ |
+| 2 | $2.497647765$ | $1.752572780$ | $-6.810717620$ | $0.5600$ | $0.374945$ |
+| 3 | $2.872574607$ | $1.748860633$ | $-6.952693320$ | $0.2816$ | $0.189310$ |
+| 4 | $2.874448872$ | $1.938161385$ | $-6.988176808$ | $0.1400$ | $0.0937087$ |
+| 5 | $2.968153019$ | $1.937233621$ | $-6.997045071$ | $0.07038$ | $0.0473136$ |
+| 6 | $2.968621448$ | $1.984544892$ | $-6.999261485$ | $0.03498$ | $0.0234203$ |
+| 7 | $2.992040596$ | $1.984313019$ | $-6.999815426$ | $0.01759$ | $0.0118249$ |
+| 8 | $2.992157669$ | $1.996137359$ | $-6.999953870$ | $0.008742$ | $0.00585335$ |
+| 9 | $2.998010734$ | $1.996079408$ | $-6.999988471$ | $0.004396$ | $0.00295536$ |
+| 10 | $2.998039994$ | $1.999034624$ | $-6.999997119$ | $0.002185$ | $0.00146291$ |
+| 11 | $2.999502830$ | $1.999020140$ | $-6.999999280$ | $0.001099$ | $0.000738623$ |
+| 12 | $2.999510143$ | $1.999758727$ | $-6.999999820$ | $0.0005461$ | $0.000365619$ |
+| 13 | $2.999875744$ | $1.999755107$ | $-6.999999955$ | $0.0002746$ | $0.000184601$ |
+| 14 | $2.999877572$ | $1.999939699$ | $-6.999999989$ | $0.0001365$ | $9.13780 \times 10^{-5}$ |
+| 15 | $2.999968945$ | $1.999938795$ | $-6.999999997$ | $6.863 \times 10^{-5}$ | $4.61368 \times 10^{-5}$ |
+| 16 | $2.999969402$ | $1.999984929$ | $-6.999999999$ | $3.411 \times 10^{-5}$ | — |
+
+The iterates alternate between horizontal and vertical steps (each direction is within $0.57^\circ$ of a coordinate axis), and every pair of consecutive search directions is perpendicular. At every step $f - (-7)$ is multiplied by the same factor,
+
+$$
+\frac{f(\mathbf{P}_{k+1}) + 7}{f(\mathbf{P}_k) + 7} = \frac{8670000}{34690201} = 0.2499265,
+$$
+
+just under the bound $\bigl((\kappa - 1)/(\kappa + 1)\bigr)^2 = 1/4$ of the rate theorem for $\kappa = 3$. The distance to $(3, 2)$ is multiplied alternately by $0.5029$ and $0.4970$, so it roughly halves at each step, and so do the step lengths $h_k$ (each is between $0.495$ and $0.505$ times the one before). With the work counter removed, the same tolerances are met only after $34$ iterations.
+
+**Verification:** $\nabla f(3, 2) = (0, 0)$ and $f(3, 2) = -7$. The last iterate $\mathbf{P}_{16}$ is $3.411 \times 10^{-5}$ from $(3, 2)$, with $f(\mathbf{P}_{16}) + 7 = 7.022 \times 10^{-10}$. Mathews' table agrees with these rows to within $1.6 \times 10^{-11}$ in every coordinate and $4.5 \times 10^{-13}$ in every function value, apart from the first line.
+
+## Example 2 — Rosenbrock's parabolic valley, $f(x, y) = 100(y - x^2)^2 + (1 - x)^2$, from $(0.99, 1.01)$
+
+Use the gradient method to find the minimum of Rosenbrock's function (circa 1960),
+
+$$
+f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2, \qquad \mathbf{P}_0 = (0.99,\ 1.01).
+$$
+
+**Step 0** (gradient and minimum):
+
+$$
+\nabla f(x, y) = \bigl(-400x\,(y - x^2) - 2(1 - x),\ \ 200\,(y - x^2)\bigr).
+$$
+
+The minimum is $f(1, 1) = 0$, at the end of the curved valley floor $y = x^2$. There
+
+$$
+\mathbf{H}(1, 1) = \begin{pmatrix} 802 & -400 \\ -400 & 200 \end{pmatrix}
+$$
+
+has eigenvalues $0.3993608$ and $1001.601$, a ratio $\kappa \approx 2508$: the valley is very narrow.
+
+**Step 1** (first iteration): $f(\mathbf{P}_0) = 0.089501$, $\nabla f(\mathbf{P}_0) = (-11.8604,\ 5.98)$ and $\mathbf{S}_0 = (0.8929225,\ -0.4502105)$, almost straight across the valley. The trial step $h = 1$ is far too long: $\varphi_0(1) = 892.1648$. The line search halves $h$ six times, to $1/64 = 0.015625$, where $Y_1 = \varphi_0(1/64) = 0.002469813$ lies below both $Y_0 = 0.089501$ and $Y_2 = \varphi_0(1/32) = 0.1619027$. Formula (3) then gives
+
+$$
+h_0 = 0.01333, \qquad \mathbf{P}_1 = (1.001903,\ 1.003999), \qquad f(\mathbf{P}_1) = 7.222046 \times 10^{-6}.
+$$
+
+$\varphi_0$ is not a quadratic, and its exact minimum is at $\gamma = 0.01341122$, where $\varphi_0 = 3.907525 \times 10^{-6}$. Because the step stops short of it, $\mathbf{S}_1 = (0.8852766,\ -0.4650649)$ points almost the same way as $\mathbf{S}_0$ (the two differ by $0.96^\circ$) instead of turning a right angle.
+
+**Step 2** (the full run): the counter reaches $61$ after $9$ iterations.
+
+| $k$ | $x_k$ | $y_k$ | $f(\mathbf{P}_k)$ | $\lVert \mathbf{P}_k - \mathbf{P}^{*} \rVert$ | $h_k$ |
+|---:|---:|---:|---:|---:|---:|
+| 0 | $0.99$ | $1.01$ | $0.089501$ | $0.01414$ | $0.0133300$ |
+| 1 | $1.001902645$ | $1.003998700$ | $7.222046439 \times 10^{-6}$ | $0.004428$ | $8.12733 \times 10^{-5}$ |
+| 2 | $1.001974595$ | $1.003960903$ | $3.905130334 \times 10^{-6}$ | $0.004426$ | $0.00226667$ |
+| 3 | $1.000924034$ | $1.001952392$ | $1.924442865 \times 10^{-6}$ | $0.002160$ | $4.45395 \times 10^{-5}$ |
+| 4 | $1.000963504$ | $1.001931754$ | $9.297975266 \times 10^{-7}$ | $0.002159$ | $0.00119944$ |
+| 5 | $1.000409032$ | $1.000868173$ | $4.167306201 \times 10^{-7}$ | $0.0009597$ | $2.15713 \times 10^{-5}$ |
+| 6 | $1.000428161$ | $1.000858204$ | $1.836103816 \times 10^{-7}$ | $0.0009591$ | $0.000553470$ |
+| 7 | $1.000172637$ | $1.000367250$ | $7.796725962 \times 10^{-8}$ | $0.0004058$ | $9.49331 \times 10^{-6}$ |
+| 8 | $1.000181058$ | $1.000362867$ | $3.283366488 \times 10^{-8}$ | $0.0004055$ | $0.000238231$ |
+| 9 | $1.000071141$ | $1.000151509$ | $1.356506017 \times 10^{-8}$ | $0.0001674$ | — |
+
+From $\mathbf{P}_1$ on, the steps alternate. The steps from $\mathbf{P}_2$, $\mathbf{P}_4$, $\mathbf{P}_6$ and $\mathbf{P}_8$ run down the valley floor: their directions are within $1.05^\circ$ of the floor's tangent at $(1, 1)$, and each multiplies the distance to $(1, 1)$ by a factor between $0.41$ and $0.49$. The steps from $\mathbf{P}_1$, $\mathbf{P}_3$, $\mathbf{P}_5$ and $\mathbf{P}_7$ go across the valley. They are tiny ($h_k$ between $9.49 \times 10^{-6}$ and $8.13 \times 10^{-5}$) and change the distance to $(1, 1)$ by less than $0.1\%$. From $\mathbf{P}_1$ on, consecutive directions are within $0.11^\circ$ of perpendicular. After the first step, $f$ is multiplied by a factor between $0.41$ and $0.55$ at each step: it falls steadily, but the run stops $1.674 \times 10^{-4}$ from the minimum. With the counter removed, the tolerances are met after $28$ iterations.
+
+**Verification:** $\nabla f(1, 1) = (0, 0)$ and $f(1, 1) = 0$, and $f$ decreases at every step of the run. Mathews' coordinates agree with these to within $3.2 \times 10^{-11}$. His function values, which are close to $0$ and computed in machine arithmetic, lose accuracy as the run goes on, and the last one agrees only to $7$ significant digits: he prints $1.356506323 \times 10^{-8}$ for $f(\mathbf{P}_9)$.
+
+## Example 3 — Three local minima, $f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x$
+
+Mathews sets this as an exercise: graph
+
+$$
+f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x,
+$$
+
+estimate the local minima from the graphs (the contour plot is the most useful), then go for each one with the gradient method.
+
+**Step 0** (the stationary points): $\nabla f = \bigl(10x + 4x^3 - 18xy + \tfrac14,\ -9x^2 + 6y + 8y^3\bigr)$ has exactly five real zeros, classified by the eigenvalues of the Hessian:
+
+| Point | $f$ | Hessian eigenvalues | Type |
+|---|---:|---|---|
+| $(-0.02503609333,\ 0.0009402078455)$ | $-0.003127252578$ | $5.949763$, $10.04086$ | minimum |
+| $(2.148212130,\ 1.587535404)$ | $-0.7636800592$ | $10.22583$, $93.06277$ | minimum |
+| $(-2.181751873,\ 1.606976563)$ | $-1.846282960$ | $11.08599$, $95.08589$ | minimum |
+| $(0.9685355179,\ 0.7783536590)$ | $1.792682348$ | $-4.764567$, $32.55096$ | saddle point |
+| $(-0.9021457873,\ 0.7210195007)$ | $1.324987414$ | $-4.625874$, $29.89079$ | saddle point |
+
+The ratio of the Hessian eigenvalues is $\kappa = 1.688$ at the minimum near the origin, but $\kappa = 9.101$ and $8.577$ at the two outer minima, whose valleys are much narrower. At each of the three starting points below $\partial f / \partial y = 0$, so each run's first step is horizontal.
+
+### Case (i) — start at $(0, 0)$
+
+Here $\nabla f(0, 0) = (\tfrac14,\ 0)$, so $\mathbf{S}_0 = (-1,\ 0)$.
+
+| $k$ | $x_k$ | $y_k$ | $f(\mathbf{P}_k)$ | $\lVert \mathbf{P}_k - \mathbf{P}^{*} \rVert$ | $h_k$ |
+|---:|---:|---:|---:|---:|---:|
+| 0 | $0$ | $0$ | $0$ | $0.02505$ | $0.0249842$ |
+| 1 | $-0.02498415253$ | $0$ | $-0.003124609109$ | $0.0009416$ | $0.000938670$ |
+| 2 | $-0.02500020610$ | $0.0009385329273$ | $-0.003127246163$ | $3.593 \times 10^{-5}$ | $3.57659 \times 10^{-5}$ |
+| 3 | $-0.02503596683$ | $0.0009379220805$ | $-0.003127252562$ | $2.289 \times 10^{-6}$ | $2.28202 \times 10^{-6}$ |
+| 4 | $-0.02503600587$ | $0.0009402037631$ | $-0.003127252578$ | $8.755 \times 10^{-8}$ | $8.71598 \times 10^{-8}$ |
+| 5 | $-0.02503609302$ | $0.0009402022721$ | $-0.003127252578$ | $5.582 \times 10^{-9}$ | $5.56424 \times 10^{-9}$ |
+| 6 | $-0.02503609311$ | $0.0009402078355$ | $-0.003127252578$ | $2.135 \times 10^{-10}$ | $2.12523 \times 10^{-10}$ |
+| 7 | $-0.02503609333$ | $0.0009402078319$ | $-0.003127252578$ | $1.361 \times 10^{-11}$ | — |
+
+Like Example 4, this run ends because the tolerances are met, after $7$ iterations. The contours near this minimum are only mildly elongated, and each step multiplies the distance to the minimum by a factor between $0.037$ and $0.064$. Consecutive directions are within $1^\circ$ of perpendicular.
+
+### Case (ii) — start at $(2, 1.5)$
+
+Here $\nabla f(2, 1.5) = (-\tfrac74,\ 0)$, so $\mathbf{S}_0 = (1,\ 0)$.
+
+| $k$ | $x_k$ | $y_k$ | $f(\mathbf{P}_k)$ | $\lVert \mathbf{P}_k - \mathbf{P}^{*} \rVert$ | $h_k$ |
+|---:|---:|---:|---:|---:|---:|
+| 0 | $2$ | $1.5$ | $-0.625$ | $0.1721$ | $0.0532662$ |
+| 1 | $2.053266231$ | $1.5$ | $-0.6730207833$ | $0.1291$ | $0.0321166$ |
+| 2 | $2.053762804$ | $1.532112742$ | $-0.7046835396$ | $0.1095$ | $0.0348816$ |
+| 3 | $2.088644327$ | $1.532034909$ | $-0.7260087744$ | $0.08142$ | $0.0209132$ |
+| 4 | $2.088885512$ | $1.552946758$ | $-0.7396997474$ | $0.06867$ | $0.0220539$ |
+| 5 | $2.110938260$ | $1.552726217$ | $-0.7485455422$ | $0.05100$ | $0.0132773$ |
+| 6 | $2.111151841$ | $1.566001760$ | $-0.7541463027$ | $0.04286$ | $0.0138996$ |
+| 7 | $2.125050265$ | $1.565822823$ | $-0.7577137430$ | $0.03175$ | $0.00835282$ |
+| 8 | $2.125176743$ | $1.574174683$ | $-0.7599536464$ | $0.02663$ | $0.00869140$ |
+| 9 | $2.133867330$ | $1.574055559$ | $-0.7613615377$ | $0.01968$ | $0.00521113$ |
+| 10 | $2.133942759$ | $1.579266139$ | $-0.7622397669$ | $0.01649$ | $0.00540623$ |
+| 11 | $2.139348497$ | $1.579192922$ | $-0.7627874917$ | $0.01217$ | $0.00323436$ |
+| 12 | $2.139393526$ | $1.582426966$ | $-0.7631274898$ | $0.01019$ | $0.00335086$ |
+| 13 | $2.142744097$ | $1.582383090$ | $-0.7633385350$ | $0.007513$ | $0.00200143$ |
+| 14 | $2.142770861$ | $1.584384339$ | $-0.7634691034$ | $0.006288$ | $0.00206995$ |
+| 15 | $2.144840635$ | $1.584357508$ | $-0.7635498790$ | $0.004633$ | — |
+
+### Case (iii) — start at $(-2, 1.5)$
+
+Here $\nabla f(-2, 1.5) = (\tfrac94,\ 0)$, so $\mathbf{S}_0 = (-1,\ 0)$.
+
+| $k$ | $x_k$ | $y_k$ | $f(\mathbf{P}_k)$ | $\lVert \mathbf{P}_k - \mathbf{P}^{*} \rVert$ | $h_k$ |
+|---:|---:|---:|---:|---:|---:|
+| 0 | $-2$ | $1.5$ | $-1.625$ | $0.2109$ | $0.0674853$ |
+| 1 | $-2.067485306$ | $1.5$ | $-1.703771297$ | $0.1565$ | $0.0406501$ |
+| 2 | $-2.068265495$ | $1.540642617$ | $-1.755018314$ | $0.1315$ | $0.0440570$ |
+| 3 | $-2.112322489$ | $1.540669611$ | $-1.789313080$ | $0.09601$ | $0.0259589$ |
+| 4 | $-2.112414521$ | $1.566628320$ | $-1.810983105$ | $0.08022$ | $0.0274205$ |
+| 5 | $-2.139835062$ | $1.566649781$ | $-1.824677802$ | $0.05817$ | $0.0160238$ |
+| 6 | $-2.139866158$ | $1.582673519$ | $-1.833118037$ | $0.04843$ | $0.0167241$ |
+| 7 | $-2.156590268$ | $1.582680448$ | $-1.838320495$ | $0.03498$ | $0.00973207$ |
+| 8 | $-2.156611223$ | $1.592412497$ | $-1.841477329$ | $0.02905$ | $0.0101096$ |
+| 9 | $-2.166720819$ | $1.592418955$ | $-1.843398051$ | $0.02093$ | $0.00585931$ |
+| 10 | $-2.166727487$ | $1.598278262$ | $-1.844553054$ | $0.01736$ | $0.00607134$ |
+| 11 | $-2.172798818$ | $1.598288143$ | $-1.845249676$ | $0.01248$ | $0.00351065$ |
+| 12 | $-2.172799679$ | $1.601798793$ | $-1.845665881$ | $0.01034$ | $0.00362592$ |
+| 13 | $-2.176425599$ | $1.601801198$ | $-1.845915132$ | $0.007427$ | $0.00209511$ |
+| 14 | $-2.176424804$ | $1.603896306$ | $-1.846063840$ | $0.006154$ | $0.00216106$ |
+| 15 | $-2.178585862$ | $1.603898256$ | $-1.846152572$ | $0.004416$ | $0.00124744$ |
+| 16 | $-2.178585108$ | $1.605145694$ | $-1.846205395$ | $0.003658$ | — |
+
+Cases (ii) and (iii) approach their minima in a staircase of short steps. The directions alternate between horizontal and vertical (each within $1.1^\circ$ of a coordinate axis), and consecutive directions are within $1.2^\circ$ of perpendicular. The distance to the minimum is multiplied by factors between $0.73$ and $0.85$ in case (ii) and between $0.71$ and $0.84$ in case (iii). Both runs stop on the work counter, after $15$ and $16$ iterations, still $0.004633$ and $0.003658$ from their minima. With the counter removed, Mathews' tolerances $\delta = \varepsilon = 10^{-14}$ are met only after $111$ and $91$ iterations.
+
+**Verification:** at each of the five points in the first table the gradient is zero to $40$ digits (Newton's method in $50$-digit arithmetic), and the eigenvalues classify them. $f$ decreases at every step of all three runs. Mathews' tables agree with the three tables to within $1.2 \times 10^{-10}$ in every coordinate. The differences are rounding errors of his machine arithmetic and are largest near the end of each run. In case (i), whose last steps are shorter than $10^{-8}$, his last two points differ from the recomputed ones by up to $3.6 \times 10^{-11}$, so the final digits of rows $6$ and $7$ above differ from his.
+
+## Example 4 — $f(x, y) = (x - y)/(x^2 + y^2 + 2)$ from $(-3, -2)$
+
+Use the gradient method to find the minimum of
+
+$$
+f(x, y) = \frac{x - y}{x^2 + y^2 + 2}, \qquad \mathbf{P}_0 = (-3,\ -2).
+$$
+
+**Step 0** (the minimum): $\nabla f(-1, 1) = (0, 0)$, $f(-1, 1) = -\tfrac12$ and $\mathbf{H}(-1, 1) = \tfrac14 \mathbf{I}$. The minimum is round: near it the level curves are almost circles. The function is also symmetric about the line $y = -x$, since $f(-y, -x) = f(x, y)$.
+
+**Step 1** (first iteration): from the illustration above, $\nabla f(\mathbf{P}_0) = (0.04,\ -0.0844444)$ and $\lVert \nabla f(\mathbf{P}_0) \rVert = 0.09343909$, so
+
+$$
+\mathbf{S}_0 = (-0.4280863,\ 0.9037378), \qquad
+\varphi_0(\gamma) = \frac{-1 - 1.331824\,\gamma}{2 + (-3 - 0.4280863\,\gamma)^2 + (-2 + 0.9037378\,\gamma)^2}.
+$$
+
+The line search starts with $h = 1$: $Y_0 = -0.06666667$, $Y_1 = \varphi_0(1) = -0.1559377$ and $Y_2 = \varphi_0(2) = -0.2166925$. It doubles $h$ twice, to $4$, where $Y_1 = \varphi_0(4) = -0.2359675$ and $Y_2 = \varphi_0(8) = -0.1650125$. Formula (3) gives
+
+$$
+h_0 = 4.818676, \qquad \mathbf{P}_1 = (-5.062809,\ 2.354820), \qquad f(\mathbf{P}_1) = -0.2235760 .
+$$
+
+The exact minimum of $\varphi_0$ is at $\gamma = 3.292600$, where $\varphi_0 = -0.2404550$: the parabola through $\gamma = 0, 4, 8$ overshoots it. Mathews' textbook works this same iteration (its Example 8.9), and there $4.8186760$ is called the minimum of $\varphi_0$. It is the single quadratic-interpolation estimate, not the minimum.
+
+**Step 2** (second iteration): $\nabla f(\mathbf{P}_1) = (-0.03809377,\ 0.001596349)$ and $\mathbf{S}_1 = (0.9991231,\ -0.04186903)$, at $117.75^\circ$ to $\mathbf{S}_0$. The trial step $0.8186760$ is doubled twice, to $3.274704$, and
+
+$$
+h_1 = 2.770828, \qquad \mathbf{P}_2 = (-2.294411,\ 2.238808), \qquad f(\mathbf{P}_2) = -0.3692574,
+$$
+
+while the exact minimum of $\varphi_1$ is at $\gamma = 3.891620$. The textbook's $\mathbf{P}_1$, $\mathbf{S}_1$, $h_1$ and $\mathbf{P}_2$ agree with these values.
+
+**Step 3** (the full run): the run ends after $8$ iterations because the tolerances are met (the counter stands at $47$).
+
+| $k$ | $x_k$ | $y_k$ | $f(\mathbf{P}_k)$ | $\lVert \mathbf{P}_k - \mathbf{P}^{*} \rVert$ | $h_k$ |
+|---:|---:|---:|---:|---:|---:|
+| 0 | $-3$ | $-2$ | $-0.06666666667$ | $3.606$ | $4.81868$ |
+| 1 | $-5.062809412$ | $2.354819870$ | $-0.2235760027$ | $4.283$ | $2.77083$ |
+| 2 | $-2.294411064$ | $2.238807976$ | $-0.3692573850$ | $1.792$ | $1.24463$ |
+| 3 | $-1.387933715$ | $1.385931274$ | $-0.4743948144$ | $0.5472$ | $0.444607$ |
+| 4 | $-1.072605049$ | $1.072493339$ | $-0.4987761621$ | $0.1026$ | $0.0976019$ |
+| 5 | $-1.003535094$ | $1.003533372$ | $-0.4999968883$ | $0.004998$ | $0.00498532$ |
+| 6 | $-1.000009081$ | $1.000009079$ | $-0.5000000000$ | $1.284 \times 10^{-5}$ | $1.28412 \times 10^{-5}$ |
+| 7 | $-1.000000000$ | $1.000000000$ | $-0.5000000000$ | $6.377 \times 10^{-11}$ | $6.37683 \times 10^{-11}$ |
+| 8 | $-1.000000000$ | $1.000000000$ | $-0.5000000000$ | $5.206 \times 10^{-20}$ | — |
+
+This run behaves differently from Examples 1 to 3. The first step lowers $f$ but moves *away* from the minimum, from a distance of $3.606$ to $4.283$, and the first directions are far from perpendicular ($117.75^\circ$ and $40.86^\circ$). From $\mathbf{P}_2$ on, every search direction is within $1.75^\circ$ of $(1, -1)/\sqrt2$, within $0.18^\circ$ from $\mathbf{P}_3$ on, and the iterates close in on the mirror line $y = -x$ ($x_3 + y_3 = -0.002002$, $x_4 + y_4 = -1.117 \times 10^{-4}$). Near the round minimum $-\nabla f$ points almost straight at $(-1, 1)$, so there is no zigzag. Each step lands much closer than the last: the distances fall by factors $0.31$, $0.19$, $0.049$, $0.0026$, $5.0 \times 10^{-6}$ and $8.2 \times 10^{-10}$.
+
+**Verification:** $\nabla f(-1, 1) = (0, 0)$ and $\mathbf{H}(-1, 1) = \tfrac14\mathbf{I}$ is positive definite, so $(-1, 1)$ is a local minimum with $f = -\tfrac12$. $\mathbf{P}_8$ is $5.2 \times 10^{-20}$ from it, and $f$ decreases at every step. Mathews' table agrees with rows $1$ to $7$ to within $9.1 \times 10^{-13}$, but it has a ninth iteration and prints $(-0.999999998992,\ 0.999999998992)$ for both $\mathbf{P}_8$ and $\mathbf{P}_9$. Those points are $1.4 \times 10^{-9}$ from $(-1, 1)$, farther than his $\mathbf{P}_7$. That is rounding error: so close to the minimum, $f$ differs from $-\tfrac12$ by less than machine arithmetic can resolve, and the quadratic fit (3) divides one rounding error by another.
+
+## Example 5 — Drawing the iterations
+
+Mathews' last example returns to the quadratic of Example 1 with a version of the program that draws each step. On a contour plot of $f$ over $[2.5, 3.05] \times [1.6, 2.15]$ it draws the level curve of $f$ through $\mathbf{P}_k$, the search line from $\mathbf{P}_k$ in the direction $\mathbf{S}_k$, and the three trial points $\mathbf{P}_k$, $\mathbf{P}_k + h\mathbf{S}_k$ and $\mathbf{P}_k + 2h\mathbf{S}_k$, then marks the new point. This version also differs in detail from the program above: it starts with $h = 0.2$, stops when the counter reaches $20$, and takes $h_k = h/3$ when the three trial values do not lie on an upward parabola. The starting point and the output of this example survive only in images that are missing from the archive, so the run cannot be reproduced. Its plotting window contains $(3, 2)$, the minimum of Example 1, whose run is tabulated in full above.
