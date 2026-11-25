@@ -1,9 +1,9 @@
 ---
 title: "Crank-Nicolson Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -18,6 +18,46 @@ $$
 $$
 
 The new temperatures are coupled, so every time step solves a tridiagonal linear system. In return, the method is second-order accurate in both $h$ and $k$ and stable for every $r > 0$ (general results, stated below). Mathews' module first runs the forward-difference method twice, with $r = 0.5$ and with the "too large" $r = 0.875$ (Examples 1 and 2), and then runs Crank-Nicolson with $r = 1$ and $r = 2$ (Examples 3 and 4). Every number below has been recomputed: Examples 1 and 2 in exact rational arithmetic, Examples 3 and 4 in double precision, and all four compared with the Fourier series solution of the heat equation.
+
+## Animations
+
+Each animation below advances the **temperature profile** $u(x, t_j)$ one time row per frame and draws the exact solution at the same time (black) beside it. The computed values $u_{i,j}$ at the grid points are joined by straight lines, as in Mathews' plots. Mathews draws all the rows at once as a three-dimensional surface over the indices $i$ and $j$; each frame here is one row of that surface. The second panel shows what the profile alone does not: the error at the grid points (Case 1), the sizes of the two sine modes in the data (Case 2), the largest error in each row (Case 3), or the part of the solution caused by a small perturbation (Case 4). The exact solution of Examples 1 and 2 is the Fourier series below, summed over the odd terms up to $p = 1999$; that of Examples 3 and 4 is the closed form given there. The numbers in the titles and legends agree with the tables in the examples.
+
+Mathews' module links no animation, and his animation archive has none for partial differential equations, so all four animations are new, with no Mathews original. Cases 1 to 3 animate Mathews' four examples with his grids and step sizes; Case 2 continues Example 2 past his last row, to $t = 0.70$. Case 4 animates the sawtooth experiment of Example 4 ("What stability buys"), which is not in the module. Not animated are Mathews' three-dimensional surfaces themselves (including his surfaces of the exact solution in Examples 3 and 4, drawn here as the black curves), the refinement table of Example 3, and the sawtooth figures for $r = 1$.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 1: forward differences with $r = 0.5$, $h = 0.2$, $k = 0.02$
+
+**Behavior:** With $r = \tfrac12$ each new value is the average of its two neighbours in the row below, and the profile sinks smoothly toward zero, symmetric about $x = 0.5$, with the earlier rows left behind in a faint stack. Every computed row lies below the exact solution at the interior grid points, so the error panel stays negative. The largest error in the first step, $0.02411$, is at $x = 0.2$ and $0.8$; from the second step on it is at $x = 0.4$ and $0.6$, where it reaches its largest value, $0.02582$, at $t = 0.1$ (row $6$), and then falls to $0.01853$ at $t = 0.2$, where the computed values are $u(0.2) = 0.0728125$ and $u(0.4) = 0.1178125$.
+
+[Julia source](cranknicolsonaa.jl)
+
+![Forward-difference solution of u_t = u_xx with u(x, 0) = 4x − 4x², h = 0.2, k = 0.02 and r = 0.5, advanced one time row per frame from t = 0 to t = 0.2 against the exact Fourier-series solution, with the earlier rows faint; a second panel shows the error at the grid points, negative at every interior point, largest (0.02582) at x = 0.4 and 0.6 when t = 0.1 and 0.01853 at t = 0.2](cranknicolsonaa.gif)
+
+### Case 2 — Example 2: forward differences with $r = 0.875$, continued to $t = 0.70$
+
+**Behavior:** The computed profile is a combination of the two discrete sine modes $\sin(\pi x_i)$ and $\sin(3\pi x_i)$, and the right panel follows their coefficients $A_1$ and $A_3$ on a logarithmic scale. $A_1$ shrinks by the factor $0.665780$ per step, a little faster than the true factor $e^{-\pi^2 k} = 0.707912$. $A_3$ should shrink by $e^{-9\pi^2 k} = 0.044649$ per step; instead it is multiplied by $G_3 = -1.290780$, so it changes sign at every step (open and filled markers) and grows. From row $7$ ($t = 0.21$) on, $|A_3|$ is larger than $A_1$, and the profile flips between two zigzag shapes from one step to the next, with the previous row drawn dashed. At Mathews' last row, $t = 0.35$, the largest computed value is $0.4441$ while the exact solution is at most $0.03262$. The run then continues: at row $16$ ($t = 0.525$) the profile leaves the fixed axis $[-1.25, 1.25]$ with $\max|u| = 1.553$, and at row $21$ ($t = 0.70$) the largest computed value is $5.569$, while the exact solution is at most $0.001031$.
+
+[Julia source](cranknicolsonbb.jl)
+
+![Forward-difference solution of u_t = u_xx with u(x, 0) = 4x − 4x², h = 0.2, k = 0.035 and r = 0.875, advanced one time row per frame from t = 0 past Mathews' last row t = 0.35 to t = 0.70 against the exact solution, with the previous row dashed: the profile flips between zigzag shapes, grows, and leaves the axis at t = 0.525; a log-scale panel shows the coefficient of sin πx shrinking by 0.665780 per step and the coefficient of sin 3πx growing by 1.290780 per step with alternating sign, against the true decay rates, until it reaches 5.855 at t = 0.70](cranknicolsonbb.gif)
+
+### Case 3 — Examples 3 and 4: Crank-Nicolson with $r = 1$ and $r = 2$
+
+**Behavior:** The two examples run side by side, one time step of each per frame, so Example 4 covers twice the time. In both, the two humps of the initial temperature flatten into a single hump shaped like $\sin(\pi x)$, the computed values stay positive and smooth, and no oscillation appears. With $r = 1$ (left) the computed profile follows the exact one closely from the first step: the largest error in a row is $0.004998$ after one step, falls to $0.002028$ at $t = 0.05$ and rises slowly to $0.002716$ at $t = 0.1$. With $r = 2$ (right) the first step flattens the humps too much, and the largest error is $0.0738$, at $x = 0.5$. After that the error falls at every step, to $0.001381$ at $t = 0.2$. From $t = 0.08$ on it is below Example 3's error at the same time, for the reason given in Example 4 ($0.001979$ against $0.002716$ at $t = 0.1$).
+
+[Julia source](cranknicolsoncc.jl)
+
+![Crank-Nicolson solutions of u_t = u_xx with u(x, 0) = sin πx + sin 3πx and h = 0.1, Example 3 with k = 0.01 and r = 1 and Example 4 with k = 0.02 and r = 2, advanced one step per frame for ten steps against the exact solution, the two humps flattening into one; a log-scale panel tracks the largest error in each row: for r = 1 it is 0.004998 after one step, 0.002028 at t = 0.05 and 0.002716 at t = 0.1, and for r = 2 it is 0.0738 after one step and falls at every step to 0.001381 at t = 0.2](cranknicolsoncc.gif)
+
+### Case 4 — What stability buys: a sawtooth of size $0.001$ on Example 4's grid, $r = 2$
+
+**Behavior:** Both methods start from Example 4's data with $\mp 0.001$ added at the interior grid points ($-0.001$ at $x = 0.1$, $+0.001$ at $x = 0.2$, and so on), and each is also run without it; $\delta$ is the difference between the two runs, drawn in the lower panels on an axis rescaled every step. In both methods $\delta$ changes sign at every interior grid point at every step. Under forward differences, at four times their stability limit, the size of $\delta$ is multiplied by exactly $7$ in each of the first four steps and by between $6.85$ and $7$ in the later ones, close to $|G_9| = 6.804226$, the size of the factor of the mode $p = 9$. The perturbed run leaves the axis at $t = 0.08$ ($\max|u| = 2.679$), and by $t = 0.2$ the largest $|\delta|$ is $2.611 \times 10^{5}$. The forward-difference run without the sawtooth (dashed) stays bounded but is inaccurate, as Example 4 notes. Under Crank-Nicolson, the size of $\delta$ is multiplied by between $0.586$ and $0.694$ per step, to $1.055 \times 10^{-5}$ at $t = 0.2$, and the perturbed and unperturbed runs cannot be told apart at the scale of the profile.
+
+[Julia source](cranknicolsondd.jl)
+
+![Forward-difference and Crank-Nicolson solutions of Example 4 (h = 0.1, k = 0.02, r = 2) with a sawtooth of size 0.001 added to the initial values, advanced one step per frame to t = 0.2 against the exact solution and each method's run without the sawtooth; the lower panels show the difference δ between the runs, which changes sign at every grid point at every step, and a log-scale panel shows its largest size growing about sevenfold per step to 2.611 × 10⁵ for forward differences and shrinking to 1.055 × 10⁻⁵ for Crank-Nicolson](cranknicolsondd.gif)
 
 ## The Heat Equation and the Grid
 
@@ -261,7 +301,7 @@ $$
 \tag{7}
 $$
 
-where $b_i = r\,u_{i-1,j} + (2 - 2r)\,u_{i,j} + r\,u_{i+1,j}$ is the right side of (6). The matrix is the same at every time step. It is strictly diagonally dominant ($2 + 2r > 2r$) and symmetric with eigenvalues $2 + 2r - 2r\cos\bigl(p\pi/(n - 1)\bigr) > 2$, so it is nonsingular for every $r > 0$. A tridiagonal system is solved by Gaussian elimination without pivoting in $O(n)$ operations: one forward sweep eliminates the subdiagonal, and back substitution finds the unknowns (see [Tri-Diagonal Matrices](tri-diagonal-matrices.qmd)). Mathews' `TriDiagonal` routine does exactly this. His program keeps all $n$ rows, including the two boundary rows, which become the trivial equations $u_{1,j+1} = c_1$ and $u_{n,j+1} = c_2$. As he remarks, $n - 2$ rows would do.
+where $b_i = r\,u_{i-1,j} + (2 - 2r)\,u_{i,j} + r\,u_{i+1,j}$ is the right side of (6). The matrix is the same at every time step. It is strictly diagonally dominant ($2 + 2r > 2r$) and symmetric with eigenvalues $2 + 2r - 2r\cos\bigl(p\pi/(n - 1)\bigr) > 2$, so it is nonsingular for every $r > 0$. A tridiagonal system is solved by Gaussian elimination without pivoting in $O(n)$ operations: one forward sweep eliminates the subdiagonal, and back substitution finds the unknowns (see [Tri-Diagonal Matrices](../tri-diagonal-matrices.qmd)). Mathews' `TriDiagonal` routine does exactly this. His program keeps all $n$ rows, including the two boundary rows, which become the trivial equations $u_{1,j+1} = c_1$ and $u_{n,j+1} = c_2$. As he remarks, $n - 2$ rows would do.
 
 ::: {.callout-tip appearance="simple"}
 ## Theorem — Accuracy and stability of Crank-Nicolson (general)
