@@ -91,9 +91,9 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 6 | [Harvesting Model](../pages/numerical-methods/harvesting-model/) | written (all 20 examples); **done (batch 6):** 4 animations (Mathews' three cases, Examples 8, 15, 19, and a new harvest-rate sweep) | none (module `n2003/HarvestingModelMod.html`) | 20 | 77 |
 | 6 | [Logistic Curve](../pages/numerical-methods/logistic-curve/) | written (from the Web module; Example 5 true least squares new); **done (batch 6):** 3 new animations (linearization as L varies, Gauss–Newton, solutions of the fitted equation) | none (module `n2003/Web/LogisticEquationMod/LogisticEquationMod.html`, "Module for Logistic Curve Fitting", 4 examples; the top level has only the Bib and Proof pages) | 0 | 0 |
 | 6 | [Earthquake Model](../pages/numerical-methods/earthquake-model/) | written (all examples); **done (batch 6):** 4 new animations (swaying at ω = 2.1, frequency sweep, amplitude against period, the six modes) | none (module `n2003/EarthquakeModelMod.html`) | 4 | 9 |
-| 7 | [Crank-Nicolson Method](../pages/numerical-methods/crank-nicolson-method.qmd) | skeleton | none | 5 | 17 |
-| 7 | [Finite Difference Method](../pages/numerical-methods/finite-difference-method.qmd) | skeleton | none | 4 | 15 |
-| 7 | [Elliptic PDE's](../pages/numerical-methods/elliptic-pdes.qmd) | skeleton | none | 7 | 25 |
+| 7 | [Crank-Nicolson Method](../pages/numerical-methods/crank-nicolson-method.qmd) | skeleton | none (module `n2003/CrankNicolsonMod.html`) | 5 | 17 |
+| 7 | [Finite Difference Method](../pages/numerical-methods/finite-difference-method.qmd) | skeleton | none (module `n2003/FiniteDifferencePDEMod.html`) | 4 | 15 |
+| 7 | [Elliptic PDE's](../pages/numerical-methods/elliptic-pdes.qmd) | skeleton | none (module `n2003/EllipticPDEMod.html`) | 7 | 25 |
 | 8 | [Power method](../pages/numerical-methods/power-method.qmd) | skeleton | none | 6 | 23 |
 | 8 | [Jacobi method](../pages/numerical-methods/jacobi-method.qmd) | skeleton | none | 7 | 30 |
 | 8 | [QR method](../pages/numerical-methods/qr-method.qmd) | skeleton | none | 9 | 36 |
