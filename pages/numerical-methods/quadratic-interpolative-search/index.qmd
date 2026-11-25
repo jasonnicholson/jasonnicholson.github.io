@@ -1,0 +1,569 @@
+---
+title: "Quadratic Interpolative Search"
+bibliography: ../../../references.bib
+---
+
+← [Numerical Methods](../)
+
+Source inspiration: [@mathewsSite].
+
+## Description
+
+Quadratic interpolative search finds the minimum of a unimodal function $f$ on an interval $[a, b]$ by fitting a parabola through three function values and moving to the parabola's lowest point. The version on this page is the one in Mathews' module and *Mathematica* subroutine, which uses three **equally spaced** points $p_0$, $p_1 = p_0 + h$, $p_2 = p_0 + 2h$. It starts from $p_0 = a$ with $h = (b - a)/2$ and steps to the right when $f'(p_0) < 0$, to the left when $f'(p_0) > 0$. It then halves $h$ while $f(p_0) \le f(p_1)$ and doubles it while $f(p_2) < f(p_1)$, until the middle value is the lowest, $f(p_0) > f(p_1) \le f(p_2)$. With $y_i = f(p_i)$, the vertex of the interpolating quadratic is
+
+$$
+p_{\min} = p_0 + h_{\min}, \qquad h_{\min} = \frac{h\,(4y_1 - 3y_0 - y_2)}{2\,(2y_1 - y_0 - y_2)}.
+$$
+
+The search restarts from $p_0 = p_{\min}$, with $h$ equal (after a step to the right) to the distance from $p_{\min}$ to the nearest of the three old points. It stops when one of $y_0, y_1, y_2$ agrees with $f(p_{\min})$ to within a tolerance $\varepsilon$.
+
+The module also covers **cubic interpolative search**, which uses derivative values explicitly. It fits a cubic $P$ to the values of $f$ and $f'$ at two points $p_0$ and $p_1 = p_0 + h$, and moves to the local minimum of the cubic, $p_2 = p_0 + \gamma h$, where
+
+$$
+\gamma = \frac{-2h f'(p_0)}{(G - 3\alpha) + \sqrt{(G - 3\alpha)^2 - 12 h \alpha f'(p_0)}}, \qquad
+F = f(p_1) - f(p_0), \quad G = h\bigl(f'(p_1) - f'(p_0)\bigr), \quad \alpha = G - 2\bigl(F - h f'(p_0)\bigr).
+$$
+
+Then $(p_0, p_1)$ is replaced by $(p_1, p_2)$ and the step repeats. The cubic search does not keep a bracket: in both of Mathews' examples its first point $p_1$ lies outside $[a, b]$. The examples below keep Mathews' numbers. Examples 1 and 3 use the quadratic search and Examples 2 and 4 the cubic search. Examples 1 and 2 minimise the same function, and so do Examples 3 and 4.
+
+## Animations
+
+Both animations run Mathews' examples on $f(x) = \tfrac12 + x^5 - \tfrac45 x$, whose minimiser is $p = \sqrt{10}/5 \approx 0.6325$ (the dashed green line, also in the bottom panel whenever $p$ lies in its window). The top panel keeps the picture of the graphs in Mathews' solutions of Examples 3 and 4: the graph of $f$ in magenta, red dots on the points the current step works from and a blue dot on the newest point. The bottom panel is new. It zooms on the current points and plots $f(x) - f(p)$, evaluated in high precision, so the steps stay visible after they have become too small to see in the top panel. Points are labelled with enough significant figures to tell them apart, so the labels gain digits as the steps shrink, and the last frame is held. The scripts run Mathews' two subroutines line by line in double precision, and every point they compute agrees with the Example 3 and Example 4 tables.
+
+Mathews' module has two animations, a quadratic search linked from Example 3 and a cubic search linked from Example 4. Both GIFs are lost: the archive keeps only their HTML pages. Cases 1 and 2 rebuild them from his subroutines and from the graphs of his Example 3 and Example 4 solutions, which survive (twelve graphs for Example 3, eight for Example 4); how many frames his GIFs had is not recorded. The parabola, the cubic, the slopes and the zoom panel are new. Examples 1 and 2, which run the same two searches on $x^2 - \sin x$, and the secant-method comparison in Example 2 are not animated.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Mathews' quadratic search animation, Example 3, $f(x) = \tfrac12 + x^5 - \tfrac45 x$ on $[0, 1]$, $\delta = \varepsilon = 10^{-6}$
+
+**Behavior:** There is one frame for each event of Mathews' subroutine, $15$ in all: each new triple $p_0,\ p_0 + h,\ p_0 + 2h$, each halving or doubling of $h$, and each vertex. These are the $23$ rows of the Example 3 table, with the three points of a new triple shown together. The pink span with the red arc is the interval of the current triple, and the bottom title gives the test that decides the next move. In a vertex frame the dashed parabola $Q$ through the triple is drawn with its vertex (open circle) and the new point $p_{3k+3}$ on $f$ (blue). The run uses all three cases of the bracketing loop: the triples of outer steps $k = 0$ and $k = 2$ are bracketed at once, step $k = 1$ doubles twice, to $0.66$ and $0.8733$, and step $k = 3$ halves five times, down to $h = 8.838 \times 10^{-4}$. During those halvings the triple shrinks to a width of $1.77 \times 10^{-3}$, and its dots overlap in the top panel while the zoom keeps them apart. In the last frame $Q$ and $f$ differ by at most $1.1 \times 10^{-9}$ over the zoom window, less than $0.03\%$ of its height, so the two curves coincide there. The search stops after four vertex steps and $23$ calls of $f$, when $\mathrm{Err} = 5.34 \times 10^{-8} \le 10^{-6}$, at $p_{12} = 0.63245496$, which is $5.67 \times 10^{-7}$ from $p$.
+
+[Julia source](quadraticaa.jl)
+
+![Rebuild of Mathews' quadratic search animation on f(x) = 1/2 + x⁵ − 4x/5 over [0, 1]: 15 frames show each triple, the two doublings to 0.66 and 0.8733, the five halvings and the four parabola vertices, ending at p12 = 0.63245496 near the minimiser √10/5 ≈ 0.6325, with a lower panel zoomed on the current triple](quadraticaa.gif)
+
+### Case 2 — Mathews' cubic search animation, Example 4, $f(x) = \tfrac12 + x^5 - \tfrac45 x$, `CubicSearch[0, 1, 7]`
+
+**Behavior:** Frame $m = 1$ shows the start, $p_0 = 0$ and $p_1 = p_0 + h_0 = -0.5$, and frames $m = 2, \ldots, 8$ show the seven cubic steps, the rows of the Example 4 table. In each step the two red points carry the slopes $f'$ as short dark red segments, and the step moves to the blue point $(p_m, f(p_m))$. For $m = 2, \ldots, 6$ the frame also draws, in both panels, the cubic $P$ (dashed) that matches $f$ and $f'$ at the red points, with its local minimum at $p_m$ (open circle). Mathews' graphs show only $[0, 1]$; the window here is widened to $[-0.6, 1.05]$ so that $p_1 = -0.5$ can be seen, and the bottom panel plots against $x - p$. The iterates $p_2 = 0.4954$ and $p_3 = 0.7628$ lie on opposite sides of $p$, and from $p_4$ on they alternate sides while the error falls from $8.27 \times 10^{-5}$ to $1.94 \times 10^{-6}$ and then $1.29 \times 10^{-14}$ at $p_6$. The last two steps work at the level of rounding, and their frames say so. In step $m = 7$ the double-precision $\alpha = 6.7 \times 10^{-17}$ is rounding noise (the same formula in high precision at the same points gives $-2.9 \times 10^{-17}$), so the shape of $P$ away from the two points means nothing and $P$ is drawn only in the zoom, where its $\alpha$ term is less than $10^{-5}$ of the panel height. The step still lands on $p_7$, the double nearest $p$. In step $m = 8$, $f(p_6)$ and $f(p_7)$ round to the same double, so $F = 0$ (in high precision $F = -4.19 \times 10^{-28}$), and $\alpha$ and $\gamma = 1/3$ are rounding noise. No cubic is drawn, and $p_8$ is $8.53 \times 10^{-15}$ from $p$.
+
+[Julia source](cubicaa.jl)
+
+![Rebuild of Mathews' cubic search animation on f(x) = 1/2 + x⁵ − 4x/5: from p0 = 0 and p1 = −0.5, seven steps each move to the local minimum of the cubic that matches f and f′ at two points; p6 is within 1.3e−14 of √10/5 ≈ 0.6325, and a lower panel zoomed on each step marks where F and α become rounding noise in the last two steps](cubicaa.gif)
+
+## Unimodal Functions and the Derivative Test
+
+::: {.callout-note appearance="simple"}
+## Definition — Unimodal function
+The function $f$ is *unimodal* on $I = [a, b]$ if there is a unique number $p \in I$ such that $f$ is decreasing on $[a, p]$ and increasing on $[p, b]$.
+:::
+
+Bracketing searches such as the golden ratio and Fibonacci searches need only this condition. The two methods on this page also use the derivative. Suppose $f$ is unimodal on $[a, b]$ with minimum at $p$, $f'$ exists on $(a, b)$, and $p_0 \in (a, b)$. If $f'(p_0) < 0$ the minimum lies to the right of $p_0$, and if $f'(p_0) > 0$ it lies to the left.
+
+Both of Mathews' functions are unimodal on $[0, 1]$:
+
+- $f(x) = x^2 - \sin x$ has $f''(x) = 2 + \sin x \ge 2 > 0$ on $[0, 1]$, $f'(0) = -1 < 0$ and $f'(1) = 2 - \cos 1 = 1.4597 > 0$. The minimiser is the root of $2x = \cos x$, $p = 0.4501836113$, with $f(p) = -0.2324655752$.
+- $f(x) = \tfrac12 + x^5 - \tfrac45 x$ has $f''(x) = 20x^3 > 0$ on $(0, 1]$, $f'(0) = -0.8$ and $f'(1) = 4.2$. The minimiser is exact: $5p^4 = \tfrac45$ gives $p = (4/25)^{1/4} = \sqrt{10}/5 = 0.6324555320$, with $f(p) = 0.0952284595$.
+
+## Quadratic Interpolative Search
+
+### Bracketing the minimum
+
+The first task is to find three test values
+
+$$
+p_0, \qquad p_1 = p_0 + h, \qquad p_2 = p_0 + 2h
+\tag{1}
+$$
+
+such that
+
+$$
+f(p_0) > f(p_1) \qquad\text{and}\qquad f(p_1) < f(p_2).
+\tag{2}
+$$
+
+Suppose $f'(p_0) < 0$, so that $p_0 < p$ and $h$ is chosen positive. One pass of the bracketing loop does one of three things:
+
+- **Case (i):** if (2) holds, the bracket is found.
+- **Case (ii):** if $f(p_0) > f(p_1)$ and $f(p_1) > f(p_2)$, then $p_1 < p$: the minimum lies to the right of $p_1$, so the points must reach farther right. (Mathews writes $p_2 < p$, which need not hold: in Example 3 the triple $(0.4467, 0.5533, 0.66)$ is doubled although $0.66 > p$.) *Double the step:* $p_1 \leftarrow p_2$, $h \leftarrow 2h$, $p_2 \leftarrow p_0 + 2h$.
+- **Case (iii):** if $f(p_0) \le f(p_1)$, the step has jumped over $p$ and is too large. *Halve the step:* $p_2 \leftarrow p_1$, $h \leftarrow h/2$, $p_1 \leftarrow p_0 + h$.
+
+Each pass of cases (ii) and (iii) evaluates $f$ at one new point. When $f'(p_0) > 0$ the step $h$ is negative and the same three cases apply. Mathews' subroutine accepts the bracket when $f(p_0) > f(p_1)$ and $f(p_2) \ge f(p_1)$, so a tie between $f(p_1)$ and $f(p_2)$ also ends the loop. The loop also stops if $|h|$ falls to a minimum step $\delta$. Mathews' text starts with $h = 1$, or $h = \tfrac12$ if $a + 1 < b$ fails. His subroutine starts with $h = (b - a)/2$, which for the interval $[0, 1]$ of both examples is the same $h = \tfrac12$.
+
+### The vertex of the interpolating quadratic
+
+With $y_i = f(p_i)$ for $i = 0, 1, 2$, the Lagrange polynomial through the three points (1) is
+
+$$
+Q(x) = y_0\,\frac{(x - p_1)(x - p_2)}{2h^2} - y_1\,\frac{(x - p_0)(x - p_2)}{h^2} + y_2\,\frac{(x - p_0)(x - p_1)}{2h^2},
+\tag{3}
+$$
+
+and its derivative is
+
+$$
+Q'(x) = y_0\,\frac{2x - p_1 - p_2}{2h^2} - y_1\,\frac{2x - p_0 - p_2}{h^2} + y_2\,\frac{2x - p_0 - p_1}{2h^2}.
+\tag{4}
+$$
+
+Write the critical point as $x = p_0 + h_{\min}$, set $Q'(p_0 + h_{\min}) = 0$, multiply by $2h^2$ and collect the terms in $h_{\min}$:
+
+$$
+0 = h_{\min}(2y_0 - 4y_1 + 2y_2) + y_0(2p_0 - p_1 - p_2) - y_1(4p_0 - 2p_0 - 2p_2) + y_2(2p_0 - p_0 - p_1).
+$$
+
+With $p_1 = p_0 + h$ and $p_2 = p_0 + 2h$ the last three terms are $-3hy_0 + 4hy_1 - hy_2$, so
+
+$$
+h_{\min} = \frac{h\,(4y_1 - 3y_0 - y_2)}{2\,(2y_1 - y_0 - y_2)}, \qquad p_{\min} = p_0 + h_{\min}.
+\tag{5}
+$$
+
+Subtracting $h$ gives the position of the vertex relative to the middle point:
+
+$$
+p_{\min} - p_1 = h_{\min} - h = \frac{h\,(y_0 - y_2)}{2\,(y_0 - 2y_1 + y_2)}.
+\tag{6}
+$$
+
+::: {.callout-tip appearance="simple"}
+## Property of the vertex step (general)
+The second derivative of $Q$ is $Q'' = (y_0 - 2y_1 + y_2)/h^2$. If the triple is bracketed, $y_0 > y_1$ and $y_2 \ge y_1$, then $Q'' > 0$, so $p_{\min}$ is the minimum of $Q$, and
+
+$$
+-\tfrac12 |h| < \operatorname{sign}(h)\,(p_{\min} - p_1) \le \tfrac12 |h|,
+$$
+
+with equality only when $y_2 = y_1$. So $p_{\min}$ lies within half a step of $p_1$, strictly between $p_0$ and $p_2$. To see this, put $u = y_0 - y_1 > 0$ and $v = y_2 - y_1 \ge 0$; then (6) reads $(p_{\min} - p_1)/h = (u - v)/\bigl(2(u + v)\bigr)$, and $|u - v| < u + v$ unless $v = 0$.
+:::
+
+In the seven vertex steps of Examples 1 and 3, $|p_{\min} - p_1|/|h|$ takes the values $0.128$, $0.105$, $0.418$ and $0.107$, $0.270$, $0.490$, $0.165$, all below $\tfrac12$.
+
+::: {.callout-warning appearance="simple"}
+## When the vertex formula fails (general)
+The denominator $2(2y_1 - y_0 - y_2)$ of (5) is zero when the three points are collinear, $y_1 = (y_0 + y_2)/2$. If the triple is not bracketed, for instance because the bracketing loop stopped at $|h| \le \delta$, then $Q$ can be concave, and (5) then gives its maximum, or $p_{\min}$ can lie far outside the triple. In Examples 1 and 3 every bracketing loop ends in case (i), so neither problem arises.
+:::
+
+### Restarting and stopping
+
+Mathews notes that $p_{\min}$ is a better approximation to $p$ than $p_0$, so the search replaces $p_0$ by $p_{\min}$ and repeats both processes with a new $h$. His subroutine computes the new step as
+
+$$
+h_{\text{new}} = \min\bigl\{\,|h|,\ |h_{\min}|,\ \bigl|h_{\min} - |h|\bigr|,\ \bigl|h_{\min} - 2|h|\bigr|\,\bigr\},
+\tag{7}
+$$
+
+and uses $h_{\text{new}} = h_{\min}$ if this minimum is zero. The sign of $f'(p_{\min})$ then sets the direction of the next step. (For a step to the right, $h > 0$, the last three numbers are the distances to $p_0$, $p_1$, $p_2$, and for a bracketed triple the cap $|h|$ never binds, because $p_{\min}$ lies within $|h|/2$ of $p_1$; so $h_{\text{new}}$ is the distance from $p_{\min}$ to the nearest point of the old triple. For a bracketed step to the left, (7) gives $\min\{|h|, |h_{\min}|\}$ instead. Every outer step of Examples 1 and 3 goes to the right.)
+
+The subroutine stops on function values, not on the distance to $p$. After each vertex it computes $e_i = |y_i - f(p_{\min})|$ for $i = 0, 1, 2$. $\mathrm{Err}$ is the smallest nonzero $e_i$ found so far, starting from $\mathrm{Err} = 1$ (or $\mathrm{Err} = 0$ if all three $e_i$ are zero), and the search stops when $\mathrm{Err} \le \varepsilon$. It also stops after 50 outer steps, and each bracketing loop is limited to 50 passes.
+
+Mathews writes that the method uses the derivative only implicitly, through (4), and makes no explicit use of $f'$. His subroutine does evaluate $f'(p_0)$ once per outer step, but uses only its sign, to choose the direction.
+
+::: {.callout-important appearance="simple"}
+## Algorithm — Quadratic search for a minimum (Mathews' subroutine)
+Given $f$ unimodal on $[a, b]$, a minimum step $\delta$ and a tolerance $\varepsilon$: set $p_0 = a$, $h = (b - a)/2$, $\mathrm{Err} = 1$, $k = 0$.
+
+1. If $f'(p_0) > 0$, set $h = -|h|$. Evaluate $y_i = f(p_i)$ at the triple (1).
+2. While $|h| > \delta$ and the triple is not bracketed: if $y_0 \le y_1$, halve (case iii); otherwise, if $y_2 < y_1$, double (case ii).
+3. Compute $h_{\min}$ and $p_{\min} = p_{3k+3}$ from (5), and $f(p_{\min})$.
+4. Update $\mathrm{Err}$ from the $e_i$ and set the new $h$ from (7).
+5. Set $p_0 = p_{\min}$ and $k \leftarrow k + 1$. Repeat from step 1 while $\mathrm{Err} > \varepsilon$.
+:::
+
+The tables label the points as Mathews does. The bracketing triple of outer step $k$ is $p_{3k}, p_{3k+1}, p_{3k+2}$, its vertex is $p_{3k+3}$, and the trial points of the bracketing loop are $q_{3k+2,j}$, $j = 0, 1, \ldots$
+
+### Example 1 — Minimise $x^2 - \sin x$ on $[0, 1]$
+
+Find the minimum of
+
+$$
+f(x) = x^2 - \sin x
+$$
+
+on $[0, 1]$ with the quadratic search. Mathews calls his subroutine with $\delta = \varepsilon = 10^{-6}$.
+
+**Step 1** (first triple): $p_0 = 0$ and $f'(0) = -1 < 0$, so $h = (1 - 0)/2 = 0.5$ is positive. The triple is
+
+$$
+p_0 = 0,\quad p_1 = 0.5,\quad p_2 = 1, \qquad y_0 = 0,\quad y_1 = -0.2294255386,\quad y_2 = 0.1585290152 .
+$$
+
+Since $y_0 > y_1 < y_2$, this triple is already bracketed (case i).
+
+**Step 2** (first vertex): from (5),
+
+$$
+h_{\min} = \frac{0.5\,(4y_1 - 3y_0 - y_2)}{2\,(2y_1 - y_0 - y_2)} = \frac{0.5\,(-1.0762311696)}{-1.2347601848} = 0.4358057471,
+$$
+
+so $p_3 = 0.4358057471$ and $f(p_3) = -0.2322143232$.
+
+**Step 3** (restart): the distances from $p_3$ to the old points are $0.4358057471$, $0.0641942529$ and $0.5641942529$, so by (7) the new step is $h = 0.0641942529$, the distance to $p_1 = 0.5$. The differences $e_i$ are $0.232$, $2.79 \times 10^{-3}$ and $0.391$, so $\mathrm{Err} = 2.79 \times 10^{-3} > 10^{-6}$ and the search continues. Since $f'(p_3) = -0.0349 < 0$, the step stays positive.
+
+**Step 4** (second bracket): the new triple is $0.4358057471$, $0.5$, $0.5641942529$, with values $-0.2322143232$, $-0.2294255386$, $-0.2164199625$. Since $y_0 \le y_1$, halve: $q_{5,0} = 0.4679028735$, with $f = -0.2320824604$, is still above $y_0$, so halve again: $q_{5,1} = 0.4518543103$, with $f = -0.2324621759$. Now $y_0 > y_1$ and $y_2 = f(0.4679028735) > y_1$, so the bracket is $(0.4358057471, 0.4518543103, 0.4679028735)$ with $h = 0.0160485632$.
+
+**Step 5** (second vertex): (5) gives $h_{\min} = 0.0143625245$, so $p_6 = 0.4501682715$ and $f(p_6) = -0.232465574872$. The new step is $h = 0.0016860388$, the distance to $0.4518543103$, and $\mathrm{Err} = 3.40 \times 10^{-6}$.
+
+**Step 6** (third bracket and vertex): six halvings bring the step down to $h = 2.63444 \times 10^{-5}$, and the vertex is $p_9 = 0.4501836113$. Now $\mathrm{Err} = 1.47 \times 10^{-10} \le 10^{-6}$, and the search stops.
+
+Every point the subroutine evaluates, in order:
+
+| $k$ | Point | $x$ | $f(x)$ | Action |
+|---|---|---|---|---|
+| 0 | $p_{0}$ | 0.0000000000 | 0.000000000000 | $f'(p_0) < 0$, $h = 0.5000000000$ |
+| 0 | $p_0 + h$ | 0.5000000000 | -0.229425538604 |  |
+| 0 | $p_0 + 2h$ | 1.0000000000 | 0.158529015192 |  |
+| 0 | $p_{3}$ (vertex) | 0.4358057471 | -0.232214323192 | triple $(0.00000000, 0.50000000, 1.00000000)$ |
+| 1 | $p_{3}$ (start) | 0.4358057471 | -0.232214323192 | $f'(p_0) < 0$, $h = 0.0641942529$ |
+| 1 | $p_0 + h$ | 0.5000000000 | -0.229425538604 |  |
+| 1 | $p_0 + 2h$ | 0.5641942529 | -0.216419962455 |  |
+| 1 | $q_{5,0}$ | 0.4679028735 | -0.232082460352 | halve: $h = 0.0320971265$ |
+| 1 | $q_{5,1}$ | 0.4518543103 | -0.232462175947 | halve: $h = 0.0160485632$ |
+| 1 | $p_{6}$ (vertex) | 0.4501682715 | -0.232465574872 | triple $(0.43580575, 0.45185431, 0.46790287)$ |
+| 2 | $p_{6}$ (start) | 0.4501682715 | -0.232465574872 | $f'(p_0) < 0$, $h = 0.0016860388$ |
+| 2 | $p_0 + h$ | 0.4518543103 | -0.232462175947 |  |
+| 2 | $p_0 + 2h$ | 0.4535403491 | -0.232451850337 |  |
+| 2 | $q_{8,0}$ | 0.4510112909 | -0.232464740976 | halve: $h = 0.0008430194$ |
+| 2 | $q_{8,1}$ | 0.4505897812 | -0.232465374281 | halve: $h = 0.0004215097$ |
+| 2 | $q_{8,2}$ | 0.4503790264 | -0.232465528662 | halve: $h = 0.0002107548$ |
+| 2 | $q_{8,3}$ | 0.4502736490 | -0.232465565288 | halve: $h = 0.0001053774$ |
+| 2 | $q_{8,4}$ | 0.4502209603 | -0.232465573460 | halve: $h = 0.0000526887$ |
+| 2 | $q_{8,5}$ | 0.4501946159 | -0.232465575011 | halve: $h = 0.0000263444$ |
+| 2 | $p_{9}$ (vertex) | 0.4501836113 | -0.232465575158 | triple $(0.45016827, 0.45019462, 0.45022096)$ |
+
+The outer steps in summary:
+
+| $k$ | Bracketing triple $p_{3k}, p_{3k+1}, p_{3k+2}$ | $h$ | $h_{\min}$ | $p_{3k+3}$ | $\lvert p_{3k+3} - p \rvert$ | new $h$ | Err |
+|---|---|---|---|---|---|---|---|
+| 0 | 0.00000000, 0.50000000, 1.00000000 | $5.0000 \times 10^{-1}$ | $4.3581 \times 10^{-1}$ | 0.4358057471 | $1.44 \times 10^{-2}$ | $6.4194 \times 10^{-2}$ | $2.79 \times 10^{-3}$ |
+| 1 | 0.43580575, 0.45185431, 0.46790287 | $1.6049 \times 10^{-2}$ | $1.4363 \times 10^{-2}$ | 0.4501682715 | $1.53 \times 10^{-5}$ | $1.6860 \times 10^{-3}$ | $3.40 \times 10^{-6}$ |
+| 2 | 0.45016827, 0.45019462, 0.45022096 | $2.6344 \times 10^{-5}$ | $1.5340 \times 10^{-5}$ | 0.4501836113 | $2.00 \times 10^{-11}$ | $1.1005 \times 10^{-5}$ | $1.47 \times 10^{-10}$ |
+
+**Result:** after three vertex steps and 20 calls of $f$ (the subroutine does not reuse values, so for example it evaluates $f$ at $p_0$ again at the start of every outer step),
+
+$$
+\boxed{\,p \approx p_9 = 0.4501836113, \qquad f(p_9) = -0.2324655752\,}
+$$
+
+Mathews' listing of this run agrees with these points to the eight decimals it prints. It prints $p_4 = 0.5$, $p_5 = 0.56419425$, $p_7 = 0.45185431$ and $p_8 = 0.45354035$, the triples before halving, where the tables above list the triples after bracketing. Its first line gives $f(p_0) = -0.2322143232$ for $p_0 = 0$. That is $f(p_3)$: the subroutine prints $y_0$ before assigning it, and the variable still held the value from the step-by-step calculation above it. In fact $f(0) = 0$.
+
+**Verification:** the minimiser is the root of $f'(x) = 2x - \cos x$, solved independently to 40 digits.
+
+| Quantity | Value |
+|---|---|
+| True minimiser $p$ | $0.4501836113$ |
+| True minimum $f(p)$ | $-0.2324655752$ |
+| Quadratic-search estimate $p_9$ | $0.4501836113$ |
+| Error $\lvert p_9 - p \rvert$ | $2.0 \times 10^{-11}$ |
+| $f(p_9) - f(p)$ | $4.9 \times 10^{-22}$ |
+| $f'(p_9)$ | $-4.9 \times 10^{-11}$ |
+| Each bracketing triple contains $p$ | $\checkmark$ (all three) |
+
+Mathews compares with *Mathematica*'s `FindMinimum`, which gives $p = 0.45018361$ and $f(p) = -0.23246558$, in agreement.
+
+### Example 3 — Minimise $\tfrac12 + x^5 - \tfrac45 x$ on $[0, 1]$
+
+Find the minimum of
+
+$$
+f(x) = \frac12 + x^5 - \frac45\,x
+$$
+
+on $[0, 1]$ with the quadratic search, again with $\delta = \varepsilon = 10^{-6}$. This is the example of Mathews' quadratic-search animation. His solution prints, for each outer step, the trial points of the bracketing loop and then the bracketed triple $p_{3k}, p_{3k+1}, p_{3k+2}$, and last the vertex $p_{12}$. It does not print a starting triple that still needs halving or doubling. It interleaves the printed lines with graphs of $f$ that mark the current points. This example uses all three cases of the bracketing loop.
+
+**Step 1** (first triple and vertex): $f'(0) = -0.8 < 0$ and $h = 0.5$. The triple $0, 0.5, 1$ has values $0.5$, $0.13125$, $0.7$, so it is bracketed. Here $4y_1 - 3y_0 - y_2 = -1.675$ and $2(2y_1 - y_0 - y_2) = -1.875$, so
+
+$$
+h_{\min} = \frac{0.5\,(-1.675)}{-1.875} = 0.4466666667 = \tfrac{67}{150}, \qquad p_3 = 0.4466666667, \qquad f(p_3) = 0.1604460919.
+$$
+
+The new step is the distance to $0.5$, $h = 0.0533333333$, and $\mathrm{Err} = 2.92 \times 10^{-2}$.
+
+**Step 2** (doubling, case ii): the triple $0.4466666667$, $0.5$, $0.5533333333$ has values $0.1604460919$, $0.13125$, $0.1092054735$, which decrease, so double: $q_{5,0} = p_0 + 2(0.1066666667) = 0.66$, with $f = 0.0972332576$, is lower again, so double once more: $q_{5,1} = 0.8733333333$, with $f = 0.3093759954$. The bracket is $(0.4466666667, 0.66, 0.8733333333)$ with $h = 0.2133333333$. Its vertex is $p_6 = 0.6023078449$, with $f(p_6) = 0.0974207564$. This value is higher than $f(0.66) = 0.0972332576$, and $p_6$ is farther from $p$ ($0.0301$) than $0.66$ is ($0.0275$). The vertex is not always the best point found so far. The new step is $h = 0.0576921551$, the distance to $0.66$, and $\mathrm{Err} = 1.87 \times 10^{-4}$.
+
+**Step 3** (bracketed at once): the triple $0.6023078449$, $0.66$, $0.7176921551$ is bracketed without halving or doubling, and its vertex is $p_9 = 0.6317169944$. None of its $e_i$ is below $1.87 \times 10^{-4}$, so $\mathrm{Err}$ does not change.
+
+**Step 4** (halving, case iii): from $p_9$ with $h = 0.0282830056$, five halvings give the bracket $(0.6317169944, 0.6326008383, 0.6334846822)$ and the vertex $p_{12} = 0.6324549648$. Now $\mathrm{Err} = 5.34 \times 10^{-8} \le 10^{-6}$, and the search stops.
+
+| $k$ | Point | $x$ | $f(x)$ | Action |
+|---|---|---|---|---|
+| 0 | $p_{0}$ | 0.0000000000 | 0.500000000000 | $f'(p_0) < 0$, $h = 0.5000000000$ |
+| 0 | $p_0 + h$ | 0.5000000000 | 0.131250000000 |  |
+| 0 | $p_0 + 2h$ | 1.0000000000 | 0.700000000000 |  |
+| 0 | $p_{3}$ (vertex) | 0.4466666667 | 0.160446091944 | triple $(0.00000000, 0.50000000, 1.00000000)$ |
+| 1 | $p_{3}$ (start) | 0.4466666667 | 0.160446091944 | $f'(p_0) < 0$, $h = 0.0533333333$ |
+| 1 | $p_0 + h$ | 0.5000000000 | 0.131250000000 |  |
+| 1 | $p_0 + 2h$ | 0.5533333333 | 0.109205473488 |  |
+| 1 | $q_{5,0}$ | 0.6600000000 | 0.097233257600 | double: $h = 0.1066666667$ |
+| 1 | $q_{5,1}$ | 0.8733333333 | 0.309375995404 | double: $h = 0.2133333333$ |
+| 1 | $p_{6}$ (vertex) | 0.6023078449 | 0.097420756388 | triple $(0.44666667, 0.66000000, 0.87333333)$ |
+| 2 | $p_{6}$ (start) | 0.6023078449 | 0.097420756388 | $f'(p_0) < 0$, $h = 0.0576921551$ |
+| 2 | $p_0 + h$ | 0.6600000000 | 0.097233257600 |  |
+| 2 | $p_0 + 2h$ | 0.7176921551 | 0.116256820653 |  |
+| 2 | $p_{9}$ (vertex) | 0.6317169944 | 0.095229837749 | triple $(0.60230784, 0.66000000, 0.71769216)$ |
+| 3 | $p_{9}$ (start) | 0.6317169944 | 0.095229837749 | $f'(p_0) < 0$, $h = 0.0282830056$ |
+| 3 | $p_0 + h$ | 0.6600000000 | 0.097233257600 |  |
+| 3 | $p_0 + 2h$ | 0.6882830056 | 0.103840425046 |  |
+| 3 | $q_{11,0}$ | 0.6458584972 | 0.095692648704 | halve: $h = 0.0141415028$ |
+| 3 | $q_{11,1}$ | 0.6387877458 | 0.095330918305 | halve: $h = 0.0070707514$ |
+| 3 | $q_{11,2}$ | 0.6352523701 | 0.095248336238 | halve: $h = 0.0035353757$ |
+| 3 | $q_{11,3}$ | 0.6334846822 | 0.095231143323 | halve: $h = 0.0017676879$ |
+| 3 | $q_{11,4}$ | 0.6326008383 | 0.095228512925 | halve: $h = 0.0008838439$ |
+| 3 | $p_{12}$ (vertex) | 0.6324549648 | 0.095228459499 | triple $(0.63171699, 0.63260084, 0.63348468)$ |
+
+| $k$ | Bracketing triple $p_{3k}, p_{3k+1}, p_{3k+2}$ | $h$ | $h_{\min}$ | $p_{3k+3}$ | $\lvert p_{3k+3} - p \rvert$ | new $h$ | Err |
+|---|---|---|---|---|---|---|---|
+| 0 | 0.00000000, 0.50000000, 1.00000000 | $5.0000 \times 10^{-1}$ | $4.4667 \times 10^{-1}$ | 0.4466666667 | $1.86 \times 10^{-1}$ | $5.3333 \times 10^{-2}$ | $2.92 \times 10^{-2}$ |
+| 1 | 0.44666667, 0.66000000, 0.87333333 | $2.1333 \times 10^{-1}$ | $1.5564 \times 10^{-1}$ | 0.6023078449 | $3.01 \times 10^{-2}$ | $5.7692 \times 10^{-2}$ | $1.87 \times 10^{-4}$ |
+| 2 | 0.60230784, 0.66000000, 0.71769216 | $5.7692 \times 10^{-2}$ | $2.9409 \times 10^{-2}$ | 0.6317169944 | $7.39 \times 10^{-4}$ | $2.8283 \times 10^{-2}$ | $1.87 \times 10^{-4}$ |
+| 3 | 0.63171699, 0.63260084, 0.63348468 | $8.8384 \times 10^{-4}$ | $7.3797 \times 10^{-4}$ | 0.6324549648 | $5.67 \times 10^{-7}$ | $1.4587 \times 10^{-4}$ | $5.34 \times 10^{-8}$ |
+
+**Result:** after four vertex steps and 23 calls of $f$,
+
+$$
+\boxed{\,p \approx p_{12} = 0.6324549648, \qquad f(p_{12}) = 0.0952284595\,}
+$$
+
+Every point and value printed in Mathews' solution, to eight decimals for the points and ten for the values, agrees with this run.
+
+**Verification:** the exact minimiser is $p = \sqrt{10}/5$.
+
+| Quantity | Value |
+|---|---|
+| True minimiser $p = \sqrt{10}/5$ | $0.6324555320$ |
+| True minimum $f(p)$ | $0.0952284595$ |
+| Quadratic-search estimate $p_{12}$ | $0.6324549648$ |
+| Error $\lvert p_{12} - p \rvert$ | $5.67 \times 10^{-7}$ |
+| $f(p_{12}) - f(p)$ | $8.1 \times 10^{-13}$ |
+| $f'(p_{12})$ | $-2.9 \times 10^{-6}$ |
+| Each bracketing triple contains $p$ | $\checkmark$ (all four) |
+
+The stopping test uses function values, so the error in $p$ is much larger than the agreement of the function values: $f(p_{12}) - f(p) = 8.1 \times 10^{-13}$ while $p_{12} - p = -5.67 \times 10^{-7}$. Near a minimum $f(x) - f(p) \approx \tfrac12 f''(p)(x - p)^2$, and here $\tfrac12 f''(p) (5.67 \times 10^{-7})^2 = \tfrac12 (5.06)(3.2 \times 10^{-13}) = 8.1 \times 10^{-13}$.
+
+## Cubic Interpolative Search
+
+### The starting step
+
+Assume $f$ is unimodal and differentiable on $[a, b]$, with minimum at $p$, and let $p_0 = a$. Any reasonable step $h$ can start the iteration. Mathews estimates one from the mean value theorem, $f(a + h) - f(a) = h f'(c)$ for some $c$ between $a$ and $a + h$. If $a + h$ were just to the right of the minimum, the average slope $f'(c)$ might be about $\tfrac12 f'(a)$. Since the position of $a + h$ is unknown, he takes $f(a + h) \approx f(b)$ and obtains
+
+$$
+h_0 = \frac{2\bigl(f(b) - f(a)\bigr)}{f'(a)}, \qquad p_1 = p_0 + h_0.
+\tag{8}
+$$
+
+When $f'(a) < 0$, this $h_0$ is positive only if $f(b) < f(a)$. In both of Mathews' examples $f(b) > f(a)$, so $h_0 < 0$ and $p_1$ lies to the left of $a$, outside the interval.
+
+### The interpolating cubic
+
+Let $h = p_1 - p_0$. The cubic $P$ is written about the abscissa $p_2$ of its minimum:
+
+$$
+P(x) = \frac{\alpha}{h^3}(x - p_2)^3 + \frac{\beta}{h^2}(x - p_2)^2 + f(p_2),
+\qquad
+P'(x) = \frac{3\alpha}{h^3}(x - p_2)^2 + \frac{2\beta}{h^2}(x - p_2).
+\tag{9}
+$$
+
+It must satisfy $P(p_0) = f(p_0)$, $P(p_1) = f(p_1)$, $P'(p_0) = f'(p_0)$ and $P'(p_1) = f'(p_1)$. (The powers of $h$ in the denominators make the following algebra simpler.) Put
+
+$$
+p_2 = p_0 + \gamma h,
+\tag{10}
+$$
+
+so that $p_1 - p_2 = (1 - \gamma)h$ and $p_0 - p_2 = -\gamma h$. Substituting into (9) gives three equations:
+
+$$
+\begin{aligned}
+F &= f(p_1) - f(p_0) = \alpha(3\gamma^2 - 3\gamma + 1) + \beta(1 - 2\gamma), \\
+G &= h\bigl(f'(p_1) - f'(p_0)\bigr) = 3\alpha(1 - 2\gamma) + 2\beta, \\
+h f'(p_0) &= 3\alpha\gamma^2 - 2\beta\gamma.
+\end{aligned}
+\tag{11}
+$$
+
+The book section linked from Mathews' module gives the middle equation as $G = f'(p_1) - f'(p_0)$, without the factor $h$. The module and the subroutine include the factor, and it is needed. The combination $G - 2(F - h f'(p_0))$ cancels both $\beta$ and every $\gamma$:
+
+$$
+\alpha = G - 2\bigl(F - h f'(p_0)\bigr).
+\tag{12}
+$$
+
+Multiplying the second equation of (11) by $\gamma$ and adding the third eliminates $\beta$:
+
+$$
+3\alpha\gamma^2 + (G - 3\alpha)\gamma + h f'(p_0) = 0.
+\tag{13}
+$$
+
+The quadratic formula, with the numerator rationalised, gives the root Mathews uses:
+
+$$
+\gamma = \frac{-2h f'(p_0)}{(G - 3\alpha) + \sqrt{(G - 3\alpha)^2 - 12 h \alpha f'(p_0)}}.
+\tag{14}
+$$
+
+::: {.callout-tip appearance="simple"}
+## Which root (general)
+From (9), $P''(p_2) = 2\beta/h^2$, so $p_2$ is a local minimum of $P$ when $\beta > 0$. Each critical point of the cubic through the four conditions gives a representation (9) about that point, so the two roots of (13) are the cubic's two critical points. When $G > 0$, form (14) is the root that stays finite as $\alpha \to 0$ (for $G < 0$ it is unbounded). In that limit $P$ is a quadratic and $\gamma = -h f'(p_0)/G$, so
+
+$$
+p_2 = p_0 - f'(p_0)\,\frac{p_1 - p_0}{f'(p_1) - f'(p_0)},
+$$
+
+the secant step for $f'(x) = 0$. If the discriminant in (14) is negative, the cubic has no critical point and the step is undefined.
+:::
+
+In every step of Examples 2 and 4 the discriminant is positive and $\beta > 0$, so (14) picks the local minimum of the cubic.
+
+To continue, set $h = p_2 - p_1$ and replace $p_0, p_1$ by $p_1, p_2$ in (11)–(14). The method does not keep a bracket, so a stopping rule is harder to choose. Mathews suggests $|f'(p_k)| < \varepsilon$, since $f'(p) = 0$. His subroutine simply runs a fixed number of steps.
+
+::: {.callout-important appearance="simple"}
+## Algorithm — Cubic search for a minimum (Mathews' subroutine)
+Given $f$ unimodal and differentiable on $[a, b]$ and a number of steps $m_{\max}$: set $p_0 = a$, $h_0 = 2(f(b) - f(a))/f'(a)$, $p_1 = p_0 + h_0$. For $k = 0, 1, \ldots, m_{\max} - 1$:
+
+$$
+\begin{aligned}
+F &= f(p_{k+1}) - f(p_k), \qquad G = h_k\bigl(f'(p_{k+1}) - f'(p_k)\bigr), \qquad \alpha = G - 2\bigl(F - h_k f'(p_k)\bigr), \\
+\gamma &= \frac{-2h_k f'(p_k)}{(G - 3\alpha) + \sqrt{(G - 3\alpha)^2 - 12 h_k \alpha f'(p_k)}}, \qquad
+p_{k+2} = p_k + \gamma h_k, \qquad h_{k+1} = p_{k+2} - p_{k+1}.
+\end{aligned}
+$$
+:::
+
+Mathews' algorithm statement lists $p_1 = b$ among the starting values. In his subroutine $b$ enters only through $f(b)$ in $h_0$, and the iteration starts from $p_1 = p_0 + h_0$.
+
+### Example 2 — Minimise $x^2 - \sin x$ by cubic search
+
+Find the minimum of $f(x) = x^2 - \sin x$ on $[0, 1]$, the function of Example 1, with the cubic search and $m_{\max} = 4$ as in Mathews' run. Here $f'(x) = 2x - \cos x$.
+
+**Step 1** (starting step): $f(0) = 0$, $f(1) = 0.1585290152$ and $f'(0) = -1$, so by (8)
+
+$$
+h_0 = \frac{2(0.1585290152 - 0)}{-1} = -0.3170580304, \qquad p_1 = -0.3170580304,
+$$
+
+which is outside $[0, 1]$, with $f(p_1) = 0.4122983762$ and $f'(p_1) = -1.5842728149$.
+
+**Step 2** (first cubic step): from (11) and (12),
+
+$$
+F = 0.4122983762, \qquad G = 0.1852483879, \qquad \alpha = 0.1852483879 - 2(0.4122983762 - 0.3170580304) = -0.0052323037.
+$$
+
+Then $G - 3\alpha = 0.2009452991$, the discriminant is $0.0602863403$ with square root $0.2455327682$, and
+
+$$
+\gamma = \frac{-0.6341160608}{0.2009452991 + 0.2455327682} = -1.4202625104, \qquad
+p_2 = 0 + (-1.4202625104)(-0.3170580304) = 0.4503056342 .
+$$
+
+The other root of (13), $\gamma = 14.22$, corresponds to $x = -4.509$, a local maximum of the cubic. The first cubic step lands within $1.22 \times 10^{-4}$ of $p$.
+
+**Step 3** (continue): set $h = p_2 - p_1 = 0.7673636646$ and repeat with $(p_1, p_2)$.
+
+| $m$ | $h$ | $F$ | $G$ | $\alpha$ | $\gamma$ | $p_m$ | $f(p_m)$ | $f'(p_m)$ | $\lvert p_m - p \rvert$ |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | | | | | | 0.0000000000 | 0.000000000000 | $-1.00$ | $4.50 \times 10^{-1}$ |
+| 1 | | | | | | -0.3170580304 | 0.412298376202 | $-1.58$ | $7.67 \times 10^{-1}$ |
+| 2 | $-3.170580 \times 10^{-1}$ | $4.122984 \times 10^{-1}$ | $1.852484 \times 10^{-1}$ | $-5.232304 \times 10^{-3}$ | -1.42026251 | 0.4503056342 | -0.232465557029 | $2.97 \times 10^{-4}$ | $1.22 \times 10^{-4}$ |
+| 3 | $7.673637 \times 10^{-1}$ | $-6.447639 \times 10^{-1}$ | $1.215941$ | $7.404249 \times 10^{-2}$ | 0.99984144 | 0.4501839577 | -0.232465575158 | $8.43 \times 10^{-7}$ | $3.46 \times 10^{-7}$ |
+| 4 | $-1.216765 \times 10^{-4}$ | $-1.812917 \times 10^{-8}$ | $3.605335 \times 10^{-8}$ | $-2.703607 \times 10^{-13}$ | 1.00284657 | 0.4501836113 | -0.232465575158 | $-2.78 \times 10^{-15}$ | $1.13 \times 10^{-15}$ |
+| 5 | $-3.463607 \times 10^{-7}$ | $-1.460776 \times 10^{-13}$ | $2.921322 \times 10^{-13}$ | $2.297528 \times 10^{-17}$ | 1.00000000 | 0.4501836113 | -0.232465575158 | $1.11 \times 10^{-16}$ | $3.60 \times 10^{-17}$ |
+
+The column $h$ is the step $p_{m-1} - p_{m-2}$ used to compute $p_m$. The iterates $p_2$ and $p_3$ lie to the right of $p$ and $p_4$ to the left. By $p_4$ the error is at the level of double-precision rounding, and $p_5$ only changes the rounding.
+
+**Result:**
+
+$$
+\boxed{\,p \approx p_5 = 0.4501836113, \qquad f(p_5) = -0.2324655752\,}
+$$
+
+Mathews' listing agrees to the eight decimals it prints: $p_2 = 0.45030563$, $p_3 = 0.45018396$, $p_4 = p_5 = 0.45018361$.
+
+**Verification:** the result agrees with the root $p = 0.4501836113$ of $2x = \cos x$ from Example 1 to all ten printed decimals, and $f'(p_5) = 1.1 \times 10^{-16}$.
+
+Mathews also compares with the secant method for the root of $g(x) = f'(x) = 2x - \cos x$, started from $0$ and $1$:
+
+| $k$ | $p_k$ | $g(p_k)$ | $\lvert p_k - p \rvert$ |
+|---|---|---|---|
+| 0 | 0.0000000000 | $-1.0000$ | $4.50 \times 10^{-1}$ |
+| 1 | 1.0000000000 | $1.4597$ | $5.50 \times 10^{-1}$ |
+| 2 | 0.4065540259 | $-1.0538 \times 10^{-1}$ | $4.36 \times 10^{-2}$ |
+| 3 | 0.4465123273 | $-8.9340 \times 10^{-3}$ | $3.67 \times 10^{-3}$ |
+| 4 | 0.4502137087 | $7.3292 \times 10^{-5}$ | $3.01 \times 10^{-5}$ |
+| 5 | 0.4501835908 | $-4.9806 \times 10^{-8}$ | $2.05 \times 10^{-8}$ |
+| 6 | 0.4501836113 | $-2.7711 \times 10^{-13}$ | $1.14 \times 10^{-13}$ |
+| 7 | 0.4501836113 | $0$ | $1.95 \times 10^{-17}$ |
+
+These values agree with the ones Mathews prints. The secant method reaches an error of $10^{-13}$ at $p_6$, while the cubic search, which also uses values of $f$, reaches $10^{-15}$ at $p_4$.
+
+### Example 4 — Minimise $\tfrac12 + x^5 - \tfrac45 x$ by cubic search
+
+Find the minimum of $f(x) = \tfrac12 + x^5 - \tfrac45 x$ on $[0, 1]$, the function of Example 3, with the cubic search and $m_{\max} = 7$. Here $f'(x) = 5x^4 - \tfrac45$. This is the example of Mathews' cubic-search animation. His solution interleaves the printed points with graphs of $f$ on $[0, 1]$ that mark the current points.
+
+**Step 1** (starting step): $f(0) = 0.5$, $f(1) = 0.7$ and $f'(0) = -0.8$, so
+
+$$
+h_0 = \frac{2(0.7 - 0.5)}{-0.8} = -0.5, \qquad p_1 = -0.5, \qquad f(p_1) = 0.86875, \qquad f'(p_1) = -0.4875 .
+$$
+
+**Step 2** (first cubic step): $F = 0.36875$, $G = (-0.5)(-0.4875 + 0.8) = -0.15625$ and $\alpha = -0.15625 - 2(0.36875 - 0.4) = -0.09375$. Here $G < 0$: between $p_1 = -0.5$ and $p_0 = 0$ the function is concave ($f''(x) = 20x^3 < 0$ for $x < 0$). Then $G - 3\alpha = 0.125$, the discriminant is $0.465625$, and
+
+$$
+\gamma = \frac{-0.8}{0.125 + 0.6823672032} = -0.9908750279, \qquad p_2 = 0 + (-0.9908750279)(-0.5) = 0.4954375140 .
+$$
+
+**Step 3** (continue): $p_2$ is still to the left of $p$, and $p_3 = 0.7627526748$ overshoots to the right of it. From $p_4$ on the iterates close in on $p$, and $p_4$, $p_5$, $p_6$ fall on alternate sides of it.
+
+| $m$ | $h$ | $F$ | $G$ | $\alpha$ | $\gamma$ | $p_m$ | $f(p_m)$ | $f'(p_m)$ | $\lvert p_m - p \rvert$ |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | | | | | | 0.0000000000 | 0.500000000000 | $-8.00 \times 10^{-1}$ | $6.32 \times 10^{-1}$ |
+| 1 | | | | | | -0.5000000000 | 0.868750000000 | $-4.88 \times 10^{-1}$ | $1.13$ |
+| 2 | $-5.000000 \times 10^{-1}$ | $3.687500 \times 10^{-1}$ | $-1.562500 \times 10^{-1}$ | $-9.375000 \times 10^{-2}$ | -0.99087503 | 0.4954375140 | 0.133499995943 | $-4.99 \times 10^{-1}$ | $1.37 \times 10^{-1}$ |
+| 3 | $9.954375 \times 10^{-1}$ | $-7.352500 \times 10^{-1}$ | $-1.119971 \times 10^{-2}$ | $4.887487 \times 10^{-1}$ | 1.26854037 | 0.7627526748 | 0.147975541667 | $8.92 \times 10^{-1}$ | $1.30 \times 10^{-1}$ |
+| 4 | $2.673152 \times 10^{-1}$ | $1.447555 \times 10^{-2}$ | $3.718778 \times 10^{-1}$ | $7.627927 \times 10^{-2}$ | 0.51226173 | 0.6323728413 | 0.095228476795 | $-4.18 \times 10^{-4}$ | $8.27 \times 10^{-5}$ |
+| 5 | $-1.303798 \times 10^{-1}$ | $-5.274706 \times 10^{-2}$ | $1.164065 \times 10^{-1}$ | $-1.080328 \times 10^{-2}$ | 0.99935087 | 0.6324574747 | 0.095228459508 | $9.83 \times 10^{-6}$ | $1.94 \times 10^{-6}$ |
+| 6 | $8.463345 \times 10^{-5}$ | $-1.728652 \times 10^{-8}$ | $3.623439 \times 10^{-8}$ | $2.424569 \times 10^{-12}$ | 0.97704602 | 0.6324555320 | 0.095228459498 | $-6.51 \times 10^{-14}$ | $1.29 \times 10^{-14}$ |
+| 7 | $-1.942674 \times 10^{-6}$ | $-9.547585 \times 10^{-12}$ | $1.909510 \times 10^{-11}$ | $6.695557 \times 10^{-17}$ | 0.99999999 | 0.6324555320 | 0.095228459498 | $0$ | $1.60 \times 10^{-17}$ |
+| 8 | $1.287859 \times 10^{-14}$ | $0$ | $8.378689 \times 10^{-28}$ | $-8.378689 \times 10^{-28}$ | 0.33333333 | 0.6324555320 | 0.095228459498 | $-4.32 \times 10^{-14}$ | $8.53 \times 10^{-15}$ |
+
+By $p_6$ the error is $1.3 \times 10^{-14}$. The last two steps work with differences at the level of rounding: for $p_8$ the difference $F$ is exactly zero and $\gamma = \tfrac13$ is meaningless, although $p_8$ still agrees with $p$ to thirteen decimals (error $8.5 \times 10^{-15}$).
+
+**Result:**
+
+$$
+\boxed{\,p \approx p_8 = 0.6324555320, \qquad f(p_8) = 0.0952284595\,}
+$$
+
+Every point and value Mathews prints ($p_0$ to $p_8$, to eight decimals for the points and ten for the values) agrees with this run.
+
+**Verification:** $p = \sqrt{10}/5 = 0.6324555320$; the error of $p_6$, $p_7$ and $p_8$ is at most $1.3 \times 10^{-14}$, and $f'(p_8) = -4.3 \times 10^{-14}$.
+
+## Comparing the Two Searches
+
+Examples 1 and 2 minimise the same function, so the methods can be compared directly.
+
+| Method (on $x^2 - \sin x$) | Information used | Steps | Error of the result |
+|---|---|---|---|
+| Quadratic search (Example 1) | 20 calls of $f$, sign of $f'$ at 3 points | 3 vertex steps | $2.0 \times 10^{-11}$ |
+| Cubic search (Example 2) | $f$ and $f'$ at the iterates | $p_3$ after 2 cubic steps, $p_4$ after 3 | $3.5 \times 10^{-7}$, then $1.1 \times 10^{-15}$ |
+| Secant method on $f'$ | $f'$ only | $p_6$ after 5 secant steps | $1.1 \times 10^{-13}$ |
+
+To see the rate of convergence without the limit of double precision, the three iterations were repeated in 400-digit arithmetic. The ratio $\log e_{k+1} / \log e_k$ of successive errors measures the order:
+
+- **Cubic search:** the ratios settle near $2$. The last ratios before the 400-digit limit are $2.10$, $1.98$, $2.02$ in Example 2 and $2.09$, $1.95$, $2.02$ in Example 4. This is consistent with the order $2$ of cubic interpolation using function and derivative values (a general result).
+- **Secant method on $f'$:** the ratios fall to $1.62$, the golden ratio $(1 + \sqrt5)/2 \approx 1.618$ that is the general order of the secant method.
+- **Mathews' quadratic search:** with $\delta$, $\varepsilon$ and the 50-pass limit removed, each outer step roughly squares the error. The ratios are $2.61$, $2.22$, $2.11$, $2.05$, $2.02$, $2.01$ in Example 1 and $2.08$, $2.06$, $1.99$, $2.02$, $2.00$, $2.00$, $2.00$, $2.00$ in Example 3. But the bracketing loops of the successive outer steps need more and more halvings or doublings: $2, 6, 19, 34, 76, 156$ in Example 1 and $2, 0, 5, 8, 13, 39, 82, 164$ in Example 3. In the last three steps of each run that is $1.4$ to $1.7$ passes, each costing one evaluation of $f$, per decimal digit gained. Counted per function evaluation, the quadratic search therefore converges far more slowly than the squaring per step suggests.
+
+This variant is not the textbook *successive parabolic interpolation*, which keeps the three most recent points, unequally spaced, and needs no bracketing loop.
+
+## Implementation Notes
+
+- **Quadratic search, direction.** The subroutine evaluates $f'(p_0)$ once per outer step and uses only its sign. A version without derivatives must choose the direction from function values instead.
+- **Quadratic search, step rule.** Rule (7) gives the distance from $p_{\min}$ to the nearest old point for every bracketed step with $h > 0$. Because the subroutine replaces $h$ by $|h|$ first, a bracketed step to the left gets $\min\{|h|, |h_{\min}|\}$ instead. Every outer step in Examples 1 and 3 has $f'(p_0) < 0$ and therefore $h > 0$.
+- **Quadratic search, bracketing.** Check that the triple really is bracketed before using (5). The loop can also end because $|h| \le \delta$, and the vertex of an unbracketed or collinear triple is meaningless or undefined.
+- **Quadratic search, stopping.** $\mathrm{Err}$ compares function values, which agree to about the square of the distance to $p$ (Example 3: $8.1 \times 10^{-13}$ in $f$ against $5.7 \times 10^{-7}$ in $x$). A tolerance $\varepsilon$ on $f$ therefore corresponds to a distance of roughly $\sqrt{2\varepsilon / f''(p)}$ (general).
+- **Cubic search, starting step.** Formula (8) needs $f'(a) \ne 0$, and with $f(b) > f(a)$ it sends $p_1$ outside $[a, b]$ (both examples). The method does not keep a bracket, and $p_1$ can land where $f$ is not convex, as in Example 4.
+- **Cubic search, stopping.** Use a test such as $|f'(p_k)| < \varepsilon$ rather than a fixed number of steps. Once the iterates agree to rounding, $F$, $G$ and $\alpha$ are pure rounding noise. Continued in double precision, both examples eventually reach $0/0$ in (14): Example 2 at $p_9$, after $p_7 = p_8$ exactly, and Example 4 also at $p_9$, where $f'(p_7) = 0$ exactly. Mathews' runs stop before this.
+- **Unimodality.** Neither method can tell a local minimum from the global one. If $f$ has several minima in $[a, b]$, the result depends on the start.
