@@ -1,9 +1,9 @@
 ---
 title: "Projectile Motion"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -25,6 +25,44 @@ $$
 $$
 
 Mathews' module has two parts. In the first (Examples 1–4) an arrow is shot straight up at $300$ ft/s and the four drag laws are compared through the ascent time, the maximum height, the descent time and the impact velocity. In the second (Examples 5–8) the same method, applied to two coupled second-order equations for $x(t)$ and $y(t)$, traces the flight of a long-hit baseball. Throughout, $g = 32$ ft/s² and lengths are in feet.
+
+## Animations
+
+All three animations are new, with no Mathews original: his module links no animation, and his animation archive has none for projectile motion. Each runs his RK4 program with $n = 100$ steps, as in his examples, and grows the solutions in time on one clock.
+
+Case 1 puts the arrow of Examples 1–4 under all four drag laws into one picture, one RK4 step per frame. The left panel is Mathews' comparison plot: his window $[0, 20] \times [0, 1500]$, his interval $[0, 20]$ with $h = 0.2$, and his colours, green for (i), blue for (ii), purple for (iv) and, for (iii), the red of his descent curve (he draws its ascent in magenta), with his green darkened for legibility. Dots mark the tops of the flights and crosses the impacts, from the closed forms and, for (iv), from the reference of the error panel. Mathews' RK4 runs on to $t = 20$ after impact, so the window is extended below the ground (gray band) and the part past impact is dashed; it soon leaves the panel, and a note gives the heights below it. The right column is new. Its upper panel is the velocity $y'(t)$, with the terminal velocities of (iii) and (iv) dotted. Its lower panel is the error $\lvert y_j - y(t_j)\rvert$ of each RK4 height on a log scale, solid while the arrow is in the air and dotted past impact, measured against the closed forms of Examples 1–3 and, for Example 4, against a reference computed by the script: RK4 with the step $h/2000$ in 128-bit arithmetic, with the step split at the top of the flight.
+
+Case 2 is Example 3 alone: Mathews' one-formula solution, which keeps the drag pointing down after the top, against the two-piece solution, in his colours (magenta for the ascent, his `graph31`, and red for the descent, his `graph32`), with the RK4 steps ($h = 0.2$) as open circles. The window is Mathews' $[0, 17] \times [0, 1200]$, extended to $t = 20$ to take in the asymptote of the one-formula solution and below the ground (gray band). The frame titles give the RK4, two-piece and one-formula heights and velocities at the current time.
+
+Case 3 flies five baseballs aimed at Stargell's landing point $(506.5, 0)$ at once: Mathews' Example 5, cases 1 and 2 (no drag, his green, the second dashed), Example 6, case 1 (linear drag, his blue), case 1 of our reconstruction of Example 7 (quadratic drag, red; Mathews' inputs and his plot colour for this example are lost) and Example 8's wrong model with the same launch (orange, dash-dot). Each is his RK4 for two second-order equations with $n = 100$ on its own interval $[0, b]$: Mathews' $b$ for Examples 5 and 6, and the landing time for the other two ($6.3536$ and $6.5850$ s). The clock runs to the end of the longest run, $t = 6.849$ s, in $70$ equal steps. Mathews lets Mathematica choose the plot range of each trajectory; here one window holds all five, with room above them for the legend, and the two axes have different scales. Dots mark the highest points, which, like the landing times and the reconstructed launch speed, come from a separate fine-step RK4 (step $10^{-4}$ s); crosses mark the ends of the runs. The lower panel, which is new, shows the speed $\sqrt{(x')^2 + (y')^2}$.
+
+Not animated: the frictionless formulas of the first section with the range example and the angle-of-maximum-range theorem; the other cases of Examples 5, 6 and 7, aimed at Stargell's $470$ ft and at Mantle's and Allen's balls, and the outfield-wall question of Example 5; and Mathews' `DSolve` derivations, which enter only as the reference curves of Cases 1 and 2.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — The four drag laws together (Examples 1–4), $y'' = -32 - \tfrac{k}{m}\,\mathrm{drag}(y')$, $y(0) = 0$, $y'(0) = 300$, RK4 with $h = 0.2$ on $[0, 20]$
+
+**Behavior:** The four arrows leave together at $300$ ft/s, and the drag laws separate them at once. The tops come in the order of the drag at the launch speed ($43.95$, $25.98$ and $12$ ft/s² for (iii), (iv) and (ii)): $885.0$ ft at $t = 6.915$ s for (iii), $984.2$ ft at $7.314$ s for (iv), $1131$ ft at $7.961$ s for (ii) and $1406$ ft at $9.375$ s without drag. In the velocity panel (i) is the straight line $300 - 32t$. With drag the velocity falls faster than that on the way up and more slowly on the way down, so each descent takes longer than its ascent and each arrow lands slower than it left: at $-239.8$, $-194.7$ and $-210.6$ ft/s for (ii), (iii) and (iv), short of the terminal velocities $-800$, $-256$ and $-344.7$ ft/s. Mathews' runs continue below the ground to $t = 20$, where the heights are $-400$, $-856.5$, $-1121$ and $-1027$ ft. In the error panel the error of (i) stays at rounding level (at most $6.43 \times 10^{-13}$ ft), since the solution is a polynomial of degree two, and that of (ii) grows at every step while the arrow is in the air, to $3.24 \times 10^{-7}$ ft. The drag terms $y'\lvert y'\rvert$ and $y'\sqrt{\lvert y'\rvert}$ of (iii) and (iv) are not smooth at the top, where $y' = 0$, and the errors show it: the error of (iii) changes sign between $t = 8.2$ and $8.4$ (the dip), and the error of (iv), between $3.62 \times 10^{-7}$ and $3.88 \times 10^{-6}$ ft before the top, changes sign between $t = 7.4$ and $7.6$, just after the step that contains the top, and then grows at every step to $1.30 \times 10^{-3}$ ft at $t = 15.6$, the last step in the air. Before $t = 7.6$ the error of (iii) is the largest of the four, from $t = 7.6$ on that of (iv). Halving $h$ three times, from $0.2$ to $0.025$, divides the error at $t = 10$ by $16.0$ to $16.1$ each time for (ii), but by $4.4$ to $10.3$ for (iii) and by $1.6$ to $17.9$ for (iv).
+
+[Julia source](projectileaa.jl)
+
+![Mathews' RK4 runs (h = 0.2) for the arrow shot up at 300 ft/s under no drag, linear, quadratic and 3/2-power drag, growing in time in his window [0, 20] × [0, 1500] extended below the ground: tops at 1406, 1131, 885.0 and 984.2 ft, impacts at 18.75, 16.87, 14.90 and 15.74 s, with the velocities approaching the terminal velocities −256 and −344.7 ft/s and a log-scale error panel whose largest errors in the air are 6.43e−13, 3.24e−7, 1.63e−4 and 1.30e−3 ft](projectileaa.gif)
+
+### Case 2 — Example 3, one formula for the whole flight against the two-piece solution and RK4, $y'' = -32 - y'\lvert y'\rvert/2048$
+
+**Behavior:** Up to the top, at $t_{\max} = 6.915$ s and $y_{\max} = 885.0$ ft, the three coincide. After it the one-formula solution keeps the drag pointing down. It is symmetric about the top: it is back at $y = 0$ at $t = 2t_{\max} = 13.83$ s with $V = -300$ ft/s, as if there were no air. Then it plunges, $V \to -\infty$ and $Y \to -\infty$ at the asymptote $t = t_{\max} + 4\pi = 19.48$ s, and beyond it $Y$ is not defined, as the logarithm of a negative number. The two-piece solution falls more slowly, lands at $t = 14.90$ s at $-194.7$ ft/s and approaches the terminal velocity $-256$ ft/s. The RK4 steps follow the two-piece solution, because the single equation switches the sign of the drag by itself: they agree with it to within $1.63 \times 10^{-4}$ ft while the arrow is in the air and stay on it below the ground to $t = 20$ ($y = -1121$ ft, $v = -237.3$ ft/s). At $t = 13.8$ s the RK4 height is $205.1$ ft and the one-formula height $8.943$ ft.
+
+[Julia source](projectilebb.jl)
+
+![Example 3's arrow growing in time on [0, 20]: the ascent (magenta) and the descent (red) of the two-piece solution, with the RK4 steps on them, against Mathews' one formula for the whole flight (magenta dash-dot), which returns to the ground at t = 13.83 s at −300 ft/s and plunges toward its asymptote at t = 19.48 s, while the two-piece solution lands at t = 14.90 s at −194.7 ft/s and its velocity approaches −256 ft/s](projectilebb.gif)
+
+### Case 3 — Five baseballs aimed at Stargell's $506.5$ ft (Examples 5–8), RK4 with $n = 100$ on $[0, b]$
+
+**Behavior:** The frictionless balls (green) leave at $127$ ft/s and are slowest at the top, where the speed is the horizontal velocity, $92.88$ ft/s at $43^\circ$ and $86.61$ ft/s at $47^\circ$. They land at $127.8$ ft/s, slightly faster than they left, because they come down $3$ ft below their launch height. The drag balls leave at $207$ ft/s (blue, linear drag) and $206.79$ ft/s (red, quadratic drag), climb higher, to $181.5$ and $166.0$ ft, peak past the middle of the flight, at $x = 319.8$ and $296.7$ ft, and come down steeply. From $t = 2.325$ s on, both are slower than both frictionless balls. Each is slowest some time after its top ($63.99$ ft/s at $t = 4.084$ s and $72.55$ ft/s at $t = 3.625$ s) and lands at $84.59$ and $95.51$ ft/s. Example 8's wrong model, launched like the red ball, climbs to $199.7$ ft; when the red ball lands, at $t = 6.354$ s, it is still at $(541.37, 30.55)$, and it lands at $x = 553.27$ ft at $t = 6.585$ s at $148.8$ ft/s, faster than the terminal speed $126.5$ ft/s of the quadratic drag model.
+
+[Julia source](projectilecc.jl)
+
+![Five RK4 baseball trajectories aimed at Stargell's landing point (506.5, 0), flying at once: two frictionless balls at 127 ft/s and 43° and 47° (green), linear drag at 207 ft/s and 42° (blue), the reconstructed quadratic drag case at 206.79 ft/s and 42° (red) and Example 8's wrong model with the same launch (orange), which overshoots to 553.27 ft; highest points 120.2, 137.8, 181.5, 166.0 and 199.7 ft; and a speed panel in which the frictionless balls land at 127.8 ft/s, the drag balls at 84.59 and 95.51 ft/s and the wrong model at 148.8 ft/s](projectilecc.gif)
 
 ## Motion without air resistance
 
