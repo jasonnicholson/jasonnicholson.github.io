@@ -1,9 +1,9 @@
 ---
 title: "Painleve Property"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -20,6 +20,40 @@ $$
 so each Runge-Kutta step is taken on whichever of $y$ and $Y$ is of moderate size. At a simple pole, the kind met in all of Mathews' runs, $Y$ crosses zero, $y = 1/Y$ jumps from $+\infty$ to $-\infty$, and the computed curve vaults the vertical asymptote and continues on its other side. Mathews uses $B = 3$ with the fourth-order Runge-Kutta method.
 
 The page first sets out the kinds of singularity (removable singularities, poles, logarithmic and algebraic branch points) and the Painlevé property, with Mathews' examples of removable singularities and poles (Examples 1 to 3) and three equations whose solutions can be found in closed form (Examples 4 to 6). Then it derives the companion equation and the extended Runge-Kutta method and runs it on six initial value problems (Examples 7 to 12). Every number below was recomputed. The runs were made in two independent double-precision implementations (Python and Julia), which agree on every switch point, sign change and final value given, and were checked against the exact solutions.
+
+## Animations
+
+Each animation runs Mathews' pole-vaulting method (the extended fourth-order Runge-Kutta method with $B = 3$) on one of his examples, with his step size and his vertical range $-15 \le y \le 15$. The **top panel** shows the computed points $(x_j, y_j)$ joined, each step coloured by the equation it was taken on: magenta for a Runge-Kutta step on $y' = f(x, y)$, orange for a step on the companion equation $Y' = g(x, Y)$, after which $y_j = 1/Y_j$. The shaded bands are the region $\lvert y \rvert > 3$, and a step that starts there is taken on the companion equation. Behind the computed curve is the exact solution in light blue, with its poles dashed, and the dotted black curve is the plain fourth-order Runge-Kutta method with the same step. The **bottom panel** shows $Y_j = 1/y_j$, the exact $Y = 1/y$ and the same region, now the band $\lvert Y \rvert < 1/3$. Each pole of $y$ is a zero of $Y$, and the × marks where linear interpolation of $Y_j$ across its sign change puts it, with its value.
+
+The titles give the step number $j$, the point $x_j$, the values $y_j$ and $Y_j$ to four significant figures, and the equation the next step will use. A point with $\lvert y_j \rvert > 15$ is drawn as an arrowhead on the edge of the frame, and its true value is in the title; in the bottom panel a point with $\lvert Y_j \rvert > 2$ is not marked. A new frame comes every $10$, $20$ or $8$ steps (Cases 1, 2 and 3), and at every step within three steps of a change of equation, of the first point past a sign change of $Y_j$, and of the overflow of plain Runge-Kutta. The animation pauses at those three kinds of point and at the end. Mathews joins all his points with one line, so his plots draw a near-vertical line from the top of the window to the bottom at each pole. Here the computed curve is broken between the two grid points where $Y_j$ changes sign, and the exact curve is broken at each pole; in the bottom panel the curves are broken instead where $y$ changes sign, at the poles of $Y$.
+
+Mathews' module links no animation, and his animation archive has none for this module, so all three animations are new, with no Mathews original. They animate Examples 7, 8 and 11; each top panel shows what Mathews' static plots of that example show, the computed points and the analytic solution, on his window. Not animated: Examples 1 to 6, which classify singularities and solve three equations in closed form (including Mathews' graphs of $\tan x$, $\sec x$ and $\sec^2 x$ in Example 3(b)), and the runs of Examples 9, 10 and 12, which look like the ones animated (one pole in Examples 9 and 10, two in Example 12).
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — A pole on a grid point: $y' = y^2$, $y(0) = 1$, on $[0, 2]$ with $h = 0.004$ (Example 7)
+
+**Behavior:** The method takes steps $0$ to $166$ on $y' = y^2$. At $x = 0.668$ the value $y = 3.012$ exceeds $B = 3$, and from there it integrates $Y' = -1$, whose solution $Y = 1 - x$ is the straight line in the bottom panel. The grid point $x = 1$ is the pole itself: there $Y = 9.358 \times 10^{-11}$ and $y = 1.069 \times 10^{10}$, drawn as an arrowhead at the top of the frame, and one step later $Y = -0.004000$ and $y = -250.0$. Interpolation puts the zero of $Y$ at $1.0000000001$. At $x = 1.336$, where $y = -2.976$, the method returns to $y' = y^2$, and it ends with $y = -1.000$ at $x = 2$. Plain Runge-Kutta with the same step follows the left branch of the solution, then gives $2050$ at $x = 1$, $2.525 \times 10^{13}$ at $x = 1.004$ and $1.194 \times 10^{174}$ at $x = 1.008$, and overflows at $x = 1.012$. All its values are positive, so it never reaches the lower branch.
+
+[Julia source](painleveaa.jl)
+
+![Pole vaulting on y′ = y², y(0) = 1, with h = 0.004 on [0, 2] × [−15, 15]. Top: the computed points joined, magenta for steps on y′ = y² and orange for steps on Y′ = −1, over the exact solution 1/(1 − x) with its pole x = 1 dashed and shaded bands where |y| > 3; the method switches at x = 0.668, stores y = 1.069×10¹⁰ at the pole x = 1, continues from y = −250.0 at x = 1.004, switches back at x = 1.336 and ends at y = −1.000, while plain Runge-Kutta overflows at x = 1.012. Bottom: Y = 1/y following the line 1 − x through zero at the interpolated pole 1.0000000001](painleveaa.gif)
+
+### Case 2 — Two poles: $y' = 1 + y^2$, $y(0) = 0$, on $[0, 5]$ with $h = 0.005$ (Example 8)
+
+**Behavior:** The exact solution is $y = \tan x$, so $Y = \cot x$. The method changes equation at $x = 1.25$, $1.895$ and $4.395$, and it vaults both poles on the companion equation $Y' = -1 - Y^2$. $Y_j$ changes sign between $1.570$ and $1.575$ and between $4.710$ and $4.715$, and interpolation gives $1.5707963231$ and $4.7123889802$, against $\pi/2 = 1.5707963268$ and $3\pi/2 = 4.7123889804$. The run ends during its second $Y$ phase, with $y = -3.381$ at $x = 5$, since $\lvert \tan 5 \rvert > 3$. Between $x = 3.14$ and $3.145$ the computed $y$ crosses zero during a $y$ phase. There $Y = \cot x$ has a pole of its own at $x = \pi$, and the bottom panel's curves are broken, but the method is integrating $y$ there and is not affected. At $x = 0$, $Y_0 = 1/y_0$ is infinite (Mathews' subroutine stores complex infinity) and is not drawn. Plain Runge-Kutta gives $868.7$ at $x = 1.570$, $3.234 \times 10^{9}$ at $x = 1.575$ and $1.781 \times 10^{113}$ at $x = 1.58$, and overflows at $x = 1.585$. The tick marks at multiples of $\pi/4$ are Mathews'.
+
+[Julia source](painlevebb.jl)
+
+![Pole vaulting on y′ = 1 + y², y(0) = 0, with h = 0.005 on [0, 5] × [−15, 15], x ticks at multiples of π/4. Top: the computed points joined, magenta for steps on y′ = 1 + y² and orange for steps on Y′ = −1 − Y², over the exact solution tan x with its poles π/2 and 3π/2 dashed; the method switches at x = 1.25, 1.895 and 4.395, vaults both poles and ends at y = −3.381 at x = 5, while plain Runge-Kutta overflows at x = 1.585. Bottom: Y = 1/y following cot x through zero at the interpolated poles 1.5707963231 and 4.7123889802, with the curves broken at x = π, where y crosses zero](painlevebb.gif)
+
+### Case 3 — Two poles of a Riccati equation: $y' = x + y^2$, $y(0) = 1$, on $[0, 3.5]$ with $h = 0.00875$ (Example 11)
+
+**Behavior:** The exact solution is $y = -u'/u$ with $u(x) = a\,\mathrm{Ai}(-x) + b\,\mathrm{Bi}(-x)$, whose poles are the zeros $0.9306$ and $3.1235$ of $u$. The method changes equation at $x = 0.6125$, $1.25125$, $2.82625$ and $3.43$. $Y_j$ changes sign on $[0.9275, 0.93625]$ and on $[3.115, 3.12375]$, and interpolation gives $0.9305644959$ and $3.1234930240$, against the exact poles $0.9305645085$ and $3.1234930040$. Between $x = 2.10875$ and $2.1175$ the computed $y$ crosses zero during a $y$ phase; the exact $Y = -u/u'$ has a pole at $x = 2.113$, where $u' = 0$, and as in Case 2 the bottom panel's curves are broken there. The run ends with $y = -2.215$ at $x = 3.5$. Plain Runge-Kutta gives $294.2$ at $x = 0.9275$, where the solution is $326.3$. Its next value, $3.046 \times 10^{6}$ at $x = 0.93625$, is already past the pole, where the solution is $-175.9$, and it overflows at $x = 0.95375$. All its values are positive, so, as in Cases 1 and 2, it never reaches the branch beyond the first pole.
+
+[Julia source](painlevecc.jl)
+
+![Pole vaulting on y′ = x + y², y(0) = 1, with h = 0.00875 on [0, 3.5] × [−15, 15]. Top: the computed points joined, magenta for steps on y′ = x + y² and orange for steps on Y′ = −1 − xY², over the exact Airy-function solution with its poles 0.9306 and 3.1235 dashed; the method switches at x = 0.6125, 1.25125, 2.82625 and 3.43, vaults both poles and ends at y = −2.215 at x = 3.5, while plain Runge-Kutta overflows at x = 0.95375. Bottom: Y = 1/y through zero at the interpolated poles 0.9305644959 and 3.1234930240, with the curves broken at x = 2.113, where y crosses zero](painlevecc.gif)
 
 ## Singularities
 
