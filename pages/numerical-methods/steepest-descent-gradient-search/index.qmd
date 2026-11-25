@@ -1,9 +1,9 @@
 ---
 title: "Steepest Descent - Gradient Search"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -17,7 +17,47 @@ $$
 h_k \approx \operatorname*{arg\,min}_{\gamma \ge 0}\, f(\mathbf{P}_k + \gamma\,\mathbf{S}_k).
 $$
 
-Each iteration needs only the gradient and a one-variable minimisation along a line. When that line minimisation is exact, $f$ decreases at every step and each new search direction is perpendicular to the previous one, so the path to the minimum is a zigzag. In a long, narrow valley the zigzag steps are short and the method is slow. Mathews carries out the line search with a single quadratic interpolation per step (the [quadratic interpolative search](quadratic-interpolative-search/) idea), and his examples work in two variables, $\mathbf{P}_k = (x_k, y_k)$: a quadratic, Rosenbrock's banana-shaped valley, a quartic with three local minima and a rational function. Every run below was recomputed with his line search and stopping rule in 60-digit arithmetic and agrees with a 120-digit run to more than 50 digits.
+Each iteration needs only the gradient and a one-variable minimisation along a line. When that line minimisation is exact, $f$ decreases at every step and each new search direction is perpendicular to the previous one, so the path to the minimum is a zigzag. In a long, narrow valley the zigzag steps are short and the method is slow. Mathews carries out the line search with a single quadratic interpolation per step (the [quadratic interpolative search](../quadratic-interpolative-search/) idea), and his examples work in two variables, $\mathbf{P}_k = (x_k, y_k)$: a quadratic, Rosenbrock's banana-shaped valley, a quartic with three local minima and a rational function. Every run below was recomputed with his line search and stopping rule in 60-digit arithmetic and agrees with a 120-digit run to more than 50 digits.
+
+## Animations
+
+Each animation below follows one run of the gradient method, one line search per frame, in three panels. The left panel is a fixed window over the whole run. It has cyan contours of $f$, the dashed search line through the current point $\mathbf{P}_k$, the level curve of $f$ through $\mathbf{P}_k$ in blue, the steps taken so far in magenta, the points $\mathbf{P}_k$ in red and the minimum $\mathbf{P}^{*}$ as a green cross. The middle panel zooms on the current line search, so that steps far too small for the left panel stay visible. Its axes are offsets from $\mathbf{P}^{*}$, multiplied by the power of ten in the axis label. It draws what Mathews' drawing program of Example 5 draws: cyan contours at the levels $f^{*} + \bigl(f(\mathbf{P}_k) - f^{*}\bigr)\{0.1, 0.2, 0.4, 0.6, 0.8\}$, where $f^{*} = f(\mathbf{P}^{*})$, the level curve through $\mathbf{P}_k$ in blue, and the trial points $\mathbf{P}_k$ (red), $\mathbf{P}_k + h\mathbf{S}_k$ (blue) and $\mathbf{P}_k + 2h\mathbf{S}_k$ (green) on a pink segment. Here the trial points are the ones after the bracketing loop, the three that the parabola (3) is fitted to; Mathews' program draws them before the loop and draws the search segment out to $5h$. A red dot with a black ring marks the new point $\mathbf{P}_{k+1} = \mathbf{P}_k + h_k\mathbf{S}_k$, an orange curve the level curve of $f$ through it, and a black cross the exact minimum of $f$ along the search line. In general the search line leaves $\mathbf{P}_k$ at right angles to the blue curve, because $\mathbf{S}_k$ is a multiple of $-\nabla f(\mathbf{P}_k)$, and when $h_k$ is the exact minimum along the line, the line touches the orange curve at $\mathbf{P}_{k+1}$. The right panel shows the line search itself: $\varphi_k(\gamma) = f(\mathbf{P}_k + \gamma\,\mathbf{S}_k)$ on $[0, 2h]$, the three trial values, the parabola (3) through them (dashed) and its vertex $h_k$, the step taken, next to the exact minimum of $\varphi_k$. The titles give the trial step and what the bracketing loop did to it, $h_k$, the new point's offsets from $\mathbf{P}^{*}$, $f - f^{*}$, the distance to $\mathbf{P}^{*}$ and Mathews' work counter. The scripts run Mathews' line search and stopping rule exactly as described under [Mathews' Implementation](#mathews-implementation), in 256-bit arithmetic, and their iterates agree with the tables in the examples to every digit printed there.
+
+Mathews' module links one animation, from his Example 5, but its archived page shows only an "Under Construction" banner and no animation, so it is not known whether he ever made it. Example 5 itself cannot be rerun, because its starting point and output are lost. Case 1 stands in for it: it uses the same function, runs Example 1, whose run is tabulated in full, draws the elements of Mathews' Example 5 program in the zoom panel, and marks the window $[2.5, 3.05] \times [1.6, 2.15]$ of Example 5 in the left panel. Cases 2, 3 and 4 are new, with no Mathews original. Not animated are the two gradient illustrations, the surface and contour graphs that Mathews draws for the examples, his comparisons with Mathematica's `FindMinimum`, and Example 5.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 1, $f(x, y) = x^2 - 4x + y^2 - y - xy$ from $\mathbf{P}_0 = (0.99,\ 1.01)$, $16$ steps
+
+**Behavior:** Because $f$ is a quadratic, so is every $\varphi_k$. In the right panel the parabola (3) lies on $\varphi_k$, and its vertex $h_k$ is the exact minimum along the line, so in the middle panel the black cross sits on the new point and the search line touches the orange level curve there. Every line search doubles the trial step $1$ to $4$ times and never halves it. The steps alternate between nearly horizontal and nearly vertical (within $0.57^\circ$ of an axis) and turn a right angle each time. $f + 7$ is multiplied by $0.2499265$ at every step, from $3.0303$ at $\mathbf{P}_0$ to $7.022 \times 10^{-10}$ at $\mathbf{P}_{16}$, which is $3.411 \times 10^{-5}$ from the minimum $(3, 2)$. From $\mathbf{P}_3$ on, every point lies inside the window of Mathews' Example 5 (dotted in the left panel), and the later steps are too small to see in the left panel; the zoom panel follows them. The work counter reaches $64$ at the sixteenth step and the run stops before its tolerances are met.
+
+[Julia source](gradientaa.jl)
+
+![Gradient method with Mathews' line search on f = x² − 4x + y² − y − xy from (0.99, 1.01): sixteen alternating horizontal and vertical steps towards the minimum (3, 2), each ending exactly at the minimum along its search line, with a zoom panel on each line search and a panel showing the function along the line, the fitted parabola and its vertex; the run stops on the work counter 3.411e−5 from (3, 2)](gradientaa.gif)
+
+### Case 2 — Example 2, Rosenbrock's valley $f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2$ from $\mathbf{P}_0 = (0.99,\ 1.01)$, $9$ steps (new)
+
+**Behavior:** The first line search starts with $h = 1$, far too long ($\varphi_0(1) = 892.2$), and halves it six times, to $1/64$. $\varphi_0$ is not a quadratic, and the vertex $h_0 = 0.01333$ falls $0.61\%$ short of the exact minimum $0.01341$ of $\varphi_0$. From then on the steps alternate. The steps from $\mathbf{P}_1$, $\mathbf{P}_3$, $\mathbf{P}_5$ and $\mathbf{P}_7$ go across the valley: each halves the trial step $2$ to $4$ times, is between $9.493 \times 10^{-6}$ and $8.127 \times 10^{-5}$ long, too short to see in the left panel, and ends within $0.004\%$ of the exact minimum along its line. The steps from $\mathbf{P}_2$, $\mathbf{P}_4$, $\mathbf{P}_6$ and $\mathbf{P}_8$ run down the valley: each doubles the trial step $5$ to $8$ times, and its vertex overshoots the exact minimum along the line by $0.06\%$ to $0.4\%$. The zoom panel shows how narrow the valley is: the level curves are long, thin closed curves lying along the valley floor $y = x^2$ (dotted in the left panel). The work counter reaches $61$ after $9$ steps, and the run stops $1.674 \times 10^{-4}$ from the minimum $(1, 1)$.
+
+[Julia source](gradientbb.jl)
+
+![Gradient method with Mathews' line search on Rosenbrock's function from (0.99, 1.01): a first step across the narrow valley to near its floor, then tiny steps across the valley alternating with longer steps down it, shown in a zoom panel, with a panel showing the function along each search line, the fitted parabola and its vertex; the run stops on the work counter 1.674e−4 from the minimum (1, 1)](gradientbb.gif)
+
+### Case 3 — Example 3, $f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x$ from $(0, 0)$, $(2, 1.5)$ and $(-2, 1.5)$, $7 + 15 + 16$ steps (new)
+
+**Behavior:** The left panel shows the three local minima (green crosses) and the two saddle points (black plus signs). The three runs, one after the other, move only $0.026$, $0.23$ and $0.28$ in all, so the zoom panel follows them. Each run's first step is horizontal, and its steps alternate between nearly horizontal and nearly vertical (within $1.1^\circ$ of an axis). Run (i) starts $0.02505$ from the minimum near the origin, halves the trial step in every line search but one, and meets its tolerances after $7$ steps, $1.361 \times 10^{-11}$ from the minimum. Runs (ii) and (iii) go down a staircase of short steps in the narrower valleys of the outer minima; after the first line search, which halves the trial step, each line search keeps or doubles it. Both stop on the work counter, at $63$, after $15$ and $16$ steps, $0.004633$ and $0.003658$ from their minima. On every step of the three runs the vertex $h_k$ falls short of the exact minimum along the line, by less than $0.04\%$ in run (i), $1.7\%$ in run (ii) and $2.1\%$ in run (iii).
+
+[Julia source](gradientcc.jl)
+
+![Gradient method with Mathews' line search on the quartic f = 5x² + x⁴ − 9x²y + 3y² + 2y⁴ + x/4, run from (0, 0), (2, 1.5) and (−2, 1.5): a contour map with the three local minima and two saddle points, a zoom panel following each run's staircase of horizontal and vertical steps to its own minimum, and a panel showing the function along each search line, the fitted parabola and its vertex](gradientcc.gif)
+
+### Case 4 — Example 4, $f(x, y) = (x - y)/(x^2 + y^2 + 2)$ from $\mathbf{P}_0 = (-3,\ -2)$, $8$ steps (new)
+
+**Behavior:** Every level curve $f = c$ with $0 < |c| < \tfrac12$ is a circle centred on the mirror line $y = -x$, $\bigl(x - \tfrac{1}{2c}\bigr)^2 + \bigl(y + \tfrac{1}{2c}\bigr)^2 = \tfrac{1}{2c^2} - 2$, as the contours show. On $[0, 8]$ the first function $\varphi_0$ is far from a parabola, and the vertex $h_0 = 4.819$ overshoots its exact minimum $3.293$, so the search line crosses the orange level circle at $\mathbf{P}_1$ instead of touching it, and $\mathbf{P}_1$ is farther from the minimum $(-1, 1)$ than $\mathbf{P}_0$ ($4.283$ against $3.606$). The next four vertices fall short of the exact minimum along their lines: $h_k$ is $0.71$, $0.69$, $0.81$ and $0.95$ times it. From $\mathbf{P}_2$ on, every search direction is within $0.49^\circ$ of the direction from $\mathbf{P}_k$ to $(-1, 1)$, so each step closes most of the remaining distance and there is no zigzag. The last line search starts with the trial step $1.221 \times 10^{-5}$, far longer than the step $6.377 \times 10^{-11}$ it needs, and halves it $15$ times, the limit, to $3.725 \times 10^{-10}$, where still $\varphi_7(h) \ge \varphi_7(0)$, so the three trial points fail Mathews' test for a bracket. The parabola through them still puts $\mathbf{P}_8$ $5.206 \times 10^{-20}$ from $(-1, 1)$, and the run stops because its tolerances are met, with the work counter at $47$.
+
+[Julia source](gradientdd.jl)
+
+![Gradient method with Mathews' line search on f = (x − y)/(x² + y² + 2) from (−3, −2): a first step whose parabola overshoots and moves away from the minimum (−1, 1), then steps aimed almost straight at it along the mirror line y = −x, shown in a zoom panel down to 5.206e−20 from the minimum, with a panel showing the function along each search line, the fitted parabola and its vertex](gradientdd.gif)
 
 ## The Gradient and the Direction of Steepest Descent
 
