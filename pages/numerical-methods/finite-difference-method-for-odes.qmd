@@ -7,24 +7,395 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+A second-order **boundary value problem** asks for a function $x(t)$ on an interval $[a, b]$ that satisfies a differential equation inside the interval and prescribed values at both ends. For the linear equation
 
-### Planned animation ideas
+$$
+x'' = p(t)\,x' + q(t)\,x + r(t), \qquad x(a) = \alpha, \quad x(b) = \beta,
+$$
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+the **finite difference method** divides $[a, b]$ into $n$ equal subintervals of width $h = (b - a)/n$, with mesh points $t_j = a + jh$, and looks for numbers $x_j \approx x(t_j)$. At every interior mesh point it replaces $x'$ and $x''$ by central difference quotients, which turns the differential equation into one linear equation linking $x_{j-1}$, $x_j$ and $x_{j+1}$:
 
-## Derivation Notes (Planned)
+$$
+\Bigl(-\frac{h}{2}p_j - 1\Bigr)x_{j-1} + \bigl(2 + h^2 q_j\bigr)x_j + \Bigl(\frac{h}{2}p_j - 1\Bigr)x_{j+1} = -h^2 r_j, \qquad j = 1, 2, \ldots, n-1,
+$$
 
-Short derivations will be added to explain the core equations and assumptions.
+where $p_j = p(t_j)$, $q_j = q(t_j)$, $r_j = r(t_j)$, $x_0 = \alpha$ and $x_n = \beta$. These $n - 1$ equations form a tridiagonal linear system, which tridiagonal elimination solves in $O(n)$ operations, and the solution values together with the two boundary values give the approximate solution curve.
 
-## Worked Example (Planned)
+Both difference quotients are accurate to $O(h^2)$. Under the conditions stated below, and for a smooth solution, the error of the method is then $O(h^2)$, so halving $h$ cuts it by about a factor of four, and two runs with $h$ and $h/2$ can be combined by Richardson extrapolation into a much more accurate answer. Mathews' examples do exactly this for one equation on $[1, 6]$ with $25$ and $50$ subintervals; every number below has been recomputed (the example tables in 40-digit arithmetic), and the computed solutions are compared with the exact solution.
 
-A compact numerical example with intermediate steps will be included.
+## Boundary Value Problems
 
-## Implementation Notes (Planned)
+The boundary value problem $x'' = f(t, x, x')$, $x(a) = \alpha$, $x(b) = \beta$ need not have a solution, and when it has one it need not be unique. The following theorem gives a sufficient condition. In it, $y$ stands for the third argument of $f$, the slot where $x'(t)$ goes, so that the partial derivatives $f_x$ and $f_y$ can be written down.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+::: {.callout-tip appearance="simple"}
+## Theorem — Boundary value problem
+Assume that $f(t, x, y)$ is continuous on the region $R = \{(t, x, y) : a \le t \le b,\ -\infty < x < \infty,\ -\infty < y < \infty\}$ and that $f_x$ and $f_y$ are continuous on $R$. If there is a constant $M > 0$ for which
+
+$$
+f_x(t, x, y) > 0 \quad\text{and}\quad |f_y(t, x, y)| \le M \qquad \text{for all } (t, x, y) \in R,
+$$
+
+then the boundary value problem
+
+$$
+x'' = f(t, x, x'), \qquad x(a) = \alpha, \quad x(b) = \beta
+$$
+
+has a unique solution $x = x(t)$ for $a \le t \le b$.
+:::
+
+For a linear equation, $f(t, x, y) = p(t)\,y + q(t)\,x + r(t)$, so $f_x = q(t)$ and $f_y = p(t)$, and the theorem becomes:
+
+::: {.callout-tip appearance="simple"}
+## Corollary — Linear boundary value problem
+Assume that $p$, $q$ and $r$ are continuous on $[a, b]$ and that
+
+$$
+q(t) > 0 \qquad \text{for all } t \in [a, b].
+$$
+
+Then the linear boundary value problem
+
+$$
+x'' = p(t)\,x'(t) + q(t)\,x(t) + r(t), \qquad x(a) = \alpha, \quad x(b) = \beta
+\tag{1}
+$$
+
+has a unique solution $x = x(t)$ over $a \le t \le b$. (A bound $|p(t)| \le M$ is automatic here, with $M = \max_{a \le t \le b} |p(t)|$, because $p$ is continuous on a closed interval.)
+:::
+
+::: {.callout-warning appearance="simple"}
+## The condition $q(t) > 0$ is sufficient, not necessary
+The equation $x'' = -x$ has $q(t) = -1 < 0$, and its general solution is $x(t) = c_1 \cos t + c_2 \sin t$. With the boundary conditions $x(0) = \alpha$ and $x(\pi) = \beta$, the first condition gives $c_1 = \alpha$ and the second gives $x(\pi) = -c_1 = -\alpha$, so the problem can be solved only when $\beta = -\alpha$, and then $c_2$ is arbitrary and there are infinitely many solutions. (Mathews' footnote states the condition as $\alpha = \beta$; the general solution gives $\beta = -\alpha$.) This counterexample is why the theory is phrased with $q(t) > 0$. But the condition is only sufficient: many problems with $q(t) < 0$ somewhere, including the one solved on this page, still have exactly one solution, and they can be solved by finite differences or by the shooting method with some care.
+:::
+
+## The Finite-Difference Method
+
+### Derivation
+
+Consider the linear equation (1) over $[a, b]$ with $x(a) = \alpha$ and $x(b) = \beta$. Form a partition of $[a, b]$ using the points $a = t_0 < t_1 < \cdots < t_n = b$, where
+
+$$
+h = \frac{b - a}{n} \qquad\text{and}\qquad t_j = a + jh \quad\text{for } j = 0, 1, \ldots, n.
+$$
+
+The central difference formulas approximate the derivatives at an interior point $t_j$:
+
+$$
+x'(t_j) = \frac{x(t_{j+1}) - x(t_{j-1})}{2h} + O(h^2),
+\tag{2}
+$$
+
+$$
+x''(t_j) = \frac{x(t_{j+1}) - 2x(t_j) + x(t_{j-1})}{h^2} + O(h^2).
+\tag{3}
+$$
+
+For a solution with continuous fourth derivative the two error terms are $-\tfrac{h^2}{6}x'''(c_1)$ and $-\tfrac{h^2}{12}x^{(4)}(c_2)$ for some $c_1, c_2$ in $(t_{j-1}, t_{j+1})$; Taylor expansion of the quotients gives $x' + \tfrac{h^2}{6}x''' + \cdots$ and $x'' + \tfrac{h^2}{12}x^{(4)} + \cdots$.
+
+Write $x_j$ for the approximation to $x(t_j)$, drop the two $O(h^2)$ terms, and use the notation $p_j = p(t_j)$, $q_j = q(t_j)$ and $r_j = r(t_j)$. Equation (1) at $t = t_j$ becomes the difference equation
+
+$$
+\frac{x_{j+1} - 2x_j + x_{j-1}}{h^2} = p_j\,\frac{x_{j+1} - x_{j-1}}{2h} + q_j x_j + r_j.
+\tag{4}
+$$
+
+Multiply each side by $h^2$ and collect the terms involving $x_{j-1}$, $x_j$ and $x_{j+1}$:
+
+::: {.callout-important appearance="simple"}
+## The finite difference equations
+$$
+\Bigl(-\frac{h}{2}p_j - 1\Bigr)x_{j-1} + \bigl(2 + h^2 q_j\bigr)x_j + \Bigl(\frac{h}{2}p_j - 1\Bigr)x_{j+1} = -h^2 r_j
+\tag{5}
+$$
+
+for $j = 1, 2, \ldots, n - 1$, where $x_0 = \alpha$ and $x_n = \beta$.
+:::
+
+(Mathews' module prints the left boundary value as $x_0 = \beta$; it is $x_0 = x(a) = \alpha$.)
+
+### The tridiagonal system
+
+Equation (5) for $j = 1$ contains the known value $x_0 = \alpha$, and for $j = n - 1$ the known value $x_n = \beta$; moving these to the right-hand side leaves $n - 1$ equations in the $n - 1$ unknowns $x_1, \ldots, x_{n-1}$. Write
+
+$$
+d_j = 2 + h^2 q_j, \qquad a_j = -\frac{h}{2}p_j - 1, \qquad c_j = \frac{h}{2}p_j - 1, \qquad e_j = -h^2 r_j.
+$$
+
+Then the system is
+
+$$
+\begin{pmatrix}
+d_1 & c_1 & & & \\
+a_2 & d_2 & c_2 & & \\
+ & \ddots & \ddots & \ddots & \\
+ & & a_{n-2} & d_{n-2} & c_{n-2} \\
+ & & & a_{n-1} & d_{n-1}
+\end{pmatrix}
+\begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_{n-2} \\ x_{n-1} \end{pmatrix}
+=
+\begin{pmatrix} e_1 - a_1\alpha \\ e_2 \\ \vdots \\ e_{n-2} \\ e_{n-1} - c_{n-1}\beta \end{pmatrix},
+\tag{6}
+$$
+
+which has the familiar [tridiagonal](tri-diagonal-matrices.qmd) form and is solved by elimination in $O(n)$ operations.
+
+::: {.callout-tip appearance="simple"}
+## When the system has a unique solution (general result)
+Suppose $q(t_j) > 0$ at every interior mesh point and $h\,|p(t_j)| \le 2$ there (for instance $h \le 2/M$ with $M = \max_{a \le t \le b}|p(t)|$). Then $a_j \le 0$ and $c_j \le 0$, so $|a_j| + |c_j| = \bigl(1 + \tfrac{h}{2}p_j\bigr) + \bigl(1 - \tfrac{h}{2}p_j\bigr) = 2 < 2 + h^2 q_j = d_j$. Every row of (6) is strictly diagonally dominant, so the matrix is nonsingular and the tridiagonal elimination needs no pivoting.
+:::
+
+When $q$ is negative, as in the example below, the matrix is not diagonally dominant and nonsingularity has to be checked another way; it does not follow from this result.
+
+The finite difference solution also converges to $x(t)$ as $h \to 0$: under the conditions of the corollary, with $h \le 2/M$, and for a solution with continuous fourth derivative, the error at the mesh points is $O(h^2)$. This is a standard general result. The example below does not satisfy these conditions, but it shows the factor of four per halving of $h$ numerically all the same.
+
+### Algorithm
+
+To approximate the solution of $x'' = p(t)x'(t) + q(t)x(t) + r(t)$ with $x(a) = \alpha$ and $x(b) = \beta$ over $[a, b]$ by the finite difference method of order $O(h^2)$, Mathews' program uses the mesh $a = t_1 < t_2 < \cdots < t_{n+1} = b$ (numbered from $1$, so it has $n + 1$ points for $n$ subintervals) and returns the solution points $\{(t_j, x_j)\}_{j=1}^{n+1}$. Its three steps are:
+
+1. Construct the tridiagonal matrix and the right-hand-side vector of (6).
+2. Solve the system in step 1 for the ordinates strictly inside the interval.
+3. Join the mesh points and the solution vector from step 2 into points, and put the boundary points $(a, \alpha)$ and $(b, \beta)$ at the two ends.
+
+## Worked Examples
+
+All six of Mathews' examples use the same boundary value problem,
+
+$$
+x'' + \frac{1}{t}\,x' + \Bigl(1 - \frac{1}{4t^2}\Bigr)x = \sqrt{t}\,\cos t, \qquad x(1) = 1, \quad x(6) = -0.5,
+\tag{7}
+$$
+
+over $[1, 6]$. In the form (1) it has
+
+$$
+p(t) = -\frac{1}{t}, \qquad q(t) = \frac{1}{4t^2} - 1, \qquad r(t) = \sqrt{t}\,\cos t.
+$$
+
+Here $q(t)$ decreases from $q(1) = -0.75$ to $q(6) = -0.993056$, so it is negative on the whole interval and the corollary does not apply. The problem nevertheless has exactly one solution, which can be written down.
+
+### The exact solution
+
+The homogeneous equation $x'' + \tfrac{1}{t}x' + \bigl(1 - \tfrac{1}{4t^2}\bigr)x = 0$ is Bessel's equation of order $\tfrac12$. The substitution $x = u/\sqrt{t}$ turns (7) into
+
+$$
+u'' + u = t\cos t,
+$$
+
+whose general solution is $u = c_1\cos t + c_2\sin t + \tfrac14 t\cos t + \tfrac14 t^2\sin t$. Hence
+
+$$
+x(t) = \frac{c_1\cos t + c_2\sin t}{\sqrt{t}} + \frac14\sqrt{t}\,\cos t + \frac14\,t^{3/2}\sin t.
+\tag{8}
+$$
+
+The boundary conditions give two linear equations for $c_1$ and $c_2$, whose determinant is $\cos 1\,\sin 6 - \sin 1\,\cos 6 = \sin 5 = -0.958924 \neq 0$, so there is exactly one solution:
+
+$$
+c_1 = 0.0588713451552886, \qquad c_2 = 0.740071095780206,
+$$
+
+the same constants that Mathews uses in Example 6. The same determinant shows that the homogeneous problem with $x(1) = x(6) = 0$ has only the zero solution. Formula (8) satisfies (7) and both boundary conditions to 40-digit precision, and an independent numerical solution of (7) with SciPy's `solve_bvp` agrees with it to within $9 \times 10^{-16}$ on $[1, 6]$. Its minimum on $[1, 6]$ is about $-2.9057$, near $t = 4.78$.
+
+### Example 1 — $25$ subintervals, step by step
+
+Solve (7) over $[1, 6]$ with the finite difference method and $n = 25$ subintervals ($26$ points).
+
+**Step 1**: The mesh. With $h = (6 - 1)/25 = 0.2$,
+
+$$
+t_j = 1 + 0.2j, \qquad j = 0, 1, \ldots, 25,
+$$
+
+and the unknowns are $x_1, \ldots, x_{24}$ at $t = 1.2, 1.4, \ldots, 5.8$.
+
+**Step 2**: The coefficient functions at the mesh points. At $t_1 = 1.2$,
+
+$$
+p_1 = -\frac{1}{1.2} = -0.833333, \qquad q_1 = \frac{1}{4(1.44)} - 1 = -0.826389, \qquad r_1 = \sqrt{1.2}\,\cos 1.2 = 0.396943.
+$$
+
+**Step 3**: The first row of (6). With $h/2 = 0.1$ and $h^2 = 0.04$,
+
+$$
+d_1 = 2 + 0.04\,q_1 = 1.966944, \qquad c_1 = 0.1\,p_1 - 1 = -1.083333,
+$$
+
+$$
+e_1 - a_1\alpha = -0.04\,r_1 + (1 + 0.1\,p_1)(1) = -0.015878 + 0.916667 = 0.900789.
+$$
+
+The second row, at $t_2 = 1.4$, is the first full one: $a_2 = -0.928571$, $d_2 = 1.965102$, $c_2 = -1.071429$ and right-hand side $e_2 = -0.04\,r_2 = -0.008044$.
+
+**Step 4**: The last row, at $t_{24} = 5.8$, where $p_{24} = -0.172414$, $q_{24} = -0.992568$ and $r_{24} = 2.132613$:
+
+$$
+a_{24} = -0.1\,p_{24} - 1 = -0.982759, \qquad d_{24} = 2 + 0.04\,q_{24} = 1.960297,
+$$
+
+$$
+e_{24} - c_{24}\beta = -0.04\,r_{24} + (1 - 0.1\,p_{24})(-0.5) = -0.085305 - 0.508621 = -0.593925.
+$$
+
+These are the first and last entries of the four vectors Mathews prints (sub-diagonal, diagonal, super-diagonal, right-hand side), and all four agree with the recomputation to the six figures he shows.
+
+**Step 5**: Solve the $24 \times 24$ tridiagonal system. Because $q < 0$, the diagonal entries run from $d_1 = 1.966944$ down to $d_{24} = 1.960297$, all below $2$, while $|a_j| + |c_j| = 2$ in rows $2$ to $23$; so the matrix is not diagonally dominant and the general result above does not apply. It is nonsingular all the same: its determinant is $-4.903642$ and its condition number (2-norm) is about $225$.
+
+**Step 6**: Put the boundary points $(1, 1)$ and $(6, -0.5)$ at the ends of the list of points $(t_j, x_j)$. The finite difference solution, compared with the exact solution (8), is:
+
+| $j$ | $t_j$ | $x_j$ ($n = 25$) | $x(t_j)$ exact | $x_j - x(t_j)$ |
+|---:|---:|---:|---:|---:|
+| 0 | $1.0$ | $1.000000$ | $1.000000$ | $0$ |
+| 1 | $1.2$ | $1.056798$ | $1.054685$ | $2.113 \times 10^{-3}$ |
+| 2 | $1.4$ | $1.087268$ | $1.083207$ | $4.061 \times 10^{-3}$ |
+| 3 | $1.6$ | $1.085770$ | $1.079984$ | $5.786 \times 10^{-3}$ |
+| 4 | $1.8$ | $1.046173$ | $1.038964$ | $7.209 \times 10^{-3}$ |
+| 5 | $2.0$ | $0.962608$ | $0.954361$ | $8.247 \times 10^{-3}$ |
+| 6 | $2.2$ | $0.830202$ | $0.821380$ | $8.822 \times 10^{-3}$ |
+| 7 | $2.4$ | $0.645789$ | $0.636919$ | $8.871 \times 10^{-3}$ |
+| 8 | $2.6$ | $0.408541$ | $0.400186$ | $8.354 \times 10^{-3}$ |
+| 9 | $2.8$ | $0.120491$ | $0.113228$ | $7.263 \times 10^{-3}$ |
+| 10 | $3.0$ | $-0.213090$ | $-0.218711$ | $5.621 \times 10^{-3}$ |
+| 11 | $3.2$ | $-0.583505$ | $-0.586993$ | $3.488 \times 10^{-3}$ |
+| 12 | $3.4$ | $-0.978659$ | $-0.979619$ | $9.600 \times 10^{-4}$ |
+| 13 | $3.6$ | $-1.383297$ | $-1.381461$ | $-1.835 \times 10^{-3}$ |
+| 14 | $3.8$ | $-1.779484$ | $-1.774742$ | $-4.741 \times 10^{-3}$ |
+| 15 | $4.0$ | $-2.147294$ | $-2.139711$ | $-7.583 \times 10^{-3}$ |
+| 16 | $4.2$ | $-2.465691$ | $-2.455517$ | $-1.017 \times 10^{-2}$ |
+| 17 | $4.4$ | $-2.713565$ | $-2.701239$ | $-1.233 \times 10^{-2}$ |
+| 18 | $4.6$ | $-2.870876$ | $-2.857011$ | $-1.387 \times 10^{-2}$ |
+| 19 | $4.8$ | $-2.919846$ | $-2.905208$ | $-1.464 \times 10^{-2}$ |
+| 20 | $5.0$ | $-2.846136$ | $-2.831610$ | $-1.453 \times 10^{-2}$ |
+| 21 | $5.2$ | $-2.639947$ | $-2.626490$ | $-1.346 \times 10^{-2}$ |
+| 22 | $5.4$ | $-2.296961$ | $-2.285556$ | $-1.140 \times 10^{-2}$ |
+| 23 | $5.6$ | $-1.819090$ | $-1.810685$ | $-8.405 \times 10^{-3}$ |
+| 24 | $5.8$ | $-1.214944$ | $-1.210391$ | $-4.553 \times 10^{-3}$ |
+| 25 | $6.0$ | $-0.500000$ | $-0.500000$ | $0$ |
+
+The values $x_j$ agree with Mathews' printed solution to all the figures he gives. The error is positive from $t = 1.2$ to $t = 3.4$ and negative from $t = 3.6$ to $t = 5.8$, and its largest size, $0.01464$, is at $t = 4.8$.
+
+**Verification:** Substituting the computed $x_j$ back into the first and last equations of (6):
+
+| Row | Left-hand side | Right-hand side |
+|---|---|---|
+| $j = 1$ | $1.966944(1.056798) - 1.083333(1.087268) = 2.078663 - 1.177874 = 0.900789$ | $0.900789\ \checkmark$ |
+| $j = 24$ | $-0.982759(-1.819090) + 1.960297(-1.214944) = 1.787726 - 2.381651 = -0.593925$ | $-0.593925\ \checkmark$ |
+
+In 40-digit arithmetic the largest residual over all $24$ equations is below $10^{-43}$.
+
+### Example 2 — the same problem with the program
+
+Mathews repeats Example 1 with his finite difference program, which carries out the three steps of the algorithm in one call with $a = 1$, $b = 6$, $\alpha = 1$, $\beta = -0.5$ and $25$ subintervals, skipping the details. The program returns the same $26$ points as the table in Example 1; the list he calls `points1` and prints again in Example 4 is identical to his Example 1 list. Call these values $X_1$.
+
+### Example 3 — $50$ subintervals
+
+Solve (7) again with $n = 50$ subintervals ($51$ points), so $h = 0.1$ and the system has $49$ unknowns. Call the result $X_2$. Its first and last interior values are $x(1.1) \approx 1.03057$ and $x(5.9) \approx -0.868321$, as in Mathews' output; the values at the $26$ points $t = 1.0, 1.2, \ldots, 6.0$ that it shares with $X_1$ are listed in the table under Example 5.
+
+### Example 4 — how much do the two solutions differ?
+
+The two solutions cannot be subtracted directly: $X_1$ has $26$ points and $X_2$ has $51$. The mesh of $X_1$ is every other point of the mesh of $X_2$, so Mathews takes points $1, 3, 5, \ldots, 51$ of $X_2$ (numbering from $1$), which lie at $t = 1.0, 1.2, \ldots, 6.0$, and forms the difference $X_2 - X_1$ there. It appears in the table under Example 5. The difference is negative from $t = 1.2$ to $t = 3.4$, positive from $t = 3.6$ to $t = 5.8$, and largest in size at $t = 4.8$, where $X_2 - X_1 = 0.01100$.
+
+Is that small or large? Since the method is of order $O(h^2)$, the error of $X_2$ should be about a quarter of the error of $X_1$, so $X_2 - X_1 \approx -\tfrac34(X_1 - x)$, and the difference itself estimates the error: $X_1 - x \approx -\tfrac43(X_2 - X_1)$, which at $t = 4.8$ is $-\tfrac43(0.01100) = -0.01467$, close to the actual error $-0.01464$. The improvement scheme of the next example removes most of it.
+
+### Example 5 — Richardson extrapolation
+
+Use [Richardson extrapolation](richardson-extrapolation/) and the results of Examples 2 and 3 to construct a more accurate solution at the $26$ points of the $25$-subinterval mesh.
+
+If the error of the method behaves like $C h^2$ at a fixed point $t$, then $X_1 \approx x + Ch^2$ and $X_2 \approx x + C h^2/4$. Eliminating $C$ gives the extrapolated values
+
+$$
+X_3 = \frac{4X_2 - X_1}{3} = X_2 + \frac{X_2 - X_1}{3}.
+\tag{9}
+$$
+
+(The output of this example is missing from Mathews' archive; formula (9) is the one he uses in Example 6.) At $t = 4.8$, for instance, $X_3 = (4(-2.908846) - (-2.919846))/3 = -2.905179$, compared with the exact value $-2.905208$.
+
+| $t$ | $X_1$ ($n = 25$) | $X_2$ ($n = 50$) | $X_2 - X_1$ | $X_3 = (4X_2 - X_1)/3$ |
+|---:|---:|---:|---:|---:|
+| $1.0$ | $1.000000$ | $1.000000$ | $0$ | $1.000000$ |
+| $1.2$ | $1.056798$ | $1.055209$ | $-1.589 \times 10^{-3}$ | $1.054679$ |
+| $1.4$ | $1.087268$ | $1.084215$ | $-3.054 \times 10^{-3}$ | $1.083197$ |
+| $1.6$ | $1.085770$ | $1.081419$ | $-4.351 \times 10^{-3}$ | $1.079969$ |
+| $1.8$ | $1.046173$ | $1.040752$ | $-5.421 \times 10^{-3}$ | $1.038945$ |
+| $2.0$ | $0.962608$ | $0.956406$ | $-6.202 \times 10^{-3}$ | $0.954338$ |
+| $2.2$ | $0.830202$ | $0.823568$ | $-6.634 \times 10^{-3}$ | $0.821357$ |
+| $2.4$ | $0.645789$ | $0.639118$ | $-6.671 \times 10^{-3}$ | $0.636894$ |
+| $2.6$ | $0.408541$ | $0.402257$ | $-6.283 \times 10^{-3}$ | $0.400163$ |
+| $2.8$ | $0.120491$ | $0.115028$ | $-5.463 \times 10^{-3}$ | $0.113207$ |
+| $3.0$ | $-0.213090$ | $-0.217318$ | $-4.229 \times 10^{-3}$ | $-0.218728$ |
+| $3.2$ | $-0.583505$ | $-0.586131$ | $-2.625 \times 10^{-3}$ | $-0.587006$ |
+| $3.4$ | $-0.978659$ | $-0.979384$ | $-7.250 \times 10^{-4}$ | $-0.979625$ |
+| $3.6$ | $-1.383297$ | $-1.381920$ | $1.376 \times 10^{-3}$ | $-1.381462$ |
+| $3.8$ | $-1.779484$ | $-1.775923$ | $3.561 \times 10^{-3}$ | $-1.774736$ |
+| $4.0$ | $-2.147294$ | $-2.141597$ | $5.697 \times 10^{-3}$ | $-2.139698$ |
+| $4.2$ | $-2.465691$ | $-2.458047$ | $7.644 \times 10^{-3}$ | $-2.455499$ |
+| $4.4$ | $-2.713565$ | $-2.704303$ | $9.262 \times 10^{-3}$ | $-2.701215$ |
+| $4.6$ | $-2.870876$ | $-2.860457$ | $1.042 \times 10^{-2}$ | $-2.856984$ |
+| $4.8$ | $-2.919846$ | $-2.908846$ | $1.100 \times 10^{-2}$ | $-2.905179$ |
+| $5.0$ | $-2.846136$ | $-2.835220$ | $1.092 \times 10^{-2}$ | $-2.831581$ |
+| $5.2$ | $-2.639947$ | $-2.629834$ | $1.011 \times 10^{-2}$ | $-2.626464$ |
+| $5.4$ | $-2.296961$ | $-2.288391$ | $8.570 \times 10^{-3}$ | $-2.285534$ |
+| $5.6$ | $-1.819090$ | $-1.812774$ | $6.316 \times 10^{-3}$ | $-1.810668$ |
+| $5.8$ | $-1.214944$ | $-1.211523$ | $3.421 \times 10^{-3}$ | $-1.210382$ |
+| $6.0$ | $-0.500000$ | $-0.500000$ | $0$ | $-0.500000$ |
+
+### Example 6 — how good did it get?
+
+Mathews remarks that the graphs of the solutions "look alike", so he compares them with the exact solution (8). The errors at the $26$ common points are:
+
+| $t$ | $x(t)$ exact | $X_1 - x$ | $X_2 - x$ | $X_3 - x$ |
+|---:|---:|---:|---:|---:|
+| $1.0$ | $1.000000$ | $0$ | $0$ | $0$ |
+| $1.2$ | $1.054685$ | $2.113 \times 10^{-3}$ | $5.244 \times 10^{-4}$ | $-5.248 \times 10^{-6}$ |
+| $1.4$ | $1.083207$ | $4.061 \times 10^{-3}$ | $1.007 \times 10^{-3}$ | $-1.041 \times 10^{-5}$ |
+| $1.6$ | $1.079984$ | $5.786 \times 10^{-3}$ | $1.435 \times 10^{-3}$ | $-1.512 \times 10^{-5}$ |
+| $1.8$ | $1.038964$ | $7.209 \times 10^{-3}$ | $1.788 \times 10^{-3}$ | $-1.909 \times 10^{-5}$ |
+| $2.0$ | $0.954361$ | $8.247 \times 10^{-3}$ | $2.045 \times 10^{-3}$ | $-2.208 \times 10^{-5}$ |
+| $2.2$ | $0.821380$ | $8.822 \times 10^{-3}$ | $2.188 \times 10^{-3}$ | $-2.389 \times 10^{-5}$ |
+| $2.4$ | $0.636919$ | $8.871 \times 10^{-3}$ | $2.199 \times 10^{-3}$ | $-2.436 \times 10^{-5}$ |
+| $2.6$ | $0.400186$ | $8.354 \times 10^{-3}$ | $2.071 \times 10^{-3}$ | $-2.341 \times 10^{-5}$ |
+| $2.8$ | $0.113228$ | $7.263 \times 10^{-3}$ | $1.800 \times 10^{-3}$ | $-2.105 \times 10^{-5}$ |
+| $3.0$ | $-0.218711$ | $5.621 \times 10^{-3}$ | $1.392 \times 10^{-3}$ | $-1.735 \times 10^{-5}$ |
+| $3.2$ | $-0.586993$ | $3.488 \times 10^{-3}$ | $8.627 \times 10^{-4}$ | $-1.248 \times 10^{-5}$ |
+| $3.4$ | $-0.979619$ | $9.600 \times 10^{-4}$ | $2.350 \times 10^{-4}$ | $-6.682 \times 10^{-6}$ |
+| $3.6$ | $-1.381461$ | $-1.835 \times 10^{-3}$ | $-4.590 \times 10^{-4}$ | $-2.825 \times 10^{-7}$ |
+| $3.8$ | $-1.774742$ | $-4.741 \times 10^{-3}$ | $-1.181 \times 10^{-3}$ | $6.347 \times 10^{-6}$ |
+| $4.0$ | $-2.139711$ | $-7.583 \times 10^{-3}$ | $-1.886 \times 10^{-3}$ | $1.280 \times 10^{-5}$ |
+| $4.2$ | $-2.455517$ | $-1.017 \times 10^{-2}$ | $-2.529 \times 10^{-3}$ | $1.864 \times 10^{-5}$ |
+| $4.4$ | $-2.701239$ | $-1.233 \times 10^{-2}$ | $-3.064 \times 10^{-3}$ | $2.348 \times 10^{-5}$ |
+| $4.6$ | $-2.857011$ | $-1.387 \times 10^{-2}$ | $-3.446 \times 10^{-3}$ | $2.693 \times 10^{-5}$ |
+| $4.8$ | $-2.905208$ | $-1.464 \times 10^{-2}$ | $-3.638 \times 10^{-3}$ | $2.869 \times 10^{-5}$ |
+| $5.0$ | $-2.831610$ | $-1.453 \times 10^{-2}$ | $-3.610 \times 10^{-3}$ | $2.856 \times 10^{-5}$ |
+| $5.2$ | $-2.626490$ | $-1.346 \times 10^{-2}$ | $-3.344 \times 10^{-3}$ | $2.641 \times 10^{-5}$ |
+| $5.4$ | $-2.285556$ | $-1.140 \times 10^{-2}$ | $-2.834 \times 10^{-3}$ | $2.228 \times 10^{-5}$ |
+| $5.6$ | $-1.810685$ | $-8.405 \times 10^{-3}$ | $-2.089 \times 10^{-3}$ | $1.630 \times 10^{-5}$ |
+| $5.8$ | $-1.210391$ | $-4.553 \times 10^{-3}$ | $-1.132 \times 10^{-3}$ | $8.743 \times 10^{-6}$ |
+| $6.0$ | $-0.500000$ | $0$ | $0$ | $0$ |
+
+The largest errors at these $26$ points, all at $t = 4.8$, are
+
+$$
+\max|X_1 - x| = 0.0146383, \qquad \max|X_2 - x| = 0.00363805, \qquad \max|X_3 - x| = 0.0000286914,
+$$
+
+as Mathews reports. (Over all $51$ points of the finer mesh, the largest error of $X_2$ is slightly larger, $0.0036531$ at $t = 4.9$.) Their ratio is
+
+$$
+\frac{\max|X_2 - x|}{\max|X_1 - x|} = 0.24853 \approx \frac14,
+$$
+
+and at each of the $24$ interior common points the ratio $(X_2 - x)/(X_1 - x)$ lies between $0.2448$ (at $t = 3.4$) and $0.2501$ (at $t = 3.6$), the two points on either side of the sign change of the error. Halving $h$ divides the error by about four, as a method of order $O(h^2)$ should. Extrapolation works: the largest error of $X_3$ is about $510$ times smaller than that of $X_1$ and about $127$ times smaller than that of $X_2$, although $X_3$ uses no mesh finer than $X_2$.
+
+**Verification of the order.** Continuing to halve $h$ shows the same factor of four. The largest error over all mesh points:
+
+| $n$ | $h$ | $\max_j |x_j - x(t_j)|$ | ratio to previous |
+|---:|---:|---:|---:|
+| $25$ | $0.2$ | $1.4638 \times 10^{-2}$ | |
+| $50$ | $0.1$ | $3.6531 \times 10^{-3}$ | $0.2496$ |
+| $100$ | $0.05$ | $9.1193 \times 10^{-4}$ | $0.2496$ |
+| $200$ | $0.025$ | $2.2800 \times 10^{-4}$ | $0.2500$ |
+| $400$ | $0.0125$ | $5.6994 \times 10^{-5}$ | $0.2500$ |
+
+The extrapolated values improve faster. Applying (9) to the pairs $(25, 50)$, $(50, 100)$ and $(100, 200)$ gives largest errors $2.869 \times 10^{-5}$, $1.788 \times 10^{-6}$ and $1.115 \times 10^{-7}$, with ratios $0.0623$ and $0.0624$, close to $\tfrac{1}{16}$: for this problem the extrapolated solution behaves like a method of order $O(h^4)$.
