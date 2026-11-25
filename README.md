@@ -42,7 +42,8 @@ This produces a file such as `posts/2026/08/21-sphinx-extension-learning.qmd` wi
 Use a worktree to reduce the history of the gh-pages branch. This is useful if you have a large number of commits and want to reduce the size of the repository.
 
 ```bash
-$treeHash = git rev-parse gh-pages^{tree}
-$commitHash = git commit-tree $treeHash -m "Reset gh-pages history"
-git push origin $commitHash:gh-pages --force
+git fetch origin gh-pages
+treeHash=$(git rev-parse 'origin/gh-pages^{tree}')
+commitHash=$(git commit-tree "$treeHash" -m "Reset gh-pages history")
+git push --force origin "$commitHash:refs/heads/gh-pages"
 ```
