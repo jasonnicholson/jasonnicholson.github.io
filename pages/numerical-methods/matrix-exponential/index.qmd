@@ -1,9 +1,9 @@
 ---
 title: "Matrix Exponential"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -22,6 +22,46 @@ e^{\mathbf{A}t} = \mathbf{P}\,\begin{pmatrix} e^{\lambda_1 t} & & \\ & \ddots & 
 $$
 
 The same matrix is $\boldsymbol{\Phi}(t)\boldsymbol{\Phi}(0)^{-1}$ for any fundamental matrix solution $\boldsymbol{\Phi}(t)$, which is how Mathews introduces it. Example 1 sums the series for a $2 \times 2$ matrix term by term and compares the partial sums with the closed form; Examples 2 to 6 find $e^{\mathbf{A}t}$ and the general solution for systems of two, three and four equations, with real and with complex eigenvalues. Every matrix, solution and number below has been recomputed symbolically and checked against an independent numerical matrix exponential, and the solutions of Examples 3 to 6 also against a numerical solution of the differential equations.
+
+## Animations
+
+The first animation sums the series (9) for Example 1 one term at a time. The other three trace Mathews' graphs of Examples 3, 4 and 5 in time, from his starting points and in his windows, colours and view point. Beside each graph they show the same solutions with the slowest decay removed, $e^{t}\mathbf{X}(t)$, which reveals what the matrix exponential does besides shrinking the solution: a rotation in Example 3, a flattening into a plane in Example 4 and a turn towards one eigenvector line in Example 5.
+
+Mathews' module links no animation, and his animation archive has none for this module, so all four animations are new, with no Mathews original. Part (a) of Example 1, $e^{\mathbf{A}}$, is the value at $t = 1$ in Case 1. Example 2 is not animated: the archive has lost its graphs and the initial conditions Mathews plotted, and its stable node behaves in the plane as Example 5's does in space. Example 6 is not animated either; Mathews' graphs of its four components against $t$ are static plots, described under the example.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — The partial sums $\mathbf{S}_N(t)$ of Example 1, $N = 1$ to $20$ terms, on $0 \le t \le 2$
+
+**Behavior:** Each frame adds one term, $(\mathbf{A}t)^{N-1}/(N-1)!$, to the partial sum $\mathbf{S}_N(t)$. The top panel draws its diagonal entry against the exact entry $(e^{\mathbf{A}t})_{1,1} = \tfrac12(e^{t} + e^{3t})$, and the bottom panel the error of that entry, which is the largest of the four entries' errors, both on logarithmic scales. Every term has positive entries, so for $t > 0$ each partial sum lies below the exact entry, each new term lowers the error at every $t$, and every error curve rises with $t$. At $t = 1$ (dotted line, part (a)) the error falls from $10.40$ for $\mathbf{S}_1 = \mathbf{I}$ to $8.350 \times 10^{-10}$ for $\mathbf{S}_{20}$, passing through the values in the table of Example 1 at $N = 5, 10, 15, 20$. At $t = 2$ the twenty-term sum is still in error by $1.045 \times 10^{-3}$, because the faster exponential $e^{3t}$ sets the pace. Errors below $10^{-15}$ are drawn leaving the bottom of the panel. Mathews draws no graph for this example, so the window is chosen here; it is the range of the error table of Example 1.
+
+[Julia source](matexpaa.jl)
+
+![Partial sums of the series for the matrix exponential of A = [2 1; 1 2], one more term per frame for N = 1 to 20 on 0 ≤ t ≤ 2. Top: the (1,1) entry of S_N(t) in blue, with earlier partial sums in gray, rising towards the exact entry (e^t + e^3t)/2 in magenta, on a log scale. Bottom: the error of that entry on a log scale, each curve lower than the one before. At t = 1 the error falls from 10.40 for N = 1 to 8.350 × 10⁻¹⁰ for N = 20](matexpaa.gif)
+
+### Case 2 — Example 3, $x' = -x - 2y$, $y' = 2x - y$: Mathews' sixteen solutions for $0 \le t \le 3.5$
+
+**Behavior:** On the left is Mathews' graph traced in time: the sixteen solutions $\mathbf{X}(t) = e^{\mathbf{A}t}\mathbf{X}_0$ from his starting points $2\bigl(\cos\tfrac{k\pi}{8}, \sin\tfrac{k\pi}{8}\bigr)$ (brown dots), in his window $[-2, 2]^2$ and his colours, one frame every $0.05$ in $t$. Because $e^{\mathbf{A}t}$ is $e^{-t}$ times a rotation by $2t$, the sixteen current points always lie on one circle (dashed), of radius $2e^{-t}$, which shrinks from $2$ to $0.06039$ at $t = 3.5$ while the points turn counterclockwise; each solution spirals in to the origin. On the right are the same points with the factor $e^{-t}$ removed. Then $e^{t}\mathbf{X}(t)$ is the starting point rotated by $2t$, so the points stay on the circle of radius $2$ and turn together as a rigid wheel, through $7$ radians (about $1.114$ turns) by $t = 3.5$. The red arc and spoke follow the solution that starts at $(2, 0)$ (larger dot).
+
+[Julia source](matexpbb.jl)
+
+![Left: sixteen solution curves of x′ = −x − 2y, y′ = 2x − y growing from starting points evenly spaced on the circle of radius 2 in the window [−2, 2]², in red, blue, magenta and green, each spiralling counterclockwise in to the origin; the current points lie on a dashed circle of radius 2e^(−t), down to 0.06039 at t = 3.5. Right: the same points multiplied by e^t stay on the circle of radius 2 and rotate together through 2t, up to 7 radians, with a red arc and spoke following the solution from (2, 0)](matexpbb.gif)
+
+### Case 3 — Example 4: Mathews' eight solutions from the corners of the cube for $0 \le t \le 4$
+
+**Behavior:** On the left is Mathews' graph traced in time: the eight solutions from the corners $(\pm 1, \pm 1, \pm 1)$ (brown dots), seen from his view point $(2, -4, 1)$, in his colours (blue and red each used twice, as in his graph), one frame every $0.05$ in $t$, his sampling step. They spiral in to the origin. The box is a little larger than the extent of the curves given under Example 4, with Mathews' tick marks. On the right the same solutions, with the decay $e^{-t}$ of the spiralling part removed, are seen edge on to the plane $x = y$, which appears as the dashed vertical line. The horizontal coordinate is the signed distance $e^{t}(x - y)/\sqrt2$ from that plane and the vertical one is $e^{t}z$. Since $x - y = e^{-2t}(x_0 - y_0)$, that distance is $e^{-t}(x_0 - y_0)/\sqrt2$, and its largest value over the corners falls from $\sqrt2 = 1.414$ to $\sqrt2\,e^{-4} = 0.02590$ at $t = 4$: every solution flattens into the plane. The four corners with $x_0 = y_0$ (orange, magenta and the two blue curves) start in the plane and stay in it, moving only along the vertical line; at $t = 0$ they coincide in pairs in this view. Within the plane, $e^{t}\mathbf{X}(t)$ approaches an ellipse that it goes round once every $\pi$ units of time ($\mathbf{A} + \mathbf{I}$ has the eigenvalues $\pm 2i$ there), so its height $e^{t}z$ keeps oscillating. The left title gives the largest $|x - y|$ over the corners, $2e^{-2t}$, which is $0.0006709$ at $t = 4$.
+
+[Julia source](matexpcc.jl)
+
+![Left: eight solution curves of Example 4 growing from the corners of the cube (±1, ±1, ±1), drawn in 3-D from the view point (2, −4, 1) in orange, blue, green, red, red, cyan, blue and magenta, each spiralling in to the origin. Right: the same solutions multiplied by e^t, seen edge on to the plane x = y, horizontally their distance from the plane and vertically e^t z; the distance shrinks like e^(−t), from at most 1.414 to 0.02590 at t = 4, so the curves close in on the dashed vertical line while their heights keep oscillating](matexpcc.gif)
+
+### Case 4 — Example 5: Mathews' eight solutions from the corners of the cube for $0 \le t \le 5$
+
+**Behavior:** On the left is Mathews' graph traced in time, as in Case 3 but for $0 \le t \le 5$, in a box a little larger than the extent of the curves given under Example 5. The dashed line is the line through $(2, -2, -3)$, the eigenvector direction of the slowest eigenvalue $-1$. No corner has $x_0 - y_0 + z_0 = 0$, so every solution enters the origin tangent to that line. The title gives the largest angle between $\mathbf{X}(t)$ and the line over the eight solutions: $81.95^\circ$ at $t = 0$ and $0.6895^\circ$ at $t = 5$. It does not fall steadily, rising for a while twice before $t = 0.75$. On the right the slowest decay is removed: $e^{t}\mathbf{X}(t)$ is $(x_0 - y_0 + z_0)(2, -2, -3)^T$ plus parts that decay like $e^{-t}$ and $e^{-2t}$, so it tends to the point $(x_0 - y_0 + z_0)(2, -2, -3)$ (black circles). Three corners go to $(2, -2, -3)$ and three to $(-2, 2, 3)$; the green curve from $(1, -1, 1)$ goes to $(6, -6, -9)$ and the cyan curve from $(-1, 1, -1)$ to $(-6, 6, 9)$. The title gives the largest distance from $e^{t}\mathbf{X}(t)$ to its limit, which is smaller at every frame, from $12.25$ at $t = 0$ to $0.1898$ at $t = 5$.
+
+[Julia source](matexpdd.jl)
+
+![Left: eight solution curves of Example 5 growing from the corners of the cube (±1, ±1, ±1), drawn in 3-D from the view point (2, −4, 1) in Mathews' colours, each turning to enter the origin along the dashed line through (2, −2, −3); the largest angle to that line is 81.95° at t = 0 and 0.6895° at t = 5. Right: the same solutions multiplied by e^t, each settling on one of four black circles on the dashed line, ±(2, −2, −3) and ±(6, −6, −9); the largest distance to the limit falls from 12.25 to 0.1898](matexpdd.gif)
 
 ## The Fundamental Matrix Solution
 
