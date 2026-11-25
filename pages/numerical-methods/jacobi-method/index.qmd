@@ -1,15 +1,15 @@
 ---
 title: "Jacobi method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
 ## Description
 
-This page is about **Jacobi's eigenvalue method**, also called Jacobi's rotation method or Jacobi iteration for eigenvectors. It finds all the eigenvalues and eigenvectors of a real symmetric matrix. It is not the Jacobi iteration for solving a linear system $\mathbf{A}\mathbf{X} = \mathbf{B}$, which has its own page, [Jacobi and Gauss-Seidel Iteration](jacobi-and-gauss-seidel-iteration.qmd).
+This page is about **Jacobi's eigenvalue method**, also called Jacobi's rotation method or Jacobi iteration for eigenvectors. It finds all the eigenvalues and eigenvectors of a real symmetric matrix. It is not the Jacobi iteration for solving a linear system $\mathbf{A}\mathbf{X} = \mathbf{B}$, which has its own page, [Jacobi and Gauss-Seidel Iteration](../jacobi-and-gauss-seidel-iteration/).
 
 The method starts from $\mathbf{D}_0 = \mathbf{A}$ and applies one plane rotation $\mathbf{R}_j$ at a time, as an orthogonal similarity transformation. Each rotation is chosen to make one symmetric pair of off-diagonal entries $d_{pq} = d_{qp}$ exactly zero:
 
@@ -21,6 +21,46 @@ c = \frac{1}{\sqrt{t^2 + 1}}, \quad s = c\,t .
 $$
 
 A later rotation can make a zeroed entry nonzero again. Still, every rotation lowers the sum of the squares of the off-diagonal entries by exactly $2d_{pq}^2$, so the matrices $\mathbf{D}_j$ approach a diagonal matrix. Its diagonal holds the eigenvalues, and the product $\mathbf{V} = \mathbf{R}_1\mathbf{R}_2\cdots\mathbf{R}_j$ holds the unit eigenvectors as its columns. Mathews gives two ways to choose which entry to zero. In the *classical* method, the one Jacobi used, each rotation zeroes the off-diagonal entry of largest magnitude. In the *cyclic* method, sweeps go through the entries row by row in a fixed order. Every Jacobi run on this page has been recomputed, rotation by rotation, with Mathews' own stopping rules.
+
+## Animations
+
+Each animation below follows one of Mathews' worked examples, one rotation per frame. Cases 1 and 2 draw the $4 \times 4$ matrix $\mathbf{D}_k$ of Examples 1 and 2 as a grid of cells: the off-diagonal cells are coloured by $\log_{10}\lvert d_{ij}\rvert$, the grey diagonal cells hold the eigenvalue estimates, a white cell is an exact zero, and the pair just zeroed is outlined in red. Cases 3 and 4 draw the $5 \times 5$ matrix of Example 6 as a surface $u = d_{ij}$ over the grid of indices $(i, j)$, as Mathews' eigenvalue movie does. Beside each matrix, a panel with a logarithmic axis shows $\operatorname{off}(\mathbf{D}_k)$, the magnitude $\lvert a_{pq}\rvert$ that each rotation removes and Mathews' stopping threshold $\epsilon\sqrt{T/n}$. The rotations are computed in 300-bit arithmetic with formulas (4), as in the tables below, so the labels agree with the tables. Each script stores the zeroed pair as an exact $0$, as (4) prescribes; Mathews' subroutine computes it, which leaves a rounding residue (below $6 \times 10^{-90}$ in 300-bit arithmetic).
+
+Case 3 rebuilds Mathews' eigenvalue movie of Example 6. His notebook drew its eight graphs and had *Mathematica* flip through them, but the archive keeps them only as eight separate still images, and his collection of animations has none for Jacobi's method. Cases 1, 2 and 4 are new. Not animated: the eigenvector matrix $\mathbf{V}$ (the scripts compute it but do not draw it), the verification of the eigenpairs and the comparisons with *Mathematica*'s `Eigensystem`, and Examples 3 to 5, which compare running times and rotation counts on random matrices.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Classical Jacobi on the $4 \times 4$ matrix of Example 1, $\epsilon = 10^{-11}$, $20$ rotations
+
+**Behavior:** Each rotation zeroes the largest off-diagonal entry, and the next rotations can make it nonzero again: rotation 2, in the $(1, 2)$ plane, turns the zeros at $(1, 3)$ and $(2, 4)$ into $0.5800$ and $0.9293$. The largest entry still falls at every rotation, from $3.000$ to $5.107 \times 10^{-11}$ (orange triangles). Over the first ten rotations $\operatorname{off}(\mathbf{D}_k)$ falls by a ratio between $0.448$ and $0.771$ per rotation, inside the general bound (8) (dashed). Later rotations mix ratios between $0.441$ and $0.493$ with much smaller ones, down to $7.49 \times 10^{-4}$ at rotation 17 and $1.62 \times 10^{-7}$ at rotation 20, and the colours of the off-diagonal cells darken from yellow toward purple. From rotation 13 on, the grey diagonal cells show $3.295699$, $8.407662$, $11.70430$ and $6.592338$ to seven significant digits. Rotation 20 removes $\lvert a_{12}\rvert = 5.107 \times 10^{-11}$, below the threshold $8.093 \times 10^{-11}$, so the run stops. This entry and its mirror were almost all of $\operatorname{off}(\mathbf{D}_{19}) = 7.223 \times 10^{-11} \approx \sqrt2 \times 5.107 \times 10^{-11}$, so the last rotation drops $\operatorname{off}$ to $1.167 \times 10^{-17}$. The final matrix has exact zeros at $(1, 2)$ and $(3, 4)$ and other off-diagonal entries between $6.542 \times 10^{-31}$ and $8.250 \times 10^{-18}$ in magnitude.
+
+[Julia source](jacobiaa.jl)
+
+![Classical Jacobi on Mathews' 4 × 4 Example 1: a grid of the matrix entries, coloured by the logarithm of their size, with the largest off-diagonal pair outlined in red and zeroed at each of 20 rotations, while a log-scale panel shows off(D_k) falling from 5.657 to 1.167 × 10⁻¹⁷ and the run stopping when the entry removed, 5.107 × 10⁻¹¹, is below the threshold 8.093 × 10⁻¹¹](jacobiaa.gif)
+
+### Case 2 — Cyclic Jacobi on the same matrix (Example 2), $\epsilon = 10^{-11}$, $20$ rotations in $5$ sweeps
+
+**Behavior:** The red outline moves through the pairs in the fixed order $(1,2), (1,3), (1,4), (2,3), (2,4), (3,4)$: all six pairs in each of sweeps 1 to 3, only $(1, 2)$ and $(1, 3)$ in sweep 4. The final frames explain the stop. In sweep 4 the other four pairs are below the threshold $8.093 \times 10^{-11}$, and sweep 5 rotates nothing. The magnitudes removed do not fall steadily: they rise at rotations 2, 4, 7, 10 and 13. In grey, the classical run of Case 1 is shown for comparison. The cyclic $\operatorname{off}(\mathbf{D}_k)$ lies above it after every rotation, ending at $1.693 \times 10^{-11}$ against $1.167 \times 10^{-17}$. Rule (9) leaves $d_{14} = -5.957 \times 10^{-12}$ and $d_{23} = -1.038 \times 10^{-11}$ in place. From rotation 15 on, the diagonal shows the eigenvalues of Case 1 in another order, $6.592338$, $3.295699$, $11.70430$ and $8.407662$.
+
+[Julia source](jacobibb.jl)
+
+![Cyclic Jacobi on Mathews' Example 2: the red outline steps through the six pairs of the 4 × 4 matrix in row order, sweep after sweep, while a log-scale panel shows off(D_k) falling to 1.693 × 10⁻¹¹ after 20 rotations in 5 sweeps, above the grey curve of the classical run at every rotation](jacobibb.gif)
+
+### Case 3 — Mathews' eigenvalue movie (Example 6), cyclic Jacobi on a $5 \times 5$ matrix, $\epsilon = 0.2$, $7$ rotations
+
+**Behavior:** As in Mathews' movie, the matrix is drawn as a surface with vertical range $-4$ to $14$, at the start and after each of the 7 rotations: $(1,3)$, $(1,4)$, $(1,5)$, $(2,5)$, $(3,4)$ and $(3,5)$ in sweep 1, then $(2,3)$ in sweep 2. The red markers, the black line along the diagonal and the two right-hand panels are added. Each rotation brings the surface down to $0$ at the pair it zeroes, and $\operatorname{off}(\mathbf{D}_k)$ falls from $12.08$ to $3.716$. In the final frames the largest off-diagonal entry, $1.600$, is below the sweep 3 threshold $1.705$, so the run stops with off-diagonal entries of up to $1.600$ in magnitude still in place. The diagonal dots, $3.728$, $8.133$, $13.63$, $9.166$ and $-3.656$, are still visibly off the eigenvalue ticks: each is between $0.13$ and $1.12$ from the nearest eigenvalue. The loose tolerance shows only the first stage of the diagonalisation.
+
+[Julia source](jacobicc.jl)
+
+![Rebuild of Mathews' eigenvalue movie: the 5 × 5 matrix of Example 6 drawn as a surface over the index grid after each of 7 cyclic Jacobi rotations with tolerance 0.2, with a log-scale panel of off(D_k) falling from 12.08 to 3.716 and a number line on which the diagonal entries stop between 0.13 and 1.12 away from the eigenvalues](jacobicc.gif)
+
+### Case 4 — The same matrix rerun with $\epsilon = 10^{-11}$, $39$ rotations in $6$ sweeps
+
+**Behavior:** With the tight tolerance every entry is above the threshold when the sweep reaches it, so sweeps 1 to 3 rotate all ten pairs. This includes $(2, 4)$ and $(4, 5)$, which are $0$ in $\mathbf{A}$ but have become $0.6541$ and $1.768$ by the time sweep 1 reaches them. Sweeps 4, 5 and 6 make 8, 1 and 0 rotations. After each sweep, $\operatorname{off}(\mathbf{D})$ is $4.185$, $0.4553$, $0.002857$, $2.357 \times 10^{-10}$ and $1.591 \times 10^{-11}$. The off-diagonal part of the surface flattens to $0$, leaving the five eigenvalues as peaks and a dip along the diagonal. Every diagonal dot is within $0.05$ of an eigenvalue tick from rotation 18 on, and within $0.01$ from rotation 25 on. At the end of the run the largest off-diagonal entry, $8.673 \times 10^{-12}$, is below the threshold $8.683 \times 10^{-11}$. The diagonal then agrees with the eigenvalues $3.394496$, $7.186877$, $13.92175$, $10.28074$ and $-3.783859$ to within $10^{-23}$.
+
+[Julia source](jacobidd.jl)
+
+![The matrix of Mathews' eigenvalue movie rerun with tolerance 10⁻¹¹: over 39 cyclic Jacobi rotations in 6 sweeps the off-diagonal part of the surface flattens to zero, off(D_k) falls from 12.08 to 1.591 × 10⁻¹¹ on a log scale, and the diagonal entries move onto the five eigenvalues](jacobidd.gif)
 
 ## Plane Rotations and Similarity Transformations
 
