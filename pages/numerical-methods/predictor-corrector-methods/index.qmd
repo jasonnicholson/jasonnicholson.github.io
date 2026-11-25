@@ -1,9 +1,9 @@
 ---
 title: "Predictor-Corrector Methods"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -18,9 +18,41 @@ $$
 \underbrace{f_{n+1} = f(t_{n+1}, y_{n+1})}_{\text{E}}.
 $$
 
-Repeating the correct-evaluate pair $m$ times gives the mode P(EC)$^m$E. The two estimates $p_{n+1}$ and $y_{n+1}$ come for free at every step, and when the two formulas have the same order their difference estimates the local error of the step (*Milne's device*). That estimate drives step-size control, and it can also be added back to the computed values (a *modifier*). Two fourth-order pairs have their own pages: [Adams-Bashforth-Moulton](adams-bashforth-moulton-method/) and [Milne-Simpson](milne-simpsons-method/). This page sets out the general framework and works it through the simplest Adams pair, the two-step Adams-Bashforth predictor with the trapezoidal corrector, on $y' = 1 + y^2$, $y(0) = 0$, whose exact solution is $y = \tan t$.
+Repeating the correct-evaluate pair $m$ times gives the mode P(EC)$^m$E. The two estimates $p_{n+1}$ and $y_{n+1}$ come for free at every step, and when the two formulas have the same order their difference estimates the local error of the step (*Milne's device*). That estimate drives step-size control, and it can also be added back to the computed values (a *modifier*). Two fourth-order pairs have their own pages: [Adams-Bashforth-Moulton](../adams-bashforth-moulton-method/) and [Milne-Simpson](../milne-simpsons-method/). This page sets out the general framework and works it through the simplest Adams pair, the two-step Adams-Bashforth predictor with the trapezoidal corrector, on $y' = 1 + y^2$, $y(0) = 0$, whose exact solution is $y = \tan t$.
 
 Mathews' module for this topic was never written: the archive's page for it is an "under construction" placeholder, with only a bibliography page beside it. This page is therefore written from standard sources, in particular the chapter on predictor-corrector methods in J. D. Lambert, *Numerical Methods for Ordinary Differential Systems* (Wiley, 1991). Every number on this page was computed for it: the runs of the examples in 50-digit arithmetic, each reproduced by an independent 200-bit implementation, the error constants by symbolic Taylor expansion, and the stability intervals from the roots of the characteristic polynomials.
+
+## Animations
+
+Each animation below runs the page's worked problem, $y' = 1 + y^2$, $y(0) = 0$ on $0 \le t \le 1$, whose exact solution is $y = \tan t$, through the AB2 predictor and the trapezoidal corrector (9) with $h = 0.1$ and the Heun starting value $y_1 = 0.1005$ of the [Worked Examples](#worked-examples). Case 1 follows Example 1 one step per frame, Case 2 the corrector iterates of Example 2(a) one iterate per frame, and Case 3 the modes of Example 2(b) one mode per frame. In every case the right-hand panel plots sizes of errors or distances on a logarithmic scale. Each frame is shown for one second, and the last for three. The scripts compute in 256-bit floating point and check their results against values in the tables of the examples.
+
+Mathews' module for this topic was never written, and his animation archive has nothing for it (its folder for differential equations holds animations of the Euler, Heun, modified Euler, Taylor, Runge-Kutta, Adams and Milne methods, which belong to those pages), so all three animations are new, with no Mathews original. Not animated are Example 3, which compares whole runs at five step sizes (the orders of the modes and of the modified method PECLE, and the accuracy of Milne's estimate at $t_n = 0.5$), the PEC mode in the table of Example 2(b), and the stability intervals.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — PECE step by step (Example 1), $h = 0.1$, $n = 1$ to $10$
+
+**Behavior:** The left panel shows each predicted value $p_n$ (orange diamond) and corrected value $y_n$ (blue) against $\tan t$ (magenta). At that scale the two nearly coincide, so the middle panel magnifies the current step vertically: at every step the predictor lands below $\tan t_n$ and the correction carries the value above it ($\tan t_n - p_n > 0$ and $y_n - \tan t_n > 0$ for $n = 1, \ldots, 10$; step 1 is Heun's starting step, with Euler's method as predictor). In the right panel the corrector's error $y_n - \tan t_n$ grows at every step, to $8.921 \times 10^{-3}$ at $t = 1$. The AB2 predictor's error falls from $6.950 \times 10^{-4}$ at $n = 2$ to $5.790 \times 10^{-4}$ at $n = 4$ and then rises to $4.790 \times 10^{-3}$, so from $n = 4$ on $p_n$ is closer to $\tan t_n$ than $y_n$ is. That is no reason to stop at the predictor: $p_n$ is built from corrected values that are already too high, which partly cancels its own error in the other direction ($1.206 \times 10^{-2}$ at $n = 10$ when started from exact values), and the predictor run alone ends with an error of $5.134 \times 10^{-2}$ (Case 3). From $n = 2$ on, the green squares are Milne's estimate $-\tfrac16(y_n - p_n)$ of the local error of the step, and the black crosses the true local error, both negative. The estimate is larger in size at every step, and the ratio of the two rises at every step, from $1.041$ to $1.469$, as in the table of Example 1.
+
+[Julia source](predcorraa.jl)
+
+![PECE run of the AB2 predictor and trapezoidal corrector on y' = 1 + y², y(0) = 0, h = 0.1, one step per frame from n = 1 to 10: the predicted and corrected values against tan t, a magnified view of the current step in which the predictor lies below tan t and the corrected value above it, and a log-scale panel of the predictor's error, the corrector's error (growing to 8.921 × 10⁻³ at t = 1), Milne's estimate of the local error and the true local error, whose ratio rises from 1.041 to 1.469](predcorraa.gif)
+
+### Case 2 — Iterating the corrector (Example 2(a)), $s = 0$ to $6$
+
+**Behavior:** The left panel is the cobweb diagram of the fixed-point iteration $y^{[s+1]}_2 = G\bigl(y^{[s]}_2\bigr)$, $G(y) = y_1 + 0.05\,(f_1 + 1 + y^2)$, started from the predictor $p_2$ and drawn relative to the solution of the corrector equation, $Y^* = 0.203066819152$. Near $Y^*$ the slope of $G$ is $hY^* = 0.0203$, so $G$ is almost flat and each correction shrinks the distance to $Y^*$ about fifty-fold; the window zooms in at every frame to keep the latest step in view, from a width of $1.4 \times 10^{-3}$ in the first two frames to $5.0 \times 10^{-12}$ in the last. The iterates increase toward $Y^*$ from below, and the first correction jumps past the exact value: $p_2 < \tan 0.2 < y^{[1]}_2 < Y^*$. The dashed line marking $\tan 0.2$ leaves the window after frame $s = 1$. In the right panel the distance $\lvert y^{[s]}_2 - Y^* \rvert$ falls from $1.052 \times 10^{-3}$ to $7.355 \times 10^{-14}$, by the factor $0.02025$ at the first correction and $0.02031$ at each later one, while the error $\tan 0.2 - y^{[s]}_2$ levels off at $-3.568 \times 10^{-4}$, the trapezoidal rule's own error. The single correction of PECE, with error $-3.355 \times 10^{-4}$, gives the iterate closest to $\tan 0.2$.
+
+[Julia source](predcorrbb.jl)
+
+![Cobweb diagram of the trapezoidal corrector iterated from the AB2 prediction p₂ = 0.2020150375 on the first step of Example 1, drawn relative to the corrector's solution Y* = 0.203066819152 and zooming in at every frame, with a log-scale panel against the number of corrections s = 0 to 6: the distance to Y* falls from 1.052 × 10⁻³ to 7.355 × 10⁻¹⁴, by a factor of about 0.0203 per correction, while the error against tan 0.2 levels off at −3.568 × 10⁻⁴](predcorrbb.gif)
+
+### Case 3 — The number of corrections (Example 2(b)), $m = 0, 1, 2, 3, 4$ and the corrector solved exactly
+
+**Behavior:** The left panel adds the error $e_n = \tan t_n - y_n$ along the run for one mode per frame, and the right panel plots, against the number $m$ of corrections per step, the size of $e_{10}$ at $t = 1$ (red) and the distance of $y_{10}$ from the $y_{10}$ of the trapezoidal rule solved exactly (blue). The predictor alone (PE, $m = 0$) ends low, with $e_{10} = 5.134 \times 10^{-2}$; its error is positive from $n = 2$ on. One correction (PECE) reduces the error to $-8.921 \times 10^{-3}$, with the opposite sign, and every further correction increases its size, to $1.486 \times 10^{-2}$, $1.556 \times 10^{-2}$ and $1.565 \times 10^{-2}$, toward the $1.566 \times 10^{-2}$ of the corrector solved exactly. The blue curve shows why: each extra correction moves $y_{10}$ closer to the corrector's value, reducing the distance by a factor between $7.2$ and $9.9$, from $6.701 \times 10^{-2}$ for PE to $1.472 \times 10^{-5}$ for P(EC)$^4$E, and what remains is the corrector's own error. In every mode with at least one correction, $e_n < 0$ at every step.
+
+[Julia source](predcorrcc.jl)
+
+![Errors e_n = tan t_n − y_n along the run of Example 1 with h = 0.1, added one mode per frame: PE (the AB2 predictor alone) ending at 5.134 × 10⁻², PECE at −8.921 × 10⁻³, then P(EC)²E, P(EC)³E, P(EC)⁴E and the trapezoidal rule solved exactly, ending at −1.566 × 10⁻², with a log-scale panel against the number of corrections m in which the error at t = 1 is smallest at m = 1 while the distance to the exactly solved trapezoidal rule falls by a factor of 7 to 10 per correction](predcorrcc.gif)
 
 ## Linear Multistep Formulas
 
@@ -103,14 +135,14 @@ In the mode P(EC)$^m$ the last evaluation is skipped, and the slope stored for l
 | P(EC)$^m$ | $m$ | $m$ | $f\bigl(t_{n+1}, y^{[m-1]}_{n+1}\bigr)$ |
 | corrector solved exactly | until convergence | — | $f(t_{n+1}, y_{n+1})$ |
 
-A multistep predictor needs several back values, so the method is not self-starting: the first few values come from a one-step method, usually a Runge-Kutta method of at least the same order (the [Runge-Kutta page](runge-kutta-method/) covers RK4). Heun's method, Euler's method as predictor and the trapezoidal rule as corrector in PECE mode, is itself a one-step predictor-corrector method:
+A multistep predictor needs several back values, so the method is not self-starting: the first few values come from a one-step method, usually a Runge-Kutta method of at least the same order (the [Runge-Kutta page](../runge-kutta-method/) covers RK4). Heun's method, Euler's method as predictor and the trapezoidal rule as corrector in PECE mode, is itself a one-step predictor-corrector method:
 
 $$
 p_{n+1} = y_n + h f_n, \qquad y_{n+1} = y_n + \frac{h}{2}\bigl(f_n + f(t_{n+1}, p_{n+1})\bigr).
 \tag{4}
 $$
 
-It is not the modified Euler method of [Euler's method](eulers-method-for-odes/), which takes its slope at the midpoint of the step.
+It is not the modified Euler method of [Euler's method](../eulers-method-for-odes/), which takes its slope at the midpoint of the step.
 
 ### Order of a predictor-corrector method
 
@@ -155,8 +187,8 @@ For the three pairs on this site the constants are:
 | Pair | $C^*_{p+1}$ | $C_{p+1}$ | corrector error $\approx$ | predictor error $\approx$ |
 |---|:---:|:---:|:---:|:---:|
 | AB2 + trapezoidal rule (this page) | $\tfrac{5}{12}$ | $-\tfrac{1}{12}$ | $-\tfrac16\,(y_{n+1} - p_{n+1})$ | $\tfrac56\,(y_{n+1} - p_{n+1})$ |
-| AB4 + AM4 ([Adams-Bashforth-Moulton](adams-bashforth-moulton-method/)) | $\tfrac{251}{720}$ | $-\tfrac{19}{720}$ | $-\tfrac{19}{270}\,(y_{n+1} - p_{n+1})$ | $\tfrac{251}{270}\,(y_{n+1} - p_{n+1})$ |
-| Milne + Simpson ([Milne-Simpson](milne-simpsons-method/)) | $\tfrac{28}{90}$ | $-\tfrac{1}{90}$ | $-\tfrac{1}{29}\,(y_{n+1} - p_{n+1})$ | $\tfrac{28}{29}\,(y_{n+1} - p_{n+1})$ |
+| AB4 + AM4 ([Adams-Bashforth-Moulton](../adams-bashforth-moulton-method/)) | $\tfrac{251}{720}$ | $-\tfrac{19}{720}$ | $-\tfrac{19}{270}\,(y_{n+1} - p_{n+1})$ | $\tfrac{251}{270}\,(y_{n+1} - p_{n+1})$ |
+| Milne + Simpson ([Milne-Simpson](../milne-simpsons-method/)) | $\tfrac{28}{90}$ | $-\tfrac{1}{90}$ | $-\tfrac{1}{29}\,(y_{n+1} - p_{n+1})$ | $\tfrac{28}{29}\,(y_{n+1} - p_{n+1})$ |
 
 The estimate costs no extra evaluations of $f$. In a variable-step code it is compared with a tolerance at every step: the step is rejected and repeated with a smaller $h$ when the estimate is too large, and $h$ may be increased when it is much smaller. The estimate is only as good as its assumptions; the back values in a real computation are not exact, and $y^{(p+1)}$ is not constant, which Example 1 shows at $h = 0.1$.
 
@@ -175,7 +207,7 @@ Because (5) estimates the errors, it can also be used to improve the values. Thi
   \hat{p}_{n+1} = p_{n+1} + \frac{C^*_{p+1}}{C^*_{p+1} - C_{p+1}}\,\bigl(y_n - p_n\bigr),
   \tag{7}
   $$
-  and $\hat{p}_{n+1}$ replaces $p_{n+1}$ in the corrector. The unmodified $p_n$ is used in the difference. For Milne's pair this is the modifier $p_{k+1} + \tfrac{28}{29}(y_k - p_k)$ quoted on the [Milne-Simpson page](milne-simpsons-method/).
+  and $\hat{p}_{n+1}$ replaces $p_{n+1}$ in the corrector. The unmodified $p_n$ is used in the difference. For Milne's pair this is the modifier $p_{k+1} + \tfrac{28}{29}(y_k - p_k)$ quoted on the [Milne-Simpson page](../milne-simpsons-method/).
 
 For the AB2-trapezoid pair the corrector modifier gives an exact identity. With $f^*_{n+1} = f(t_{n+1}, p_{n+1})$, the extrapolated value is
 
@@ -372,7 +404,7 @@ Both ratios approach $1$ as $h$ shrinks: the local error of a PECE step approach
 
 ## Implementation Notes
 
-- **Starting values.** A $k$-step predictor needs $y_1, \ldots, y_{k-1}$ from a one-step method. In general they must be accurate to $O(h^p)$ for the pair's order $p$ to survive, or the starting error dominates. Here one Heun step, whose local error is $O(h^3)$, was enough for the second-order pair; the fourth-order pairs on the [Adams-Bashforth-Moulton](adams-bashforth-moulton-method/) and [Milne-Simpson](milne-simpsons-method/) pages start with three RK4 steps.
+- **Starting values.** A $k$-step predictor needs $y_1, \ldots, y_{k-1}$ from a one-step method. In general they must be accurate to $O(h^p)$ for the pair's order $p$ to survive, or the starting error dominates. Here one Heun step, whose local error is $O(h^3)$, was enough for the second-order pair; the fourth-order pairs on the [Adams-Bashforth-Moulton](../adams-bashforth-moulton-method/) and [Milne-Simpson](../milne-simpsons-method/) pages start with three RK4 steps.
 - **Cost.** PECE costs two evaluations of $f$ per step whatever the order of the pair, while a Runge-Kutta method of order four costs four. That is the main reason to use a multistep predictor-corrector method when $f$ is expensive.
 - **Choice of mode.** Pairs of equal order are normally used in PECE mode, which keeps Milne's device available and, by case 1 of the order theorem, gives the corrector's leading error term. Iterating to convergence costs more evaluations, gives the corrector's error rather than a smaller one (Example 2), and needs condition (3).
 - **Step-size changes.** Formulas such as (9) assume equally spaced back values. Changing $h$ means interpolating new back values or restarting, which makes step-size control by Milne's device more involved than for one-step methods.
