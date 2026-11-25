@@ -62,7 +62,7 @@ Gauss-Jordan uses three elementary row operations:
 
 1. Row interchange: $R_i \leftrightarrow R_j$.
 2. Row scaling: $R_i \leftarrow cR_i$ with $c \neq 0$.
-3. Row replacement: $R_i \leftarrow R_i + cR_j$.
+3. Row replacement: $R_i \leftarrow R_i + cR_j$ with $j \neq i$.
 
 Each operation preserves the solution set of the linear system.
 
@@ -89,7 +89,7 @@ Pivoting avoids division by zero and reduces roundoff amplification when pivots 
 
 ## Algorithm I - Limited Gauss-Jordan (No Row Swaps)
 
-This is the pedagogical version that assumes each pivot $a_{kk}$ is already nonzero and reasonably sized.
+This is the pedagogical version. It assumes that every pivot $a_{kk}$ that arises during elimination is nonzero and reasonably sized; a nonzero diagonal in the original matrix is not enough (see Worked Example 3).
 
 1. For $k=1,\dots,n$:
 2. Normalize pivot row: $R_k \leftarrow R_k / a_{kk}$.
@@ -111,7 +111,7 @@ This is the robust implementation pattern.
 
 For $k=1,\dots,n$:
 
-1. Choose pivot row $p$ with largest $|a_{pk}|$ among rows $k$ through $n$.
+1. Choose pivot row $p$ with largest $|a_{pk}|$ among rows $k$ through $n$ (if several rows tie, take the first of them).
 2. If $a_{pk}=0$, stop: the matrix is singular (or rank-deficient in exact arithmetic).
 3. If $p \neq k$, swap rows $R_k$ and $R_p$.
 4. Normalize pivot row $R_k$.
@@ -163,6 +163,8 @@ $$
 (x,y,z) = (2,3,-1).
 $$
 
+This system is not Mathews' Example 1; his system appears, with two equations interchanged, in Worked Example 3.
+
 ---
 
 ## Worked Example 2 - Why Row Interchanges Are Needed
@@ -181,8 +183,137 @@ $$
 
 If we attempt elimination starting at row 1, column 1, the pivot is zero and the method fails immediately.
 A row interchange (swap row 1 with row 2 or 3) fixes the issue and the elimination proceeds normally.
+The matrix is nonsingular ($\det A = -7$), so a unique solution exists.
 
-This is the same failure mode emphasized in the original module: a no-pivot routine can break even when a unique solution exists.
+**Step 1**: the candidates in column 1 are $0, 1, 2$; Algorithm II swaps $R_1 \leftrightarrow R_3$, divides by the pivot $2$ and eliminates:
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & \tfrac{3}{2} & \tfrac{1}{2} & \tfrac{7}{2} \\
+0 & -\tfrac{7}{2} & -\tfrac{7}{2} & -\tfrac{19}{2} \\
+0 & 2 & 1 & 4
+\end{array}
+\right].
+$$
+
+**Step 2**: the candidates in column 2 are $-\tfrac{7}{2}, 2$, so no swap; the pivot is $-\tfrac{7}{2}$:
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & 0 & -1 & -\tfrac{4}{7} \\
+0 & 1 & 1 & \tfrac{19}{7} \\
+0 & 0 & -1 & -\tfrac{10}{7}
+\end{array}
+\right].
+$$
+
+**Step 3**: the pivot is $-1$:
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & 0 & 0 & \tfrac{6}{7} \\
+0 & 1 & 0 & \tfrac{9}{7} \\
+0 & 0 & 1 & \tfrac{10}{7}
+\end{array}
+\right],
+\qquad
+\mathbf{x} = \left(\tfrac{6}{7}, \tfrac{9}{7}, \tfrac{10}{7}\right).
+$$
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|-----|----------------|-----------------|
+| 1 | $0 + 2\cdot\tfrac{9}{7} + \tfrac{10}{7} = \tfrac{28}{7}$ | $4$ $\checkmark$ |
+| 2 | $\tfrac{6}{7} - 2\cdot\tfrac{9}{7} - 3\cdot\tfrac{10}{7} = -\tfrac{42}{7}$ | $-6$ $\checkmark$ |
+| 3 | $2\cdot\tfrac{6}{7} + 3\cdot\tfrac{9}{7} + \tfrac{10}{7} = \tfrac{49}{7}$ | $7$ $\checkmark$ |
+
+Here the zero pivot is visible in $A$ itself. The failure that Mathews' module emphasizes is subtler, and is the subject of the next example.
+
+---
+
+## Worked Example 3 - A Zero Pivot That Appears During Elimination
+
+Mathews' Example 1 is the system $x_1+2x_2+3x_3=3$, $-3x_1+x_2+5x_3=-2$, $2x_1+4x_2-x_3=-1$.
+Algorithm I solves it without interchanges (pivots $1, 7, -7$), giving $(2,-1,1)$.
+His Example 2 interchanges the second and third equations:
+
+$$
+\begin{aligned}
+x_1 + 2x_2 + 3x_3 &= 3, \\
+2x_1 + 4x_2 - x_3 &= -1, \\
+-3x_1 + x_2 + 5x_3 &= -2.
+\end{aligned}
+$$
+
+The diagonal entries $1, 4, 5$ are all nonzero and $\det A = 49$, so nothing in $A$ warns of trouble.
+
+**Algorithm I.** Step 1 divides $R_1$ by $1$ and applies $R_2 \leftarrow R_2 - 2R_1$, $R_3 \leftarrow R_3 + 3R_1$:
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & 2 & 3 & 3 \\
+0 & 0 & -7 & -7 \\
+0 & 7 & 14 & 7
+\end{array}
+\right].
+$$
+
+The step-2 pivot $a_{22}$ is now exactly $0$, so step 2 divides by zero. Mathews' no-interchange subroutine returns a matrix of "Indeterminate" entries: Gauss-Jordan elimination does not work here without row interchanges, although the solution is unique.
+
+**Algorithm II (Mathews' Example 3).**
+
+**Step 1**: the candidates in column 1 are $1, 2, -3$; swap $R_1 \leftrightarrow R_3$, divide by $-3$ and eliminate ($R_2 \leftarrow R_2 - 2R_1$, $R_3 \leftarrow R_3 - R_1$):
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & -\tfrac{1}{3} & -\tfrac{5}{3} & \tfrac{2}{3} \\
+0 & \tfrac{14}{3} & \tfrac{7}{3} & -\tfrac{7}{3} \\
+0 & \tfrac{7}{3} & \tfrac{14}{3} & \tfrac{7}{3}
+\end{array}
+\right].
+$$
+
+**Step 2**: the candidates are $\tfrac{14}{3}, \tfrac{7}{3}$, so no swap; divide by $\tfrac{14}{3}$ and eliminate:
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & 0 & -\tfrac{3}{2} & \tfrac{1}{2} \\
+0 & 1 & \tfrac{1}{2} & -\tfrac{1}{2} \\
+0 & 0 & \tfrac{7}{2} & \tfrac{7}{2}
+\end{array}
+\right].
+$$
+
+**Step 3**: divide by the pivot $\tfrac{7}{2}$ and eliminate:
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & 0 & 0 & 2 \\
+0 & 1 & 0 & -1 \\
+0 & 0 & 1 & 1
+\end{array}
+\right],
+\qquad
+\mathbf{x} = (2, -1, 1).
+$$
+
+One interchange was enough.
+
+**Verification:**
+
+| Row | Left-hand side | Right-hand side |
+|-----|----------------|-----------------|
+| 1 | $2 + 2(-1) + 3(1)$ | $3$ $\checkmark$ |
+| 2 | $2(2) + 4(-1) - 1$ | $-1$ $\checkmark$ |
+| 3 | $-3(2) + (-1) + 5(1)$ | $-2$ $\checkmark$ |
 
 ---
 
@@ -203,9 +334,99 @@ $$
 $$
 
 ::: {.callout-note appearance="simple"}
-This works exactly when $A$ is nonsingular. If a pivot column is all zeros after pivot search,
-$A$ is singular and has no inverse.
+This works exactly when $A$ is nonsingular. If at step $k$ every candidate pivot $a_{ik}$, $i \ge k$, is zero,
+$A$ is singular and has no inverse (entries above the pivot position may still be nonzero).
 :::
+
+### Worked Example 4 - Inverse of a $4\times 4$ Matrix (Mathews' Examples 4 and 5)
+
+Find $A^{-1}$ for
+
+$$
+A = \begin{pmatrix}
+4 & 8 & 4 & 0 \\
+1 & 4 & 7 & 2 \\
+1 & 5 & 4 & -3 \\
+1 & 3 & 0 & -2
+\end{pmatrix}.
+$$
+
+Apply Algorithm II to $\left[ A \mid I \right]$.
+
+**Step 1**: the candidates in column 1 are $4, 1, 1, 1$, so no swap; divide $R_1$ by $4$ and subtract it from $R_2$, $R_3$, $R_4$:
+
+$$
+\left[
+\begin{array}{cccc|cccc}
+1 & 2 & 1 & 0 & \tfrac{1}{4} & 0 & 0 & 0 \\
+0 & 2 & 6 & 2 & -\tfrac{1}{4} & 1 & 0 & 0 \\
+0 & 3 & 3 & -3 & -\tfrac{1}{4} & 0 & 1 & 0 \\
+0 & 1 & -1 & -2 & -\tfrac{1}{4} & 0 & 0 & 1
+\end{array}
+\right].
+$$
+
+**Step 2**: the candidates in column 2 are $2, 3, 1$; swap $R_2 \leftrightarrow R_3$, divide by $3$ and eliminate:
+
+$$
+\left[
+\begin{array}{cccc|cccc}
+1 & 0 & -1 & 2 & \tfrac{5}{12} & 0 & -\tfrac{2}{3} & 0 \\
+0 & 1 & 1 & -1 & -\tfrac{1}{12} & 0 & \tfrac{1}{3} & 0 \\
+0 & 0 & 4 & 4 & -\tfrac{1}{12} & 1 & -\tfrac{2}{3} & 0 \\
+0 & 0 & -2 & -1 & -\tfrac{1}{6} & 0 & -\tfrac{1}{3} & 1
+\end{array}
+\right].
+$$
+
+**Step 3**: the candidates in column 3 are $4, -2$, so no swap; divide by $4$ and eliminate:
+
+$$
+\left[
+\begin{array}{cccc|cccc}
+1 & 0 & 0 & 3 & \tfrac{19}{48} & \tfrac{1}{4} & -\tfrac{5}{6} & 0 \\
+0 & 1 & 0 & -2 & -\tfrac{1}{16} & -\tfrac{1}{4} & \tfrac{1}{2} & 0 \\
+0 & 0 & 1 & 1 & -\tfrac{1}{48} & \tfrac{1}{4} & -\tfrac{1}{6} & 0 \\
+0 & 0 & 0 & 1 & -\tfrac{5}{24} & \tfrac{1}{2} & -\tfrac{2}{3} & 1
+\end{array}
+\right].
+$$
+
+**Step 4**: the pivot is $1$; eliminate column 4 from rows 1 to 3:
+
+$$
+\left[
+\begin{array}{cccc|cccc}
+1 & 0 & 0 & 0 & \tfrac{49}{48} & -\tfrac{5}{4} & \tfrac{7}{6} & -3 \\
+0 & 1 & 0 & 0 & -\tfrac{23}{48} & \tfrac{3}{4} & -\tfrac{5}{6} & 2 \\
+0 & 0 & 1 & 0 & \tfrac{3}{16} & -\tfrac{1}{4} & \tfrac{1}{2} & -1 \\
+0 & 0 & 0 & 1 & -\tfrac{5}{24} & \tfrac{1}{2} & -\tfrac{2}{3} & 1
+\end{array}
+\right],
+\qquad
+A^{-1} = \begin{pmatrix}
+\tfrac{49}{48} & -\tfrac{5}{4} & \tfrac{7}{6} & -3 \\
+-\tfrac{23}{48} & \tfrac{3}{4} & -\tfrac{5}{6} & 2 \\
+\tfrac{3}{16} & -\tfrac{1}{4} & \tfrac{1}{2} & -1 \\
+-\tfrac{5}{24} & \tfrac{1}{2} & -\tfrac{2}{3} & 1
+\end{pmatrix}.
+$$
+
+**Verification:** multiplying out gives $AA^{-1} = A^{-1}A = I$ (and $\det A = -48 \neq 0$). For example, $A$ times the first column of $A^{-1}$ is
+
+$$
+\left(\tfrac{196 - 184 + 36 + 0}{48},\ \tfrac{49 - 92 + 63 - 20}{48},\ \tfrac{49 - 115 + 36 + 30}{48},\ \tfrac{49 - 69 + 0 + 20}{48}\right) = (1, 0, 0, 0).
+$$
+
+Mathews' Example 4 solves $A\mathbf{x} = \mathbf{b}$ for $\mathbf{b} = (8, 10, -4, -4)^T$ with the same matrix. With $A^{-1}$ in hand,
+$\mathbf{x} = A^{-1}\mathbf{b} = (3, -1, 1, 2)$, which checks:
+
+| Row | Left-hand side | Right-hand side |
+|-----|----------------|-----------------|
+| 1 | $4(3) + 8(-1) + 4(1) + 0(2)$ | $8$ $\checkmark$ |
+| 2 | $3 + 4(-1) + 7(1) + 2(2)$ | $10$ $\checkmark$ |
+| 3 | $3 + 5(-1) + 4(1) - 3(2)$ | $-4$ $\checkmark$ |
+| 4 | $3 + 3(-1) + 0(1) - 2(2)$ | $-4$ $\checkmark$ |
 
 ---
 
@@ -226,6 +447,48 @@ $$
 
 where $V$ is a Vandermonde-type matrix built from sample locations.
 Gauss-Jordan provides a direct way to recover $\mathbf{c}$ (or to solve the same system with pivoted elimination).
+
+### Worked Example 5 - Quintic Through Six Points (Mathews' Example 6)
+
+Find the polynomial $p(x) = c_0 + c_1x + \cdots + c_5x^5$ through $(1,1)$, $(2,3)$, $(3,0)$, $(4,1)$, $(5,4)$, $(6,2)$.
+
+**Step 1**: each point gives one equation $p(x_i) = y_i$, so $V\mathbf{c} = \mathbf{y}$ with
+
+$$
+\left[ V \mid \mathbf{y} \right] =
+\left[
+\begin{array}{cccccc|c}
+1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+1 & 2 & 4 & 8 & 16 & 32 & 3 \\
+1 & 3 & 9 & 27 & 81 & 243 & 0 \\
+1 & 4 & 16 & 64 & 256 & 1024 & 1 \\
+1 & 5 & 25 & 125 & 625 & 3125 & 4 \\
+1 & 6 & 36 & 216 & 1296 & 7776 & 2
+\end{array}
+\right],
+$$
+
+where row $i$ is $(1, x_i, x_i^2, \dots, x_i^5 \mid y_i)$. The nodes are distinct, so $V$ is nonsingular ($\det V = 34560$).
+
+**Step 2**: Algorithm II reduces $\left[ V \mid \mathbf{y} \right]$ to $\left[ I \mid \mathbf{c} \right]$, with row interchanges at steps 2, 4 and 5 (the intermediate $6\times 7$ matrices are not shown). The candidates tie at step 1 (all equal to $1$) and at step 3 ($-6, -6, -4, -4$); taking the first tied row, neither step swaps. Any other tie-break changes only the interchanges, not $\mathbf{c}$:
+
+$$
+\mathbf{c} = \left(-32,\ \tfrac{3757}{60},\ -\tfrac{931}{24},\ \tfrac{31}{3},\ -\tfrac{29}{24},\ \tfrac{1}{20}\right).
+$$
+
+**Step 3**: the interpolating polynomial is
+
+$$
+p(x) = \frac{x^5}{20} - \frac{29x^4}{24} + \frac{31x^3}{3} - \frac{931x^2}{24} + \frac{3757x}{60} - 32.
+$$
+
+**Verification:** for example,
+$p(2) = -32 + \tfrac{3757}{30} - \tfrac{931}{6} + \tfrac{248}{3} - \tfrac{58}{3} + \tfrac{8}{5} = \tfrac{-960 + 3757 - 4655 + 2480 - 580 + 48}{30} = \tfrac{90}{30} = 3$. Exact evaluation at all six nodes gives
+
+| $x_i$ | 1 | 2 | 3 | 4 | 5 | 6 |
+|-------|---|---|---|---|---|---|
+| $p(x_i)$ | 1 | 3 | 0 | 1 | 4 | 2 |
+| $y_i$ | 1 $\checkmark$ | 3 $\checkmark$ | 0 $\checkmark$ | 1 $\checkmark$ | 4 $\checkmark$ | 2 $\checkmark$ |
 
 ---
 
