@@ -1,9 +1,9 @@
 ---
 title: "Nonlinear Curve Fitting"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -11,7 +11,7 @@ Source inspiration: [@mathewsSite].
 
 Many data sets follow a curve rather than a line: a quantity that grows by a fixed factor per unit step, $y = c\,e^{ax}$, or one that scales like a power of $x$, $y = c\,x^{a}$. Given data points $(x_1, y_1), \ldots, (x_n, y_n)$, we want the constants $a$ and $c$. Both models are nonlinear in $a$, so fitting them by least squares directly leads to nonlinear equations for the coefficients.
 
-The **data linearization method** avoids this. Taking logarithms turns either curve into a straight line $Y = AX + B$ in new variables: $X = x$, $Y = \ln y$ for the exponential, and $X = \ln x$, $Y = \ln y$ for the power function. The transformed points $(X_k, Y_k)$ are fitted with the [least-squares line](least-squares-lines/), whose coefficients solve the normal equations
+The **data linearization method** avoids this. Taking logarithms turns either curve into a straight line $Y = AX + B$ in new variables: $X = x$, $Y = \ln y$ for the exponential, and $X = \ln x$, $Y = \ln y$ for the power function. The transformed points $(X_k, Y_k)$ are fitted with the [least-squares line](../least-squares-lines/), whose coefficients solve the normal equations
 
 $$
 \Bigl(\sum_{k=1}^{n} X_k^2\Bigr) A + \Bigl(\sum_{k=1}^{n} X_k\Bigr) B = \sum_{k=1}^{n} X_k Y_k, \qquad
@@ -19,6 +19,38 @@ $$
 $$
 
 and the curve is recovered from $a = A$ and $c = e^{B}$. Mathews' module does this for an exponential fit (Example 1), a power fit (Example 2), and both fits to one data set, choosing the better one by the sum of squared residuals (Example 3). The line is the least-squares fit to the *logarithms* of the data, so the curve it gives is not, in general, the curve that minimises the squared errors in $y$ itself; the last section of this page computes those direct fits for comparison. Every fit on this page has been recomputed in 50-digit arithmetic.
+
+## Animations
+
+The first two animations show the **data linearization method** on Examples 1 and 2. Each frame draws a line $Y = AX + B$ through the centroid $(\bar X, \bar Y)$ of the transformed points, so the second normal equation of (1) holds, and the slope $A$ sweeps up past the least-squares value and back down to it. The top left panel shows the line and its vertical deviations $AX_k + B - Y_k$ in the $XY$-plane. The top right panel shows the curve that the line maps back to ($a = A$, $c = e^{B}$) and its residuals $f(x_k) - y_k$ in the $xy$-plane. The bottom panel plots $S(A)$, the sum of the squared deviations in the $XY$-plane, against the slope. The two top panels are the two graphs Mathews draws in the solutions of Examples 1 and 2: the least-squares line in the $XY$-plane and the curve in the $xy$-plane. The third animation goes beyond the module. It starts from the two linearized fits of Example 3 and runs the **Gauss–Newton method** to the least-squares fits in $y$ of the last section of this page.
+
+Mathews' module links no animation, and his animation archive has none for nonlinear curve fitting, so all three animations are new, with no Mathews original. His graphs of all three examples are lost from the archive, so every window here is chosen for this page. Three things in the module are not animated. Example 3's least-squares lines in the $XY$-plane are left out, because Case 3 starts from the curves they give. Part 3(b) is a discussion with no graph. The direct least-squares fits to the data of Examples 1 and 2, from the last section, are also left out: Case 3 shows the two fits where linearization costs the most (factors $4.20$ and $5.99$ in $E$).
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Exponential fit of Example 1 by data linearization, $X = x$, $Y = \ln y$, slope $A$ from $0$ to $0.8$ and back to $A = 0.391202$
+
+**Behavior:** Every line through the centroid $(2, 1.239772)$ satisfies the second normal equation, so only the slope changes. Along the sweep $S(A) = S(A^*) + (A - A^*)^2 \sum (X_k - \bar X)^2 = S(A^*) + 10\,(A - A^*)^2$ is a parabola. It falls from $S = 1.538$ for the horizontal line $A = 0$ to its minimum $S = 0.00796547$ at $A^* = 0.391202$, where the first normal equation holds as well. That line, $Y = 0.391202\,X + 0.457367$, is the least-squares line, and the animation ends on it. It maps back to the fit of Example 1, $y = 1.57991\,e^{0.391202x}$, with $E = \sum (f(x_k) - y_k)^2 = 0.0500688$. For slopes above $0.5314$ the curve passes above the top of the window before $x = 4$. There it and its residual are drawn leaving the frame, and the titles keep the true value of $E$.
+
+[Julia source](curvefitaa.jl)
+
+![Three panels for Example 1, data (0, 1.5), (1, 2.5), (2, 3.5), (3, 5.0), (4, 7.5). Top left: the transformed points (x, ln y), their centroid (2, 1.2398), and a line through the centroid whose slope A sweeps from 0 up to 0.8 and back, with orange deviations to the points. Top right: the data and the curve c e^(ax) the line maps back to, with orange residuals. Bottom: the parabola S(A) of squared deviations, with a dot at the current slope. The sweep ends on the least-squares line, A = 0.391202, B = 0.457367, S = 0.00796547, and the fit y = 1.57991 e^(0.391202 x) with E = 0.0500688, drawn in red](curvefitaa.gif)
+
+### Case 2 — Power fit of Example 2 by data linearization, $X = \ln x$, $Y = \ln y$, slope $A$ from $0.6$ to $2.2$ and back to $A = 1.44232$
+
+**Behavior:** The data are the ones reconstructed for Example 2 from Mathews' printed results. The line again turns about the centroid $(0.957498, 1.451995)$, and $S(A) = S(A^*) + 1.61549\,(A - A^*)^2$. It falls from $S = 1.149$ at $A = 0.6$ to its minimum $S = 0.00262346$ at $A^* = 1.44232$, where $B = 0.0709788$. These are Mathews' printed values, and the line maps back to his fit $y = 1.07356\,x^{1.44232}$, with $E = 0.0469525$. The point $(1, 1.1)$ goes to $X = \ln 1 = 0$, so every curve in the sweep passes through $(1, c)$ with $c = e^{B}$. For slopes above $1.821$ the curve passes above the top of the window before $x = 5$ and is drawn leaving the frame.
+
+[Julia source](curvefitbb.jl)
+
+![Three panels for Example 2, data (1, 1.1), (2, 2.8), (3, 5.2), (4, 8.0), (5, 11.1). Top left: the transformed points (ln x, ln y), their centroid (0.9575, 1.4520), and a line through the centroid whose slope A sweeps from 0.6 up to 2.2 and back, with orange deviations to the points. Top right: the data and the curve c x^a the line maps back to, with orange residuals. Bottom: the parabola S(A), with a dot at the current slope. The sweep ends on the least-squares line, A = 1.44232, B = 0.0709788, S = 0.00262346, and the fit y = 1.07356 x^1.44232 with E = 0.0469525, drawn in red](curvefitbb.gif)
+
+### Case 3 — Example 3, Gauss–Newton steps $k = 0, 1, \ldots, 8$ from the linearized fits to the least-squares fits in $y$
+
+**Behavior:** The script runs the plain (undamped) Gauss–Newton method on $E(c, a) = \sum \bigl(f(x_k) - y_k\bigr)^2$. Each step replaces the residuals $f(x_k) - y_k$ by their linear approximations in $c$ and $a$, and takes the step that solves the resulting linear least-squares problem. Frame $k = 0$ is part 3(c): the linearized fits have $E_1 = 4.52766$ and $E_2 = 9.02945$, and both miss the point $(5, 21)$ by the most, by $1.873$ and $-2.804$. For the exponential fit $E$ falls at every step, to $1.70801$, $1.07928$ and then $1.07912$ to six digits. The first step takes $a$ from $0.588141$ past $a^* = 0.521523$ to $0.517625$. After that, $a_k$ lands on alternate sides of $a^*$, and from step 3 on each error $a_k - a^*$ is about $-0.05$ times the one before. For the power fit the first step raises $E$ from $9.02945$ to $11.0572$, because plain Gauss–Newton takes the full step even when it raises $E$ (a damped variant such as Levenberg–Marquardt would shorten such a step). After that $E$ falls at every step, to $1.53457$ and then $1.50774$. From step 2 on, $a_k$ approaches $a^* = 1.84138$ from above, and from step 3 on each error is about $0.09$ times the one before. This is linear convergence, not the quadratic convergence of Newton's method; in general Gauss–Newton converges only linearly when the residuals at the minimum are not zero. From step 5 on, both iterates agree to six digits with the direct fits in the table of the last section, $1.56571\,e^{0.521523x}$ and $1.06460\,x^{1.84138}$, found there by a different route (a root finder on the reduced equation). Only the step size keeps shrinking, to $6.98 \times 10^{-10}$ and $8.15 \times 10^{-9}$ at step 8. The contours show $E$ as a long, narrow valley in the $(a, c)$-plane. At the minimum, the eigenvalues of the Hessian of $E$ differ by factors of about $1500$ (exponential) and $280$ (power). The final curves miss $(5, 21)$ by only $0.2415$ and $-0.3817$, and their largest residuals are at $(1, 2)$, $0.6376$ and $-0.9354$: the reweighting described in the last section.
+
+[Julia source](curvefitcc.jl)
+
+![Five panels for Example 3, data (1, 2), (2, 4), (3, 8), (4, 13), (5, 21), one frame per Gauss–Newton step k = 0 to 8. Top: the exponential fit (left) and the power fit (right) in the xy-plane, the linearized fit dashed gray, the current iterate in blue with orange residuals. Middle: contours of E over the (a, c)-plane, with the path of the iterates from the linearized fit (gray dot) to the least-squares minimum (red star). Bottom: E after each step on a log scale. The exponential fit's E falls from 4.52766 to 1.07912; the power fit's E first rises from 9.02945 to 11.0572 and then falls to 1.50774](curvefitcc.gif)
 
 ## The Least-Squares Line in the Transformed Variables
 
@@ -50,7 +82,7 @@ B = \frac{\sum X_k^2 \sum Y_k - \sum X_k \sum X_k Y_k}{\Delta}.
 $$
 :::
 
-The second equation of (1) says $B = \bar Y - A \bar X$, where $\bar X$ and $\bar Y$ are the means: the line passes through the centroid $(\bar X, \bar Y)$ of the transformed points, and the deviations $A X_k + B - Y_k$ sum to zero. Both facts give a quick check on every example below. The [least-squares lines](least-squares-lines/) page derives (1) and treats the line in detail.
+The second equation of (1) says $B = \bar Y - A \bar X$, where $\bar X$ and $\bar Y$ are the means: the line passes through the centroid $(\bar X, \bar Y)$ of the transformed points, and the deviations $A X_k + B - Y_k$ sum to zero. Both facts give a quick check on every example below. The [least-squares lines](../least-squares-lines/) page derives (1) and treats the line in detail.
 
 ## Exponential Fit by Data Linearization
 
@@ -370,7 +402,7 @@ c \sum_{k=1}^{n} e^{2 a x_k} = \sum_{k=1}^{n} y_k\, e^{a x_k}, \qquad
 \tag{7}
 $$
 
-The first equation gives $c$ in terms of $a$, and substituting it into the second leaves one equation in $a$, to be solved by a root finder such as the [Newton-Raphson method](newton-raphson-method/), with the linearized fit as a natural starting guess. For the power function, replace $e^{a x_k}$ by $x_k^{a}$ and the factor $x_k$ in the second equation by $\ln x_k$. Solving these equations for the four fits above gives:
+The first equation gives $c$ in terms of $a$, and substituting it into the second leaves one equation in $a$, to be solved by a root finder such as the [Newton-Raphson method](../newton-raphson-method/), with the linearized fit as a natural starting guess. For the power function, replace $e^{a x_k}$ by $x_k^{a}$ and the factor $x_k$ in the second equation by $\ln x_k$. Solving these equations for the four fits above gives:
 
 | Data | Model | Linearized fit | $E$ | Direct least-squares fit | $E$ |
 |---|---|---|---:|---|---:|
