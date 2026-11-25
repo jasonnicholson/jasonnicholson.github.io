@@ -7,48 +7,448 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Powell's method looks for a local minimum of a function $f(\mathbf{X})$ of $n$ variables, $\mathbf{X} = (x_1, \ldots, x_n)$, using only values of $f$: no derivatives are needed. It is built from *line searches*. From a point $\mathbf{P}$ in the direction $\mathbf{U}$, the function $\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U})$ depends on the single variable $\gamma$, and can be minimised with a one-variable method such as the [golden ratio search](golden-ratio-search/) or the [Fibonacci search](fibonacci-search/). The simplest scheme, which Mathews calls the *taxi-cab method*, searches along the $n$ coordinate directions in turn, over and over. Its path is a staircase of segments parallel to the axes, and it can be slow when the level curves of $f$ are tilted, elongated ellipses.
 
-### Planned animation ideas
+Powell's method adds two steps to each sweep. After the $n$ line searches have taken the point $\mathbf{P}_0$ to $\mathbf{P}_n$, the "average direction" of the sweep, $\mathbf{P}_n - \mathbf{P}_0$, replaces the oldest search direction, and one more line search is made along it:
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+$$
+\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{U}_k \quad (k = 1, \ldots, n), \qquad
+\mathbf{U}_n \leftarrow \mathbf{P}_n - \mathbf{P}_0, \qquad
+\mathbf{X}_{i} = \mathbf{P}_0 + \gamma\,\mathbf{U}_n ,
+$$
 
-## Derivation Notes (Planned)
+where each $\gamma_k$ and $\gamma$ minimises $f$ along its line. Instead of a zig-zag, each iteration follows a "dog-leg" path. On a quadratic function with a positive definite Hessian and exact line searches, the directions this produces are *conjugate*, and the minimum of a two-variable quadratic is reached exactly within two iterations (Example 3), where the taxi-cab method only creeps towards it (Example 1).
 
-Short derivations will be added to explain the core equations and assumptions.
+Mathews does every line search with Mathematica's `FindMinimum`, started at $\gamma = 0$. In the runs below, every line search has been recomputed in 60-digit arithmetic and taken to the local minimum of $\varphi$ that is reached by going downhill from $\gamma = 0$. Mathews' printed points in Examples 1–6 differ from these by at most $6 \times 10^{-8}$ in any coordinate.
 
-## Worked Example (Planned)
+## Line Searches
 
-A compact numerical example with intermediate steps will be included.
+::: {.callout-note appearance="simple"}
+## Definition — Line search
+Given a point $\mathbf{P}$ and a direction $\mathbf{U} \ne \mathbf{0}$, a *line search* finds a value $\gamma^*$ that minimises the function of one variable
 
-## Implementation Notes (Planned)
+$$
+\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U}),
+$$
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+and moves to the point $\mathbf{P} + \gamma^*\,\mathbf{U}$. The step $\gamma$ may be positive or negative.
+:::
 
-## Legacy Animation Inventory (Stub)
+If $f$ is unimodal along the line, the [golden ratio search](golden-ratio-search/) or the [Fibonacci search](fibonacci-search/) finds $\gamma^*$ on a bracketing interval. When $\varphi$ has several local minima, different line-search methods can stop at different ones, and Mathews notes that a golden ratio or Fibonacci search can give slightly different results from `FindMinimum`.
 
-- Legacy module page: [Powell's Method](http://localhost:8000/n2003/PowellMethodMod.html) (ok)
-- Animation links found in module Animations paragraph: 2
-- Unique animation portals: 1
+For a quadratic function the line search can be done exactly. If $f(\mathbf{X}) = c + \mathbf{b}\cdot\mathbf{X} + \tfrac12\,\mathbf{X}^{T}\!\mathbf{A}\,\mathbf{X}$ with a symmetric matrix $\mathbf{A}$ (the Hessian of $f$), then $\varphi(\gamma) = f(\mathbf{P}) + \gamma\,\nabla f(\mathbf{P})\cdot\mathbf{U} + \tfrac12\gamma^2\,\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{U}$ is a parabola in $\gamma$.
 
-### Animation Portals
+::: {.callout-important appearance="simple"}
+## Exact line search on a quadratic
+If $\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{U} > 0$, the minimum of $f$ along the line $\mathbf{P} + \gamma\,\mathbf{U}$ is at
 
-1. [Powell's Method](http://localhost:8000/a2001/Animations/Optimization/Powell1/Powell.html) (ok)
+$$
+\gamma^* = -\,\frac{\nabla f(\mathbf{P})\cdot\mathbf{U}}{\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{U}},
+\tag{1}
+$$
 
-- Animation item links found: 2
+and at that point $\nabla f(\mathbf{P} + \gamma^*\mathbf{U})\cdot\mathbf{U} = 0$: the gradient is perpendicular to the search direction.
+:::
 
-### Animation Items
+Formula (1) gives every step of Examples 1, 2 and 3 as an exact fraction.
 
-1. [Powell's Method](http://localhost:8000/a2001/Animations/Optimization/Powell1/Powellaa.html) (ok)
-- Main animated GIF count: 2
-- http://localhost:8000/n2003/galerkin/GalerkinProg/Images/constr01.gif
-- http://localhost:8000/n2003/galerkin/GalerkinProg/Images/constr00.gif
-2. [Powell's Method](http://localhost:8000/a2001/Animations/Optimization/Powell1/Powellbb.html) (ok)
-- Main animated GIF count: 2
-- http://localhost:8000/n2003/galerkin/GalerkinProg/Images/constr01.gif
-- http://localhost:8000/n2003/galerkin/GalerkinProg/Images/constr00.gif
+## The Taxi-Cab Method
 
+Let $\mathbf{E}_k$ be the $k$-th standard base vector, with a $1$ in position $k$ and zeros elsewhere. Starting from $\mathbf{X}_0$, the taxi-cab method minimises $f$ along $\mathbf{E}_1, \mathbf{E}_2, \ldots, \mathbf{E}_n$ in turn, which changes one coordinate at a time, and repeats the sweep.
+
+::: {.callout-important appearance="simple"}
+## Algorithm — Taxi-cab method
+Start with $\mathbf{X}_0$ and set $i = 0$.
+
+1. Set $\mathbf{P}_0 = \mathbf{X}_i$.
+2. For $k = 1, 2, \ldots, n$: find $\gamma_k$ that minimises $f(\mathbf{P}_{k-1} + \gamma\,\mathbf{E}_k)$ and set $\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{E}_k$.
+3. Set $i = i + 1$ and $\mathbf{X}_i = \mathbf{P}_n$.
+4. Repeat steps 1–3 for a fixed number of iterations or until the points stop changing.
+:::
+
+Mathews' program takes the starting point and a maximum number of iterations, and each iteration is one sweep of $n$ line searches.
+
+For a two-variable quadratic the effect of one sweep can be worked out in general. Write the errors from the minimum as $(e_x, e_y)$ and let the Hessian be $\begin{pmatrix} a & b \\ b & c \end{pmatrix}$ with $a > 0$, $c > 0$ and $ac > b^2$ (positive definite). The search along $x$ leaves $e_x = -(b/a)\,e_y$, and the search along $y$ that follows replaces $e_y$ by
+
+$$
+e_y \;\longrightarrow\; \frac{b^2}{a\,c}\; e_y .
+\tag{2}
+$$
+
+The factor $b^2/(ac)$ is less than $1$, so the method converges on such a quadratic, but it is close to $1$ when the level curves are long, narrow ellipses whose axes are tilted well away from the coordinate axes.
+
+### Example 1 — The taxi-cab method on $f(x, y) = x^2 - 4x + y^2 - y - xy$
+
+Mathews starts at $\mathbf{X}_0 = (2.55,\ 1.75)$, where $f(\mathbf{X}_0) = -6.8475$, and runs $10$ iterations.
+
+**Step 1** (search along $\mathbf{E}_1$): with $y = 1.75$ fixed,
+
+$$
+f(x, 1.75) = x^2 - \tfrac{23}{4}x + \tfrac{21}{16},
+$$
+
+which is least at $x = \tfrac{23}{8} = 2.875$. So $\gamma_1 = 0.325$, $\mathbf{P}_1 = (2.875,\ 1.75)$ and $f(\mathbf{P}_1) = -\tfrac{445}{64} = -6.953125$. Formula (1) gives the same step: $\nabla f(\mathbf{X}_0) = (-0.65,\ -0.05)$, $\mathbf{E}_1^T\mathbf{A}\,\mathbf{E}_1 = f_{xx} = 2$ and $\gamma_1 = 0.65/2$.
+
+**Step 2** (search along $\mathbf{E}_2$): with $x = 2.875$ fixed,
+
+$$
+f(2.875, y) = y^2 - \tfrac{31}{8}y - \tfrac{207}{64},
+$$
+
+which is least at $y = \tfrac{31}{16} = 1.9375$. So $\gamma_2 = 0.1875$ and $\mathbf{X}_1 = \mathbf{P}_2 = (2.875,\ 1.9375)$, with $f(\mathbf{X}_1) = -\tfrac{1789}{256} = -6.98828125$.
+
+**Step 3** (the pattern): in general the search along $x$ sets $x = (4 + y)/2$ and the search along $y$ sets $y = (1 + x)/2$. Here $a = c = 2$ and $b = -1$, so by (2) each sweep multiplies the errors by $b^2/(ac) = \tfrac14$. From the first iteration on,
+
+$$
+\mathbf{X}_k = \left(3 - 2^{-(2k+1)},\ \ 2 - 2^{-(2k+2)}\right), \qquad f(\mathbf{X}_k) = -7 + 3 \cdot 2^{-(4k+4)}, \qquad k \ge 1.
+$$
+
+| $k$ | $x_k$ | $y_k$ | $f(\mathbf{X}_k) + 7$ |
+|---|---|---|---|
+| 0 | $2.550000000000$ | $1.750000000000$ | $0.1525$ |
+| 1 | $2.875000000000$ | $1.937500000000$ | $0.01172$ |
+| 2 | $2.968750000000$ | $1.984375000000$ | $7.324 \times 10^{-4}$ |
+| 3 | $2.992187500000$ | $1.996093750000$ | $4.578 \times 10^{-5}$ |
+| 4 | $2.998046875000$ | $1.999023437500$ | $2.861 \times 10^{-6}$ |
+| 5 | $2.999511718750$ | $1.999755859375$ | $1.788 \times 10^{-7}$ |
+| 6 | $2.999877929688$ | $1.999938964844$ | $1.118 \times 10^{-8}$ |
+| 7 | $2.999969482422$ | $1.999984741211$ | $6.985 \times 10^{-10}$ |
+| 8 | $2.999992370605$ | $1.999996185303$ | $4.366 \times 10^{-11}$ |
+| 9 | $2.999998092651$ | $1.999999046326$ | $2.728 \times 10^{-12}$ |
+| 10 | $2.999999523163$ | $1.999999761581$ | $1.705 \times 10^{-13}$ |
+
+After $10$ iterations, which is $20$ line searches,
+
+$$
+\boxed{\ \mathbf{X}_{10} = (2.999999523163,\ 1.999999761581), \qquad f(\mathbf{X}_{10}) = -6.99999999999983\ }
+$$
+
+and the distance to the minimum is $5.331 \times 10^{-7}$. Each iteration changes one coordinate at a time, so the path is a staircase of segments parallel to the axes. Mathews' run prints the same points to within $3.4 \times 10^{-8}$; his $\mathbf{X}_{10}$ is $(2.999999515690,\ 1.999999757845)$.
+
+**Verification:** $\nabla f(3, 2) = (0, 0)$, and the Hessian $\mathbf{A} = \begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}$ has eigenvalues $1$ and $3$, so $(3, 2)$ is the global minimum, with $f(3, 2) = -7$. Each table entry was computed with exact fractions, and agrees with the closed form above.
+
+### Example 2 — The taxi-cab method in three variables
+
+Minimise
+
+$$
+f(x, y, z) = 3 - 4x + 2x^2 - 4y + 2xy + 2y^2 + 4z - 2xz - 2yz + 2z^2
+$$
+
+from $\mathbf{X}_0 = (1,\ 0.5,\ 0)$, with $5$ iterations as Mathews does. Each iteration is three line searches, along $x$, then $y$, then $z$, and each step $\gamma_k$ comes from formula (1) as an exact fraction.
+
+| Iteration | Point | $\gamma_k$ | $(x, y, z)$ | $f$ |
+|---|---|---|---|---|
+| — | $\mathbf{X}_0$ | — | $(1.0000000000,\ 0.5000000000,\ 0.0000000000)$ | $0.5000000000$ |
+| 1 | $\mathbf{P}_1$ | $-1/4$ | $(0.7500000000,\ 0.5000000000,\ 0.0000000000)$ | $0.3750000000$ |
+| 1 | $\mathbf{P}_2$ | $1/8$ | $(0.7500000000,\ 0.6250000000,\ 0.0000000000)$ | $0.3437500000$ |
+| 1 | $\mathbf{P}_3 = \mathbf{X}_1$ | $-5/16$ | $(0.7500000000,\ 0.6250000000,\ -0.3125000000)$ | $0.1484375000$ |
+| 2 | $\mathbf{P}_1$ | $-7/32$ | $(0.5312500000,\ 0.6250000000,\ -0.3125000000)$ | $0.0527343750$ |
+| 2 | $\mathbf{P}_2$ | $-3/64$ | $(0.5312500000,\ 0.5781250000,\ -0.3125000000)$ | $0.0483398438$ |
+| 2 | $\mathbf{P}_3 = \mathbf{X}_2$ | $-17/128$ | $(0.5312500000,\ 0.5781250000,\ -0.4453125000)$ | $0.0130615234$ |
+| 3 | $\mathbf{P}_1$ | $-11/256$ | $(0.4882812500,\ 0.5781250000,\ -0.4453125000)$ | $0.0093688965$ |
+| 3 | $\mathbf{P}_2$ | $-23/512$ | $(0.4882812500,\ 0.5332031250,\ -0.4453125000)$ | $0.0053329468$ |
+| 3 | $\mathbf{P}_3 = \mathbf{X}_3$ | $-45/1024$ | $(0.4882812500,\ 0.5332031250,\ -0.4892578125)$ | $0.0014705658$ |
+| 4 | $\mathbf{P}_1$ | $1/2048$ | $(0.4887695313,\ 0.5332031250,\ -0.4892578125)$ | $0.0014700890$ |
+| 4 | $\mathbf{P}_2$ | $-91/4096$ | $(0.4887695313,\ 0.5109863281,\ -0.4892578125)$ | $0.0004829168$ |
+| 4 | $\mathbf{P}_3 = \mathbf{X}_4$ | $-89/8192$ | $(0.4887695313,\ 0.5109863281,\ -0.5001220703)$ | $0.0002468526$ |
+| 5 | $\mathbf{P}_1$ | $93/16384$ | $(0.4944458008,\ 0.5109863281,\ -0.5001220703)$ | $0.0001824126$ |
+| 5 | $\mathbf{P}_2$ | $-271/32768$ | $(0.4944458008,\ 0.5027160645,\ -0.5001220703)$ | $0.0000456180$ |
+| 5 | $\mathbf{P}_3 = \mathbf{X}_5$ | $-85/65536$ | $(0.4944458008,\ 0.5027160645,\ -0.5014190674)$ | $0.0000422536$ |
+
+$f$ decreases at every line search, but slowly: after $15$ line searches
+
+$$
+\boxed{\ \mathbf{X}_5 = \left(\tfrac{8101}{16384},\ \tfrac{16473}{32768},\ -\tfrac{32861}{65536}\right) \approx (0.4944458008,\ 0.5027160645,\ -0.5014190674), \qquad f(\mathbf{X}_5) \approx 4.225 \times 10^{-5}\ }
+$$
+
+is still $0.006343$ from the minimum $\left(\tfrac12,\ \tfrac12,\ -\tfrac12\right)$. Over these five iterations the distance to the minimum falls by a factor between about $0.30$ and $0.48$ per iteration, irregularly. In iterations 4 and 5 the first search moves $x$ in the opposite direction ($\gamma_1 > 0$) to all the earlier $x$ moves. Mathews' run prints the same points to within $5 \times 10^{-9}$.
+
+**Verification:** solving $\nabla f = \mathbf{0}$ gives $3x + y = 2$ and $x + 3y = 2$ (after eliminating $z = (x + y - 2)/2$), so the only stationary point is $\left(\tfrac12,\ \tfrac12,\ -\tfrac12\right)$, where $f = 0$. The Hessian $\begin{pmatrix} 4 & 2 & -2 \\ 2 & 4 & -2 \\ -2 & -2 & 4 \end{pmatrix}$ has eigenvalues $2$, $2$ and $8$, so this is the global minimum.
+
+## Powell's Method
+
+The vector $\mathbf{P}_n - \mathbf{P}_0$ is the net move of one sweep, the "average direction" of the $n$ line searches in it. Powell's method searches along this direction too, and keeps it as a search direction for the next sweep, dropping the oldest one. The directions start as the standard base vectors and are stored as the columns of a matrix,
+
+$$
+\mathbf{U} = \begin{bmatrix} \mathbf{U}_1 & \mathbf{U}_2 & \cdots & \mathbf{U}_n \end{bmatrix} = \begin{bmatrix} \mathbf{E}_1 & \mathbf{E}_2 & \cdots & \mathbf{E}_n \end{bmatrix} = \mathbf{I}.
+$$
+
+::: {.callout-important appearance="simple"}
+## Algorithm — Powell's method (basic form)
+Start with $\mathbf{X}_0$, set $\mathbf{U}_k = \mathbf{E}_k$ for $k = 1, \ldots, n$, and set $i = 0$.
+
+1. Set $\mathbf{P}_0 = \mathbf{X}_i$.
+2. For $k = 1, 2, \ldots, n$: find $\gamma_k$ that minimises $f(\mathbf{P}_{k-1} + \gamma\,\mathbf{U}_k)$ and set $\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{U}_k$.
+3. Set $\mathbf{U}_j = \mathbf{U}_{j+1}$ for $j = 1, \ldots, n - 1$, and set $\mathbf{U}_n = \mathbf{P}_n - \mathbf{P}_0$.
+4. Set $i = i + 1$.
+5. Find $\gamma$ that minimises $f(\mathbf{P}_0 + \gamma\,\mathbf{U}_n)$ and set $\mathbf{X}_i = \mathbf{P}_0 + \gamma\,\mathbf{U}_n$.
+6. Repeat steps 1–5.
+:::
+
+Each iteration costs $n + 1$ line searches. Mathews' program runs a fixed number of iterations, given as its second argument. If a sweep does not move at all, then $\mathbf{P}_n = \mathbf{P}_0$, the new direction is the zero vector and the search in step 5 is meaningless; the iteration has then converged.
+
+Why the average direction works so well on a quadratic is explained by the next result, which holds for any quadratic with a positive definite Hessian and exact line searches.
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Parallel lines give a conjugate direction
+Let $f(\mathbf{X}) = c + \mathbf{b}\cdot\mathbf{X} + \tfrac12\,\mathbf{X}^{T}\!\mathbf{A}\,\mathbf{X}$ with $\mathbf{A}$ symmetric and positive definite. If $\mathbf{Q}_1$ minimises $f$ along a line with direction $\mathbf{U}$, and $\mathbf{Q}_2$ minimises $f$ along a parallel line with the same direction $\mathbf{U}$, then $\mathbf{D} = \mathbf{Q}_2 - \mathbf{Q}_1$ is *conjugate* to $\mathbf{U}$:
+
+$$
+\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{D} = 0 .
+$$
+
+In two variables it follows that a line search from $\mathbf{Q}_1$ along $\mathbf{D}$ ends at the minimum of $f$, provided $\mathbf{D} \neq \mathbf{0}$.
+:::
+
+*Proof.* At both points the gradient is perpendicular to $\mathbf{U}$, so $\mathbf{U}\cdot\nabla f(\mathbf{Q}_1) = \mathbf{U}\cdot\nabla f(\mathbf{Q}_2) = 0$. Since $\nabla f(\mathbf{Q}_2) - \nabla f(\mathbf{Q}_1) = \mathbf{A}\,\mathbf{D}$, subtracting gives $\mathbf{U}^T\!\mathbf{A}\,\mathbf{D} = 0$. If $\mathbf{X} = \mathbf{Q}_1 + \gamma^*\mathbf{D}$ minimises $f$ along $\mathbf{D}$, then $\nabla f(\mathbf{X})\cdot\mathbf{D} = 0$, and $\nabla f(\mathbf{X})\cdot\mathbf{U} = \nabla f(\mathbf{Q}_1)\cdot\mathbf{U} + \gamma^*\,\mathbf{D}^T\!\mathbf{A}\,\mathbf{U} = 0$. In two variables, $\mathbf{U}$ and $\mathbf{D}$ are linearly independent (two nonzero vectors conjugate under a positive definite $\mathbf{A}$ cannot be parallel), so $\nabla f(\mathbf{X}) = \mathbf{0}$. $\square$
+
+In Powell's method the point $\mathbf{X}_1$ minimises $f$ along $\mathbf{U}_2$ (step 5 of the first iteration), and the second sweep ends with a search along the same $\mathbf{U}_2$. So for $n = 2$ the theorem applies with $\mathbf{Q}_1 = \mathbf{X}_1$ and $\mathbf{Q}_2 = \mathbf{P}_2$ of the second iteration, and $\mathbf{X}_2$ is the exact minimum. As a general result for $n$ variables, Powell (1964) showed that, with exact line searches on a quadratic with a positive definite Hessian, the directions added by the method are mutually conjugate, and the minimum is reached after $n$ iterations, provided the direction set stays linearly independent.
+
+### Example 3 — Powell's method on $f(x, y) = x^2 - 4x + y^2 - y - xy$
+
+This is the function and starting point of Example 1, $\mathbf{X}_0 = (2.55,\ 1.75)$, now with Powell's method and $3$ iterations.
+
+**Iteration 1, steps 1–2.** The two coordinate searches are the same as in Example 1: $\gamma_1 = 0.325$ gives $\mathbf{P}_1 = (2.875,\ 1.75)$, and $\gamma_2 = 0.1875$ gives $\mathbf{P}_2 = (2.875,\ 1.9375)$.
+
+**Iteration 1, step 3.** The new directions are
+
+$$
+\mathbf{U}_1 = \mathbf{E}_2 = (0,\ 1), \qquad \mathbf{U}_2 = \mathbf{P}_2 - \mathbf{P}_0 = (0.325,\ 0.1875) = \left(\tfrac{13}{40},\ \tfrac{3}{16}\right).
+$$
+
+**Iteration 1, step 5.** Along $\mathbf{P}_0 + \gamma\,\mathbf{U}_2$,
+
+$$
+\varphi(\gamma) = f(2.55 + 0.325\gamma,\ 1.75 + 0.1875\gamma) = \tfrac{511}{6400}\gamma^2 - \tfrac{353}{1600}\gamma - \tfrac{2739}{400},
+$$
+
+which is least at $\gamma = \tfrac{706}{511} \approx 1.381605$. This step goes past $\mathbf{P}_2$ (where $\gamma = 1$), and
+
+$$
+\mathbf{X}_1 = \left(\tfrac{3065}{1022},\ \tfrac{8213}{4088}\right) \approx (2.999021526419,\ 2.009050880626), \qquad f(\mathbf{X}_1) = -\tfrac{228925}{32704} \approx -6.999908268102 .
+$$
+
+**Iteration 2.** From $\mathbf{P}_0 = \mathbf{X}_1$, the search along $\mathbf{U}_1 = (0, 1)$ has $\gamma_1 = -\tfrac{39}{4088}$ and gives $\mathbf{P}_1 = \left(\tfrac{3065}{1022},\ \tfrac{4087}{2044}\right) \approx (2.999021526419,\ 1.999510763209)$. The search along $\mathbf{U}_2 = (0.325,\ 0.1875)$ has $\gamma_2 = \tfrac{780}{261121}$ and gives $\mathbf{P}_2 \approx (2.999992340716,\ 2.000070848381)$. The new direction is
+
+$$
+\mathbf{U}_2 \leftarrow \mathbf{P}_2 - \mathbf{P}_0 = \left(\tfrac{507}{522242},\ -\tfrac{18759}{2088968}\right) \approx (0.0009708143,\ -0.0089800322),
+$$
+
+and it is conjugate to the old $\mathbf{U}_2 = \left(\tfrac{13}{40}, \tfrac{3}{16}\right)$: with $\mathbf{A} = \begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}$, the product $\left(\tfrac{13}{40}, \tfrac{3}{16}\right)\mathbf{A}\left(\tfrac{507}{522242}, -\tfrac{18759}{2088968}\right)^T$ is exactly $0$. The line search along it has $\gamma = \tfrac{511}{507}$ and lands exactly on the minimum:
+
+$$
+\boxed{\ \mathbf{X}_2 = (3,\ 2), \qquad f(\mathbf{X}_2) = -7\ }
+$$
+
+**Iteration 3.** Every search from $(3, 2)$ returns $\gamma = 0$, so $\mathbf{X}_3 = (3, 2)$ (in exact arithmetic the new direction $\mathbf{P}_2 - \mathbf{P}_0$ is the zero vector).
+
+| Point | $\gamma$ | $(x, y)$ | $f$ |
+|---|---|---|---|
+| $\mathbf{X}_0$ | — | $(2.550000000000,\ 1.750000000000)$ | $-6.847500000000$ |
+| $\mathbf{P}_1$ (iteration 1) | $13/40$ | $(2.875000000000,\ 1.750000000000)$ | $-6.953125000000$ |
+| $\mathbf{P}_2$ (iteration 1) | $3/16$ | $(2.875000000000,\ 1.937500000000)$ | $-6.988281250000$ |
+| $\mathbf{X}_1$ | $706/511$ | $(2.999021526419,\ 2.009050880626)$ | $-6.999908268102$ |
+| $\mathbf{P}_1$ (iteration 2) | $-39/4088$ | $(2.999021526419,\ 1.999510763209)$ | $-6.999999281942$ |
+| $\mathbf{P}_2$ (iteration 2) | $780/261121$ | $(2.999992340716,\ 2.000070848381)$ | $-6.999999994379$ |
+| $\mathbf{X}_2$ | $511/507$ | $(3,\ 2)$ | $-7$ |
+| $\mathbf{X}_3$ | $0$ | $(3,\ 2)$ | $-7$ |
+
+Powell's method reaches the minimum exactly after $6$ line searches, where the taxi-cab method of Example 1 is still $5.331 \times 10^{-7}$ away after $20$. Mathews' run agrees with these points to within $6 \times 10^{-8}$; his machine-precision line searches print $\mathbf{X}_2 = (2.999999967922,\ 1.999999981493)$, and $(3, 2)$ in iteration 3.
+
+**Verification:** $\nabla f(3, 2) = (0, 0)$ and $\mathbf{A}$ is positive definite (Example 1), so $(3, 2)$ is the minimum; every entry of the table was computed with exact fractions.
+
+### Example 4 — Rosenbrock's parabolic valley
+
+Minimise
+
+$$
+f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2 ,
+$$
+
+the function Rosenbrock introduced around 1960 as a test problem. Its minimum $f(1, 1) = 0$ lies at the bottom of a long, curved, narrow valley along $y = x^2$. Mathews graphs the surface over $[0.5, 1.5] \times [0.5, 1.5]$ and runs $4$ iterations of Powell's method from $\mathbf{X}_0 = (0.99,\ 1.01)$, where $f(\mathbf{X}_0) = 0.089501$. Here the line searches are no longer parabolas, and they were done numerically, each to the first local minimum downhill from $\gamma = 0$.
+
+| Point | $\gamma$ | $(x, y)$ | $f$ | distance to $(1, 1)$ |
+|---|---|---|---|---|
+| $\mathbf{X}_0$ | — | $(0.990000000000,\ 1.010000000000)$ | $0.089501$ | $0.01414$ |
+| $\mathbf{P}_1$ (iteration 1) | $0.01497525$ | $(1.004975246918,\ 1.010000000000)$ | $2.481 \times 10^{-5}$ | $0.01117$ |
+| $\mathbf{P}_2$ (iteration 1) | $-2.475308 \times 10^{-5}$ | $(1.004975246918,\ 1.009975246918)$ | $2.475 \times 10^{-5}$ | $0.01115$ |
+| $\mathbf{X}_1$ | $0.9991810$ | $(1.004962981965,\ 1.009975267191)$ | $2.469 \times 10^{-5}$ | $0.01114$ |
+| $\mathbf{P}_1$ (iteration 2) | $-2.467207 \times 10^{-5}$ | $(1.004962981965,\ 1.009950595119)$ | $2.463 \times 10^{-5}$ | $0.01112$ |
+| $\mathbf{P}_2$ (iteration 2) | $-8.170159 \times 10^{-4}$ | $(1.004950746949,\ 1.009950615343)$ | $2.457 \times 10^{-5}$ | $0.01111$ |
+| $\mathbf{X}_2$ | $402.7456$ | $(1.000035383584,\ 1.000046843962)$ | $5.849 \times 10^{-8}$ | $5.871 \times 10^{-5}$ |
+| $\mathbf{P}_1$ (iteration 3) | $-8.020124 \times 10^{-4}$ | $(1.000023373250,\ 1.000046863814)$ | $5.477 \times 10^{-10}$ | $5.237 \times 10^{-5}$ |
+| $\mathbf{P}_2$ (iteration 3) | $1.883024$ | $(1.000000334427,\ 1.000000443799)$ | $5.177 \times 10^{-12}$ | $5.557 \times 10^{-7}$ |
+| $\mathbf{X}_3$ | $1.009498$ | $(1.000000001541,\ 1.000000003106)$ | $2.428 \times 10^{-18}$ | $3.467 \times 10^{-9}$ |
+| $\mathbf{P}_1$ (iteration 4) | $1.259732 \times 10^{-4}$ | $(1.000000000000,\ 1.000000000000)$ | $1.160 \times 10^{-24}$ | $2.631 \times 10^{-13}$ |
+| $\mathbf{P}_2$ (iteration 4) | $4.496595 \times 10^{-9}$ | $(1.000000000000,\ 1.000000000000)$ | $5.546 \times 10^{-31}$ | $1.657 \times 10^{-15}$ |
+| $\mathbf{X}_4$ | $1.000000478$ | $(1.000000000000,\ 1.000000000000)$ | $1.154 \times 10^{-46}$ | $2.607 \times 10^{-24}$ |
+
+The first search lands next to the valley floor $y = x^2$ (at $\mathbf{P}_1$, $y - x^2 = 2.5 \times 10^{-5}$), and the next four line searches crawl along it: from $\mathbf{P}_1$ of iteration 1 to $\mathbf{P}_2$ of iteration 2 the distance to $(1, 1)$ only falls from $0.01117$ to $0.01111$. The breakthrough is the dog-leg step of iteration 2. Its direction $\mathbf{U}_2 = \mathbf{P}_2 - \mathbf{P}_0 \approx (-1.2235 \times 10^{-5},\ -2.4652 \times 10^{-5})$ is tiny, but its slope $2.015$ is nearly the slope $2$ of the valley floor $y = x^2$ at $(1, 1)$, and the line search goes $402.7$ times its length along it, cutting the distance to the minimum from $0.01111$ to $5.871 \times 10^{-5}$. After four iterations the run is at $(1, 1)$ to within $3 \times 10^{-24}$.
+
+Mathews' printed points agree with these to within $1.3 \times 10^{-12}$ up to $\mathbf{P}_2$ of iteration 2, and to within $3.7 \times 10^{-9}$ from $\mathbf{X}_2$ on. His run uses machine precision, and his last three values of $f$ stay near $1.3 \times 10^{-25}$ instead of falling further.
+
+**Verification:** $\nabla f(1, 1) = (0, 0)$, the Hessian $\mathbf{H}(1, 1) = \begin{pmatrix} 802 & -400 \\ -400 & 200 \end{pmatrix}$ has eigenvalues $0.3994$ and $1001.6$, and $f \ge 0$ everywhere with $f(1, 1) = 0$, so $(1, 1)$ is the global minimum. The very different eigenvalues are the narrow valley: at $(1, 1)$ the curvature of $f$ across the valley is about $2500$ times its curvature along it.
+
+### Example 5 — Three local minima of $f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x$
+
+Mathews labels this one Exercise 5: use Powell's method to find the minima of $f$, and estimate their locations from graphs of $f$, which he draws over $[-3, 3] \times [-0.5, 2]$. He then goes for the minimum near each of three points, starting Powell's method at $(0, 0)$, $(2, 1.5)$ and $(-2, 1.5)$, with $2$ iterations each time. The line searches were done numerically, as in Example 4.
+
+**Case (i): the minimum near $(0, 0)$.**
+
+| Point | $\gamma$ | $(x, y)$ | $f$ |
+|---|---|---|---|
+| $\mathbf{X}_0$ | — | $(0.000000000000,\ 0.000000000000)$ | $0.000000000000$ |
+| $\mathbf{P}_1$ (iteration 1) | $-0.02499375$ | $(-0.024993754683,\ 0.000000000000)$ | $-0.003124609570$ |
+| $\mathbf{P}_2$ (iteration 1) | $9.370306 \times 10^{-4}$ | $(-0.024993754683,\ 0.000937030563)$ | $-0.003127243654$ |
+| $\mathbf{X}_1$ | $1.001693$ | $(-0.025036057316,\ 0.000938616513)$ | $-0.003127252570$ |
+| $\mathbf{P}_1$ (iteration 2) | $1.588627 \times 10^{-6}$ | $(-0.025036057316,\ 0.000940205141)$ | $-0.003127252578$ |
+| $\mathbf{P}_2$ (iteration 2) | $1.439605 \times 10^{-6}$ | $(-0.025036093297,\ 0.000940206490)$ | $-0.003127252578$ |
+| $\mathbf{X}_2$ | $1.000853$ | $(-0.025036093327,\ 0.000940207845)$ | $-0.003127252578$ |
+
+$\mathbf{X}_2$ is within $9 \times 10^{-17}$ of the minimum. Mathews prints $\mathbf{X}_2 = (-0.025036117326,\ 0.000940208142)$, $2.4 \times 10^{-8}$ from it.
+
+**Case (ii): the minimum near $(2, 1.5)$.**
+
+| Point | $\gamma$ | $(x, y)$ | $f$ |
+|---|---|---|---|
+| $\mathbf{X}_0$ | — | $(2.000000000000,\ 1.500000000000)$ | $-0.625000000000$ |
+| $\mathbf{P}_1$ (iteration 1) | $0.05416015$ | $(2.054160154431,\ 1.500000000000)$ | $-0.673034216268$ |
+| $\mathbf{P}_2$ (iteration 1) | $0.03230541$ | $(2.054160154431,\ 1.532305411865)$ | $-0.705159105443$ |
+| $\mathbf{X}_1$ | $2.735421$ | $(2.148150843063,\ 1.588368913524)$ | $-0.763654912119$ |
+| $\mathbf{P}_1$ (iteration 2) | $-8.691538 \times 10^{-4}$ | $(2.148150843063,\ 1.587499759730)$ | $-0.763680032306$ |
+| $\mathbf{P}_2$ (iteration 2) | $1.130429 \times 10^{-3}$ | $(2.148212067282,\ 1.587536278710)$ | $-0.763680059158$ |
+| $\mathbf{X}_2$ | $1.001050$ | $(2.148212131548,\ 1.587535404706)$ | $-0.763680059186$ |
+
+$\mathbf{X}_2$ is $1.4 \times 10^{-9}$ from the minimum.
+
+**Case (iii): the minimum near $(-2, 1.5)$.**
+
+| Point | $\gamma$ | $(x, y)$ | $f$ |
+|---|---|---|---|
+| $\mathbf{X}_0$ | — | $(-2.000000000000,\ 1.500000000000)$ | $-1.625000000000$ |
+| $\mathbf{P}_1$ (iteration 1) | $-0.06886679$ | $(-2.068866785213,\ 1.500000000000)$ | $-1.703804065800$ |
+| $\mathbf{P}_2$ (iteration 1) | $0.04101303$ | $(-2.068866785213,\ 1.541013026985)$ | $-1.755938774583$ |
+| $\mathbf{X}_1$ | $2.637715$ | $(-2.181650937215,\ 1.608180667456)$ | $-1.846228690920$ |
+| $\mathbf{P}_1$ (iteration 2) | $-1.262418 \times 10^{-3}$ | $(-2.181650937215,\ 1.606918249556)$ | $-1.846282880617$ |
+| $\mathbf{P}_2$ (iteration 2) | $1.463631 \times 10^{-3}$ | $(-2.181751732804,\ 1.606978277510)$ | $-1.846282959494$ |
+| $\mathbf{X}_2$ | $1.001425$ | $(-2.181751876396,\ 1.606976564601)$ | $-1.846282959604$ |
+
+$\mathbf{X}_2$ is $3.8 \times 10^{-9}$ from the minimum.
+
+In cases (ii) and (iii) the dog-leg step of the first iteration ($\gamma = 2.735$ and $2.638$) goes well past $\mathbf{P}_2$, and it brings the point to within about $10^{-3}$ of the minimum ($8.4 \times 10^{-4}$ and $1.2 \times 10^{-3}$). In all three cases Mathews' printed points agree with these to within $2.4 \times 10^{-8}$.
+
+**Verification:** $\nabla f = \mathbf{0}$ has exactly five real solutions (eliminating $x$ leaves a polynomial in $y$ with five real roots, and each root gives one $x$), computed here in 50-digit arithmetic. Three are minima, where both eigenvalues of the Hessian are positive:
+
+| Minimum | $f$ | Hessian eigenvalues |
+|---|---|---|
+| $(-0.0250360933,\ 0.0009402078)$ | $-0.003127252578$ | $5.950,\ 10.04$ |
+| $(2.1482121303,\ 1.5875354040)$ | $-0.763680059186$ | $10.23,\ 93.06$ |
+| $(-2.1817518731,\ 1.6069765627)$ | $-1.846282959604$ | $11.09,\ 95.09$ |
+
+The other two, near $(0.9685,\ 0.7784)$ and $(-0.9021,\ 0.7210)$, are saddle points, with Hessian eigenvalues of both signs. The minimum near $(-2.18, 1.61)$ has the smallest value of $f$, and since $f \to \infty$ as $\lVert(x, y)\rVert \to \infty$, it is the global minimum.
+
+### Example 6 — One iteration by hand: $f(x, y) = \cos x + \sin y$
+
+Use Powell's method to find $\mathbf{X}_1$ and $\mathbf{X}_2$ for $f(x, y) = \cos x + \sin y$, starting from $\mathbf{X}_0 = (5.5,\ 2)$, where $f(\mathbf{X}_0) = 1.617967201117$.
+
+**Step 1.** $\mathbf{U} = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix}$ and $\mathbf{P}_0 = \mathbf{X}_0 = (5.5,\ 2)$.
+
+**Step 2** ($k = 1$): along $\mathbf{U}_1 = (1, 0)$,
+
+$$
+f(\mathbf{P}_0 + \gamma\,\mathbf{U}_1) = \cos(5.5 + \gamma) + \sin 2 .
+$$
+
+Its derivative at $\gamma = 0$ is $-\sin 5.5 \approx 0.7055 > 0$, so the search goes downhill towards negative $\gamma$, to the minimum of the cosine at $5.5 + \gamma = \pi$:
+
+$$
+\gamma_1 = \pi - 5.5 \approx -2.358407346, \qquad \mathbf{P}_1 = (\pi,\ 2) \approx (3.141592654,\ 2), \qquad f(\mathbf{P}_1) = -1 + \sin 2 \approx -0.090702573 .
+$$
+
+**Step 3** ($k = 2$): along $\mathbf{U}_2 = (0, 1)$,
+
+$$
+f(\mathbf{P}_1 + \gamma\,\mathbf{U}_2) = -1 + \sin(2 + \gamma),
+$$
+
+whose derivative at $\gamma = 0$ is $\cos 2 \approx -0.4161 < 0$, so the search goes towards positive $\gamma$, to the minimum of the sine at $2 + \gamma = 3\pi/2$:
+
+$$
+\gamma_2 = \tfrac{3\pi}{2} - 2 \approx 2.712388980, \qquad \mathbf{P}_2 = \left(\pi,\ \tfrac{3\pi}{2}\right) \approx (3.141592654,\ 4.712388980), \qquad f(\mathbf{P}_2) = -2 .
+$$
+
+**Step 4** (new direction):
+
+$$
+\mathbf{U}_2 \leftarrow \mathbf{P}_2 - \mathbf{P}_0 = \left(\pi - 5.5,\ \tfrac{3\pi}{2} - 2\right) \approx (-2.358407346,\ 2.712388980), \qquad
+\mathbf{U} = \begin{pmatrix} 0 & -2.358407346 \\ 1 & 2.712388980 \end{pmatrix}.
+$$
+
+**Step 5** (dog-leg search):
+
+$$
+f(\mathbf{P}_0 + \gamma\,\mathbf{U}_2) = \cos(5.5 - 2.358407346\,\gamma) + \sin(2 + 2.712388980\,\gamma).
+$$
+
+This decreases all the way from $\gamma = 0$ to $\gamma = 1$, where it reaches $-2$, the smallest value $f$ can take. So $\gamma = 1$ and
+
+$$
+\boxed{\ \mathbf{X}_1 = \left(\pi,\ \tfrac{3\pi}{2}\right) \approx (3.141592654,\ 4.712388980), \qquad f(\mathbf{X}_1) = -2\ }
+$$
+
+**Iteration 2.** $\mathbf{X}_1$ is already the minimum, so every line search of the second iteration returns $\gamma = 0$, and $\mathbf{X}_2 = \mathbf{X}_1$.
+
+This agrees with Mathews' module, which prints $\gamma_1 = -2.35841$, $\gamma = 1$ and $\mathbf{X}_1 = (3.14159,\ 4.71239)$, and with his one-iteration program run. The textbook version of this example (Example 8.7 of Mathews and Fink, *Numerical Methods Using MATLAB*, 4th ed., 2004), linked from the module's proof page, instead prints $\gamma = 0.9816697$, $\mathbf{X}_1 = (3.1848261,\ 4.6626615)$ and $\mathbf{X}_2 = (3.1698887,\ 4.7197876)$. Its $\mathbf{X}_1$ is not the minimum along its line: along the textbook's own direction $(-2.3584042,\ 2.7123803)$ the minimum is at $\gamma = 1.0000024$, where $f$ is $-2$ to ten decimals, while its printed $\mathbf{X}_1$ has $f = -1.997829$.
+
+**Verification:** $\nabla f = (-\sin x,\ \cos y)$ is zero at $\left(\pi, \tfrac{3\pi}{2}\right)$, the Hessian there is $\begin{pmatrix} -\cos\pi & 0 \\ 0 & -\sin\tfrac{3\pi}{2} \end{pmatrix} = \mathbf{I}$, and $f \ge -2$ everywhere, so $\mathbf{X}_1$ is a global minimum.
+
+## Enhanced Powell's Method
+
+The basic method always discards the oldest direction $\mathbf{U}_1$ and always accepts the average direction $\mathbf{P}_n - \mathbf{P}_0$. Mathews points out two weaknesses. It would be better to discard the direction $\mathbf{U}_r$ along which $f$ decreased most, because that direction is likely to be a large component of $\mathbf{P}_n - \mathbf{P}_0$; if it is kept, then as the iterations go on the direction set tends to become linearly dependent, a direction is lost, and the points may not converge to the minimum. And the average direction need not be a good direction in which to search. (In Example 4 the two directions held after the third iteration already make an angle of only about $10.7^\circ$.)
+
+The enhanced method keeps the sweep of the basic method but decides, after each sweep, whether to change the direction set at all.
+
+::: {.callout-important appearance="simple"}
+## Algorithm — Enhanced Powell's method (Mathews' outline)
+1. Set $\mathbf{P}_0 = \mathbf{X}_i$.
+2. For $k = 1, \ldots, n$: find $\gamma_k$ that minimises $f(\mathbf{P}_{k-1} + \gamma\,\mathbf{U}_k)$ and set $\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{U}_k$.
+3. Let $\Delta f_k = f(\mathbf{P}_k) - f(\mathbf{P}_{k-1})$ for $k = 1, \ldots, n$. Find the subscript $r$ with $\Delta f = \lvert \Delta f_r \rvert = \max_k \lvert \Delta f_k \rvert$, the largest decrease, so $\mathbf{U}_r$ is the direction of largest decrease in step 2.
+4. Set $i = i + 1$.
+5. Let $f_0 = f(\mathbf{P}_0)$, $f_n = f(\mathbf{P}_n)$, and $f_E = f(2\mathbf{P}_n - \mathbf{P}_0)$, the value one further step along the average direction. If
+$$
+f_E \ge f_0 \qquad \text{or} \qquad 2\,(f_0 - 2 f_n + f_E)\,(f_0 - f_n - \Delta f)^2 \ \ge\ \Delta f\,(f_0 - f_E)^2 ,
+$$
+set $\mathbf{X}_i = \mathbf{P}_n$, keep the directions, and go to step 1. Otherwise continue.
+6. Set $\mathbf{U}_r = \mathbf{P}_n - \mathbf{P}_0$.
+7. Find $\gamma$ that minimises $f(\mathbf{P}_0 + \gamma\,\mathbf{U}_r)$ and set $\mathbf{X}_i = \mathbf{P}_0 + \gamma\,\mathbf{U}_r$.
+8. Repeat steps 1–7.
+:::
+
+When either test in step 5 holds, the direction set is left unchanged. The first test, $f_E \ge f_0$, says that there is no further decrease of $f$ in the average direction. The second says that the decrease along the direction of greatest decrease, $\mathbf{U}_r$, was not a major part of the total decrease of $f$ in step 2. Otherwise $\mathbf{U}_r$ is replaced by the average direction, and $f$ is minimised along it. Stopping rules based on $\lVert \mathbf{X}_i - \mathbf{X}_{i-1} \rVert$ or on the change in $f(\mathbf{X}_i)$ are usually tested in steps 5 and 7. Mathews leaves the enhanced method for the reader to investigate, and his module has no worked example of it.
+
+## Mathews' Graphical Runs (Examples 7 and 8)
+
+Mathews' Examples 7 and 8 repeat the first three iterations of Example 1 (taxi-cab) and Example 3 (Powell) with programs that also collect the points in a list and draw them. Each draws seven frames on the window $[2.5, 3.05] \times [1.6, 2.15]$: frame $j$ joins the first $j$ points with a magenta polygon, marks them with red dots, and adds in blue the contour of $f$ through each point drawn so far, over a fixed set of cyan contours from $-6.6915$ to $-6.99995$. Figures 1 and 2 of his module are frames of these two runs. The seven points are, with $f$ rounded as in his contour list:
+
+| Frame | Taxi-cab (Example 7) | $f$ | Powell (Example 8) | $f$ |
+|---|---|---|---|---|
+| 1 | $\mathbf{X}_0 = (2.55,\ 1.75)$ | $-6.8475$ | $\mathbf{X}_0 = (2.55,\ 1.75)$ | $-6.8475$ |
+| 2 | $(2.875,\ 1.75)$ | $-6.95313$ | $\mathbf{P}_1 = (2.875,\ 1.75)$ | $-6.95313$ |
+| 3 | $\mathbf{X}_1 = (2.875,\ 1.9375)$ | $-6.98828$ | $\mathbf{P}_2 = (2.875,\ 1.9375)$ | $-6.98828$ |
+| 4 | $(2.96875,\ 1.9375)$ | $-6.99707$ | $\mathbf{X}_1 = (2.999021526,\ 2.009050881)$ | $-6.99991$ |
+| 5 | $\mathbf{X}_2 = (2.96875,\ 1.984375)$ | $-6.99927$ | $\mathbf{P}_1 = (2.999021526,\ 1.999510763)$ | $-7.00000$ |
+| 6 | $(2.9921875,\ 1.984375)$ | $-6.99982$ | $\mathbf{P}_2 = (2.999992341,\ 2.000070848)$ | $-7.00000$ |
+| 7 | $\mathbf{X}_3 = (2.9921875,\ 1.99609375)$ | $-6.99995$ | $\mathbf{X}_2 = (3,\ 2)$ | $-7$ |
+
+The Powell program collects ten points (the last three are iteration 3, all at $(3, 2)$), but the plotting loop draws only the first seven. Because the list is drawn as one polygon, the dog-leg segment is drawn from $\mathbf{P}_2$ to $\mathbf{X}_1$, although the search that produced $\mathbf{X}_1$ ran along the line from $\mathbf{P}_0$ through $\mathbf{P}_2$; the two segments lie on the same line. After three iterations the taxi-cab path is still $0.00873$ from the minimum, while Powell's path has reached it.
+
+## Implementation Notes
+
+- **The line search decides the result.** Mathews' searches start at $\gamma = 0$ and stop at a nearby local minimum. A search that looks over a wider bracket can stop at a different local minimum of $\varphi$, and then Powell's method can end in a different basin. In Example 5 the three cases differ only in the starting point.
+- **Accuracy of the line search.** In general, $\varphi$ is flat near its minimum, so a line search in floating-point arithmetic locates the minimiser only to about the square root of the machine precision (about $10^{-8}$ relative, in double precision). The differences of up to $6 \times 10^{-8}$ between Mathews' printed points and the exact ones are of this size.
+- **Stopping.** Mathews' programs run a fixed number of iterations. A practical code stops when $\lVert \mathbf{X}_i - \mathbf{X}_{i-1} \rVert$ or the decrease of $f$ over an iteration falls below a tolerance, and must not search along a zero direction $\mathbf{P}_n - \mathbf{P}_0$.
+- **Direction sets.** The basic method can lose a direction when the set becomes nearly linearly dependent; the enhanced method above, or periodically resetting the directions to $\mathbf{E}_1, \ldots, \mathbf{E}_n$, guards against this.
+- **Comparison with derivative methods.** Powell's method needs only values of $f$. When the gradient and Hessian are available, [Newton's search method](newtons-search-method/) minimises a quadratic in one step and converges quadratically near a minimum with a positive definite Hessian, at the cost of computing those derivatives.
