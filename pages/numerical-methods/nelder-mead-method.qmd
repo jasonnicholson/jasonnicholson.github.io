@@ -7,44 +7,458 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+The Nelder-Mead method searches for a local minimum of a function $f$ of $n$ variables using only values of $f$, never its derivatives. It keeps a *simplex* of $n + 1$ points, which for two variables is a triangle. At each step the vertices are ranked by their function values as best $\mathbf{B}$, good $\mathbf{G}$ and worst $\mathbf{W}$, and $\mathbf{W}$ is replaced by a better point on the line from $\mathbf{W}$ through the midpoint $\mathbf{M}$ of the opposite side. If the test points on that line fail, the whole triangle is shrunk toward $\mathbf{B}$. In the examples below the triangles change shape as they move downhill and become much smaller as they close in on a minimum: in the 50-step run of Example 1 the last triangle is more than $100{,}000$ times smaller across than the first. Nelder and Mead introduced the method, and it is also known as the polytope method.
 
-### Planned animation ideas
+The candidate points are the reflection $\mathbf{R}$ of $\mathbf{W}$ through $\mathbf{M}$, the expansion $\mathbf{E}$ beyond it, and two contraction points $\mathbf{C}_1$ and $\mathbf{C}_2$ halfway between $\mathbf{M}$ and $\mathbf{W}$ or $\mathbf{R}$:
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+$$
+\mathbf{M} = \frac{\mathbf{B} + \mathbf{G}}{2}, \qquad
+\mathbf{R} = 2\mathbf{M} - \mathbf{W}, \qquad
+\mathbf{E} = 2\mathbf{R} - \mathbf{M}, \qquad
+\mathbf{C}_1 = \frac{\mathbf{W} + \mathbf{M}}{2}, \qquad
+\mathbf{C}_2 = \frac{\mathbf{M} + \mathbf{R}}{2}.
+$$
 
-## Derivation Notes (Planned)
+The shrink replaces $\mathbf{G}$ by $\mathbf{M}$ and $\mathbf{W}$ by $\mathbf{S} = (\mathbf{B} + \mathbf{W})/2$. Mathews works in two variables. He gives two sets of rules for choosing among these points, the decision table of his textbook and the shorter rule of his Mathematica program, and both are set out below. Every run on this page has been computed in exact rational arithmetic.
 
-Short derivations will be added to explain the core equations and assumptions.
+## The Triangle and Its Test Points
 
-## Worked Example (Planned)
+::: {.callout-note appearance="simple"}
+## Definition — The triangle $\mathbf{BGW}$
+Let $f(x, y)$ be the function to be minimised, and let $\mathbf{V}_k = (x_k, y_k)$, $k = 1, 2, 3$, be the vertices of a triangle. Evaluate $z_k = f(x_k, y_k)$ and renumber the vertices so that $z_1 \le z_2 \le z_3$. Then
+$$
+\mathbf{B} = (x_1, y_1), \qquad \mathbf{G} = (x_2, y_2), \qquad \mathbf{W} = (x_3, y_3)
+\tag{1}
+$$
+are the *best*, *good* (next to best) and *worst* vertices.
+:::
 
-A compact numerical example with intermediate steps will be included.
+**Midpoint of the good side.** The construction uses the midpoint of the side $\mathbf{BG}$, the side opposite $\mathbf{W}$:
+$$
+\mathbf{M} = \frac{\mathbf{B} + \mathbf{G}}{2} = \left( \frac{x_1 + x_2}{2},\ \frac{y_1 + y_2}{2} \right).
+\tag{2}
+$$
 
-## Implementation Notes (Planned)
+**Reflection.** The values fall from $\mathbf{W}$ to $\mathbf{B}$ and from $\mathbf{W}$ to $\mathbf{G}$, so $f$ may well take smaller values on the far side of the line $\mathbf{BG}$, away from $\mathbf{W}$. The test point $\mathbf{R}$ is found by reflecting the triangle through the side $\mathbf{BG}$: if $d$ is the length of the segment from $\mathbf{W}$ to $\mathbf{M}$, extend that segment a further distance $d$ through $\mathbf{M}$. In vector form,
+$$
+\mathbf{R} = \mathbf{M} + (\mathbf{M} - \mathbf{W}) = 2\mathbf{M} - \mathbf{W}.
+\tag{3}
+$$
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+**Expansion.** If $f(\mathbf{R})$ is smaller than $f(\mathbf{W})$, the move was in a good direction, and the minimum may lie a little farther on. Extend the segment through $\mathbf{M}$ and $\mathbf{R}$ by another distance $d$ to the point
+$$
+\mathbf{E} = \mathbf{R} + (\mathbf{R} - \mathbf{M}) = 2\mathbf{R} - \mathbf{M},
+\tag{4}
+$$
+which forms the expanded triangle $\mathbf{BGE}$.
 
-## Legacy Animation Inventory (Stub)
+**Contraction.** If $f(\mathbf{R})$ is no better than $f(\mathbf{W})$, another point must be tested. The function may be smaller at $\mathbf{M}$, but $\mathbf{W}$ cannot be replaced by $\mathbf{M}$, because $\mathbf{B}$, $\mathbf{G}$ and $\mathbf{M}$ lie on one line and would not form a triangle. Instead, take the midpoints of the segments $\mathbf{WM}$ and $\mathbf{MR}$:
+$$
+\mathbf{C}_1 = \frac{\mathbf{W} + \mathbf{M}}{2}, \qquad \mathbf{C}_2 = \frac{\mathbf{M} + \mathbf{R}}{2}.
+\tag{5}
+$$
+In the textbook rules, the one with the smaller function value is called $\mathbf{C}$, and the new triangle is $\mathbf{BGC}$. Mathews notes that the choice between $\mathbf{C}_1$ and $\mathbf{C}_2$ may seem unnecessary in two dimensions but matters in higher dimensions.
 
-- Legacy module page: [Nelder Mead Method](http://localhost:8000/n2003/NelderMeadMod.html) (ok)
-- Animation links found in module Animations paragraph: 2
-- Unique animation portals: 1
+**Shrink toward $\mathbf{B}$.** If $f(\mathbf{C})$ is not less than $f(\mathbf{W})$, the points $\mathbf{G}$ and $\mathbf{W}$ are shrunk toward $\mathbf{B}$. $\mathbf{G}$ is replaced by $\mathbf{M}$, the midpoint of $\mathbf{BG}$, and $\mathbf{W}$ by the midpoint of $\mathbf{BW}$,
+$$
+\mathbf{S} = \frac{\mathbf{B} + \mathbf{W}}{2}.
+\tag{6}
+$$
 
-### Animation Portals
+All the test points lie on the line through $\mathbf{W}$ and $\mathbf{M}$, at $\mathbf{M} + t\,(\mathbf{M} - \mathbf{W})$ with $t = 1$ for $\mathbf{R}$, $t = 2$ for $\mathbf{E}$, $t = -\tfrac12$ for $\mathbf{C}_1$ and $t = \tfrac12$ for $\mathbf{C}_2$, and the shrink halves the distances from $\mathbf{B}$. In general terms, these are reflection, expansion, contraction and shrink coefficients of $1$, $2$, $\tfrac12$ and $\tfrac12$.
 
-1. [Nelder-Mead Search](http://localhost:8000/a2001/Animations/Optimization/Nelder1/Nelder.html) (ok)
+**More variables.** Mathews states the algorithm for a continuous function $f(x_1, \ldots, x_n)$ of $n$ variables, starting from $n + 1$ points $\mathbf{V}_k = (v_{k,1}, \ldots, v_{k,n})$, $k = 1, \ldots, n + 1$. In the general form of the method the vertices are ordered so that $f(\mathbf{V}_1) \le \cdots \le f(\mathbf{V}_{n+1})$. The worst vertex $\mathbf{W} = \mathbf{V}_{n+1}$ is then moved along the line through the centroid of the other $n$ vertices,
+$$
+\mathbf{M} = \frac{1}{n} \sum_{k=1}^{n} \mathbf{V}_k,
+$$
+with formulas (3) to (5) unchanged, and the shrink replaces every $\mathbf{V}_k$, $k \ge 2$, by $(\mathbf{V}_1 + \mathbf{V}_k)/2$. For $n = 2$ this is the triangle construction above.
 
-- Animation item links found: 1
+## Logical Decisions for Each Step
 
-### Animation Items
+An efficient implementation evaluates $f$ only where it needs to. Each step finds one new vertex to replace $\mathbf{W}$ (or performs the shrink), and the step ends as soon as that vertex is found. Mathews' textbook (Mathews and Fink, *Numerical Methods Using MATLAB*, 4th edition, 2004, Section 8.2, Table 8.5, which the module's proof page links) gives the decisions as two cases:
 
-1. [Nelder-Mead Method](http://localhost:8000/a2001/Animations/Optimization/Nelder1/Nelderaa.html) (ok)
-- Main animated GIF count: 2
-- http://localhost:8000/a2001/Animations/Optimization/gifs/constr01.gif
-- http://localhost:8000/a2001/Animations/Optimization/gifs/constr00.gif
+::: {.callout-important appearance="simple"}
+## Algorithm — Nelder-Mead step, textbook rules
+Order the vertices as $\mathbf{B}, \mathbf{G}, \mathbf{W}$, and compute $\mathbf{M}$, $\mathbf{R}$ and $f(\mathbf{R})$.
 
+**Case (i)**, $f(\mathbf{R}) < f(\mathbf{G})$ (reflect or expand):
+
+- if $f(\mathbf{B}) < f(\mathbf{R})$, replace $\mathbf{W}$ with $\mathbf{R}$;
+- otherwise compute $\mathbf{E}$ and $f(\mathbf{E})$. If $f(\mathbf{E}) < f(\mathbf{B})$, replace $\mathbf{W}$ with $\mathbf{E}$; otherwise replace $\mathbf{W}$ with $\mathbf{R}$.
+
+**Case (ii)**, $f(\mathbf{R}) \ge f(\mathbf{G})$ (contract or shrink):
+
+- if $f(\mathbf{R}) < f(\mathbf{W})$, replace $\mathbf{W}$ with $\mathbf{R}$;
+- compute $\mathbf{C}_1 = (\mathbf{W} + \mathbf{M})/2$ and $\mathbf{C}_2 = (\mathbf{M} + \mathbf{R})/2$, and let $\mathbf{C}$ be the one with the smaller value of $f$;
+- if $f(\mathbf{C}) < f(\mathbf{W})$, replace $\mathbf{W}$ with $\mathbf{C}$; otherwise compute $\mathbf{S} = (\mathbf{B} + \mathbf{W})/2$, replace $\mathbf{W}$ with $\mathbf{S}$ and $\mathbf{G}$ with $\mathbf{M}$.
+:::
+
+Read as printed, case (ii) goes on to the contraction even after $\mathbf{W}$ has been replaced by $\mathbf{R}$. In that event the new $\mathbf{W}$ is $\mathbf{R}$, and both contraction points are the midpoint of $\mathbf{MR}$.
+
+The Mathematica subroutine `Nelder2D` in Mathews' module, which produces the runs in every example whose output survives, uses a shorter rule. It tests the candidates in a fixed order and takes the first one that is better than $\mathbf{W}$:
+
+::: {.callout-important appearance="simple"}
+## Algorithm — Nelder-Mead step, Mathews' subroutine
+Compute $\mathbf{M}$, $\mathbf{R}$, $\mathbf{E}$, and then, as needed, $\mathbf{C}_1$ and $\mathbf{C}_2$.
+
+1. If $f(\mathbf{E}) < f(\mathbf{W})$, replace $\mathbf{W}$ with $\mathbf{E}$.
+2. Otherwise, if $f(\mathbf{R}) < f(\mathbf{W})$, replace $\mathbf{W}$ with $\mathbf{R}$.
+3. Otherwise, if $f(\mathbf{C}_1) < f(\mathbf{W})$, replace $\mathbf{W}$ with $\mathbf{C}_1$.
+4. Otherwise, if $f(\mathbf{C}_2) < f(\mathbf{W})$, replace $\mathbf{W}$ with $\mathbf{C}_2$.
+5. Otherwise shrink: replace $\mathbf{W}$ with $(\mathbf{B} + \mathbf{W})/2$ and $\mathbf{G}$ with $(\mathbf{B} + \mathbf{G})/2 = \mathbf{M}$.
+
+Then reorder the three vertices as $\mathbf{B}, \mathbf{G}, \mathbf{W}$.
+:::
+
+The two rules use the same points but can choose differently:
+
+- The subroutine accepts $\mathbf{E}$ whenever it is better than $\mathbf{W}$, even when $\mathbf{R}$ is better still. The textbook expands only when $f(\mathbf{R}) \le f(\mathbf{B})$, and keeps $\mathbf{E}$ only if $f(\mathbf{E}) < f(\mathbf{B})$. Step 3 of Example 4 shows the subroutine taking a worse point this way.
+- The subroutine accepts $\mathbf{R}$ whenever it is better than $\mathbf{W}$. The textbook, when $f(\mathbf{G}) \le f(\mathbf{R}) < f(\mathbf{W})$, replaces $\mathbf{W}$ with $\mathbf{R}$ and then still tries a contraction.
+- The subroutine tries $\mathbf{C}_1$ before $\mathbf{C}_2$. The textbook takes the better of the two.
+
+**Stopping.** Mathews' first subroutine runs a fixed number of steps. His "more efficient" version stores the function values instead of recomputing them and stops as soon as
+$$
+f(\mathbf{W}) \le f(\mathbf{B}) + \epsilon .
+\tag{7}
+$$
+It always takes at least one step and never more than $99$. This is a test on function values only: it stops when the three vertices have nearly equal values, not when the triangle is small.
+
+**What every step guarantees.** These facts hold for both rules and any $f$. A step that is not a shrink replaces $\mathbf{W}$ by a point whose value is less than $f(\mathbf{W})$, because each replacement above is made only after such a test. No step removes $\mathbf{B}$ unless it finds a point with a smaller value, and a shrink keeps $\mathbf{B}$. So $f(\mathbf{B})$ never increases. Nothing in the rules makes the triangle converge to a minimum, though: the method is a search heuristic, and the module gives no convergence theorem.
+
+::: {.callout-warning appearance="simple"}
+## Ties and round-off
+All the tests are strict inequalities, so when two values are *equal* the result depends on how the tie is broken, and in floating-point arithmetic on how the rounding falls. In the runs below, vertices with equal values are listed with the smaller $x$-coordinate first, then the smaller $y$, and $\mathbf{C}_1$ is taken when $f(\mathbf{C}_1) = f(\mathbf{C}_2)$. Example 1 meets exact ties within its first six steps. Its $f$ is symmetric about the minimum, $f(3 + u, 2 + v) = f(3 - u, 2 - v)$, and each tie is between two points that are mirror images through $(3, 2)$. Mathews' machine-precision run takes a different path from the sixth step on (see Example 4).
+:::
+
+## Example 1 — A quadratic function
+
+Use the Nelder-Mead method to find the minimum of
+$$
+f(x, y) = x^2 - 4x + y^2 - y - xy
+$$
+starting with the vertices $\mathbf{V}_1 = (0, 0)$, $\mathbf{V}_2 = (1.2, 0.0)$ and $\mathbf{V}_3 = (0.0, 0.8)$.
+
+**The exact answer.** Setting the gradient $(2x - 4 - y,\ 2y - 1 - x)$ to zero gives $(x, y) = (3, 2)$, where $f(3, 2) = -7$. Writing $x = 3 + u$, $y = 2 + v$,
+$$
+f(3 + u, 2 + v) = -7 + u^2 - uv + v^2 = -7 + \left(u - \tfrac{v}{2}\right)^2 + \tfrac34 v^2,
+$$
+so $(3, 2)$ is the only minimum. The Hessian $\begin{pmatrix} 2 & -1 \\ -1 & 2 \end{pmatrix}$ has eigenvalues $1$ and $3$.
+
+**Step 1** (evaluate and order). The function takes the values
+$$
+f(0, 0) = 0.0, \qquad f(1.2, 0.0) = -3.36, \qquad f(0.0, 0.8) = -0.16,
+$$
+so
+$$
+\mathbf{B} = (1.2, 0.0), \qquad \mathbf{G} = (0.0, 0.8), \qquad \mathbf{W} = (0, 0).
+$$
+
+**Step 2** (midpoint and reflection). The vertex $\mathbf{W} = (0, 0)$ will be replaced.
+$$
+\mathbf{M} = \frac{\mathbf{B} + \mathbf{G}}{2} = (0.6, 0.4), \qquad \mathbf{R} = 2\mathbf{M} - \mathbf{W} = (1.2, 0.8), \qquad f(\mathbf{R}) = -4.48 .
+$$
+
+**Step 3** (decide). $f(\mathbf{R}) = -4.48$ is less than $f(\mathbf{G}) = -0.16$, so this is case (i). Since $f(\mathbf{R}) \le f(\mathbf{B}) = -3.36$, the move is in the right direction, and the expansion point is constructed:
+$$
+\mathbf{E} = 2\mathbf{R} - \mathbf{M} = 2(1.2, 0.8) - (0.6, 0.4) = (1.8, 1.2), \qquad f(\mathbf{E}) = -5.88 .
+$$
+
+**Step 4** (replace). $f(\mathbf{E}) = -5.88$ is less than $f(\mathbf{B})$, so $\mathbf{W}$ is replaced with $\mathbf{E}$, and the new triangle has vertices
+$$
+\boxed{\ \mathbf{V}_1 = (1.8, 1.2), \qquad \mathbf{V}_2 = (1.2, 0.0), \qquad \mathbf{V}_3 = (0.0, 0.8)\ }
+$$
+with values $-5.88$, $-3.36$ and $-0.16$. Mathews' subroutine makes the same first step, since its first test, $f(\mathbf{E}) = -5.88 < f(\mathbf{W}) = 0$, already succeeds.
+
+**Continuing with the textbook rules.** The table gives the triangle after $k$ steps and the move that produced it. Its ten rows recompute Mathews' textbook Table 8.6 (whose rows $1$ to $10$ are $k = 0$ to $9$ here). Coordinates and values are exact where they have at most seven decimals, and rounded to six decimals otherwise.
+
+| $k$ | step | $B$ | $f(B)$ | $G$ | $f(G)$ | $W$ | $f(W)$ |
+|---:|:--|:--|--:|:--|--:|:--|--:|
+| 0 | start | $(1.2,\ 0)$ | $-3.36$ | $(0,\ 0.8)$ | $-0.16$ | $(0,\ 0)$ | $0$ |
+| 1 | expand, $E$ | $(1.8,\ 1.2)$ | $-5.88$ | $(1.2,\ 0)$ | $-3.36$ | $(0,\ 0.8)$ | $-0.16$ |
+| 2 | reflect, $R$ | $(1.8,\ 1.2)$ | $-5.88$ | $(3,\ 0.4)$ | $-4.44$ | $(1.2,\ 0)$ | $-3.36$ |
+| 3 | reflect, $R$ | $(3.6,\ 1.6)$ | $-6.24$ | $(1.8,\ 1.2)$ | $-5.88$ | $(3,\ 0.4)$ | $-4.44$ |
+| 4 | reflect, $R$ | $(2.4,\ 2.4)$ | $-6.24$ | $(3.6,\ 1.6)$ | $-6.24$ | $(1.8,\ 1.2)$ | $-5.88$ |
+| 5 | contract, $C_1$ | $(2.4,\ 1.6)$ | $-6.72$ | $(2.4,\ 2.4)$ | $-6.24$ | $(3.6,\ 1.6)$ | $-6.24$ |
+| 6 | contract, $C_1$ | $(3,\ 1.8)$ | $-6.96$ | $(2.4,\ 1.6)$ | $-6.72$ | $(2.4,\ 2.4)$ | $-6.24$ |
+| 7 | contract, $C_1$ | $(3,\ 1.8)$ | $-6.96$ | $(2.55,\ 2.05)$ | $-6.7725$ | $(2.4,\ 1.6)$ | $-6.72$ |
+| 8 | reflect, $R$ | $(3,\ 1.8)$ | $-6.96$ | $(3.15,\ 2.25)$ | $-6.9525$ | $(2.55,\ 2.05)$ | $-6.7725$ |
+| 9 | contract, $C_1$ | $(3,\ 1.8)$ | $-6.96$ | $(2.8125,\ 2.0375)$ | $-6.956406$ | $(3.15,\ 2.25)$ | $-6.9525$ |
+
+The triangles and values agree with Mathews' Table 8.6. Two pairs of vertices are tied: $f(\mathbf{B}) = f(\mathbf{G}) = -6.24$ at $k = 4$ and $f(\mathbf{G}) = f(\mathbf{W}) = -6.24$ at $k = 5$. His table lists both pairs in the opposite order. At $k = 5$ the order decides which vertex is replaced. His next triangle replaces $(3.6, 1.6)$, the vertex called $\mathbf{W}$ here; replacing $(2.4, 2.4)$ instead would have given $(2.7, 2.0)$. At step 5, moreover, $f(\mathbf{R}) = f(\mathbf{W}) = -5.88$ and $f(\mathbf{C}_1) = f(\mathbf{C}_2) = -6.72$, with $\mathbf{C}_1 = (2.4, 1.6)$ and $\mathbf{C}_2 = (3.6, 2.4)$.
+
+**Mathews' subroutine, 50 steps.** The module runs `Nelder2D` for $50$ steps from the same triangle. The first $15$ of these steps are tabulated in Example 4. In exact arithmetic the $50$ steps are $3$ expansions, $10$ reflections and $37$ contractions to $\mathbf{C}_1$, with no $\mathbf{C}_2$ and no shrink, and they end with
+$$
+\boxed{\ \mathbf{B} \approx (2.999997,\ 1.999998), \qquad f(\mathbf{B}) = -6.99999999999155\ }
+$$
+(to $15$ significant digits). The point is $3.9 \times 10^{-6}$ from $(3, 2)$, and $f(\mathbf{B}) + 7 = 8.45 \times 10^{-12}$.
+
+**Verification.** At that point the three vertices have values within $4.4 \times 10^{-11}$ of each other, and $f(\mathbf{B}) + 7$ equals $u^2 - uv + v^2$ evaluated at the error $(u, v)$ of $\mathbf{B}$, as the expansion above requires. Mathews prints $f(3.000003, 2.000002) = -6.99999999999155$, with the same value of $f$ at a different point. His point is the mirror image of ours through $(3, 2)$. The reason is explained in Example 4.
+
+## Example 2 — Rosenbrock's parabolic valley
+
+Use the Nelder-Mead method to find the minimum of
+$$
+f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2 .
+$$
+Mathews calls this Rosenbrock's parabolic valley, from about 1960. As a sum of squares, $f \ge 0$, and $f = 0$ only where $y = x^2$ and $x = 1$, so the minimum is $f(1, 1) = 0$. The minimum lies at the end of a long, curved valley along $y = x^2$. On the valley floor $f(1 - t, (1 - t)^2) = t^2$, while across the floor $f$ rises steeply: the Hessian at $(1, 1)$, $\begin{pmatrix} 802 & -400 \\ -400 & 200 \end{pmatrix}$, has eigenvalues $0.3994$ and $1001.6$.
+
+**Mathews' run is lost.** The archived copy of this example has lost every image after the formula for $f$. The starting triangle, the tolerance and the output of Mathews' run are all gone. All that survives is his remark that even Mathematica's `FindMinimum` "is having a hard time", because $f$ is flat near the minimum, and his advice to raise the working precision.
+
+**A run from $(-1.2, 1)$.** We use the more efficient subroutine with $\epsilon = 10^{-5}$, the tolerance Mathews uses in Exercise 3, on the triangle
+$$
+\mathbf{V}_1 = (-1.2,\ 1.0), \qquad \mathbf{V}_2 = (-1.0,\ 1.0), \qquad \mathbf{V}_3 = (-1.2,\ 1.2),
+$$
+which has $(-1.2, 1)$ as a vertex. The values are $f = 24.2$, $4$ and $10.6$. These are our choices, not Mathews'. The search stops after $77$ steps, $23$ expansions, $16$ reflections and $38$ contractions to $\mathbf{C}_1$ (no $\mathbf{C}_2$, no shrink), with
+$$
+\boxed{\ \mathbf{B} \approx (0.998047,\ 0.996008), \qquad f(\mathbf{B}) \approx 4.609 \times 10^{-6}\ }
+$$
+Every tenth triangle and the last one are shown below, in the number format of Example 1; values below $0.001$ are given to four significant digits.
+
+| $k$ | step | $B$ | $f(B)$ | $G$ | $f(G)$ | $W$ | $f(W)$ |
+|---:|:--|:--|--:|:--|--:|:--|--:|
+| 0 | start | $(-1,\ 1)$ | $4$ | $(-1.2,\ 1.2)$ | $10.6$ | $(-1.2,\ 1)$ | $24.2$ |
+| 10 | expand, $E$ | $(-0.719531,\ 0.488672)$ | $3.041197$ | $(-0.8921875,\ 0.794531)$ | $3.580589$ | $(-0.80625,\ 0.584375)$ | $3.693716$ |
+| 20 | contract, $C_1$ | $(-0.362643,\ 0.147737)$ | $1.883128$ | $(-0.297986,\ 0.145074)$ | $2.001499$ | $(-0.253320,\ -0.011426)$ | $2.142302$ |
+| 30 | expand, $E$ | $(0.063838,\ 0.030188)$ | $0.944587$ | $(0.008132,\ -0.033822)$ | $1.098645$ | $(-0.099289,\ 0.022256)$ | $1.223805$ |
+| 40 | expand, $E$ | $(0.420117,\ 0.173290)$ | $0.337293$ | $(0.362433,\ 0.101221)$ | $0.497310$ | $(0.291741,\ 0.099580)$ | $0.522561$ |
+| 50 | reflect, $R$ | $(0.603440,\ 0.354924)$ | $0.165753$ | $(0.552011,\ 0.315049)$ | $0.211371$ | $(0.532164,\ 0.275356)$ | $0.225022$ |
+| 60 | expand, $E$ | $(0.834131,\ 0.687882)$ | $0.033743$ | $(0.805417,\ 0.636851)$ | $0.051896$ | $(0.757347,\ 0.573186)$ | $0.058896$ |
+| 70 | contract, $C_1$ | $(1.012672,\ 1.024883)$ | $1.992 \times 10^{-4}$ | $(0.988621,\ 0.980089)$ | $8.673 \times 10^{-4}$ | $(0.982549,\ 0.962283)$ | $0.001278$ |
+| 77 | contract, $C_1$ | $(0.998047,\ 0.996008)$ | $4.609 \times 10^{-6}$ | $(0.998280,\ 0.996713)$ | $5.238 \times 10^{-6}$ | $(1.003080,\ 1.006003)$ | $1.226 \times 10^{-5}$ |
+
+::: {.callout-note collapse="true"}
+## All 78 triangles of the Rosenbrock run
+| $k$ | step | $B$ | $f(B)$ | $G$ | $f(G)$ | $W$ | $f(W)$ |
+|---:|:--|:--|--:|:--|--:|:--|--:|
+| 0 | start | $(-1,\ 1)$ | $4$ | $(-1.2,\ 1.2)$ | $10.6$ | $(-1.2,\ 1)$ | $24.2$ |
+| 1 | reflect, $R$ | $(-1,\ 1)$ | $4$ | $(-1,\ 1.2)$ | $8$ | $(-1.2,\ 1.2)$ | $10.6$ |
+| 2 | contract, $C_1$ | $(-1,\ 1)$ | $4$ | $(-1.1,\ 1.15)$ | $4.77$ | $(-1,\ 1.2)$ | $8$ |
+| 3 | contract, $C_1$ | $(-1,\ 1)$ | $4$ | $(-1.1,\ 1.15)$ | $4.77$ | $(-1.025,\ 1.1375)$ | $4.855352$ |
+| 4 | contract, $C_1$ | $(-1,\ 1)$ | $4$ | $(-1.0375,\ 1.10625)$ | $4.240471$ | $(-1.1,\ 1.15)$ | $4.77$ |
+| 5 | reflect, $R$ | $(-1,\ 1)$ | $4$ | $(-1.0375,\ 1.10625)$ | $4.240471$ | $(-0.9375,\ 0.95625)$ | $4.352112$ |
+| 6 | contract, $C_1$ | $(-1,\ 1)$ | $4$ | $(-0.978125,\ 1.0046875)$ | $4.142985$ | $(-1.0375,\ 1.10625)$ | $4.240471$ |
+| 7 | expand, $E$ | $(-0.8921875,\ 0.794531)$ | $3.580589$ | $(-1,\ 1)$ | $4$ | $(-0.978125,\ 1.0046875)$ | $4.142985$ |
+| 8 | reflect, $R$ | $(-0.8921875,\ 0.794531)$ | $3.580589$ | $(-0.9140625,\ 0.789844)$ | $3.872178$ | $(-1,\ 1)$ | $4$ |
+| 9 | reflect, $R$ | $(-0.8921875,\ 0.794531)$ | $3.580589$ | $(-0.80625,\ 0.584375)$ | $3.693716$ | $(-0.9140625,\ 0.789844)$ | $3.872178$ |
+| 10 | expand, $E$ | $(-0.719531,\ 0.488672)$ | $3.041197$ | $(-0.8921875,\ 0.794531)$ | $3.580589$ | $(-0.80625,\ 0.584375)$ | $3.693716$ |
+| 11 | reflect, $R$ | $(-0.719531,\ 0.488672)$ | $3.041197$ | $(-0.805469,\ 0.698828)$ | $3.510200$ | $(-0.8921875,\ 0.794531)$ | $3.580589$ |
+| 12 | expand, $E$ | $(-0.503125,\ 0.1921875)$ | $2.630842$ | $(-0.719531,\ 0.488672)$ | $3.041197$ | $(-0.805469,\ 0.698828)$ | $3.510200$ |
+| 13 | contract, $C_1$ | $(-0.503125,\ 0.1921875)$ | $2.630842$ | $(-0.708398,\ 0.519629)$ | $2.950311$ | $(-0.719531,\ 0.488672)$ | $3.041197$ |
+| 14 | expand, $E$ | $(-0.378223,\ 0.090381)$ | $2.176927$ | $(-0.503125,\ 0.1921875)$ | $2.630842$ | $(-0.708398,\ 0.519629)$ | $2.950311$ |
+| 15 | contract, $C_1$ | $(-0.378223,\ 0.090381)$ | $2.176927$ | $(-0.574536,\ 0.330457)$ | $2.479177$ | $(-0.503125,\ 0.1921875)$ | $2.630842$ |
+| 16 | expand, $E$ | $(-0.378223,\ 0.090381)$ | $2.176927$ | $(-0.574536,\ 0.330457)$ | $2.479177$ | $(-0.422888,\ 0.246881)$ | $2.487646$ |
+| 17 | contract, $C_1$ | $(-0.449634,\ 0.228650)$ | $2.171554$ | $(-0.378223,\ 0.090381)$ | $2.176927$ | $(-0.574536,\ 0.330457)$ | $2.479177$ |
+| 18 | reflect, $R$ | $(-0.253320,\ -0.011426)$ | $2.142302$ | $(-0.449634,\ 0.228650)$ | $2.171554$ | $(-0.378223,\ 0.090381)$ | $2.176927$ |
+| 19 | expand, $E$ | $(-0.297986,\ 0.145074)$ | $2.001499$ | $(-0.253320,\ -0.011426)$ | $2.142302$ | $(-0.449634,\ 0.228650)$ | $2.171554$ |
+| 20 | contract, $C_1$ | $(-0.362643,\ 0.147737)$ | $1.883128$ | $(-0.297986,\ 0.145074)$ | $2.001499$ | $(-0.253320,\ -0.011426)$ | $2.142302$ |
+| 21 | contract, $C_1$ | $(-0.291817,\ 0.067490)$ | $1.700006$ | $(-0.362643,\ 0.147737)$ | $1.883128$ | $(-0.297986,\ 0.145074)$ | $2.001499$ |
+| 22 | contract, $C_1$ | $(-0.291817,\ 0.067490)$ | $1.700006$ | $(-0.312608,\ 0.126344)$ | $1.804852$ | $(-0.362643,\ 0.147737)$ | $1.883128$ |
+| 23 | expand, $E$ | $(-0.181352,\ -0.004723)$ | $1.537055$ | $(-0.291817,\ 0.067490)$ | $1.700006$ | $(-0.312608,\ 0.126344)$ | $1.804852$ |
+| 24 | contract, $C_1$ | $(-0.181352,\ -0.004723)$ | $1.537055$ | $(-0.274596,\ 0.078864)$ | $1.625793$ | $(-0.291817,\ 0.067490)$ | $1.700006$ |
+| 25 | expand, $E$ | $(-0.100287,\ -0.023769)$ | $1.325056$ | $(-0.181352,\ -0.004723)$ | $1.537055$ | $(-0.274596,\ 0.078864)$ | $1.625793$ |
+| 26 | contract, $C_1$ | $(-0.100287,\ -0.023769)$ | $1.325056$ | $(-0.207708,\ 0.032309)$ | $1.470295$ | $(-0.181352,\ -0.004723)$ | $1.537055$ |
+| 27 | expand, $E$ | $(-0.099289,\ 0.022256)$ | $1.223805$ | $(-0.100287,\ -0.023769)$ | $1.325056$ | $(-0.207708,\ 0.032309)$ | $1.470295$ |
+| 28 | expand, $E$ | $(-0.099289,\ 0.022256)$ | $1.223805$ | $(-0.100287,\ -0.023769)$ | $1.325056$ | $(0.116052,\ -0.066888)$ | $1.427073$ |
+| 29 | contract, $C_1$ | $(0.008132,\ -0.033822)$ | $1.098645$ | $(-0.099289,\ 0.022256)$ | $1.223805$ | $(-0.100287,\ -0.023769)$ | $1.325056$ |
+| 30 | expand, $E$ | $(0.063838,\ 0.030188)$ | $0.944587$ | $(0.008132,\ -0.033822)$ | $1.098645$ | $(-0.099289,\ 0.022256)$ | $1.223805$ |
+| 31 | reflect, $R$ | $(0.063838,\ 0.030188)$ | $0.944587$ | $(0.171259,\ -0.025890)$ | $0.991729$ | $(0.008132,\ -0.033822)$ | $1.098645$ |
+| 32 | expand, $E$ | $(0.336383,\ 0.074093)$ | $0.592960$ | $(0.063838,\ 0.030188)$ | $0.944587$ | $(0.171259,\ -0.025890)$ | $0.991729$ |
+| 33 | contract, $C_1$ | $(0.336383,\ 0.074093)$ | $0.592960$ | $(0.185685,\ 0.013125)$ | $0.708706$ | $(0.063838,\ 0.030188)$ | $0.944587$ |
+| 34 | contract, $C_1$ | $(0.336383,\ 0.074093)$ | $0.592960$ | $(0.185685,\ 0.013125)$ | $0.708706$ | $(0.162436,\ 0.036899)$ | $0.712566$ |
+| 35 | contract, $C_1$ | $(0.336383,\ 0.074093)$ | $0.592960$ | $(0.211735,\ 0.040254)$ | $0.623457$ | $(0.185685,\ 0.013125)$ | $0.708706$ |
+| 36 | expand, $E$ | $(0.336383,\ 0.074093)$ | $0.592960$ | $(0.211735,\ 0.040254)$ | $0.623457$ | $(0.450807,\ 0.145269)$ | $0.637518$ |
+| 37 | contract, $C_1$ | $(0.362433,\ 0.101221)$ | $0.497310$ | $(0.336383,\ 0.074093)$ | $0.592960$ | $(0.211735,\ 0.040254)$ | $0.623457$ |
+| 38 | contract, $C_1$ | $(0.362433,\ 0.101221)$ | $0.497310$ | $(0.280571,\ 0.063956)$ | $0.539377$ | $(0.336383,\ 0.074093)$ | $0.592960$ |
+| 39 | expand, $E$ | $(0.362433,\ 0.101221)$ | $0.497310$ | $(0.291741,\ 0.099580)$ | $0.522561$ | $(0.280571,\ 0.063956)$ | $0.539377$ |
+| 40 | expand, $E$ | $(0.420117,\ 0.173290)$ | $0.337293$ | $(0.362433,\ 0.101221)$ | $0.497310$ | $(0.291741,\ 0.099580)$ | $0.522561$ |
+| 41 | contract, $C_1$ | $(0.420117,\ 0.173290)$ | $0.337293$ | $(0.341508,\ 0.118418)$ | $0.433932$ | $(0.362433,\ 0.101221)$ | $0.497310$ |
+| 42 | reflect, $R$ | $(0.420117,\ 0.173290)$ | $0.337293$ | $(0.341508,\ 0.118418)$ | $0.433932$ | $(0.399193,\ 0.190487)$ | $0.457890$ |
+| 43 | contract, $C_1$ | $(0.420117,\ 0.173290)$ | $0.337293$ | $(0.390003,\ 0.168170)$ | $0.397916$ | $(0.341508,\ 0.118418)$ | $0.433932$ |
+| 44 | expand, $E$ | $(0.532164,\ 0.275356)$ | $0.225022$ | $(0.420117,\ 0.173290)$ | $0.337293$ | $(0.390003,\ 0.168170)$ | $0.397916$ |
+| 45 | reflect, $R$ | $(0.532164,\ 0.275356)$ | $0.225022$ | $(0.562279,\ 0.280476)$ | $0.318921$ | $(0.420117,\ 0.173290)$ | $0.337293$ |
+| 46 | contract, $C_1$ | $(0.532164,\ 0.275356)$ | $0.225022$ | $(0.483670,\ 0.225603)$ | $0.273541$ | $(0.562279,\ 0.280476)$ | $0.318921$ |
+| 47 | contract, $C_1$ | $(0.532164,\ 0.275356)$ | $0.225022$ | $(0.535098,\ 0.265478)$ | $0.259616$ | $(0.483670,\ 0.225603)$ | $0.273541$ |
+| 48 | reflect, $R$ | $(0.532164,\ 0.275356)$ | $0.225022$ | $(0.583593,\ 0.315230)$ | $0.237659$ | $(0.535098,\ 0.265478)$ | $0.259616$ |
+| 49 | expand, $E$ | $(0.603440,\ 0.354924)$ | $0.165753$ | $(0.532164,\ 0.275356)$ | $0.225022$ | $(0.583593,\ 0.315230)$ | $0.237659$ |
+| 50 | reflect, $R$ | $(0.603440,\ 0.354924)$ | $0.165753$ | $(0.552011,\ 0.315049)$ | $0.211371$ | $(0.532164,\ 0.275356)$ | $0.225022$ |
+| 51 | expand, $E$ | $(0.668847,\ 0.454248)$ | $0.114411$ | $(0.603440,\ 0.354924)$ | $0.165753$ | $(0.552011,\ 0.315049)$ | $0.211371$ |
+| 52 | reflect, $R$ | $(0.668847,\ 0.454248)$ | $0.114411$ | $(0.720276,\ 0.494123)$ | $0.139129$ | $(0.603440,\ 0.354924)$ | $0.165753$ |
+| 53 | reflect, $R$ | $(0.785684,\ 0.593447)$ | $0.102822$ | $(0.668847,\ 0.454248)$ | $0.114411$ | $(0.720276,\ 0.494123)$ | $0.139129$ |
+| 54 | reflect, $R$ | $(0.734255,\ 0.553573)$ | $0.091477$ | $(0.785684,\ 0.593447)$ | $0.102822$ | $(0.668847,\ 0.454248)$ | $0.114411$ |
+| 55 | contract, $C_1$ | $(0.714409,\ 0.513879)$ | $0.082787$ | $(0.734255,\ 0.553573)$ | $0.091477$ | $(0.785684,\ 0.593447)$ | $0.102822$ |
+| 56 | contract, $C_1$ | $(0.755008,\ 0.563587)$ | $0.064182$ | $(0.714409,\ 0.513879)$ | $0.082787$ | $(0.734255,\ 0.553573)$ | $0.091477$ |
+| 57 | contract, $C_1$ | $(0.755008,\ 0.563587)$ | $0.064182$ | $(0.734482,\ 0.546153)$ | $0.074975$ | $(0.714409,\ 0.513879)$ | $0.082787$ |
+| 58 | expand, $E$ | $(0.805417,\ 0.636851)$ | $0.051896$ | $(0.755008,\ 0.563587)$ | $0.064182$ | $(0.734482,\ 0.546153)$ | $0.074975$ |
+| 59 | contract, $C_1$ | $(0.805417,\ 0.636851)$ | $0.051896$ | $(0.757347,\ 0.573186)$ | $0.058896$ | $(0.755008,\ 0.563587)$ | $0.064182$ |
+| 60 | expand, $E$ | $(0.834131,\ 0.687882)$ | $0.033743$ | $(0.805417,\ 0.636851)$ | $0.051896$ | $(0.757347,\ 0.573186)$ | $0.058896$ |
+| 61 | contract, $C_1$ | $(0.834131,\ 0.687882)$ | $0.033743$ | $(0.788561,\ 0.617776)$ | $0.046348$ | $(0.805417,\ 0.636851)$ | $0.051896$ |
+| 62 | expand, $E$ | $(0.834131,\ 0.687882)$ | $0.033743$ | $(0.823203,\ 0.684785)$ | $0.036329$ | $(0.788561,\ 0.617776)$ | $0.046348$ |
+| 63 | expand, $E$ | $(0.908880,\ 0.823448)$ | $0.008987$ | $(0.834131,\ 0.687882)$ | $0.033743$ | $(0.823203,\ 0.684785)$ | $0.036329$ |
+| 64 | contract, $C_1$ | $(0.908880,\ 0.823448)$ | $0.008987$ | $(0.847354,\ 0.720225)$ | $0.023792$ | $(0.834131,\ 0.687882)$ | $0.033743$ |
+| 65 | expand, $E$ | $(0.966089,\ 0.939746)$ | $0.005269$ | $(0.908880,\ 0.823448)$ | $0.008987$ | $(0.847354,\ 0.720225)$ | $0.023792$ |
+| 66 | reflect, $R$ | $(0.966089,\ 0.939746)$ | $0.005269$ | $(0.908880,\ 0.823448)$ | $0.008987$ | $(1.027614,\ 1.042969)$ | $0.017722$ |
+| 67 | contract, $C_1$ | $(0.982549,\ 0.962283)$ | $0.001278$ | $(0.966089,\ 0.939746)$ | $0.005269$ | $(0.908880,\ 0.823448)$ | $0.008987$ |
+| 68 | reflect, $R$ | $(0.982549,\ 0.962283)$ | $0.001278$ | $(1.039758,\ 1.078580)$ | $0.002214$ | $(0.966089,\ 0.939746)$ | $0.005269$ |
+| 69 | contract, $C_1$ | $(0.988621,\ 0.980089)$ | $8.673 \times 10^{-4}$ | $(0.982549,\ 0.962283)$ | $0.001278$ | $(1.039758,\ 1.078580)$ | $0.002214$ |
+| 70 | contract, $C_1$ | $(1.012672,\ 1.024883)$ | $1.992 \times 10^{-4}$ | $(0.988621,\ 0.980089)$ | $8.673 \times 10^{-4}$ | $(0.982549,\ 0.962283)$ | $0.001278$ |
+| 71 | contract, $C_1$ | $(0.991598,\ 0.982384)$ | $1.485 \times 10^{-4}$ | $(1.012672,\ 1.024883)$ | $1.992 \times 10^{-4}$ | $(0.988621,\ 0.980089)$ | $8.673 \times 10^{-4}$ |
+| 72 | contract, $C_1$ | $(0.995378,\ 0.991861)$ | $1.387 \times 10^{-4}$ | $(0.991598,\ 0.982384)$ | $1.485 \times 10^{-4}$ | $(1.012672,\ 1.024883)$ | $1.992 \times 10^{-4}$ |
+| 73 | contract, $C_1$ | $(1.003080,\ 1.006003)$ | $1.226 \times 10^{-5}$ | $(0.995378,\ 0.991861)$ | $1.387 \times 10^{-4}$ | $(0.991598,\ 0.982384)$ | $1.485 \times 10^{-4}$ |
+| 74 | contract, $C_1$ | $(1.003080,\ 1.006003)$ | $1.226 \times 10^{-5}$ | $(0.995414,\ 0.990658)$ | $2.465 \times 10^{-5}$ | $(0.995378,\ 0.991861)$ | $1.387 \times 10^{-4}$ |
+| 75 | contract, $C_1$ | $(1.003080,\ 1.006003)$ | $1.226 \times 10^{-5}$ | $(0.995414,\ 0.990658)$ | $2.465 \times 10^{-5}$ | $(0.997312,\ 0.995096)$ | $2.872 \times 10^{-5}$ |
+| 76 | contract, $C_1$ | $(0.998280,\ 0.996713)$ | $5.238 \times 10^{-6}$ | $(1.003080,\ 1.006003)$ | $1.226 \times 10^{-5}$ | $(0.995414,\ 0.990658)$ | $2.465 \times 10^{-5}$ |
+| 77 | contract, $C_1$ | $(0.998047,\ 0.996008)$ | $4.609 \times 10^{-6}$ | $(0.998280,\ 0.996713)$ | $5.238 \times 10^{-6}$ | $(1.003080,\ 1.006003)$ | $1.226 \times 10^{-5}$ |
+:::
+
+The best vertex follows the valley round its bend. It starts on the left arm at $(-1, 1)$, reaches $x > 0$ at step $29$ (at $(0.008132, -0.033822)$) and climbs the right arm to $(1, 1)$. At every step $|y - x^2| \le 0.076$ at $\mathbf{B}$. Both $f(\mathbf{B})$ and $f(\mathbf{W})$ decrease or stay level at every step, as they must when no shrink occurs.
+
+**Verification and the flat valley.** The final best point is $4.44 \times 10^{-3}$ from $(1, 1)$, although its value differs from the minimum value by only $4.6 \times 10^{-6}$. Stopping test (7) looks only at function values, and along the valley floor a distance $t$ from $(1, 1)$ costs only $t^2$ in $f$. The points of the floor where $f \le 10^{-5}$ stretch about $\sqrt{10^{-5}} \approx 0.003$ either side of $(1, 1)$, so a tolerance of $10^{-5}$ on values of $f$ cannot be expected to fix the point more closely than that. This is the flatness Mathews describes. Here, though, a smaller tolerance is enough, without extended precision: with $\epsilon = 10^{-10}$ the same triangle stops after $94$ steps at $\mathbf{B} \approx (1.000034,\ 1.000068)$, with $f(\mathbf{B}) \approx 1.144 \times 10^{-9}$, a distance of $7.6 \times 10^{-5}$ from $(1, 1)$. Both runs take exactly the same steps in ordinary double precision as in exact arithmetic.
+
+## Exercise 3 — Three local minima
+
+Graph the function
+$$
+f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x ,
+$$
+estimate the locations of its local minima from the graphs, and find them with the Nelder-Mead method.
+
+**Locating the minima.** Mathews' hint is that the contour plot is the most useful graph. His covers $-3 \le x \le 3$, $-0.5 \le y \le 2$, and his three searches start near $(0, 0)$, $(2, 1.5)$ and $(-2, 1.5)$. Solving $\nabla f = \mathbf{0}$ (by eliminating $x$ with a resultant and checking every real root) gives five stationary points:
+
+| Stationary point | $f$ | Hessian eigenvalues | Type |
+|:--|--:|:--|:--|
+| $(-0.025036,\ 0.000940)$ | $-0.003127$ | $5.950,\ 10.041$ | minimum |
+| $(2.148212,\ 1.587535)$ | $-0.763680$ | $10.226,\ 93.063$ | minimum |
+| $(-2.181752,\ 1.606977)$ | $-1.846283$ | $11.086,\ 95.086$ | minimum |
+| $(-0.902146,\ 0.721020)$ | $1.324987$ | $-4.626,\ 29.891$ | saddle |
+| $(0.968536,\ 0.778354)$ | $1.792682$ | $-4.765,\ 32.551$ | saddle |
+
+So there are three local minima, and the one near $(-2, 1.5)$ is the global minimum. The $\tfrac14 x$ term breaks the symmetry between $x$ and $-x$.
+
+**Three searches.** Mathews runs the more efficient subroutine with $\epsilon = 10^{-5}$ from a small triangle near each estimate:
+
+| Case | Starting triangle | Steps | Final $\mathbf{B}$ | $f(\mathbf{B})$ | Distance to the minimum | $f(\mathbf{B}) - f_{\min}$ |
+|:--|:--|--:|:--|--:|--:|--:|
+| (i), near $(0, 0)$ | $(0, -0.2)$, $(0.1, 0.1)$, $(-0.1, 0.1)$ | $17$ | $(-0.025388,\ 0.001532)$ | $-0.0031256773$ | $6.9 \times 10^{-4}$ | $1.6 \times 10^{-6}$ |
+| (ii), near $(2, 1.5)$ | $(1.9, 1.5)$, $(2.0, 1.4)$, $(2.0, 1.6)$ | $22$ | $(2.148987,\ 1.587970)$ | $-0.7636757566$ | $8.9 \times 10^{-4}$ | $4.3 \times 10^{-6}$ |
+| (iii), near $(-2, 1.5)$ | $(-1.9, 1.5)$, $(-2.0, 1.4)$, $(-2.0, 1.6)$ | $20$ | $(-2.182565,\ 1.607639)$ | $-1.8462765587$ | $1.05 \times 10^{-3}$ | $6.4 \times 10^{-6}$ |
+
+Each search finds the minimum it was started near. The final points and values agree with the ones Mathews prints, to the digits shown in the table, and the exact and double-precision runs take the same steps. Case (i) uses $14$ contractions to $\mathbf{C}_1$ and $3$ reflections, case (ii) $15$ contractions and $7$ reflections, case (iii) $16$ contractions, $2$ reflections and $2$ expansions. No run uses $\mathbf{C}_2$ or a shrink.
+
+**Verification.** In every case $f(\mathbf{B})$ is within $6.5 \times 10^{-6}$ of the true minimum value, while the point is $0.00069$ to $0.00105$ away from the true minimiser. Mathews' comparison with `FindMinimum`, whose points agree with the true minimisers to within $2 \times 10^{-7}$, shows the same gap. This is the general pattern near a minimum where the Hessian is positive definite: $f - f_{\min}$ grows like the square of the distance, so stopping test (7) with tolerance $\epsilon$ locates the point only to within a distance of order $\sqrt{\epsilon}$, here $\sqrt{10^{-5}} \approx 0.003$. To locate the minimiser more accurately, make $\epsilon$ smaller.
+
+::: {.callout-note collapse="true"}
+## All triangles, case (i), near $(0, 0)$
+| $k$ | step | $B$ | $f(B)$ | $G$ | $f(G)$ | $W$ | $f(W)$ |
+|---:|:--|:--|--:|:--|--:|:--|--:|
+| 0 | start | $(-0.1,\ 0.1)$ | $0.0463$ | $(0.1,\ 0.1)$ | $0.0963$ | $(0,\ -0.2)$ | $0.1232$ |
+| 1 | contract, $C_1$ | $(0,\ -0.05)$ | $0.0075125$ | $(-0.1,\ 0.1)$ | $0.0463$ | $(0.1,\ 0.1)$ | $0.0963$ |
+| 2 | contract, $C_1$ | $(0,\ -0.05)$ | $0.0075125$ | $(0.025,\ 0.0625)$ | $0.020773$ | $(-0.1,\ 0.1)$ | $0.0463$ |
+| 3 | contract, $C_1$ | $(-0.04375,\ 0.053125)$ | $0.006204$ | $(0,\ -0.05)$ | $0.0075125$ | $(0.025,\ 0.0625)$ | $0.020773$ |
+| 4 | reflect, $R$ | $(-0.04375,\ 0.053125)$ | $0.006204$ | $(0,\ -0.05)$ | $0.0075125$ | $(-0.06875,\ -0.059375)$ | $0.019594$ |
+| 5 | contract, $C_1$ | $(-0.0453125,\ -0.028906)$ | $0.001984$ | $(-0.04375,\ 0.053125)$ | $0.006204$ | $(0,\ -0.05)$ | $0.0075125$ |
+| 6 | contract, $C_1$ | $(-0.022266,\ -0.018945)$ | $-0.001926$ | $(-0.0453125,\ -0.028906)$ | $0.001984$ | $(-0.04375,\ 0.053125)$ | $0.006204$ |
+| 7 | contract, $C_1$ | $(-0.022266,\ -0.018945)$ | $-0.001926$ | $(-0.038770,\ 0.014600)$ | $-0.001733$ | $(-0.0453125,\ -0.028906)$ | $0.001984$ |
+| 8 | reflect, $R$ | $(-0.022266,\ -0.018945)$ | $-0.001926$ | $(-0.038770,\ 0.014600)$ | $-0.001733$ | $(-0.015723,\ 0.024561)$ | $-9.388 \times 10^{-4}$ |
+| 9 | contract, $C_1$ | $(-0.023120,\ 0.011194)$ | $-0.002785$ | $(-0.022266,\ -0.018945)$ | $-0.001926$ | $(-0.038770,\ 0.014600)$ | $-0.001733$ |
+| 10 | contract, $C_1$ | $(-0.030731,\ 0.005362)$ | $-0.002919$ | $(-0.023120,\ 0.011194)$ | $-0.002785$ | $(-0.022266,\ -0.018945)$ | $-0.001926$ |
+| 11 | contract, $C_1$ | $(-0.024596,\ -0.005334)$ | $-0.003009$ | $(-0.030731,\ 0.005362)$ | $-0.002919$ | $(-0.023120,\ 0.011194)$ | $-0.002785$ |
+| 12 | contract, $C_1$ | $(-0.025392,\ 0.005604)$ | $-0.003062$ | $(-0.024596,\ -0.005334)$ | $-0.003009$ | $(-0.030731,\ 0.005362)$ | $-0.002919$ |
+| 13 | contract, $C_1$ | $(-0.027862,\ 0.002749)$ | $-0.003080$ | $(-0.025392,\ 0.005604)$ | $-0.003062$ | $(-0.024596,\ -0.005334)$ | $-0.003009$ |
+| 14 | contract, $C_1$ | $(-0.025611,\ -0.000579)$ | $-0.003118$ | $(-0.027862,\ 0.002749)$ | $-0.003080$ | $(-0.025392,\ 0.005604)$ | $-0.003062$ |
+| 15 | contract, $C_1$ | $(-0.025611,\ -0.000579)$ | $-0.003118$ | $(-0.026064,\ 0.003344)$ | $-0.003106$ | $(-0.027862,\ 0.002749)$ | $-0.003080$ |
+| 16 | reflect, $R$ | $(-0.025611,\ -0.000579)$ | $-0.003118$ | $(-0.023813,\ 0.000017)$ | $-0.003118$ | $(-0.026064,\ 0.003344)$ | $-0.003106$ |
+| 17 | contract, $C_1$ | $(-0.025388,\ 0.001532)$ | $-0.003126$ | $(-0.025611,\ -0.000579)$ | $-0.003118$ | $(-0.023813,\ 0.000017)$ | $-0.003118$ |
+:::
+
+::: {.callout-note collapse="true"}
+## All triangles, case (ii), near $(2, 1.5)$
+| $k$ | step | $B$ | $f(B)$ | $G$ | $f(G)$ | $W$ | $f(W)$ |
+|---:|:--|:--|--:|:--|--:|:--|--:|
+| 0 | start | $(2,\ 1.4)$ | $-0.3368$ | $(2,\ 1.6)$ | $-0.3128$ | $(1.9,\ 1.5)$ | $-0.3029$ |
+| 1 | reflect, $R$ | $(2.1,\ 1.5)$ | $-0.6369$ | $(2,\ 1.4)$ | $-0.3368$ | $(2,\ 1.6)$ | $-0.3128$ |
+| 2 | contract, $C_1$ | $(2.025,\ 1.525)$ | $-0.662639$ | $(2.1,\ 1.5)$ | $-0.6369$ | $(2,\ 1.4)$ | $-0.3368$ |
+| 3 | reflect, $R$ | $(2.125,\ 1.625)$ | $-0.673096$ | $(2.025,\ 1.525)$ | $-0.662639$ | $(2.1,\ 1.5)$ | $-0.6369$ |
+| 4 | contract, $C_1$ | $(2.0875,\ 1.5375)$ | $-0.731920$ | $(2.125,\ 1.625)$ | $-0.673096$ | $(2.025,\ 1.525)$ | $-0.662639$ |
+| 5 | reflect, $R$ | $(2.0875,\ 1.5375)$ | $-0.731920$ | $(2.1875,\ 1.6375)$ | $-0.726766$ | $(2.125,\ 1.625)$ | $-0.673096$ |
+| 6 | reflect, $R$ | $(2.0875,\ 1.5375)$ | $-0.731920$ | $(2.1875,\ 1.6375)$ | $-0.726766$ | $(2.15,\ 1.55)$ | $-0.714856$ |
+| 7 | contract, $C_1$ | $(2.14375,\ 1.56875)$ | $-0.754905$ | $(2.0875,\ 1.5375)$ | $-0.731920$ | $(2.1875,\ 1.6375)$ | $-0.726766$ |
+| 8 | contract, $C_1$ | $(2.1515625,\ 1.5953125)$ | $-0.762465$ | $(2.14375,\ 1.56875)$ | $-0.754905$ | $(2.0875,\ 1.5375)$ | $-0.731920$ |
+| 9 | reflect, $R$ | $(2.1515625,\ 1.5953125)$ | $-0.762465$ | $(2.14375,\ 1.56875)$ | $-0.754905$ | $(2.2078125,\ 1.6265625)$ | $-0.736281$ |
+| 10 | contract, $C_1$ | $(2.1515625,\ 1.5953125)$ | $-0.762465$ | $(2.177734,\ 1.604297)$ | $-0.757287$ | $(2.14375,\ 1.56875)$ | $-0.754905$ |
+| 11 | contract, $C_1$ | $(2.1515625,\ 1.5953125)$ | $-0.762465$ | $(2.154199,\ 1.584277)$ | $-0.761911$ | $(2.177734,\ 1.604297)$ | $-0.757287$ |
+| 12 | reflect, $R$ | $(2.1515625,\ 1.5953125)$ | $-0.762465$ | $(2.154199,\ 1.584277)$ | $-0.761911$ | $(2.128027,\ 1.575293)$ | $-0.760805$ |
+| 13 | contract, $C_1$ | $(2.140454,\ 1.582544)$ | $-0.763245$ | $(2.1515625,\ 1.5953125)$ | $-0.762465$ | $(2.154199,\ 1.584277)$ | $-0.761911$ |
+| 14 | contract, $C_1$ | $(2.150104,\ 1.586603)$ | $-0.763517$ | $(2.140454,\ 1.582544)$ | $-0.763245$ | $(2.1515625,\ 1.5953125)$ | $-0.762465$ |
+| 15 | contract, $C_1$ | $(2.150104,\ 1.586603)$ | $-0.763517$ | $(2.148421,\ 1.589943)$ | $-0.763506$ | $(2.140454,\ 1.582544)$ | $-0.763245$ |
+| 16 | contract, $C_1$ | $(2.144858,\ 1.585408)$ | $-0.763599$ | $(2.150104,\ 1.586603)$ | $-0.763517$ | $(2.148421,\ 1.589943)$ | $-0.763506$ |
+| 17 | contract, $C_1$ | $(2.147951,\ 1.587974)$ | $-0.763668$ | $(2.144858,\ 1.585408)$ | $-0.763599$ | $(2.150104,\ 1.586603)$ | $-0.763517$ |
+| 18 | contract, $C_1$ | $(2.147951,\ 1.587974)$ | $-0.763668$ | $(2.148254,\ 1.586647)$ | $-0.763652$ | $(2.144858,\ 1.585408)$ | $-0.763599$ |
+| 19 | reflect, $R$ | $(2.147951,\ 1.587974)$ | $-0.763668$ | $(2.148254,\ 1.586647)$ | $-0.763652$ | $(2.151347,\ 1.589213)$ | $-0.763609$ |
+| 20 | contract, $C_1$ | $(2.147951,\ 1.587974)$ | $-0.763668$ | $(2.149725,\ 1.588262)$ | $-0.763663$ | $(2.148254,\ 1.586647)$ | $-0.763652$ |
+| 21 | contract, $C_1$ | $(2.148546,\ 1.587383)$ | $-0.763675$ | $(2.147951,\ 1.587974)$ | $-0.763668$ | $(2.149725,\ 1.588262)$ | $-0.763663$ |
+| 22 | contract, $C_1$ | $(2.148987,\ 1.587970)$ | $-0.763676$ | $(2.148546,\ 1.587383)$ | $-0.763675$ | $(2.147951,\ 1.587974)$ | $-0.763668$ |
+:::
+
+::: {.callout-note collapse="true"}
+## All triangles, case (iii), near $(-2, 1.5)$
+| $k$ | step | $B$ | $f(B)$ | $G$ | $f(G)$ | $W$ | $f(W)$ |
+|---:|:--|:--|--:|:--|--:|:--|--:|
+| 0 | start | $(-2,\ 1.4)$ | $-1.3368$ | $(-2,\ 1.6)$ | $-1.3128$ | $(-1.9,\ 1.5)$ | $-1.2529$ |
+| 1 | expand, $E$ | $(-2.2,\ 1.5)$ | $-1.3894$ | $(-2,\ 1.4)$ | $-1.3368$ | $(-2,\ 1.6)$ | $-1.3128$ |
+| 2 | contract, $C_1$ | $(-2.05,\ 1.525)$ | $-1.724368$ | $(-2.2,\ 1.5)$ | $-1.3894$ | $(-2,\ 1.4)$ | $-1.3368$ |
+| 3 | expand, $E$ | $(-2.05,\ 1.525)$ | $-1.724368$ | $(-2.375,\ 1.7375)$ | $-1.494939$ | $(-2.2,\ 1.5)$ | $-1.3894$ |
+| 4 | contract, $C_1$ | $(-2.20625,\ 1.565625)$ | $-1.737470$ | $(-2.05,\ 1.525)$ | $-1.724368$ | $(-2.375,\ 1.7375)$ | $-1.494939$ |
+| 5 | contract, $C_1$ | $(-2.2515625,\ 1.641406)$ | $-1.805302$ | $(-2.20625,\ 1.565625)$ | $-1.737470$ | $(-2.05,\ 1.525)$ | $-1.724368$ |
+| 6 | contract, $C_1$ | $(-2.139453,\ 1.564258)$ | $-1.822015$ | $(-2.2515625,\ 1.641406)$ | $-1.805302$ | $(-2.20625,\ 1.565625)$ | $-1.737470$ |
+| 7 | reflect, $R$ | $(-2.139453,\ 1.564258)$ | $-1.822015$ | $(-2.184766,\ 1.640039)$ | $-1.812404$ | $(-2.2515625,\ 1.641406)$ | $-1.805302$ |
+| 8 | contract, $C_1$ | $(-2.206836,\ 1.621777)$ | $-1.841305$ | $(-2.139453,\ 1.564258)$ | $-1.822015$ | $(-2.184766,\ 1.640039)$ | $-1.812404$ |
+| 9 | contract, $C_1$ | $(-2.178955,\ 1.616528)$ | $-1.841973$ | $(-2.206836,\ 1.621777)$ | $-1.841305$ | $(-2.139453,\ 1.564258)$ | $-1.822015$ |
+| 10 | contract, $C_1$ | $(-2.166174,\ 1.591705)$ | $-1.843110$ | $(-2.178955,\ 1.616528)$ | $-1.841973$ | $(-2.206836,\ 1.621777)$ | $-1.841305$ |
+| 11 | contract, $C_1$ | $(-2.189700,\ 1.612947)$ | $-1.845725$ | $(-2.166174,\ 1.591705)$ | $-1.843110$ | $(-2.178955,\ 1.616528)$ | $-1.841973$ |
+| 12 | contract, $C_1$ | $(-2.189700,\ 1.612947)$ | $-1.845725$ | $(-2.178446,\ 1.609427)$ | $-1.845552$ | $(-2.166174,\ 1.591705)$ | $-1.843110$ |
+| 13 | contract, $C_1$ | $(-2.175124,\ 1.601446)$ | $-1.845847$ | $(-2.189700,\ 1.612947)$ | $-1.845725$ | $(-2.178446,\ 1.609427)$ | $-1.845552$ |
+| 14 | contract, $C_1$ | $(-2.180429,\ 1.608312)$ | $-1.846120$ | $(-2.175124,\ 1.601446)$ | $-1.845847$ | $(-2.189700,\ 1.612947)$ | $-1.845725$ |
+| 15 | contract, $C_1$ | $(-2.183738,\ 1.608913)$ | $-1.846231$ | $(-2.180429,\ 1.608312)$ | $-1.846120$ | $(-2.175124,\ 1.601446)$ | $-1.845847$ |
+| 16 | contract, $C_1$ | $(-2.183738,\ 1.608913)$ | $-1.846231$ | $(-2.178604,\ 1.605029)$ | $-1.846206$ | $(-2.180429,\ 1.608312)$ | $-1.846120$ |
+| 17 | reflect, $R$ | $(-2.183738,\ 1.608913)$ | $-1.846231$ | $(-2.181913,\ 1.605631)$ | $-1.846212$ | $(-2.178604,\ 1.605029)$ | $-1.846206$ |
+| 18 | contract, $C_1$ | $(-2.180715,\ 1.606151)$ | $-1.846273$ | $(-2.183738,\ 1.608913)$ | $-1.846231$ | $(-2.181913,\ 1.605631)$ | $-1.846212$ |
+| 19 | contract, $C_1$ | $(-2.180715,\ 1.606151)$ | $-1.846273$ | $(-2.182070,\ 1.606581)$ | $-1.846271$ | $(-2.183738,\ 1.608913)$ | $-1.846231$ |
+| 20 | contract, $C_1$ | $(-2.182565,\ 1.607639)$ | $-1.846277$ | $(-2.180715,\ 1.606151)$ | $-1.846273$ | $(-2.182070,\ 1.606581)$ | $-1.846271$ |
+:::
+
+## Example 4 — Drawing the triangles
+
+Use the Nelder-Mead method to find the minimum of $f(x, y) = x^2 - 4x + y^2 - y - xy$ (the function of Example 1), and draw the vertices and triangles used in finding the solution.
+
+Mathews runs his first subroutine from the starting triangle of Example 1, $(0, 0)$, $(1.2, 0.0)$, $(0.0, 0.8)$, for $15$ steps. A version of the program with graphics draws $16$ pictures, one for the starting triangle and one after each step. Each shows every triangle so far in outline, with all the vertices as dots, in the window $0 \le x \le 5$, $0 \le y \le 3$. The minimum is at $(3, 2)$, with $f = -7$ (Example 1). The table gives the triangle after each step, computed in exact arithmetic with the subroutine rule.
+
+| $k$ | step | $B$ | $f(B)$ | $G$ | $f(G)$ | $W$ | $f(W)$ |
+|---:|:--|:--|--:|:--|--:|:--|--:|
+| 0 | start | $(1.2,\ 0)$ | $-3.36$ | $(0,\ 0.8)$ | $-0.16$ | $(0,\ 0)$ | $0$ |
+| 1 | expand, $E$ | $(1.8,\ 1.2)$ | $-5.88$ | $(1.2,\ 0)$ | $-3.36$ | $(0,\ 0.8)$ | $-0.16$ |
+| 2 | reflect, $R$ | $(1.8,\ 1.2)$ | $-5.88$ | $(3,\ 0.4)$ | $-4.44$ | $(1.2,\ 0)$ | $-3.36$ |
+| 3 | expand, $E$ | $(1.8,\ 1.2)$ | $-5.88$ | $(3,\ 0.4)$ | $-4.44$ | $(4.8,\ 2.4)$ | $-4.32$ |
+| 4 | contract, $C_1$ | $(3.6,\ 1.6)$ | $-6.24$ | $(1.8,\ 1.2)$ | $-5.88$ | $(3,\ 0.4)$ | $-4.44$ |
+| 5 | reflect, $R$ | $(2.4,\ 2.4)$ | $-6.24$ | $(3.6,\ 1.6)$ | $-6.24$ | $(1.8,\ 1.2)$ | $-5.88$ |
+| 6 | contract, $C_1$ | $(2.4,\ 1.6)$ | $-6.72$ | $(2.4,\ 2.4)$ | $-6.24$ | $(3.6,\ 1.6)$ | $-6.24$ |
+| 7 | contract, $C_1$ | $(3,\ 1.8)$ | $-6.96$ | $(2.4,\ 1.6)$ | $-6.72$ | $(2.4,\ 2.4)$ | $-6.24$ |
+| 8 | contract, $C_1$ | $(3,\ 1.8)$ | $-6.96$ | $(2.55,\ 2.05)$ | $-6.7725$ | $(2.4,\ 1.6)$ | $-6.72$ |
+| 9 | reflect, $R$ | $(3,\ 1.8)$ | $-6.96$ | $(3.15,\ 2.25)$ | $-6.9525$ | $(2.55,\ 2.05)$ | $-6.7725$ |
+| 10 | contract, $C_1$ | $(3,\ 1.8)$ | $-6.96$ | $(2.8125,\ 2.0375)$ | $-6.956406$ | $(3.15,\ 2.25)$ | $-6.9525$ |
+| 11 | contract, $C_1$ | $(3.028125,\ 2.084375)$ | $-6.994463$ | $(3,\ 1.8)$ | $-6.96$ | $(2.8125,\ 2.0375)$ | $-6.956406$ |
+| 12 | contract, $C_1$ | $(3.028125,\ 2.084375)$ | $-6.994463$ | $(2.913281,\ 1.989844)$ | $-6.993257$ | $(3,\ 1.8)$ | $-6.96$ |
+| 13 | contract, $C_1$ | $(3.028125,\ 2.084375)$ | $-6.994463$ | $(2.985352,\ 1.918555)$ | $-6.994345$ | $(2.913281,\ 1.989844)$ | $-6.993257$ |
+| 14 | contract, $C_1$ | $(2.960010,\ 1.995654)$ | $-6.998556$ | $(3.028125,\ 2.084375)$ | $-6.994463$ | $(2.985352,\ 1.918555)$ | $-6.994345$ |
+| 15 | contract, $C_1$ | $(2.989709,\ 1.979285)$ | $-6.999678$ | $(2.960010,\ 1.995654)$ | $-6.998556$ | $(3.028125,\ 2.084375)$ | $-6.994463$ |
+
+**Steps worth following.**
+
+- **Step 3** expands to a worse point. With $\mathbf{W} = (1.2, 0)$ and $\mathbf{M} = (2.4, 0.8)$, the reflection $\mathbf{R} = (3.6, 1.6)$ has $f(\mathbf{R}) = -6.24$, lower even than $f(\mathbf{B}) = -5.88$. The subroutine tests $\mathbf{E} = (4.8, 2.4)$ first, finds $f(\mathbf{E}) = -4.32 < f(\mathbf{W}) = -3.36$, and takes $\mathbf{E}$, which becomes the new worst vertex. The textbook rules would have taken $\mathbf{R}$ here, since $f(\mathbf{E}) > f(\mathbf{B})$.
+- **Step 4** recovers that point. $\mathbf{B}$ and $\mathbf{G}$ are unchanged, so $\mathbf{M} = (2.4, 0.8)$ again. Now $\mathbf{R} = (0, -0.8)$ with $f = 1.44$ and $\mathbf{E} = (-2.4, -2.4)$ with $f = 17.76$ both fail, and $\mathbf{C}_1 = (\mathbf{W} + \mathbf{M})/2 = (3.6, 1.6)$, the point step 3 passed over, is accepted. From here on the subroutine's triangle after $k + 1$ steps is the textbook's triangle after $k$ steps in Example 1, for every $k$ from $3$ to $9$: step 3 cost one step.
+- **Step 6** meets a tie. With $\mathbf{W} = (1.8, 1.2)$ and $\mathbf{M} = (3, 2)$, the reflection $\mathbf{R} = (4.2, 2.8)$ is the mirror image of $\mathbf{W}$ through the minimum, and $f(\mathbf{R}) = f(\mathbf{W}) = -5.88$ exactly. $\mathbf{E} = (5.4, 3.6)$ has $f = -2.52$, so neither $\mathbf{E}$ nor $\mathbf{R}$ passes its strict test, and $\mathbf{C}_1 = (2.4, 1.6)$, with $f = -6.72$, is taken.
+
+After $15$ steps the best vertex is $(2.989709, 1.979285)$, a distance $0.0231$ from $(3, 2)$, with $f(\mathbf{B}) = -6.999678$.
+
+**Mathews' frames from step 6 on.** Mathews' printed triangles agree with the table through $k = 5$, apart from the order of the two tied vertices at $k = 5$. At step 6 his run accepted $\mathbf{R} = (4.2, 2.8)$, so in his machine arithmetic $f(\mathbf{R})$ came out slightly below $f(\mathbf{W})$, although the two are equal. Because $f(3 + u, 2 + v) = -7 + u^2 - uv + v^2$ does not change when $(u, v)$ is replaced by $(-u, -v)$, that step turned the triangle into its own mirror image through $(3, 2)$. From then on, his triangle after $k$ steps is the mirror image through $(3, 2)$ of the exact triangle after $k - 1$ steps. This was checked for every $k$ from $6$ to $50$, the end of his run in Example 1. For instance his triangle after $15$ steps, with best vertex $(3.039990, 2.004346)$, is the mirror image of the row $k = 14$ above. Mathews' pictures from step 6 on therefore show the exact path reflected through the minimum and one step behind.
