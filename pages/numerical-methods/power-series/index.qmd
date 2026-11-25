@@ -1,9 +1,9 @@
 ---
 title: "Power Series"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -22,6 +22,38 @@ a_2 = 0, \qquad a_{n+2} = \frac{a_{n-1}}{(n+2)(n+1)}, \quad n = 1, 2, 3, \ldots
 $$
 
 The solution is then approximated by a **partial sum** $S_N(x) = \sum_{n=0}^{N} a_n (x - x_0)^n$. How far from $x_0$ the partial sums can be trusted is settled by the singular points of $P$ and $Q$ in the *complex* plane: the series converges at least for $|x - x_0| < R$, where $R$ is the distance from $x_0$ to the nearest singular point. Inside that disk $S_N$ approaches $y$ as $N$ grows, slowly near its edge. Outside the series' own disk of convergence, which is often exactly this one, the partial sums diverge, even where the solution itself is smooth. The three examples below show an equation with no singular points (Airy's), one with singular points on the real axis (Legendre's) and one whose singular points $\pm i$ lie off the real axis, compared in each case with the exact solution. The page has no Mathews original, since his archive has no module on power series solutions; it is written from the standard theory of series solutions in textbooks of ordinary differential equations, and every number on it was computed for this page, in high-precision arithmetic (Python with mpmath) except where double precision is the point.
+
+## Animations
+
+Each animation below shows the **partial sums** $S_N(x)$ of one worked example closing in on the exact solution, with more terms in each frame. The upper panels plot $S_N$ against the exact solution in the example's own window. The lower panels plot the error $|S_N(x) - y(x)|$ on a logarithmic scale, with the errors of the earlier partial sums in gray and the tolerance $10^{-3}$ dashed. Green shading marks the interval about the centre $x_0$ on which the error of the current partial sum stays below $10^{-3}$. Where the radius $R$ is finite, dashed vertical lines mark the ends $x_0 \pm R$ of the interval on which the theorem guarantees convergence. A partial sum that leaves a window is drawn leaving it, and every label gives its true value. The partial sums are evaluated in 256-bit arithmetic, so the loss of digits described under Practical Notes does not appear in the pictures.
+
+Mathews' archive has no module on power series solutions, so all three animations are new, with no Mathews original. Every example is animated, Example 3 with both of its centres in one animation. Examples 2 and 3 are animated up to $N = 40$, so the larger $N$ of their tables (up to $N = 640$ in Example 3(b)) are not shown. Neither is the odd solution $y = x$ of Examples 2 and 3, a polynomial that every partial sum from $N = 1$ on reproduces exactly.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Airy's equation $y'' = x\,y$ about $x_0 = 0$ (Example 1), $N = 3, 6, \ldots, 120$ on $[-10, 3]$
+
+**Behavior:** Every point is ordinary, so $R = \infty$ and no edge is drawn. Each new frame adds the next two nonzero terms of the series. The shaded interval widens in every frame, from $[-0.4667, 0.4661]$ at $N = 3$ to $[-2.227, 2.210]$ at $N = 12$. From $N = 18$ on it reaches the right edge $x = 3$, and from $N = 90$ on it covers the whole window. The interval is nearly symmetric about $0$, but the window reaches much farther to the left, so most of the animation shows its left end moving out, by less in each frame: from $0.4140$ between $N = 15$ and $18$ to $0.2372$ between $N = 84$ and $87$. At $x = -10$ the error is above $1$ in every frame up to $N = 75$, with its largest value among the frames, $2.264 \times 10^{6}$, at $N = 24$. It is below $10^{-10}$ in every frame from $N = 111$ on and is $5.359 \times 10^{-15}$ at $N = 120$. Up to $N = 75$ every partial sum leaves the window. Outside the shaded interval the error falls to zero only at isolated points, where $S_N$ crosses $\operatorname{Ai}$; these are the sharp downward spikes of the error curves, such as the one of $S_3$ at $x = -2.905$.
+
+[Julia source](powerseriesaa.jl)
+
+![Partial sums of the power series of the Airy function Ai(x) about 0, for N = 3, 6, …, 120, drawn against Ai on −10 ≤ x ≤ 3, with their errors on a log scale below. The shaded interval where the error is below 10⁻³ grows from [−0.4667, 0.4661] at N = 3, reaches the right edge x = 3 at N = 18 and covers the whole window from N = 90; at x = −10 the error is above 1 up to N = 75 and 5.359 × 10⁻¹⁵ at N = 120](powerseriesaa.gif)
+
+### Case 2 — Legendre's equation with $p = 1$ (Example 2), $N = 2, 4, \ldots, 40$, singular points $x = \pm 1$
+
+**Behavior:** Every term after the first is negative, so $S_N$ decreases toward $y = 1 - x \operatorname{artanh} x$ as $N$ grows, and the error $S_N - y$ is positive for $0 < |x| < 1$. The interval $|x| < x^*$ on which it stays below $10^{-3}$ widens in every frame, but more and more slowly: $x^* = 0.2321$ at $N = 2$, $0.6604$ at $N = 10$, $0.8050$ at $N = 20$ and $0.8951$ at $N = 40$, still well short of the singular points $x = \pm 1$ (dashed red). There $y \to -\infty$, and it leaves the window at $x = \pm 0.9993$. The error panel stops at $|x| = 1$. Beyond it the partial sums run off downward, farther in each frame: $S_N(\pm 1.1) = -1.647$, $-3.212$ and $-10.15$ at $N = 10$, $20$ and $40$, and from $N = 10$ on they leave the window at the bottom before $x = \pm 1.2$.
+
+[Julia source](powerseriesbb.jl)
+
+![Even partial sums S_2 to S_40 of the series of y = 1 − x artanh x about 0, the solution of (1 − x²)y″ − 2xy′ + 2y = 0 with y(0) = 1, y′(0) = 0, drawn against y on −1.2 ≤ x ≤ 1.2 with the singular points x = ±1 dashed in red, and the error on a log scale below. The interval where the error is below 10⁻³ grows slowly from |x| < 0.2321 to |x| < 0.8951, while beyond |x| = 1 the partial sums fall away, to S_40(±1.1) = −10.15](powerseriesbb.gif)
+
+### Case 3 — $(1 + x^2)\,y'' + x\,y' - y = 0$ about $x_0 = 0$ and $x_0 = 1$ (Example 3), $N = 2, 4, \ldots, 40$, singular points $\pm i$
+
+**Behavior:** The left panel is the complex $x$-plane. The singular points $\pm i$ (red) lie at distance $1$ from $0$ and $\sqrt 2$ from $1$, so the series about $0$ converges in the disk $|x| < 1$ (blue) and the series about $1$ in $|x - 1| < \sqrt 2$ (orange). On the real axis these disks give the intervals $-1 < x < 1$ and $-0.4142 < x < 2.414$, whose ends are dashed in the other panels, although nothing in the graph of $\sqrt{1 + x^2}$ marks them. The bars on the real axis are the current shaded intervals. Both grow toward the ends of their disk's diameter. At $N = 40$ the error is below $10^{-3}$ on $[-0.9894, 0.9894]$ for the series about $0$ and on $[-0.3742, 2.402]$ for the series about $1$. The interval about $0$ widens in every frame, and so does the right end of the interval about $1$. Its left end moves back slightly at $N = 6, 10, \ldots, 38$. At $N = 40$ both partial sums leave their windows near the ends: the one about $0$ for $|x| \ge 1.184$, with $S_{40}(1.5) = -2.402 \times 10^{4}$, and the one about $1$ for $x \le -0.6289$ and $x \ge 2.706$. At $x = 1.5$ the error of the series about $1$ is $4.859 \times 10^{-22}$. The shading marks where one partial sum is accurate, not where the series converges. Continued beyond the animation, the interval about $0$ would pass $x = 1$ at $N = 54$ and reach $1.003$ at $N = 60$, though at every fixed $x$ with $|x| > 1$ the error eventually grows without bound.
+
+[Julia source](powerseriescc.jl)
+
+![Left: the complex x-plane with the singular points ±i, the disk |x| < 1 of the series about 0 and the disk |x − 1| < √2 of the series about 1, and bars on the real axis for the current intervals where the error is below 10⁻³. Right: partial sums S_2 to S_40 of both series drawn against √(1 + x²), on [−1.5, 1.5] and [−1, 3], with their errors on a log scale. At N = 40 the intervals are [−0.9894, 0.9894] and [−0.3742, 2.402], inside (−1, 1) and (−0.4142, 2.414), and near the ends of the windows the partial sums leave them](powerseriescc.gif)
 
 ## Ordinary Points and Singular Points
 
@@ -316,8 +348,8 @@ Even when the series converges for every $x$, summing it in floating point can l
 A solution that is smooth on the whole real line can still have a series with a finite radius (Example 3). Before trusting a partial sum, find the singular points of $P$ and $Q$ in the complex plane, not only on the real axis. In general, by the root test, the terms $a_n (x - x_0)^n$ of a series with radius of convergence $\rho$ shrink at a rate close to $\bigl(|x - x_0|/\rho\bigr)^n$ for large $n$, so the number of terms needed grows without bound as $|x - x_0| \to \rho$ (Examples 2 and 3: $N = 1062$ and $N = 392$ terms for an error below $10^{-6}$ at $x = 0.99$).
 :::
 
-**Re-centering.** Example 3(b) shows the remedy for a finite radius: start a new series at a point inside the old disk, with $b_0$ and $b_1$ taken from the old series or the solution there, and continue. Doing this repeatedly with short series and small steps is the idea behind the [Taylor series method for ODEs](taylor-series-method-for-odes/), where each step uses a truncated Taylor series about the current point.
+**Re-centering.** Example 3(b) shows the remedy for a finite radius: start a new series at a point inside the old disk, with $b_0$ and $b_1$ taken from the old series or the solution there, and continue. Doing this repeatedly with short series and small steps is the idea behind the [Taylor series method for ODEs](../taylor-series-method-for-odes/), where each step uses a truncated Taylor series about the current point.
 
-**Singular points.** At a singular point $x_0$ the theorem does not apply and a power series solution may not exist. When $x_0$ is a *regular* singular point, as $0$ is for Bessel's equation, a series multiplied by a power $(x - x_0)^r$ works instead; see the [Frobenius Series Solution](frobenius-series-solution.qmd).
+**Singular points.** At a singular point $x_0$ the theorem does not apply and a power series solution may not exist. When $x_0$ is a *regular* singular point, as $0$ is for Bessel's equation, a series multiplied by a power $(x - x_0)^r$ works instead; see the [Frobenius Series Solution](../frobenius-series-solution/).
 
-**Related pages.** Taylor polynomials of known functions, without a differential equation, are on the [Maclaurin and Taylor Series](maclaurin-and-taylor-series/) page.
+**Related pages.** Taylor polynomials of known functions, without a differential equation, are on the [Maclaurin and Taylor Series](../maclaurin-and-taylor-series/) page.
