@@ -1,9 +1,9 @@
 ---
 title: "Shooting Methods for ODE's"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -18,6 +18,38 @@ x(t) = u(t) + \frac{\beta - u(b)}{v(b)}\, v(t), \qquad v(b) \ne 0 .
 $$
 
 Mathews solves both initial value problems with the fourth-order Runge–Kutta method and works one example from start to finish: $x'' + \tfrac{1}{t} x' + \bigl(1 - \tfrac{1}{4t^2}\bigr) x = \sqrt{t}\cos t$ on $[1, 6]$ with $x(1) = 1$ and $x(6) = -0.5$. That equation can also be solved in closed form, so every number below is checked against the exact solution.
+
+## Animations
+
+Each animation below solves Mathews' boundary value problem (7) by linear shooting, frame by frame. The left panel is the graph Mathews draws for his examples, on $1 \le t \le 6$ and in his colours: $u$ green, $v$ blue and the solution of the boundary value problem magenta. The exact solution of Example 6 is dashed black, and red marks the boundary values. The right panel is new. In Cases 1 and 3 it plots the landing point $x(b; s) = u(b) + s\,v(b)$ of the shot against its slope $s = x'(1)$, a straight line that meets the target $\beta = -0.5$ at $s = C$. In Case 2 it plots the error $\lvert x_j - x(t_j) \rvert$ at the nodes on a logarithmic scale. Like Mathews, the scripts compute $u$ and $v$ with *Runge2D*, the classical fourth-order Runge–Kutta method, with $m = 100$ steps unless the case says otherwise, in double precision; the exact solutions of Example 6 are evaluated in 256-bit arithmetic. A curve that leaves the window is cut at its edge, and its true extreme value is given in the legend or title. Each frame is shown for two seconds, and the last for six.
+
+Mathews' module links no animation, and his animation archive has none for shooting methods or boundary value problems, so all three animations are new, with no Mathews original. Case 1 animates the graphs of his Examples 2 to 6 ($u$, $v$, both together, the shooting solution and the exact solution), Case 2 the convergence table of Example 5, and Case 3 follows up the remark under Example 3 that linear shooting would fail at $b = 1 + \pi$; its right ends other than $b = 6$ are new. Not animated are Example 1, which identifies $p$, $q$ and $r$ and has no graph, and the algebra of Example 6 (Mathematica's complex form of the solution and the linear system for $c_1$ and $c_2$), whose result is the exact solution drawn in Cases 1 and 2. The counterexample $x'' = -x$ on $[0, \pi]$ is not animated either; Case 3 shows the same failure, $v(b) = 0$, for equation (7).
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Shots with slopes $s = 0, 1, -1, 2$ and $C$ (Examples 2–6), $m = 100$, $h = 0.05$
+
+**Behavior:** The first shot, $s = 0$, is $u$ and lands at $u_{100} = -0.370482$; the second, $s = 1$, lands at $-0.761962$, and the difference of the two is $v_{100} = -0.391479$. Because the landing point $u_{100} + s\,v_{100}$ is a straight-line function of $s$, the shots $s = -1$ and $s = 2$ land on the line through the first two, at $0.0209968$ and $-1.15344$. That line crosses $\beta = -0.5$ at $s = C = 0.3308413669$ (the exact slope is $0.3308424899$), and the shot with this slope lands on the target; at the scale of the picture it cannot be told apart from the exact solution. All the shots cross near $t = 1 + \pi \approx 4.142$, where $v = 0$ (Case 3 is about this point).
+
+[Julia source](shootingaa.jl)
+
+![Linear shooting for x'' + x'/t + (1 − 1/(4t²))x = √t cos t on [1, 6] with x(1) = 1, x(6) = −0.5: shots with slopes s = 0 (the function u), 1, −1 and 2 appear one per frame and land at −0.370482, −0.761962, 0.0209968 and −1.15344; the landing points lie on one straight line in a second panel, which crosses the target −0.5 at s = C = 0.3308413669, and the last shot, with that slope, lands on the target and matches the exact solution](shootingaa.gif)
+
+### Case 2 — Refining the step, $m = 25, 50, 100, 200, 400$ (Example 5)
+
+**Behavior:** The nodes $(t_j, x_j)$ lie on the exact solution at every $m$; the right panel shows how close. The error is zero at both ends, where $x_0 = 1$ and $x_m = -0.5$ hold exactly in double precision, and largest near $t \approx 2.2$ to $2.3$. It falls from $1.54 \times 10^{-4}$ at $t = 2.2$ for $m = 25$ to $2.56 \times 10^{-9}$ at $t = 2.275$ for $m = 400$, and each doubling of $m$ divides the largest error by $15.2$, $15.7$, $15.8$ and $15.9$, ratios that increase toward $2^4 = 16$ (the table of Example 5). In the interior the error changes sign once, between $t = 3.8$ and $t = 4$, which is the notch in each curve. The computed slope $C$ approaches the exact $0.3308424899$: $0.3305760489$, $0.3308249263$, $0.3308413669$, $0.3308424190$, $0.3308424855$.
+
+[Julia source](shootingbb.jl)
+
+![Linear shooting with m = 25, 50, 100, 200 and 400 Runge–Kutta steps for Mathews' boundary value problem, one m per frame: the nodes of the shooting solution lie on the exact solution, and a log-scale panel of the error at the nodes shows the largest error falling from 1.54e−4 at t = 2.2 to 2.56e−9 at t = 2.275, by a factor of 15.2, 15.7, 15.8 and 15.9 per doubling of m, with the error zero at both ends](shootingbb.gif)
+
+### Case 3 — Right end $b$ approaching $1 + \pi$ (Example 3), $b = 6, 5, 4.6, 4.4, 4.25, 4.2, 4.16, 4.15, 4.145, 1 + \pi$
+
+**Behavior:** Here equation (7) is solved on $[1, b]$ with $x(1) = 1$ and $x(b) = -0.5$; only $b = 6$ is Mathews' problem. The shots $x(t; s) = u(t) + s\,v(t)$ do not depend on $b$, so the fan of shots $s = -3, \ldots, 3$ is the same in every frame and only the target moves. Since $v(1 + \pi) = 0$, every shot passes through the point $(1 + \pi, u(1 + \pi)) = (4.142, -2.3696)$. As $b$ moves toward $1 + \pi$, $|v(b)|$ falls from $0.3915$ to $0.001674$, the landing points crowd together and the landing line flattens, and the slope that hits the target grows, from $C = 0.3308$ at $b = 6$ and $-6.558$ at $b = 5$ to $-1120$ at $b = 4.145$. The solution plunges with it: its lowest value is $-2.905$ at $b = 6$, $-6.688$ at $b = 4.6$, where it first leaves the window, and $-712.3$ at $b = 4.145$. The Runge–Kutta error in $C$ grows at every frame from $b = 5$ on, from $9.0 \times 10^{-8}$ to $4.7 \times 10^{-3}$, although the step $h = (b - 1)/100$ shrinks: the magnification described under "A small $v(b)$". At $b = 1 + \pi$ (the double-precision number nearest it) every shot lands at $u(1 + \pi) = -2.3696$ and none at $-0.5$, so the problem has no solution. *Runge2D* does not notice: its $v_{100} = 7.06 \times 10^{-9}$ is Runge–Kutta error, not $0$, and the formula returns $C = 2.648 \times 10^{8}$ and a "solution" whose largest value is $1.686 \times 10^{8}$, a list of meaningless numbers.
+
+[Julia source](shootingcc.jl)
+
+![Linear shooting for the same equation on [1, b] with x(b) = −0.5, as b moves from 6 toward 1 + π: a fixed fan of shots with slopes −3 to 3 all pass through the point (1 + π, −2.3696), where v = 0; as b approaches 1 + π the landing line in the second panel flattens, the slope C that hits the target grows from 0.3308 to −1120 and the solution plunges off the window, and at b = 1 + π no shot reaches −0.5 while the Runge–Kutta computation returns a meaningless C = 2.648e8](shootingcc.gif)
 
 ## Boundary Value Problems
 
@@ -300,7 +332,7 @@ $$
 
 | $t$ | $x_j$ (shooting, $h = 0.05$) | exact $x(t)$ | $x_j - x(t)$ |
 |-----|-----------|-----------|-----------|
-| 1 | 1.000000 | 1.000000 | $2.2 \times 10^{-16}$ |
+| 1 | 1.000000 | 1.000000 | 0 |
 | 2 | 0.954360 | 0.954361 | $-6.2 \times 10^{-7}$ |
 | 3 | −0.218711 | −0.218711 | $-4.7 \times 10^{-7}$ |
 | 4 | −2.139711 | −2.139711 | $4.8 \times 10^{-8}$ |
