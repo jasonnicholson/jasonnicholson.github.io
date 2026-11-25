@@ -6,8 +6,9 @@
 # simplex path from the origin; the blue line is the level line through the current
 # point. Right: the tableau, with the entering column, the ratios b_i / a_ie of the
 # minimum-ratio test and the pivot row and element highlighted.
-# Each pivot takes three frames (choose the pivot, move along the edge, the new
-# tableau); the pivots use exact rational arithmetic. Every title and tableau is
+# Each pivot takes five frames: the tableau at the vertex, the pivot choice, and
+# three points along the edge; the final tableau is held for four more frames. The
+# pivots use exact rational arithmetic. Every title and tableau is
 # printed (TITLE, CELLS) for checking.
 # Produces: simplexbb.gif
 
