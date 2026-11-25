@@ -1,9 +1,9 @@
 ---
 title: "Lotka-Volterra Model"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -24,6 +24,38 @@ $$
 where $\mathbf{K}_1, \ldots, \mathbf{K}_4$ are $h$ times $\mathbf{F}$ evaluated at the start, twice at the midpoint and at the end of the step. The computed points $\mathbf{Z}_0, \mathbf{Z}_1, \ldots, \mathbf{Z}_m$ trace a curve in the $xy$-plane, the *phase plane*.
 
 For positive starting values other than the equilibrium, the exact curves are closed. Dividing the two equations gives a separable equation for $dy/dx$, whose solution says that the quantity $V(x, y) = k_4 x - k_3 \ln x + k_2 y - k_1 \ln y$ keeps its initial value along every solution in the first quadrant. Its level curves are closed loops around the equilibrium $(k_3/k_4,\ k_1/k_2)$, so the populations rise and fall periodically, the predators peaking after the prey. After a scalar warm-up (Example 1), the examples solve the case $k_1 = k_2 = k_3 = k_4 = 1$ from $(x_0, y_0) = (2, 1)$ numerically and analytically and compare the two, and then follow a population of $5000$ rabbits and $100$ foxes.
+
+## Animations
+
+Each animation below traces a **Runge-Kutta solution in the phase plane**, one step of the method (7) per frame, beside the **populations against time**. In the phase plane the computed points $\mathbf{Z}_j$ are joined by straight segments, as in Mathews' graphs, and a large dot marks the current point; the time panels plot the same points against $t_j$. Where an exact orbit is drawn (gray, dashed), it is the level curve of the conserved quantity (4) through the starting point, computed independently of the Runge-Kutta run, so the run's distance from it is its error. Periods, extreme values and the times at which they occur come from a reference solution (the Runge-Kutta method with steps of about $10^{-4}$, crossing times refined by bisection) and agree with the values in the examples below. The last frame of each animation is held for about three seconds.
+
+Mathews' module links no animation, and his animation archive has none for the Lotka-Volterra model, so all three animations are new, with no Mathews original. Cases 1 and 2 animate the graphs of Example 2 and its aside, in Mathews' window $[0, 2] \times [0, 2]$ and with his colours, step counts and zoom window; Case 3 animates Example 6, whose program, step count and graphs are lost, so its window and $m = 100$ are chosen here. Not animated are Example 1, a single equation whose graph is lost; run (c) of Example 2 and the closing run with $m = 200$, which trace the same loop as Case 1's two runs together; and Examples 3 to 5, which find the orbit analytically and draw static graphs: the implicit curve (9), which is the dashed curve of Case 1, Example 4's contour plot of $x y e^{-x-y}$, and Example 5's graphs of halves of the orbit.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 2, runs (a) and (b): forward and backward from $(2, 1)$, $m = 50$, $h = \pm 0.066$
+
+**Behavior:** Run (a) (magenta) goes forward from $(2, 1)$, counterclockwise over the top of the orbit, and run (b) (blue) goes backward in time, clockwise over the bottom. Both stay on the dashed exact orbit to plotting accuracy: the largest change in $V$ along them is $2.3 \times 10^{-7}$. In the time panel the prey start at their largest value, $x = 2$; run (a) passes the predators' peak, $y = 2$ at $t = 1.146$, and the prey's lowest value at $t = 2.764$, and run (b) passes the predators' lowest value at $t = -1.617$. After $50$ steps the runs end at $(0.438644, 0.731545)$ and $(0.439650, 0.728073)$, Mathews' printed end points, inside his zoom window $[0.4, 0.5] \times [0.6, 0.8]$. A closer zoom in the last frames shows the two ends $0.003615$ apart, on either side of the exact point at $t = \pm T/2 = \pm 3.304$: the runs cover $6.6$ time units in all, less than the period $T = 6.608$, so the curve does not close.
+
+[Julia source](lotkaaa.jl)
+
+![Runge-Kutta solution of x′ = x − xy, y′ = −y + xy from (2, 1), traced one step per frame forward over [0, 3.3] (magenta) and backward over [0, −3.3] (blue) with m = 50, in Mathews' window [0, 2] × [0, 2] around the equilibrium (1, 1) along the dashed exact orbit x y e^(−x−y) = 2/e³, with the prey x(t) and predators y(t) of both runs plotted against t, and Mathews' zoom window [0.4, 0.5] × [0.6, 0.8] where the runs end at (0.438644, 0.731545) and (0.439650, 0.728073); a closer zoom shows the ends 0.003615 apart, on either side of the exact point at t = T/2 = 3.304](lotkaaa.gif)
+
+### Case 2 — Example 2, aside: five orbits from $(x_0, 1)$, $x_0 = 2.0, 1.8, 1.6, 1.4, 1.2$, $m = 50$ on $[0, 6.6]$
+
+**Behavior:** The five runs start on the line $y = 1$ and go round the critical point $(1, 1)$ counterclockwise on nested loops, one step of each run per frame, so the five current points always belong to the same time. The smaller the orbit, the shorter its period, from $T = 6.608$ for $x_0 = 2$ down to $T = 6.302$ for $x_0 = 1.2$, so the inner points pull ahead and the dotted line joining the five points bends: at $t = 3.3$ the run from $x_0 = 1.2$ has gone $0.524$ of its period and the run from $x_0 = 2$ only $0.499$. In the right panel each prey curve $x(t)$ returns to its starting value $x_0$, its largest, at the period (diamond). By $t = 6.6$ the four inner runs have passed their periods and overlap the start of their own curves, while the outer one stops $0.0085$ short of its starting point, since $6.608 > 6.6$. With $h = 0.132$ the computed curves are visibly polygonal, but each stays on its orbit: the largest change in $V$ along the five runs is $3.7 \times 10^{-6}$.
+
+[Julia source](lotkabb.jl)
+
+![Runge-Kutta solutions of x′ = x − xy, y′ = −y + xy from (2, 1), (1.8, 1), (1.6, 1), (1.4, 1) and (1.2, 1) over [0, 6.6] with m = 50, traced together one step per frame in Mathews' window [0, 2] × [0, 2] and his colours cyan, red, blue, magenta and green around the critical point (1, 1), with the prey x(t) of each run against t and a diamond at each period, from 6.608 for the outer orbit down to 6.302 for the inner one; the inner points pull ahead, and by t = 6.6 the four inner curves overlap themselves while the outer one stops just short of its start](lotkabb.gif)
+
+### Case 3 — Example 6, foxes and rabbits: $(x_0, y_0) = (5000, 100)$ on $[0, 5]$, $m = 100$, $h = 0.05$
+
+**Behavior:** Both populations grow at first. The rabbits peak at $9498.1$ at $t = 0.9656$, at the moment the foxes pass $y = 200$, where $x' = 0$; the foxes peak at $356.2$ at $t = 1.859$, as the falling rabbits pass $x = 4000$, where $y' = 0$. In the phase plane the peaks therefore sit on these two lines through the equilibrium $(4000, 200)$, and in the time panels the fox peak comes $0.8938$ time units after the rabbit peak, the phase lag Mathews asks the reader to notice. The rabbits reach their lowest value, $1190.2$, at $t = 3.249$, and are growing again by $t = 5$; the foxes' lowest value, $97.90$ at $t = 5.047$, lies just beyond Mathews' interval. At $t = 5$ the run is at $(3813.6, 97.982)$, short of a full cycle ($T = 5.267$), so the trace leaves a gap in the dashed exact orbit between its end and the start $(5000, 100)$. The largest change in $V$ along the run is $3.5 \times 10^{-7}$.
+
+[Julia source](lotkacc.jl)
+
+![Runge-Kutta solution of the fox-rabbit system x′ = 2x − 0.01xy, y′ = −0.8y + 0.0002xy from 5000 rabbits and 100 foxes over [0, 5] with m = 100, traced one step per frame in the phase plane along the dashed exact orbit around the equilibrium (4000, 200), with the rabbits x(t) and foxes y(t) against t: the rabbits peak at 9498.1 at t = 0.9656 on the line y = 200, the foxes peak at 356.2 at t = 1.859 on the line x = 4000, 0.8938 time units later, the rabbits fall to 1190.2 at t = 3.249, and the run ends at (3813.6, 97.982), short of a full cycle](lotkacc.gif)
 
 ## The Lotka-Volterra Equations
 
@@ -151,7 +183,7 @@ y_{j+1} &= y_j + \tfrac16\left(K_1 + 2K_2 + 2K_3 + K_4\right),
 $$
 :::
 
-Mathews names the four slopes $k_1, \ldots, k_4$, the same letters as the model constants in (1); this page writes them as capitals. The result is a discrete set of points $(t_j, y_j)$ that approximate the solution, not a formula. For a smooth solution the error at a fixed $t$ is $O(h^4)$, so halving $h$ divides it by about $16$ (a general result for sufficiently smooth $f$; Example 1 checks it). The [Runge-Kutta method](runge-kutta-method/) page treats the method in detail.
+Mathews names the four slopes $k_1, \ldots, k_4$, the same letters as the model constants in (1); this page writes them as capitals. The result is a discrete set of points $(t_j, y_j)$ that approximate the solution, not a formula. For a smooth solution the error at a fixed $t$ is $O(h^4)$, so halving $h$ divides it by about $16$ (a general result for sufficiently smooth $f$; Example 1 checks it). The [Runge-Kutta method](../runge-kutta-method/) page treats the method in detail.
 
 ### Systems of two equations
 
