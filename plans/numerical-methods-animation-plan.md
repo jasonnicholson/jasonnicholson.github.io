@@ -79,11 +79,11 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 4 | [Shooting Methods for ODE's](../pages/numerical-methods/shooting-methods-for-odes/) | written (6 examples); **done (batch 4):** 3 new animations (the shots and the landing line, m-refinement, failure as b → 1 + π) | none (module `n2003/ShootingMod.html`) | 7 | 14 |
 | 4 | [Finite Difference Method for ODE's](../pages/numerical-methods/finite-difference-method-for-odes/) | written (6 examples); **done (batch 4):** 3 new animations (grid refinement, Richardson extrapolation, orders of convergence) | none (module `n2003/FiniteDifferenceMod.html`) | 7 | 11 |
 | 4 | [Galerkin's Method](../pages/numerical-methods/galerkins-method/) | written (all examples); **done (batch 4):** 3 new animations (Example 2 as n grows with the condition number, Example 3(b)'s two bases, Example 4(b)'s sine coefficients) | none (module `n2003/GalerkinMod.html`) | 9 | 121 |
-| 5 | [Lorenz Attractor](../pages/numerical-methods/lorenz-attractor.qmd) | skeleton | none | 7 | 74 |
-| 5 | [Lotka-Volterra Model](../pages/numerical-methods/lotka-volterra-model.qmd) | skeleton | none | 7 | 32 |
-| 5 | [van der Pol System](../pages/numerical-methods/van-der-pol-system.qmd) | skeleton | none | 7 | 30 |
-| 5 | [Pendulum](../pages/numerical-methods/pendulum.qmd) | skeleton | none | 8 | 86 |
-| 5 | [Spring-Mass Systems](../pages/numerical-methods/spring-mass-systems.qmd) | skeleton | none | 11 | 225 |
+| 5 | [Lorenz Attractor](../pages/numerical-methods/lorenz-attractor.qmd) | skeleton | none (module `n2003/LorenzAttractorMod.html`) | 7 | 74 |
+| 5 | [Lotka-Volterra Model](../pages/numerical-methods/lotka-volterra-model.qmd) | skeleton | none (module `n2003/Lotka-VolterraMod.html`) | 7 | 32 |
+| 5 | [van der Pol System](../pages/numerical-methods/van-der-pol-system.qmd) | skeleton | none (module `n2003/VanDerPolMod.html`) | 7 | 30 |
+| 5 | [Pendulum](../pages/numerical-methods/pendulum.qmd) | skeleton | none (module `n2003/PendulumMod.html`) | 8 | 86 |
+| 5 | [Spring-Mass Systems](../pages/numerical-methods/spring-mass-systems.qmd) | skeleton | none (module `n2003/SpringMassMod.html`) | 11 | 225 |
 | 6 | [Projectile Motion](../pages/numerical-methods/projectile-motion.qmd) | skeleton | none | 9 | 71 |
 | 6 | [Compartment Model](../pages/numerical-methods/compartment-model.qmd) | skeleton | none | 4 | 48 |
 | 6 | [Harvesting Model](../pages/numerical-methods/harvesting-model.qmd) | skeleton | none | 20 | 77 |
