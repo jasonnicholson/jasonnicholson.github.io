@@ -1,9 +1,9 @@
 ---
 title: "Earthquake Model"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -18,6 +18,54 @@ $$
 $$
 
 The matrix is singular exactly when $\omega$ equals a natural frequency, so the amplitudes blow up there: resonance. Mathews' module, which follows a six-floor building through three examples, computes the six natural frequencies and periods, solves for the floor amplitudes at one shaking frequency, and then plots the largest amplitude $\max_i |v_i|$ against the frequency and against the period of the earthquake. Every number below has been recomputed independently.
+
+## Animations
+
+Mathews' module links no animation, and his animation archive has none for the earthquake model, so all four animations below are new, with no Mathews original. They animate his three examples for the six-floor building of Example 1 ($k/m = 8$), using his parameters: in Cases 1 to 3 the earthquake of amplitude $e = 0.075$ ft, and, where they are needed, the natural frequencies $\omega_j$ and mode shapes from the closed form of the theorem.
+
+Case 1 is Example 2, the building shaken at $\omega = 2.1$ rad/s, in two panels on one clock. The right panel is Mathews' plot, grown in time: floor $i$ at $x = i + X_i(t)$ for $0 \le t \le 10$ s, with time on the vertical axis, the rest lines $x = 1, \ldots, 6$ and his colours (Blue, Red, Brown, Magenta, Green and Orange for floors 1 to 6, with his Green and Cyan darkened for legibility); his horizontal range was chosen automatically, and the panel uses $0.5 \le x \le 6.5$, which holds every curve. The left panel is new. It draws the building itself in fixed coordinates, where the ground is at $e\cos(\omega t)$ and floor $i$ at $e\cos(\omega t) + X_i(t) = (v_i + e)\cos(\omega t)$; the gray bars show how far each level swings, and the floors keep Mathews' colours. Both panels show the forced solution $\mathbf{X}(t) = \mathbf{v}\cos(\omega t)$, which is the motion when $\mathbf{X}(0) = \mathbf{v}$ and $\mathbf{X}'(0) = \mathbf{0}$, as the warning in the forcing section explains.
+
+Case 2 is Example 3, one frame per frequency $\omega = 0, 0.025, \ldots, 6$ rad/s. On the left, Mathews' graph of the largest amplitude $g(\omega)$ over his interval $0 \le \omega \le 6$, in his Blue, is traced up to the current $\omega$, with the six natural frequencies as dashed asymptotes and the curve broken at each of them; the vertical range $0 \le g \le 1.4$ ft is close to the automatic range of his plot. Near a resonance $g$ is above the window: the curve leaves the top edge, and the current point is drawn as a triangle on the edge, with its true value in the title. The right panel is new. It shows the *response shape* $\mathbf{v}/g$, the floor amplitudes divided by the largest one, so that the floor that moves most (red) sits at $\pm 1$, beside the mode shape of the natural frequency nearest to $\omega$ (gray, scaled to largest entry $1$ and signed to match $\mathbf{v}$), and its title gives the largest difference between the two shapes.
+
+Case 3 is the second half of Example 3: $g$ against the period $p = 2\pi/\omega$ of the earthquake, traced as $p$ grows, one frame per $p = 0.65, 0.70, \ldots, 11$ s. The two panels are Mathews' two period graphs, with his parameter ranges, windows and colours: $0.5 \le \omega \le 10$ in the window $0 \le p \le 11$, $0 \le g \le 3$ (Orange), and $1.5 \le \omega \le 10$ in the window $0 \le p \le 4$, $0 \le g \le 2$ (Red). The dashed lines are the natural periods $P_j$, the dotted line is $g = 0.3$ ft, four times the ground amplitude, and the periods where $g \ge 0.3$ ft, the bands of the table in Example 3, are shaded as the trace passes them (their edges found by bisection). A point above a window is drawn as in Case 2.
+
+Case 4 animates Example 1: the six natural modes, each the free vibration $\mathbf{X}(t) = \mathbf{u}_j\cos(\omega_j t)$ of the building with no earthquake, all on one clock for one fundamental period $P_1 = 9.215$ s, one frame per $P_1/96$. The amplitude of a free vibration is arbitrary, so each mode shape is scaled so that its largest entry is $1$, with floor 1 displaced to the right at $t = 0$ (Example 1's table scales floor 1 to $1$ instead).
+
+Every example of the module is animated. Not animated are the parts of the module with nothing to compute (the derivation of the model, the link to an old lab project, which is not in the archive, and the bibliography page) and, from this page, the motion of a building that starts at rest, described in the warning on the forced solution.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 2: the building swaying at $\omega = 2.1$ rad/s, $e = 0.075$ ft, $\mathbf{X}(t) = \mathbf{v}\cos(2.1t)$, $0 \le t \le 10$ s
+
+**Behavior:** Every floor swings with the period of the earthquake, $2\pi/2.1 = 2.992$ s, so each of Mathews' curves makes $3.342$ oscillations in his ten seconds. Relative to the ground (right) floors 1 to 4 swing one way while floors 5 and 6 swing the other, the second floor farthest ($0.3884$ ft) and the fifth least ($0.06094$ ft), the amplitudes of Example 2. In fixed coordinates (left) the ground, $0.075$ ft each way, moves with floors 5 and 6 and against floors 1 to 4, so the columns cross the rest line twice, between the ground and floor 1 and between floors 4 and 5. There the second floor still swings farthest, $|v_2 + e| = 0.3134$ ft, $4.179$ times as far as the ground, followed by the top floor, $0.3029$ ft, and the fourth floor least, $0.1060$ ft.
+
+[Julia source](earthquakeaa.jl)
+
+![Mathews' Example 2 for the six-floor building shaken at ω = 2.1 rad/s with e = 0.075 ft, over 0 ≤ t ≤ 10 s: on the left the building in fixed coordinates, the ground swinging 0.075 ft and the floors swinging with floors 1 to 4 opposite to the ground and floors 5 and 6 with it, the second floor farthest at 0.3134 ft; on the right Mathews' plot of floor i at x = i + Xᵢ(t) growing in time in his colours, each curve making 3.342 oscillations, the second floor's largest at 0.3884 ft and the fifth floor's smallest at 0.06094 ft relative to the ground](earthquakeaa.gif)
+
+### Case 2 — Example 3: sweeping the frequency, $g(\omega) = \max_i \lvert v_i \rvert$ for $\omega = 0, 0.025, \ldots, 6$ rad/s, $e = 0.075$ ft
+
+**Behavior:** At $\omega = 0$ there is no shaking and $g = 0$. Below the first natural frequency every $v_i$ is positive, so the floors swing with the ground, and the top floor moves most; for slow shaking the response shape is the static shape $(6, 11, 15, 18, 20, 21)/21$ of Example 3: at $\omega = 0.025$ the two agree within $10^{-4}$, and the largest difference from the first mode shape is $0.0556$. Approaching each natural frequency, $g$ leaves the window and the response shape closes in on the mode shape: at the frame nearest $\omega_j$ the largest difference is $0.00122$, $0.0283$, $0.0721$, $0.0635$, $0.099$ and $0.146$ for $j = 1, \ldots, 6$. Across each $\omega_j$ the shape flips sign against the mode shape, which is why the gray curve changes side. Nine frames have $g$ above the window: the two frames either side of $\omega_1$, $\omega_2$, $\omega_3$ and $\omega_4$, and $\omega = 5$ just below $\omega_5$; the sixth resonance is the narrowest, and the frames either side of it, $\omega = 5.475$ and $5.5$, give $g = 0.5149$ and $1.099$ ft, inside the window. Between resonances the shape is a mixture of modes; at Example 2's $\omega = 2.1$, $g = 0.3884$ ft on the second floor and the shape differs from the second mode shape by $0.355$. Past $\omega_6$, $g$ falls to $0.1125$ ft at $\omega = 6$, where the first floor moves most and every floor moves against the ground ($v_i/g$ between $-1$ and $-0.5004$), on the way to the limit $\mathbf{v} \to -e\,\mathbf{b}$ of Example 3.
+
+[Julia source](earthquakebb.jl)
+
+![Mathews' Example 3 graph of the largest floor amplitude g(ω) for e = 0.075 ft traced as ω sweeps from 0 to 6 rad/s, leaving the top of the window at each of the six natural frequencies 0.6819, 2.006, 3.213, 4.234, 5.009 and 5.492, beside the response shape v/g of the floors and the nearest mode shape: the shape closes in on mode j near each ωⱼ, flips sign across it, and past ω₆ falls to g = 0.1125 ft at ω = 6 with every floor moving against the ground](earthquakebb.gif)
+
+### Case 3 — Example 3: the largest amplitude against the period, $p = 2\pi/\omega$ from $0.65$ to $11$ s, $e = 0.075$ ft
+
+**Behavior:** The trace starts at $p = 0.65$ s with $g = 0.08283$ ft (Mathews' curves start at $p = 2\pi/10 = 0.6283$ s, where $g = 0.08221$ ft) and meets the natural periods in increasing order, $P_6 = 1.144$ s first and $P_1 = 9.215$ s last, leaving the top of each window at every one. The shaded bands where $g \ge 0.3$ ft are $0.0145$, $0.0335$, $0.0633$, $0.134$ and $0.408$ s wide around $P_6, \ldots, P_2$, and $2.955$ s wide around $P_1$, from $7.600$ to $10.55$ s: wider than the other five together. The right window holds the five short-period resonances, which crowd the left one. Example 2's earthquake, with period $2\pi/2.1 = 2.992$ s, lies in the band around $P_2 = 3.132$ s. At $p = 11$ s, the right edge of Mathews' window, $g = 0.2198$ ft.
+
+[Julia source](earthquakecc.jl)
+
+![Mathews' two Example 3 graphs of the largest floor amplitude g against the earthquake's period p = 2π/ω, traced as p grows from 0.65 to 11 s: in his window [0, 11] × [0, 3] (orange) and his zoom [0, 4] × [0, 2] (red), the curve leaves the top of the window at each natural period 1.144, 1.254, 1.484, 1.955, 3.132 and 9.215 s, and the periods where g ≥ 0.3 ft are shaded, the band around 9.215 s, from 7.600 to 10.55 s, far wider than the others](earthquakecc.gif)
+
+### Case 4 — Example 1: the six natural modes $\mathbf{u}_j\cos(\omega_j t)$, $0 \le t \le P_1 = 9.215$ s
+
+**Behavior:** In mode $j$ the floors change direction $j - 1$ times going up the building: in mode 1 they all sway the same way, more the higher they are, and in mode 6 each floor moves against its neighbours. Each mode oscillates at its own natural frequency, from $\omega_1 = 0.6819$ to $\omega_6 = 5.492$ rad/s, so in the one fundamental period shown mode 1 makes one oscillation and returns to its start while mode $j$ makes $\omega_j/\omega_1$ of them: $2.942$, $4.713$, $6.210$, $7.346$ and $8.055$ for $j = 2, \ldots, 6$. The scaled entries of every mode are, apart from sign and order, the same six numbers $\sin(m\pi/13)/\sin(6\pi/13) = 0.2411$, $0.4681$, $0.6680$, $0.8290$, $0.9419$ and $1$ for $m = 1, \ldots, 6$. The floor with the largest entry, the floor whose gray bar reaches $\pm 1$, is floor 6, 2, 4, 1, 5 and 3 in modes 1 to 6: the floor that moves most as $\omega \to \omega_j$ in Case 2 and in Example 3.
+
+[Julia source](earthquakedd.jl)
+
+![The six natural modes of the six-floor building of Example 1 vibrating freely on one clock for one fundamental period, 9.215 s: mode 1 at ω₁ = 0.6819 rad/s with all floors swaying the same way, more the higher they are, up to mode 6 at ω₆ = 5.492 rad/s with each floor moving against its neighbours, mode j changing direction j − 1 times going up the building](earthquakedd.gif)
 
 ## The Shear-Building Model
 
