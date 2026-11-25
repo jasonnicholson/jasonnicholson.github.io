@@ -100,11 +100,18 @@ end
 @assert abs(Es[2][1] - 9.02945) < 5e-6      # page: E2 of the linearized power fit
 
 # --- Contour grids of E over (a, c) ---
+# Each panel draws, and its title lists, only the levels above that model's minimum E
+# (1.07912 and 1.50774), so the power panel's innermost contour is E = 2.
 const Elevels = [1.1, 1.25, 1.5, 2, 3, 5, 10, 20, 50, 100, 200, 500]
+lev(x) = isinteger(x) ? string(Int(x)) : string(x)
 grids = map(models) do m
     ag = range(m.alims..., length=241)
     cg = range(m.clims..., length=241)
-    (ag = ag, cg = cg, E = [Efun(m, c, a) for c in cg, a in ag])
+    E = [Efun(m, c, a) for c in cg, a in ag]
+    levels = filter(>(m.direct.E), Elevels)
+    @assert minimum(E) < levels[1] && maximum(E) > levels[end]   # every listed level is drawn
+    label = join(lev.(filter(<=(10), levels)), ", ") * ", …, " * lev(levels[end])
+    (ag = ag, cg = cg, E = E, levels = levels, label = label)
 end
 
 xplot = range(0.02, xylims[2], length=400)
@@ -139,7 +146,7 @@ function draw_frame(k)
         g = grids[j]
         q = plot(xlims=m.alims, ylims=m.clims, framestyle=:box, grid=false, xlabel="a",
                  ylabel="c", legend=:topright, legendfontsize=8, titlefontsize=10)
-        contour!(q, g.ag, g.cg, g.E; levels=Elevels, color=:gray60, clabels=false,
+        contour!(q, g.ag, g.cg, g.E; levels=g.levels, color=:gray60, clabels=false,
                  colorbar=false, lw=1)
         pa = [pp[2] for pp in paths[j][1:k+1]]
         pc = [pp[1] for pp in paths[j][1:k+1]]
@@ -150,7 +157,7 @@ function draw_frame(k)
         scatter!(q, [m.direct.a], [m.direct.c]; color=:red, marker=:star5, ms=9,
                  label="least-squares minimum of E")
         step = k == 0 ? "" : ",  max(|Δc|, |Δa|) = $(fmt3(max(abs(c - paths[j][k][1]), abs(a - paths[j][k][2]))))"
-        title!(q, "E(a, c) for $(m.form):  contours 1.1, 1.25, 1.5, 2, 3, 5, 10, …, 500\n" *
+        title!(q, "E(a, c) for $(m.form):  contours $(g.label)\n" *
               "a = $(fmt6(a)),  c = $(fmt6(c))$step")
         push!(mid, q)
     end
