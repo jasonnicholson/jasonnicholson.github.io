@@ -1,9 +1,9 @@
 ---
 title: "Compartment Model"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -15,9 +15,41 @@ $$
 \mathbf{X}'(t) = \mathbf{A}\,\mathbf{X}(t), \qquad \mathbf{X}(0) = \mathbf{X}_0, \qquad k_i = \frac{r}{V_i},
 $$
 
-whose matrix $\mathbf{A}$ records which tank drains into which. The method is the eigenvalue method for linear systems: find the eigenvalues $\lambda_j$ and eigenvectors $\mathbf{V}_j$ of $\mathbf{A}$, form the general solution $\mathbf{X}(t) = \sum_j c_j e^{\lambda_j t}\mathbf{V}_j$, and choose the constants $c_j$ to match the initial amounts. (When the eigenvalues are complex the real and imaginary parts of $e^{\lambda t}\mathbf{V}$ are used instead; equivalently, $\mathbf{X}(t) = e^{\mathbf{A}t}\mathbf{X}_0$ with the [matrix exponential](matrix-exponential.qmd).)
+whose matrix $\mathbf{A}$ records which tank drains into which. The method is the eigenvalue method for linear systems: find the eigenvalues $\lambda_j$ and eigenvectors $\mathbf{V}_j$ of $\mathbf{A}$, form the general solution $\mathbf{X}(t) = \sum_j c_j e^{\lambda_j t}\mathbf{V}_j$, and choose the constants $c_j$ to match the initial amounts. (When the eigenvalues are complex the real and imaginary parts of $e^{\lambda t}\mathbf{V}$ are used instead; equivalently, $\mathbf{X}(t) = e^{\mathbf{A}t}\mathbf{X}_0$ with the [matrix exponential](../matrix-exponential.qmd).)
 
 Mathews works three examples, all solved in closed form with no numerical integration and all starting with $10$ units of the substance in the first tank and none in the others: an *open* chain of three tanks fed by pure water, where the substance is washed out of the system; a *closed* loop of three tanks, where it is only redistributed; and an open chain of five tanks. Every solution below has been checked by substituting it into the differential equations and by comparing it with a high-accuracy numerical solution.
+
+## Animations
+
+Each animation below runs one of Mathews' three examples forward in time. The top of each frame draws the tanks with widths proportional to their volumes and a common height, so the shaded height in a tank is the concentration $x_i/V_i$ of the substance and the shaded area is proportional to the amount $x_i$; arrows show the flow, and the labels under each tank give its amount and concentration at the time in the title. Since every pipe carries the same rate $r$, each tank fills exactly while its shaded height is below that of the tank feeding it ($x_i' = r\,(x_{i-1}/V_{i-1} - x_i/V_i)$; tank 1 of an open chain is fed pure water and only drains), and a tank reaches its maximum when the two shaded heights are level. Below the tanks, the amounts $x_i(t)$ and their sum $S(t)$ grow in time, with a dot on the newest value of each. The curves are the exact solutions found below by the eigenvalue method: the scripts compute the eigenvectors and the constants in exact rational arithmetic and evaluate the sums of exponentials in 256-bit arithmetic.
+
+Mathews' module links no animation, and his animation archive has none for the compartment model, so all three animations are new, with no Mathews original. They follow his three examples, with his parameters and, where his output survives, his plot windows and colours (his green darkened for legibility). Not animated are his matrix-exponential construction in Example 2, which gives the same solution as Case 2; the plots of his Example 2, whose images are lost from the archive, including his plot of how the three curves stack up; the generalized-eigenvector case of equal volumes, which he mentions in a remark but does not work, and the equal-volume example in the callout below.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Mathews' Example 1, open chain, $V = (80, 100, 120)$, $r = 20$, $\mathbf{X}_0 = (10, 0, 0)$, $0 \le t \le 40$
+
+**Behavior:** Tank 1 drains from the start, $x_1 = 10e^{-t/4}$, while the substance passes down the chain. Tank 2 fills until its shaded height is level with that of tank 1, at its maximum $x_2 = 4.096$ at $t = 4.463$, and tank 3 until it is level with tank 2, at $x_3 = 3.248$ at $t = 9.866$; a diamond marks each maximum once it has passed, and afterwards both tanks drain. The total $S(t)$ starts flat, because nothing leaves the system until tank 3 fills ($S' = -\tfrac16 x_3$), and then decreases in every frame. The dashed tray on the right collects the washed-out amount $10 - S(t)$, drawn to the same area scale as the tanks; at $t = 40$ it holds $9.851$, and the $S = 0.1488$ left in the system is mostly in tank 3 ($x_3 = 0.1339$). The bottom right panel is Mathews' filled plot, with bands for $x_1$, $x_1 + x_2$ and $S$ in his red, blue and green; the gray band above $S$ is the washed-out amount, so the bands always add up to $10$. Mathews plots the single curves on $[0, 20] \times [0, 10]$; both panels here use the $[0, 40] \times [0, 10]$ of his sum and filled plots.
+
+[Julia source](compartmentaa.jl)
+
+![Mathews' Example 1, three tanks of volumes 80, 100 and 120 drawn with widths proportional to volume, with 10 units of substance starting in tank 1 and pure water flowing in at r = 20: the shaded concentration drains from tank 1 and passes through tanks 2 and 3 into a washed-out tray, while the amounts x₁ (red), x₂ (blue), x₃ (green) and their sum S (magenta) grow in time on [0, 40] × [0, 10], with x₂ peaking at 4.096 at t = 4.463 and x₃ at 3.248 at t = 9.866, beside Mathews' stacked filled plot; at t = 40, S = 0.1488 and 9.851 has been washed out](compartmentaa.gif)
+
+### Case 2 — Mathews' Example 2, closed loop, $V = (40, 20, 40)$, $r = 20$, $\mathbf{X}_0 = (10, 0, 0)$, $0 \le t \le 12.5$
+
+**Behavior:** The liquid leaving tank 3 returns to tank 1, so the total stays $S = 10$ in every frame and the substance is only redistributed: the shaded heights level out at the common equilibrium concentration $10/100 = 0.1$ (the dashed line in each tank), so the amounts tend to $(4, 2, 4)$, in proportion to the volumes. Tank 2, the smallest, is the first to reach its equilibrium value: its shaded height passes the dashed line at $t = 0.6435$ and overshoots it, to the concentration $0.1294$ ($x_2 = 2.588$) at $t = \pi/2$. On the linear scale of the left panel the curves look settled by $t = 5$, the end of Mathews' interval (dotted line), where no tank is more than $0.035$ from its equilibrium value. The right panel plots the distance $|x_i - \text{equilibrium}|$ on a log scale, solid while $x_i$ is above its equilibrium value and dashed while below, and shows that the approach goes on as a damped oscillation. Each distance stays under its envelope, $2\sqrt{10}\,e^{-t}$ for tanks 1 and 2 and $4\sqrt5\,e^{-t}$ for tank 3, the straight lines of the log plot, and drops out of the bottom of the panel each time the tank crosses its equilibrium value: tank 2 at $t = 0.6435$ and $6.927$, tank 1 at $3.785$ and $10.07$, tank 3 at $5.356$ and $11.64$, consecutive crossings of a tank being $2\pi$ apart. At $t = 12.5$ the largest distance is $2.21 \times 10^{-5}$. Mathews' plots of this example are lost, so the window $[0, 12.5] \times [0, 10.5]$ and the colours, those of his Example 1, are chosen here; the clock runs past his $t = 5$ so that every tank crosses its equilibrium value twice.
+
+[Julia source](compartmentbb.jl)
+
+![Mathews' Example 2, a closed loop of three tanks of volumes 40, 20 and 40 with 10 units of substance starting in tank 1: the shaded concentrations level out at the common equilibrium concentration 0.1 while the amounts x₁, x₂, x₃ approach 4, 2 and 4 and their sum stays 10, on [0, 12.5] with Mathews' end time t = 5 dotted, beside a log-scale plot of the distance of each amount from its equilibrium value, which decays under the envelopes 2√10 e⁻ᵗ and 4√5 e⁻ᵗ and drops to zero at each crossing of equilibrium, two per tank, 2π apart](compartmentbb.gif)
+
+### Case 3 — Mathews' Example 3, open chain, $V = (60, 80, 100, 120, 150)$, $r = 24$, $\mathbf{X}_0 = (10, 0, 0, 0, 0)$, $0 \le t \le 50$
+
+**Behavior:** The pulse of substance travels down the chain of five tanks. Each of tanks 2 to 5 fills until its shaded height is level with that of the tank before it, and the maxima, marked by diamonds, come later and lower from tank to tank: $4.219$ at $t = 2.877$, $3.383$ at $6.527$, $2.967$ at $10.97$ and $2.828$ at $16.48$. With five tanks to pass, the total stays near $10$ longer than in Case 1 ($S(5) = 9.916$, against $9.178$ for the three tanks of Case 1), since only tank 5 empties out of the system ($S' = -\tfrac4{25}x_5$), and then it decreases in every frame. At $t = 50$ the tray holds $9.878$, and of the $S = 0.1219$ left nearly all is in tanks 4 and 5 ($x_4 = 0.01188$, $x_5 = 0.1093$). Mathews' window $[0, 50] \times [0, 10]$ and his colours red, brown, orange, green and blue are used for both panels; his own plot of $S$ chooses its vertical range automatically, and the bottom right panel is his filled plot, with the washed-out amount added in gray.
+
+[Julia source](compartmentcc.jl)
+
+![Mathews' Example 3, five tanks of volumes 60, 80, 100, 120 and 150 with 10 units of substance starting in tank 1 and pure water flowing in at r = 24: the pulse of concentration travels down the chain into a washed-out tray while the amounts x₁ to x₅ (red, brown, orange, green, blue) and their sum S (magenta) grow in time on [0, 50] × [0, 10], with the maxima 4.219, 3.383, 2.967 and 2.828 of tanks 2 to 5 at t = 2.877, 6.527, 10.97 and 16.48, beside Mathews' stacked filled plot; at t = 50, S = 0.1219 and 9.878 has been washed out](compartmentcc.gif)
 
 ## Modelling the Tanks
 
