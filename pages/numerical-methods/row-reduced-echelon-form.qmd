@@ -39,6 +39,11 @@ A matrix is in reduced row echelon form if:
 Every matrix has exactly one reduced row echelon form.
 :::
 
+::: {.callout-note appearance="simple"}
+## Definition - Rank
+The rank of a matrix, $\operatorname{rank}(A)$, is the number of nonzero rows in its reduced row echelon form.
+:::
+
 ## Rank Criteria For Solution Type
 
 Let $A$ be the coefficient matrix and $M=[A\mid \mathbf{b}]$ the augmented matrix.
@@ -70,12 +75,13 @@ $$
 
 ## Gauss-Jordan Algorithm
 
-1. Build $M=[A\mid\mathbf{b}]$.
-2. Move left to right through pivot columns.
-3. For each pivot column, swap rows if needed to get a nonzero pivot.
-4. Scale the pivot row so the pivot becomes $1$.
-5. Eliminate all other entries in that pivot column.
-6. Continue until pivot columns are reduced and all zero rows are at the bottom.
+1. Build $M=[A\mid\mathbf{b}]$ and set the current pivot row to $r=1$.
+2. Move left to right through the columns of $M$. In each column, look for a nonzero entry in rows $r$ and below.
+3. If there is none, go on to the next column with $r$ unchanged. This column gets no pivot; a column of $A$ without a pivot belongs to a free variable.
+4. Otherwise, swap the first row at or below $r$ with a nonzero entry in this column into row $r$.
+5. Scale row $r$ so the pivot becomes $1$.
+6. Eliminate every other entry in this column, above and below row $r$, then increase $r$ by $1$.
+7. Stop when $r$ passes the last row or the columns run out. Any rows from $r$ down are then zero, so they sit at the bottom.
 
 The resulting matrix directly reveals consistency, rank, and solution formulas.
 
@@ -194,9 +200,23 @@ which is impossible.
 
 | Statement | Result |
 |-----------|--------|
-| RREF contains row $[0\ 0\ 0\mid -1]$ | contradiction $0=-1$ |
+| Echelon form after Step 3 contains row $[0\ 0\ 0\mid -1]$ | contradiction $0=-1$ |
 | Rank comparison | $\operatorname{rank}(A)=2<3=\operatorname{rank}(M)$ |
 | Conclusion | no solution |
+
+Step 3 stops at an echelon form, which already shows the contradiction. Running the algorithm above to the end (it skips column 3, which has no nonzero entry in row 3, and finds the third pivot in the last column) gives the RREF
+
+$$
+\left[
+\begin{array}{ccc|c}
+1 & 0 & 8 & 0\\
+0 & 1 & -10 & 0\\
+0 & 0 & 0 & 1
+\end{array}
+\right],
+$$
+
+whose last row says $0=1$. Its first three columns, the RREF of $A$, have two nonzero rows, so the ranks are the ones in the table.
 
 So the system is inconsistent.
 
@@ -270,7 +290,101 @@ Because $\operatorname{rank}(A)=\operatorname{rank}(M)=2<3=n$, there are infinit
 When $\operatorname{rank}(A)<n$ but the system is still consistent, you must choose one or more free variables. Every free variable generates a family of solutions, not a single point.
 :::
 
-For underdetermined systems, RREF is especially useful because pivot columns identify dependent variables and nonpivot columns identify free variables immediately.
+For underdetermined systems, RREF is especially useful because pivot columns identify dependent variables and nonpivot columns identify free variables immediately. The free columns need not be the last ones, as the next example shows.
+
+### Example 4 - Free Variables In Middle Columns
+
+Solve
+
+$$
+\begin{aligned}
+x_1 + 2x_2 + 3x_3 + 4x_4 + 3x_5 &= 1,\\
+2x_1 + 4x_2 + 6x_3 + 2x_4 + 6x_5 &= 2,\\
+3x_1 + 6x_2 + 18x_3 + 9x_4 + 9x_5 &= -6,\\
+4x_1 + 8x_2 + 12x_3 + 10x_4 + 12x_5 &= 4,\\
+5x_1 + 10x_2 + 24x_3 + 11x_4 + 15x_5 &= -4.
+\end{aligned}
+$$
+
+**Step 1**: Form the augmented matrix and clear column 1 with $R_k\leftarrow R_k-kR_1$ for $k=2,3,4,5$.
+
+$$
+\left[
+\begin{array}{ccccc|c}
+1 & 2 & 3 & 4 & 3 & 1\\
+2 & 4 & 6 & 2 & 6 & 2\\
+3 & 6 & 18 & 9 & 9 & -6\\
+4 & 8 & 12 & 10 & 12 & 4\\
+5 & 10 & 24 & 11 & 15 & -4
+\end{array}
+\right]
+\quad\Rightarrow\quad
+\left[
+\begin{array}{ccccc|c}
+1 & 2 & 3 & 4 & 3 & 1\\
+0 & 0 & 0 & -6 & 0 & 0\\
+0 & 0 & 9 & -3 & 0 & -9\\
+0 & 0 & 0 & -6 & 0 & 0\\
+0 & 0 & 9 & -9 & 0 & -9
+\end{array}
+\right].
+$$
+
+**Step 2**: Column 2 has no nonzero entry in rows 2 to 5, so it gets no pivot ($x_2$ will be free) and the pivot row stays $r=2$. In column 3, swap $R_2\leftrightarrow R_3$, scale $R_2\leftarrow R_2/9$, and eliminate with $R_1\leftarrow R_1-3R_2$ and $R_5\leftarrow R_5-9R_2$.
+
+$$
+\left[
+\begin{array}{ccccc|c}
+1 & 2 & 0 & 5 & 3 & 4\\
+0 & 0 & 1 & -\tfrac{1}{3} & 0 & -1\\
+0 & 0 & 0 & -6 & 0 & 0\\
+0 & 0 & 0 & -6 & 0 & 0\\
+0 & 0 & 0 & -6 & 0 & 0
+\end{array}
+\right].
+$$
+
+**Step 3**: In column 4, scale $R_3\leftarrow R_3/(-6)$ and eliminate with $R_1\leftarrow R_1-5R_3$, $R_2\leftarrow R_2+\tfrac{1}{3}R_3$, $R_4\leftarrow R_4+6R_3$ and $R_5\leftarrow R_5+6R_3$. Columns 5 and 6 then have no nonzero entry in rows 4 and 5, so the reduction stops with the RREF
+
+$$
+\left[
+\begin{array}{ccccc|c}
+1 & 2 & 0 & 0 & 3 & 4\\
+0 & 0 & 1 & 0 & 0 & -1\\
+0 & 0 & 0 & 1 & 0 & 0\\
+0 & 0 & 0 & 0 & 0 & 0\\
+0 & 0 & 0 & 0 & 0 & 0
+\end{array}
+\right].
+$$
+
+**Step 4**: The pivots are in columns 1, 3 and 4, so $x_2$ and $x_5$ are free. The nonzero rows say $x_1+2x_2+3x_5=4$, $x_3=-1$ and $x_4=0$. With $x_2=s$ and $x_5=u$,
+
+$$
+\mathbf{x}(s,u)=
+\begin{pmatrix}
+4-2s-3u\\
+s\\
+-1\\
+0\\
+u
+\end{pmatrix},
+\qquad s,u\in\mathbb{R}.
+$$
+
+**Verification:**
+
+| Row | Left-hand side after substitution | Right-hand side |
+|-----|----------------------------------|-----------------|
+| 1 | $(4-2s-3u)+2s+3(-1)+4(0)+3u=1$ | $1\ \checkmark$ |
+| 2 | $2(4-2s-3u)+4s+6(-1)+2(0)+6u=2$ | $2\ \checkmark$ |
+| 3 | $3(4-2s-3u)+6s+18(-1)+9(0)+9u=-6$ | $-6\ \checkmark$ |
+| 4 | $4(4-2s-3u)+8s+12(-1)+10(0)+12u=4$ | $4\ \checkmark$ |
+| 5 | $5(4-2s-3u)+10s+24(-1)+11(0)+15u=-4$ | $-4\ \checkmark$ |
+
+Because $\operatorname{rank}(A)=\operatorname{rank}(M)=3<5=n$, there are infinitely many solutions, a two-parameter family.
+
+Mathews also solves three copies of the single equation $4x_1+3x_2+2x_3=12$ (RREF row $[1\ \tfrac{3}{4}\ \tfrac{1}{2}\mid 3]$, rank $1$, free $x_2$ and $x_3$); that example is left out here.
 
 ## Summary
 
