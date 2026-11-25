@@ -19,7 +19,7 @@ Written 2026-11-24, after the nine review rounds of the 53 animation pages were 
   - Batch 1 comes first because it has surviving legacy GIFs to match, which is the case the `animation-page` skill handles best.
   - Batches 2–3 rebuild lost animations from the worked examples.
   - Batches 4–9 are new animations with no legacy original. Each must say so on the page, as Laurent does.
-- **17 pages stay text-only**, marked "—" in the table. These are direct linear-algebra algorithms (elimination, factorizations, Horner, Householder and similar), where an animation would only redraw a matrix. Three of them are still skeletons and need the `content-page` skill.
+- **17 pages stay text-only**, marked "—" in the table (now "10 (text)" to "13 (text)"; see Follow-on plan). These are direct linear-algebra algorithms (elimination, factorizations, Horner, Householder and similar), where an animation would only redraw a matrix. Three of them are still skeletons and need the `content-page` skill.
 - **For a skeleton page, run `content-page` first**, so that the text and worked example exist, and then `animation-page`. Of the 41 animation pages, 37 are skeletons and 4 already have text.
 
 ## Before the first batch (done 2026-11-24)
@@ -49,6 +49,68 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 - **Batch 8 done 2026-11-25** on branch `batch-8` (stacked on `batch-7`): all six pages have written text and animations. One independent review round (`reviews/batch-8`) found no Error or Misleading findings; all 13 Minor findings were fixed and independently checked. See `reviews/batch-8/README.md`.
 - **Batch 9 done 2026-11-25** on branch `batch-9` (stacked on `batch-8`): all seven pages have written text and animations. Two independent review rounds (`reviews/batch-9`, `-r2`); round 1 found one Error (a step quoted between the wrong frames on the Power Series page) and two Misleading findings (Circle of Curvature, Nonlinear Curve Fitting), round 2 found no Error or Misleading findings, and every finding of both rounds was fixed or shown not reproducible and independently checked. See `reviews/batch-9/README.md`.
 
+The `reviews/` folders were removed after merging. They are still in history: batch 1 at `4bc9c3f^`, batch 2 at `d3cdb0a^`, and batches 3–9 at `c8eefc8^`.
+
+## Follow-on plan (written 2026-11-25)
+
+### What is left (checked against the repository on 2026-11-25)
+
+- **All 41 animation pages are done.** Each one is a folder with an `## Animations` section and 2–8 GIFs, and none has a "(Planned)" section left.
+- **The 17 text-only pages are still flat `.qmd` files:**
+  - **3 were never written:** Householder Transformations, Hessenberg Factorization and Faddeev-Leverrier Method. Each still has "Animation Focus" and three "(Planned)" sections. All three have Mathews modules (`n2003/HouseholderMod.html`, `HessenbergMod.html`, `FaddeevLeverrierMod.html`).
+  - **14 were written on 2026-04-26,** before the Accuracy standard and the claim ledger existed. None of them has been reviewed. Two pages written alongside them (Jacobi and Gauss-Seidel, SOR) needed four errors corrected and a broken `\tag` fixed when batch 8 rewrote them.
+  - **Cholesky, Doolittle and Crout Factorizations has broken markup.** `\t` was read as a tab, which turned `\tag{…}` into a tab plus "ag{…}" on lines 42, 47 and 52, and `\tfrac` into a tab plus "frac" on lines 160, 162 and 163. No other page has control characters.
+- **One skeleton is outside the plan:** `fft-and-trigonometric-polynomials/`. It has "(Planned)" sections and a legacy stub whose `localhost:8000` links are dead on the published site. Its module, `FourierSeriesMod.html` ("The Fast Fourier Transform (FFT)"), is the one the Fourier series page already covers in full, including the FFT example and the discrete-series animations. `TrigPolyMod.html` is an empty placeholder.
+
+### Decisions for Jason
+
+Questions to answer before batch 10:
+
+- **A. The FFT page.** Recommended: retire it. Delete the folder and point its index entry (line 86 of `pages/numerical-methods/index.qmd`) at `fourier-series/`, because the Fourier series page already covers the whole module. The alternative is to write it as a text-only FFT page and move Fourier Cases 6–8 into it.
+- **B. The 14 written text-only pages.** Recommended: review them and fix what the review finds (batches 11–13). At the very least, Cholesky's six broken lines need fixing.
+- **C. How to review a text-only page.** No skill does this today: `review-animations` excludes flat pages, and `run-animation-batch` assumes animations. Recommended: adapt both skills before batch 10, as was done before batch 1:
+  - `review-animations` accepts flat pages in a batch. For a flat page, the reviewer keeps a claim ledger for the whole page and reports Page-text and Fidelity findings only, and the calibration error is planted in the text.
+  - `run-animation-batch` skips Phase 2 for these pages and leaves them flat (so no index changes are needed). It runs Phase 1 only for skeletons. Fixes follow `content-page`'s Accuracy standard instead of `animation-page` step 15. A page counts as done when it has no "(Planned)" section and its last review round found no Error or Misleading findings.
+- **D. `references.bib`.** Powell (1964) and Lambert (1991) are cited in plain text because the bibliography has no entries for them. Lambert's order theorem was attributed from memory (batch 4), so the citation needs checking when it is added.
+- **E. Optional:** rebuild the two lost discrete-series animations FFT1 and FFT2 (|x−π| and x−π) on the Fourier series page (batch 1).
+
+Decisions already taken on Jason's behalf, recorded in the batch notes and stated on the pages. Revisit any of these if wanted:
+
+- **Places where the pages follow the mathematics, not Mathews:**
+  - Newton search keeps 3 saddle steps instead of Mathews' 5.
+  - Nelder-Mead follows exact arithmetic past the step-6 tie.
+  - Steepest Descent omits Mathews' unused h < δ exit.
+  - Galerkin Example 2 follows the equation in Mathews' notebook rather than the one in his module.
+  - Projectile Motion says that Mathews has the Millikan regimes backwards.
+  - The d'Alembert proviso is corrected.
+  - Matrix Exponential Example 6 follows Mathews' worked solution where it differs from his statement.
+- **Set-ups chosen where Mathews' are lost:** Lorenz, van der Pol Examples 2–6, Pendulum Examples 4–6, Finite Difference Example 3, Elliptic Examples 2 and 6, Projectile Example 7's launch speeds, Nelder-Mead's Rosenbrock triangle, and the Example 2 data of Nonlinear Curve Fitting.
+- **Small choices:**
+  - Monte Carlo Example 14 keeps its figures from the continued random stream.
+  - Fibonacci Case 3 explains the overlapping points in a note rather than being re-zoomed.
+  - Newton Case 1 titles use `%.4g`.
+  - Two GIFs are over the 3 MB target: `gradientcc.gif` (3.2 MB) and `nelderbb.gif` (3.1 MB).
+- **Housekeeping:** the section index status note (line 11, "60–80% done") is out of date.
+
+### Remaining batches
+
+All four batches are text-only (no animations). Each page is handled by `content-page`, either to write it or to fix review findings, and reviewed with `review-animations` as adapted under C.
+
+| Batch | Pages | First step |
+|---|---|---|
+| 10 | Householder Transformations, Hessenberg Factorization, Faddeev-Leverrier Method (eigenvalue support; link to the QR method page's Householder-then-QR animation rather than repeat it) | `content-page` writes each page (Phase 1), then review |
+| 11 | Triangular Systems and Back Substitution, Gauss-Jordan Elimination and Pivoting, LU Factorization, Cholesky Doolittle and Crout Factorizations, Pivoting Methods (elimination and factorization) | review first; fix with `content-page` |
+| 12 | Inverse Matrix, Tri-Diagonal Matrices, Row Reduced Echelon Form, Homogeneous Linear Systems, Iterative Refinement (structure of linear systems) | review first; fix with `content-page` |
+| 13 | Kirchoff's Law, Leontief Model, Horner's Method, Conic Fit (applications and polynomials) | review first; fix with `content-page` |
+
+If B is declined, batches 11–13 are dropped, and batch 10 also fixes Cholesky's broken markup.
+
+### How to run them
+
+1. Settle A–D. If C is accepted, make the two skill changes on their own branch and merge them first.
+2. For each batch in order, start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`. It works on a `batch-<N>` branch, reviews into `reviews/batch-<N>`, `-r2` and so on until a round has no Error or Misleading findings, and stops before merging. The four batches touch disjoint files and do not change the index, so they can also be stacked, as batches 3–9 were.
+3. After batch 13, render the whole section (`quarto render pages/numerical-methods/`), mark the pages done here, and update the index status note.
+
 ## Batches
 
 | Batch | Theme |
@@ -62,6 +124,10 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 7 | PDEs: time stepping and iteration toward the steady state |
 | 8 | Eigenvalue and iterative linear-system methods: vectors or residuals converging |
 | 9 | Series solutions and the remaining geometric or optimization pages |
+| 10 | Text-only: write the three eigenvalue-support skeletons (see Follow-on plan) |
+| 11 | Text-only: review elimination and factorization pages |
+| 12 | Text-only: review structure-of-linear-systems pages |
+| 13 | Text-only: review applications and polynomial pages |
 
 ## Every page
 
@@ -110,20 +176,20 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 9 | [Nonlinear Curve Fitting](../pages/numerical-methods/nonlinear-curve-fitting/) | written (from the Web module; Example 2 data reconstructed); **done (batch 9):** 3 new animations (exponential and power linearization, Gauss–Newton) | none (module `n2003/Web/NonLinearCurveFitMod/NonLinearCurveFitMod.html`, 3 examples; the top-level `NonLinearCurveMod.html` is a placeholder) | 1 | 0 |
 | 9 | [Matrix Exponential](../pages/numerical-methods/matrix-exponential/) | written (all examples); **done (batch 9):** 4 new animations (partial sums, Mathews' solution families of Examples 3–5) | none (module `n2003/MatrixExponentialMod.html`) | 11 | 85 |
 | 9 | [Painleve Property](../pages/numerical-methods/painleve-property/) | written (all examples); **done (batch 9):** 3 new animations (a pole on a grid point, two poles of y' = 1 + y², a Riccati equation) | none (module `n2003/PainlevePropertyMod.html`) | 14 | 76 |
-| — | [Triangular Systems and Back Substitution](../pages/numerical-methods/triangular-systems-and-back-substitution.qmd) | written | none (`backsubstitutionmod.html`) | 0 | 0 |
-| — | [Gauss-Jordan Elimination and Pivoting](../pages/numerical-methods/gauss-jordan-elimination-and-pivoting.qmd) | written | none | 7 | 15 |
-| — | [LU Factorization](../pages/numerical-methods/lu-factorization.qmd) | written | none | 9 | 22 |
-| — | [Cholesky, Doolittle and Crout Factorizations](../pages/numerical-methods/cholesky-doolittle-and-crout-factorizations.qmd) | written | none | 9 | 65 |
-| — | [Inverse Matrix](../pages/numerical-methods/inverse-matrix.qmd) | written | none | 7 | 36 |
-| — | [Tri-Diagonal Matrices](../pages/numerical-methods/tri-diagonal-matrices.qmd) | written | none | 9 | 21 |
-| — | [Pivoting Methods](../pages/numerical-methods/pivoting-methods.qmd) | written | none | 10 | 110 |
-| — | [Row Reduced Echelon Form](../pages/numerical-methods/row-reduced-echelon-form.qmd) | written | none | 6 | 32 |
-| — | [Homogeneous Linear Systems](../pages/numerical-methods/homogeneous-linear-systems.qmd) | written | none | 6 | 33 |
-| — | [Kirchoff's Law](../pages/numerical-methods/kirchoffs-law.qmd) | written | none | 7 | 24 |
-| — | [Leontief Model](../pages/numerical-methods/leontief-model.qmd) | written | none | 5 | 44 |
-| — | [Iterative Refinement](../pages/numerical-methods/iterative-refinement.qmd) | written | none | 11 | 141 |
-| — | [Horner's Method](../pages/numerical-methods/horners-method.qmd) | written | none | 10 | 46 |
-| — | [Conic Fit](../pages/numerical-methods/conic-fit.qmd) | written | none | 13 | 30 |
-| — | [Householder Transformations](../pages/numerical-methods/householder-transformations.qmd) | skeleton | none | 6 | 64 |
-| — | [Hessenberg Factorization](../pages/numerical-methods/hessenberg-factorization.qmd) | skeleton | none | 10 | 50 |
-| — | [Faddeev-Leverrier Method](../pages/numerical-methods/faddeev-leverrier-method.qmd) | skeleton | none | 4 | 20 |
+| 11 (text) | [Triangular Systems and Back Substitution](../pages/numerical-methods/triangular-systems-and-back-substitution.qmd) | written | none (`backsubstitutionmod.html`) | 0 | 0 |
+| 11 (text) | [Gauss-Jordan Elimination and Pivoting](../pages/numerical-methods/gauss-jordan-elimination-and-pivoting.qmd) | written | none | 7 | 15 |
+| 11 (text) | [LU Factorization](../pages/numerical-methods/lu-factorization.qmd) | written | none | 9 | 22 |
+| 11 (text) | [Cholesky, Doolittle and Crout Factorizations](../pages/numerical-methods/cholesky-doolittle-and-crout-factorizations.qmd) | written | none | 9 | 65 |
+| 12 (text) | [Inverse Matrix](../pages/numerical-methods/inverse-matrix.qmd) | written | none | 7 | 36 |
+| 12 (text) | [Tri-Diagonal Matrices](../pages/numerical-methods/tri-diagonal-matrices.qmd) | written | none | 9 | 21 |
+| 11 (text) | [Pivoting Methods](../pages/numerical-methods/pivoting-methods.qmd) | written | none | 10 | 110 |
+| 12 (text) | [Row Reduced Echelon Form](../pages/numerical-methods/row-reduced-echelon-form.qmd) | written | none | 6 | 32 |
+| 12 (text) | [Homogeneous Linear Systems](../pages/numerical-methods/homogeneous-linear-systems.qmd) | written | none | 6 | 33 |
+| 13 (text) | [Kirchoff's Law](../pages/numerical-methods/kirchoffs-law.qmd) | written | none | 7 | 24 |
+| 13 (text) | [Leontief Model](../pages/numerical-methods/leontief-model.qmd) | written | none | 5 | 44 |
+| 12 (text) | [Iterative Refinement](../pages/numerical-methods/iterative-refinement.qmd) | written | none | 11 | 141 |
+| 13 (text) | [Horner's Method](../pages/numerical-methods/horners-method.qmd) | written | none | 10 | 46 |
+| 13 (text) | [Conic Fit](../pages/numerical-methods/conic-fit.qmd) | written | none | 13 | 30 |
+| 10 (text) | [Householder Transformations](../pages/numerical-methods/householder-transformations.qmd) | skeleton | none | 6 | 64 |
+| 10 (text) | [Hessenberg Factorization](../pages/numerical-methods/hessenberg-factorization.qmd) | skeleton | none | 10 | 50 |
+| 10 (text) | [Faddeev-Leverrier Method](../pages/numerical-methods/faddeev-leverrier-method.qmd) | skeleton | none | 4 | 20 |
