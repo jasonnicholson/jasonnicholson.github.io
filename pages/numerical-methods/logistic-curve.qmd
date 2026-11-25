@@ -7,24 +7,356 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+A population that grows without limit is modelled by the exponential equation $y' = r\,y$. When growth is held back by limited resources, the *logistic* differential equation $y' = r\,y\,(1 - y/L)$ is used instead, and its solution is the S-shaped *logistic curve*
 
-### Planned animation ideas
+$$
+y = \frac{L}{1 + c\,e^{a x}},
+$$
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+which rises (when $a < 0$ and $c > 0$) from near $0$ toward the limiting value $L$, also called the carrying capacity. The problem on this page is the one in Mathews' module: given data points $(x_k, y_k)$, here the population of the United States from 1900 to 1990, find the logistic curve that fits them, and use it to predict the population in 2000.
 
-## Derivation Notes (Planned)
+The first method, *data linearization*, needs a guess for $L$. It rearranges the curve to $L/y - 1 = c\,e^{a x}$ and takes logarithms, so that the change of variables $X = x$, $Y = \ln(L/y - 1)$ turns the curve into the straight line
 
-Short derivations will be added to explain the core equations and assumptions.
+$$
+Y = \ln(c) + a X .
+$$
 
-## Worked Example (Planned)
+A least squares line $Y = AX + B$ through the transformed points then gives $a = A$ and $c = e^{B}$. With $L = 800$ million this predicts $281.75$ million people for 2000, within $0.13\%$ of the census figure. The second method, *true least squares*, chooses $L$, $c$ and $a$ together to minimise the sum of squared errors in $y$ itself; the equations are nonlinear, so it is solved iteratively from starting values such as those of the first method.
 
-A compact numerical example with intermediate steps will be included.
+## The Logistic Differential Equation
 
-## Implementation Notes (Planned)
+Mathews' module is about fitting the curve; the differential equation behind it is on his separate theory page, which states the solution, its initial value, its limit $L$, its S shape and its symmetry, but whose formula images have not survived in the archive. This section therefore gives the standard background, derived and checked here.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+::: {.callout-note appearance="simple"}
+## Definition — Logistic differential equation
+For constants $r > 0$ (the growth rate) and $L > 0$ (the carrying capacity), the *logistic differential equation* is
+
+$$
+\frac{dy}{dt} = r\,y\left(1 - \frac{y}{L}\right).
+\tag{1}
+$$
+:::
+
+For small $y$ the factor $1 - y/L$ is close to $1$ and equation (1) is close to the exponential model $y' = r y$, whose solution is $y = y_0 e^{r(t - t_0)}$. As $y$ approaches $L$ the factor approaches $0$ and growth stops.
+
+**Solution by separation of variables.** For $y$ between $0$ and $L$, write (1) as $\dfrac{dy}{y(1 - y/L)} = r\,dt$ and use the partial fractions $\dfrac{1}{y(1 - y/L)} = \dfrac{1}{y} + \dfrac{1}{L - y}$:
+
+$$
+\ln y - \ln (L - y) = r t + C
+\quad\Longrightarrow\quad
+\frac{y}{L - y} = K e^{r t}.
+$$
+
+Solving for $y$ and choosing the constant so that $y(t_0) = y_0$ gives the solution in the theorem below (the same formula holds for $y_0 > L$, by the same steps with $y - L$ in place of $L - y$).
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Solution of the logistic equation
+If $r > 0$, $L > 0$ and $y_0 > 0$, the solution of (1) with $y(t_0) = y_0$ is, for $t \ge t_0$,
+
+$$
+y(t) = \frac{L}{1 + c\,e^{-r(t - t_0)}}, \qquad c = \frac{L - y_0}{y_0},
+\tag{2}
+$$
+
+with derivative
+
+$$
+y'(t) = \frac{L\,r\,c\,e^{-r(t - t_0)}}{\bigl(1 + c\,e^{-r(t - t_0)}\bigr)^2}.
+$$
+
+1. $y(t) \to L$ as $t \to \infty$.
+2. If $0 < y_0 < L$, then $c > 0$ and $y$ increases; if $y_0 > L$, then $-1 < c < 0$ and $y$ decreases; if $y_0 = L$, then $y \equiv L$.
+3. If $0 < y_0 < L$, formula (2) holds for all $t$, and $y \to 0$ as $t \to -\infty$.
+:::
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Inflection point and symmetry
+Let $0 < y_0 < L$ and $r > 0$. Then
+
+$$
+y'' = \frac{r^2\, y\,(L - y)(L - 2y)}{L^2},
+$$
+
+so the solution (2) is concave up while $y < L/2$ and concave down while $y > L/2$. Its single inflection point is at
+
+$$
+t^* = t_0 + \frac{\ln c}{r}, \qquad y(t^*) = \frac{L}{2}, \qquad y'(t^*) = \frac{rL}{4},
+\tag{3}
+$$
+
+where the growth rate $y'$ is largest. The curve is symmetric about the point $(t^*, L/2)$:
+
+$$
+y(t^* + s) + y(t^* - s) = L \quad \text{for every } s.
+$$
+:::
+
+**Connection with Mathews' form.** Mathews writes the curve as $y = L/(1 + c\,e^{a x})$ with $x$ the time. This is formula (2) with $a = -r$ and $t_0 = 0$, so $c = (L - y_0)/y_0$ where $y_0$ is the value of the curve at $x = 0$. A growing population therefore has $a < 0$, and the fitted value $-a$ is the growth rate $r$ of equation (1).
+
+## Fitting a Logistic Curve by Data Linearization
+
+We wish to fit the curve
+
+$$
+y = f(x) = \frac{L}{1 + c\,e^{a x}}
+\tag{4}
+$$
+
+to the data points $(x_1, y_1), (x_2, y_2), \ldots, (x_n, y_n)$. Rearranging (4) and taking logarithms,
+
+$$
+\frac{L}{y} - 1 = c\,e^{a x}
+\qquad\Longrightarrow\qquad
+\ln\!\left(\frac{L}{y} - 1\right) = \ln(c) + a x .
+$$
+
+The change of variables
+
+$$
+X = x, \qquad Y = \ln\!\left(\frac{L}{y} - 1\right)
+\tag{5}
+$$
+
+turns this into $Y = \ln(c) + a X$, which is "linearized": a straight line in the $XY$-plane. Apply (5) to the data, keeping the abscissas and transforming the ordinates, to get the points $(X_1, Y_1), \ldots, (X_n, Y_n)$, and fit the least squares line $Y = AX + B$ to them. Matching it with $Y = \ln(c) + aX$ gives
+
+$$
+a = A, \qquad c = e^{B}.
+\tag{6}
+$$
+
+::: {.callout-important appearance="simple"}
+## Least squares line — normal equations
+The line $Y = AX + B$ that minimises $\sum_{k=1}^{n} (Y_k - A X_k - B)^2$ solves
+
+$$
+\begin{aligned}
+\Bigl(\sum X_k^2\Bigr) A + \Bigl(\sum X_k\Bigr) B &= \sum X_k Y_k, \\
+\Bigl(\sum X_k\Bigr) A + n B &= \sum Y_k .
+\end{aligned}
+\tag{7}
+$$
+:::
+
+::: {.callout-warning appearance="simple"}
+## Caution — $L$ must be chosen first
+Data linearization needs the limiting value $L$ in advance (Mathews' Remark 1), and $L$ must be larger than every $y_k$, or $L/y_k - 1 \le 0$ and its logarithm is not a real number. A value suited to the problem is usually found by guessing. Different guesses give different curves (see the table after Example 4), and the line minimises the squared errors in $Y = \ln(L/y - 1)$, not in $y$, so it is not the least squares curve for the original data.
+:::
+
+### Example 1 — U.S. population 1900–1990 with $L = 800$ million
+
+Use data linearization to fit the curve (4) to the population of the United States in July of each census decade, 1900 to 1990. Mathews' data (the U.S. Census Bureau's historical national population estimates for July 1) are:
+
+| Date | Population |
+|------|-----------:|
+| 1900 July | 76094000 |
+| 1910 July | 92407000 |
+| 1920 July | 106461000 |
+| 1930 July | 123076741 |
+| 1940 July | 132122446 |
+| 1950 July | 152271417 |
+| 1960 July | 180671158 |
+| 1970 July | 205052174 |
+| 1980 July | 227224681 |
+| 1990 July | 249464396 |
+
+Mathews enters the populations in millions and, for illustration, chooses the limiting population $L = 800$ million, which is larger than the largest value $249.464396$. He also shifts the abscissas to the left before fitting; here time is measured from 1900, $X = t - 1900$.
+
+**Step 1**: Transform the data with (5).
+
+| Year $t$ | $X_k = t - 1900$ | $y_k$ (millions) | $L/y_k - 1$ | $Y_k = \ln(L/y_k - 1)$ |
+|---|---:|---:|---:|---:|
+| 1900 | 0 | 76.094000 | 9.513312 | 2.252692 |
+| 1910 | 10 | 92.407000 | 7.657353 | 2.035666 |
+| 1920 | 20 | 106.461000 | 6.514489 | 1.874029 |
+| 1930 | 30 | 123.076741 | 5.500010 | 1.704750 |
+| 1940 | 40 | 132.122446 | 5.054989 | 1.620376 |
+| 1950 | 50 | 152.271417 | 4.253777 | 1.447807 |
+| 1960 | 60 | 180.671158 | 3.427934 | 1.231958 |
+| 1970 | 70 | 205.052174 | 2.901446 | 1.065209 |
+| 1980 | 80 | 227.224681 | 2.520744 | 0.924554 |
+| 1990 | 90 | 249.464396 | 2.206870 | 0.791575 |
+
+**Step 2**: Form the sums for the normal equations (7), with $n = 10$ (computed from the unrounded $Y_k$):
+
+$$
+\sum X_k = 450, \quad \sum X_k^2 = 28500, \quad \sum Y_k = 14.9486167, \quad \sum X_k Y_k = 539.8733648 .
+$$
+
+**Step 3**: Solve the normal equations
+
+$$
+\begin{aligned}
+28500\,A + 450\,B &= 539.8733648, \\
+450\,A + 10\,B &= 14.9486167,
+\end{aligned}
+$$
+
+which gives
+
+$$
+A = \frac{10(539.8733648) - 450(14.9486167)}{10(28500) - 450^2} = -0.01609871, \qquad B = \frac{14.9486167 - 450A}{10} = 2.219304 .
+$$
+
+**Step 4**: Recover the coefficients with (6): $a = A = -0.01609871$ and $c = e^{B} = 9.200923$. Because the abscissas were shifted, the answer has $t - 1900$ in place of $x$:
+
+$$
+\boxed{\,f_1(t) = \frac{800}{1 + 9.200923\, e^{-0.01609871\,(t - 1900)}}\,}
+$$
+
+with $t$ in years and $f_1$ in millions. The coefficients are shown to seven significant figures; all values of $f_1$ on this page are computed with the unrounded ones.
+
+**Verification.** The values of $A$ and $B$ satisfy both normal equations to within rounding error of the 50-digit computation, and the line passes through the transformed points with residuals $Y_k - (AX_k + B)$ all smaller than $0.046$ in size. On the original data the curve fits as follows:
+
+| Year | Census (millions) | $f_1(t)$ | Census $- f_1(t)$ |
+|---|---:|---:|---:|
+| 1900 | 76.094000 | 78.4243 | −2.3303 |
+| 1910 | 92.407000 | 90.5718 | 1.8352 |
+| 1920 | 106.461000 | 104.3288 | 2.1322 |
+| 1930 | 123.076741 | 119.8225 | 3.2542 |
+| 1940 | 132.122446 | 137.1634 | −5.0410 |
+| 1950 | 152.271417 | 156.4368 | −4.1654 |
+| 1960 | 180.671158 | 177.6923 | 2.9788 |
+| 1970 | 205.052174 | 200.9342 | 4.1180 |
+| 1980 | 227.224681 | 226.1115 | 1.1132 |
+| 1990 | 249.464396 | 253.1107 | −3.6463 |
+
+The largest error is $5.04$ million (in 1940), and the sum of squared errors is $\sum (y_k - f_1(t_k))^2 = 107.06$ million². Mathews plots the least squares line in the $XY$-plane and graphs the curve $f_1$; the images of those plots have not survived in the archive.
+
+**The fitted curve as a solution of the logistic equation.** By the connection above, $f_1$ is the solution of
+
+$$
+y' = 0.01609871\, y \left(1 - \frac{y}{800}\right), \qquad y(1900) = \frac{800}{1 + 9.200923} = 78.4243,
+$$
+
+a growth rate of about $1.61\%$ per year when the population is small. A numerical solution of this initial value problem (an eighth-order Runge–Kutta method with tolerances $10^{-12}$) agrees with $f_1$ to within $5 \times 10^{-10}$ million at $t = 1950$, $2000$, $2037$, $2100$ and $2200$. By (3) the inflection point of $f_1$ is at $t^* = 1900 + \ln(9.200923)/0.01609871 = 2037.86$, where $f_1 = 400$ million and the growth rate reaches its largest value, $rL/4 = 3.2197$ million per year; the numerical solution crosses $y = 400$ at the same time to the digits shown. All the census years lie before $t^*$, where $f_1$ is concave up. The inflection point and the long-term limit of $800$ million are properties of the model with the guessed value $L = 800$, not predictions supported by the data.
+
+### Example 2 — Estimating the population in 2000
+
+Use the model $f_1$ of Example 1 to estimate the population in 2000.
+
+**Solution.** With $t - 1900 = 100$,
+
+$$
+f_1(2000) = \frac{800}{1 + 9.200923\, e^{-1.609871}} = 281.750944 \text{ million},
+$$
+
+about $281{,}750{,}944$ people. (With the rounded coefficients shown, the same formula gives $281.7509$ million.)
+
+### Example 3 — The census figure for 2000
+
+Mathews sends the reader to the U.S. Census Bureau's tables of population estimates to find the figure for July 1, 2000, and gives a table for readers who cannot connect. His table repeats the figures of Example 1, except that the 1990 entry reads $249{,}438{,}712$ instead of $249{,}464{,}396$, and adds the figure for July 1, 2000:
+
+$$
+P(2000) = 282{,}124{,}631 = 282.124631 \text{ million}.
+$$
+
+Example 1 is fitted to the figures listed with it, including $249.464396$ million for 1990.
+
+### Example 4 — How close is the prediction?
+
+Compare the prediction of Example 2 with the census figure of Example 3: (a) how close is it, and (b) what is the percentage error?
+
+**Solution.** (a) The difference is
+
+$$
+P(2000) - f_1(2000) = 282.124631 - 281.750944 = 0.373687 \text{ million},
+$$
+
+about $373{,}687$ people, so the model underestimates slightly.
+
+(b) The percentage error is
+
+$$
+100\,\frac{P(2000) - f_1(2000)}{P(2000)} = 0.132455\,\%.
+$$
+
+Both values agree with Mathews' results.
+
+### How much does the answer depend on $L$?
+
+Mathews ends the module with a caveat: various curves can be fitted, but they all depend on the value of $L$, which no one knows in advance. Repeating Example 1 with other guesses for $L$ gives:
+
+| $L$ | $a$ | $c$ | Sum of squared errors, 1900–1990 | $f(2000)$ | Error in 2000 |
+|---:|---:|---:|---:|---:|---:|
+| 500 | −0.018846 | 5.5172 | 120.7 | 272.03 | 3.58 % |
+| 600 | −0.017501 | 6.7345 | 103.6 | 276.48 | 2.00 % |
+| 700 | −0.016668 | 7.9646 | 102.8 | 279.53 | 0.92 % |
+| 800 | −0.016099 | 9.2009 | 107.1 | 281.75 | 0.13 % |
+| 900 | −0.015686 | 10.4407 | 112.8 | 283.44 | −0.47 % |
+| 1000 | −0.015372 | 11.6826 | 118.8 | 284.77 | −0.94 % |
+
+(The error is $100\,(P(2000) - f(2000))/P(2000)$, so a negative value is an overestimate.) All six curves fit the 1900–1990 data with sums of squared errors between $102.8$ and $120.7$ million², yet their predictions for 2000 range from $272.03$ to $284.77$ million and increase with $L$ across the table. The close prediction of Example 2 depends on the choice $L = 800$. Among these six guesses the smallest sum of squared errors comes with $L = 700$, not with the best prediction. None of these curves is chosen to minimise the errors in $y$; the second method is.
+
+## True Least Squares
+
+Mathews' Remark 2 describes the second method: let the computer find all three parameters, $L$ included, by true least squares, starting from good estimates. As far as their surviving text shows, the module's worked solutions use only the data linearization model $f_1$, so the computation below is new, on the data of Example 1.
+
+The least squares logistic curve minimises the sum of squared errors in $y$,
+
+$$
+E(L, c, a) = \sum_{k=1}^{n} \left( y_k - \frac{L}{1 + c\,e^{a X_k}} \right)^2 .
+\tag{8}
+$$
+
+Setting $\partial E/\partial L = \partial E/\partial c = \partial E/\partial a = 0$ gives three equations that are nonlinear in $c$ and $a$, so they are solved iteratively. A standard choice is the *Gauss–Newton* method. Write $\mathbf{p} = (L, c, a)$, let $\mathbf{r}$ be the vector of residuals $r_k = y_k - f(X_k; \mathbf{p})$, and let $\mathbf{J}$ be the $n \times 3$ matrix of partial derivatives of $f(X_k; \mathbf{p})$:
+
+$$
+\frac{\partial f}{\partial L} = \frac{1}{1 + c\,e^{aX_k}}, \qquad
+\frac{\partial f}{\partial c} = -\frac{L\,e^{aX_k}}{(1 + c\,e^{aX_k})^2}, \qquad
+\frac{\partial f}{\partial a} = -\frac{L\,c\,X_k\,e^{aX_k}}{(1 + c\,e^{aX_k})^2}.
+$$
+
+Each step replaces $f$ by its linear approximation in $\mathbf{p}$ and solves the resulting linear least squares problem:
+
+$$
+\mathbf{p}_{k+1} = \mathbf{p}_k + \Delta\mathbf{p}_k, \qquad
+\mathbf{J}^{T}\mathbf{J}\,\Delta\mathbf{p}_k = \mathbf{J}^{T}\mathbf{r}.
+\tag{9}
+$$
+
+### Example 5 — Least squares logistic curve for the 1900–1990 data (new)
+
+Fit the curve $y = L/(1 + c\,e^{a(t - 1900)})$ to the census data of Example 1 by minimising (8), starting from the data linearization result $L = 800$, $c = 9.200923$, $a = -0.01609871$.
+
+**Steps**: The Gauss–Newton iteration (9), computed in 50-digit arithmetic, gives
+
+| $k$ | $L$ | $c$ | $a$ | $E(L, c, a)$ |
+|---:|---:|---:|---:|---:|
+| 0 | 800.0000 | 9.200923 | −0.01609871 | 107.062064 |
+| 1 | 596.9479 | 6.700646 | −0.01710307 | 206.848748 |
+| 2 | 650.8369 | 7.368261 | −0.01702597 | 102.723252 |
+| 3 | 650.0247 | 7.358331 | −0.01706751 | 102.060097 |
+| 4 | 650.0275 | 7.358398 | −0.01706758 | 102.060097 |
+| 5 | 650.0271 | 7.358394 | −0.01706758 | 102.060097 |
+
+The first step overshoots and nearly doubles the error; from the second step on, the error decreases at every step to its minimum, and from $k = 5$ the iterates no longer change in the digits shown. The least squares curve is
+
+$$
+\boxed{\,f_2(t) = \frac{650.0271}{1 + 7.358394\, e^{-0.01706758\,(t - 1900)}}\,}
+$$
+
+with $E = 102.0601$ million², less than the $107.0621$ million² of $f_1$.
+
+**Verification.** Solving $\nabla E = \mathbf{0}$ directly with a Newton root finder, from a different starting point, gives the same $L$, $c$ and $a$ to $16$ digits. The Hessian matrix of $E$ there has eigenvalues $6.78 \times 10^{-4}$, $819.67$ and $1.106 \times 10^{9}$, all positive, so the point is a local minimum. The eigenvector of the very small first eigenvalue points almost exactly along the $L$ axis, so $E$ changes little when $L$ changes: the data determine $L$ only weakly. For example, fixing $L = 800$ and choosing $c$ and $a$ by least squares raises $E$ only from $102.06$ to $106.50$ million². The curve fits as follows:
+
+| Year | Census (millions) | $f_2(t)$ | Census $- f_2(t)$ |
+|---|---:|---:|---:|
+| 1900 | 76.094000 | 77.7694 | −1.6754 |
+| 1910 | 92.407000 | 90.2336 | 2.1734 |
+| 1920 | 106.461000 | 104.3313 | 2.1297 |
+| 1930 | 123.076741 | 120.1588 | 2.9179 |
+| 1940 | 132.122446 | 137.7812 | −5.6587 |
+| 1950 | 152.271417 | 157.2211 | −4.9497 |
+| 1960 | 180.671158 | 178.4484 | 2.2228 |
+| 1970 | 205.052174 | 201.3706 | 3.6816 |
+| 1980 | 227.224681 | 225.8272 | 1.3975 |
+| 1990 | 249.464396 | 251.5884 | −2.1240 |
+
+**Prediction for 2000.** With unrounded coefficients, $f_2(2000) = 278.3600$ million, which is $3.7646$ million, or $1.3344\%$, below the census figure $282.124631$ million. The least squares curve fits the 1900–1990 data better than $f_1$ but predicts 2000 less well: a smaller error on past data does not guarantee a better extrapolation. As a solution of the logistic equation, $f_2$ has growth rate $r = 0.01706758$ per year, carrying capacity $650.0271$ million and, by (3), its inflection point at $t^* = 2016.94$.
+
+::: {.callout-warning appearance="simple"}
+## Caution — starting values
+The iteration needs good estimates, as Mathews warns. Started from the data linearization fits for the guesses $L = 260$, $300$, $400$, $500$, $600$, $700$, $800$ and $1000$, the undamped Gauss–Newton iteration (9) reached the same minimum each time. Started from the fits for $L = 1100$, $1200$, $1300$, $1400$, $1500$, $2000$, $3000$ and $5000$, it broke down: the iterates left the neighbourhood of the minimum, in most of these runs with $L$ running off to huge positive or negative values, and the matrix $\mathbf{J}^{T}\mathbf{J}$ became numerically singular.
+:::
