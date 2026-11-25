@@ -1,6 +1,6 @@
 ---
 name: review-animations
-description: "Use whenever Julia animation pages under pages/numerical-methods need checking, auditing or re-reviewing - a newly built batch from the animation-page skill (\"review batch 2\"), a re-review after fixes, named pages, or all of them. Directs one independent reviewer subagent per page (is each implementation correct, does each page match its animation, is it faithful to Mathews), has Error and Misleading findings checked independently, and writes a report. Changes nothing under version control; not for fixing (use animation-page for that)."
+description: "Use whenever Julia animation pages under pages/numerical-methods need checking, auditing or re-reviewing - a newly built batch from the animation-page skill (\"review batch 2\"), a re-review after fixes, named pages, or all of them. Directs one independent reviewer subagent per page (is each implementation correct, does each page match its animation, is it faithful to Mathews), has Error and Misleading findings checked independently, and writes a report. Also reviews the flat text-only pages of a text-only batch, checking every claim and worked example. Changes nothing under version control; not for fixing (use animation-page for that)."
 argument-hint: "[all | batch=<N> | <page-slug> ... | \"<index section title>\"] [out=<report folder>]"
 ---
 
@@ -12,7 +12,7 @@ This is a review. Nothing under version control is changed, and nothing is fixed
 
 **Scope for this run:** $ARGUMENTS
 
-If the scope above is empty or an unfilled placeholder, take the scope from the user's message, and if none is stated, ask; a review of every page starts dozens of subagents, so treat `all` as the scope only when the user says so. `all` means every page that has animations. Otherwise the scope is a list of page slugs (folder names such as `bisection-method`), `batch=<N>` for the pages of batch N in `plans/numerical-methods-animation-plan.md`, or the title of a section in `pages/numerical-methods/index.qmd`, meaning the animation pages listed in that section. A page that already has a finished report from an earlier run is skipped unless it is named explicitly, so an interrupted run can be resumed by running the same scope again.
+If the scope above is empty or an unfilled placeholder, take the scope from the user's message, and if none is stated, ask; a review of every page starts dozens of subagents, so treat `all` as the scope only when the user says so. `all` means every page that has animations. Otherwise the scope is a list of page slugs (folder names such as `bisection-method`, or flat page names such as `lu-factorization`), `batch=<N>` for the pages of batch N in `plans/numerical-methods-animation-plan.md`, or the title of a section in `pages/numerical-methods/index.qmd`, meaning the animation pages listed in that section. A batch whose rows are marked `<N> (text)` in the plan's page table is a text-only batch. Its pages are flat `.qmd` files with no animations, and they are reviewed in text-only mode (see "Text-only pages" below). A page that already has a finished report from an earlier run is skipped unless it is named explicitly, so an interrupted run can be resumed by running the same scope again.
 
 The arguments may also include `out=<folder>`, the report folder for this run; call it `$OUT` below. If it is not given, use `reviews/<scope>-<YYYY-MM-DD>` (for example `reviews/batch-1-2026-11-25`). Use a new folder for each batch and each re-review round, for example `out=reviews/batch-1` and then `out=reviews/batch-1-r2`, so that earlier rounds are kept. The nine review rounds of the first 53 pages were removed from the working tree after they were merged; they are in git history (the last commit containing them is `05cb9ba`), and like any earlier round they are not read before this round's findings are final. The skip-if-finished rule applies only within `$OUT`.
 
@@ -35,7 +35,7 @@ Each animated topic is a folder `pages/numerical-methods/<slug>/` holding `index
 
 Most scripts produce one GIF and are named after it (`bisectionaa.jl` makes `bisectionaa.gif`). Six pages are different: a single table-driven script named `*_all.jl` produces one GIF per row of a case table (8 to 31 of them), with file names built at run time. Those six pages hold well over half of all the GIFs.
 
-Topic pages that are still flat `.qmd` files have no animations and are out of scope. So are the MATLAB `.m` files and the "Video Animations" sections on two pages, the "(Planned)" placeholder sections, and the "Legacy Animation Inventory (Stub)" sections.
+Topic pages that are still flat `.qmd` files have no animations. They are out of scope unless they are named explicitly or belong to a text-only batch, and then they are reviewed in text-only mode. The MATLAB `.m` files and the "Video Animations" sections on two pages, the "(Planned)" placeholder sections, and the "Legacy Animation Inventory (Stub)" sections.
 
 `.github/skills/animation-page/SKILL.md` is the brief the authoring agents work from. Read it. It tells you what they were asked to build and which habits they were given. Its **Accuracy standard** lists the mistakes nine earlier review rounds found; a page that breaks it is a finding at the severity its effect on a reader deserves, not automatically. The first 53 pages were built from an older version of that brief, which told agents to clamp diverging iterates to the axis limits.
 
@@ -86,11 +86,25 @@ The contact sheet is enough to follow the progression. Small legend text is only
 
 Some mismatches fall out of this phase with no judgment needed, and they go straight into the report as inventory findings: a script that fails to run, a committed GIF whose frames differ from what its script produces, a GIF or script on disk that the page never references, a page reference to a file that does not exist, a GIF that no script produces, and an animation page that the section index does not link. If frame hashes differ on nearly every page, suspect the environment before suspecting the GIFs, look at a few pairs side by side, and report a GIF as stale only when its content really differs.
 
+**Text-only pages.** A flat page has no scripts or GIFs, so for these pages skip the LFS, Julia, regeneration and frame steps. Its manifest records:
+
+- the page path;
+- its Mathews module, found as the `content-page` skill describes (the plan's table does not list modules for these pages), or a note that there is none;
+- the pages it links to;
+- these mechanical checks, whose failures go straight into the report as inventory findings:
+  - control characters in the source (`grep -nP '[\x07-\x0d]'`, excluding ordinary line ends). A tab inside math usually means a LaTeX command lost its `\t`, as in `\tag` or `\tfrac`.
+  - any leftover "(Planned)" section, "Animation Focus" block or "Legacy Animation Inventory (Stub)";
+  - any `localhost` link, which is dead on the published site;
+  - any code block on the page, which the site would try to execute;
+  - any link to a page that does not exist.
+
+The Python path is still needed, because the reviewer recomputes every example.
+
 ## Phase 2: one reviewer per page
 
 Give each page to a fresh subagent. Reviewing a page takes close reading of code, independent computation and looking at many images, and doing that for dozens of pages in your own context would crowd out the judgment you need for directing. Run several reviewers at a time.
 
-A reviewer starts with nothing but your brief, so the brief carries everything it needs: the page folder, the path to that page's prepared evidence and manifest, the commands for running Julia with the right load path, the rule about never running scripts in place, the rule not to run MATLAB or quarto, and the whole of the "Review standard" section below. Hand that section over in full rather than summarising it. The parts that prevent a shallow review are the parts a summary drops.
+A reviewer starts with nothing but your brief, so the brief carries everything it needs: the page folder, the path to that page's prepared evidence and manifest, the commands for running Julia with the right load path, the rule about never running scripts in place, the rule not to run MATLAB or quarto, and the whole of the "Review standard" section below. For a text-only page, the brief gives the page file instead of a folder and says that the page is text-only. It also gives the module path from the manifest; the Julia commands are not needed. Hand that section over in full rather than summarising it. The parts that prevent a shallow review are the parts a summary drops.
 
 The six table-driven pages need a different shape of review. The algorithm is shared, so it is checked once. What multiplies is the case table: every row's function, interval and parameters has to agree with the page's heading and caption for that case and with the title visible in that case's GIF. If one page is too much for one reviewer, split it by case range and make one of the reviewers responsible for the shared algorithm. Two of these pages carry copies of a script with the same file name, so have a reviewer diff them and say whether they have drifted apart.
 
@@ -99,6 +113,8 @@ The six table-driven pages need a different shape of review. The algorithm is sh
 1. Copy one pilot page's folder into scratch.
 2. Introduce two errors into the copy: one quoted number that is wrong in the third significant digit, and one behaviour sentence that the computed sequence contradicts. Record both in your notes.
 3. Point that pilot reviewer at the copy.
+
+For a text-only batch the pilot page is a flat page, so copy the `.qmd` file instead of a folder. Plant the number in a worked example's intermediate step or result, not in its problem statement. Plant the behaviour sentence where the computation contradicts it, such as a convergence or uniqueness claim, or a verification row that does not check out.
 
 If the reviewer misses either planted error, the brief needs fixing. That page is then reviewed again from the real folder, and the planted errors never appear in the report. If the calibration works, continue with the remaining pages without waiting for anyone's go-ahead.
 
@@ -162,6 +178,16 @@ The archive is not ground truth. Anything you take from it is a claim to compute
 
 A departure that matters to a reader is a finding of kind **Fidelity**. Examples are a different example function from Mathews' with no reason given, or an archive case the page silently drops. Report it with the same severities and the same evidence as any other finding. Say in your report whether you consulted the archive.
 
+### If your page is text-only
+
+Your brief says if the page is a flat `.qmd` with no animations. In that case Questions 1 and 2 become a single question: **is everything the page says true?** The two kinds of finding are **Page text** and **Fidelity**.
+
+- **The claim ledger covers the whole page.** That means every definition, theorem statement, algorithm and formula, and every worked example: its problem statement, each intermediate step, the final answer and every row of its verification table. Write the ledger before forming a view, as above.
+- **Recompute every example independently** with Python, starting from the problem statement and not from the page's intermediate values. Use exact arithmetic (sympy fractions) wherever the page gives fractions. A verification table proves nothing unless you recompute both sides of every row yourself.
+- **Check each theorem's hypotheses as stated.** A theorem missing a hypothesis it needs is an Error. So is a textbook result attached to an example it does not fit, such as a convergence condition, an operation count or an error bound.
+- **Check each algorithm on the page by running it as written** on one example. That catches an off-by-one in an index or a sign slip that reading misses.
+- **Broken markup counts.** Math that would not render, such as a lost backslash or a `\tag` outside `$$`, is a finding at the severity of what the reader loses. You do not run quarto, so judge it from the source.
+
 ### What is not a finding
 
 Code style, naming, performance, choice of colours, a valid formulation that differs from the textbook's, suggestions for better teaching, and content the page does not yet have. A cosmetic issue becomes a finding only when it makes the animation misleading or unreadable. Padding the report with these makes the real errors harder to find.
@@ -192,6 +218,6 @@ Write the report to `$OUT` at the repository root (default `reviews/numerical-me
 
 Each page file holds the confirmed findings first and in order of severity, then anything unresolved, then the inventory results from Phase 1, then the claim ledger and implementation checks as supporting detail.
 
-The `README.md` is what Jason reads first, so lead with what he most needs: how many pages were reviewed and how many were not and why, the total findings by severity, and the most serious findings across the whole section. Follow that with a table of one row per page (scripts, GIFs, errors, misleading, minor, status), and then any pattern that recurs across pages, such as a class of mistake the authoring agents made repeatedly, because a pattern points to errors beyond the ones individually found.
+The `README.md` is what Jason reads first, so lead with what he most needs: how many pages were reviewed and how many were not and why, the total findings by severity, and the most serious findings across the whole section. Follow that with a table of one row per page (scripts, GIFs, errors, misleading, minor, status; "—" for the scripts and GIFs of a text-only page), and then any pattern that recurs across pages, such as a class of mistake the authoring agents made repeatedly, because a pattern points to errors beyond the ones individually found.
 
 Before you finish, confirm with `git status` that no tracked file has changed and that the only new path is `$OUT`. Uncommitted changes that were already present when the run started do not count, but report them. Do not commit anything. Then tell Jason, in a few sentences, where the report is, the headline numbers, the handful of findings he should look at first, and anything that could not be reviewed.

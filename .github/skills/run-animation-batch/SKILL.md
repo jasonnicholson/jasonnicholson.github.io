@@ -1,6 +1,6 @@
 ---
 name: run-animation-batch
-description: "Use when asked to run, continue or finish a batch of the numerical-methods animation plan (plans/numerical-methods-animation-plan.md), e.g. \"run batch 1\", \"do the next animation batch\", \"resume batch 4\". Directs the whole batch end to end: writes the text of skeleton pages (content-page), builds the animations (animation-page), reviews them independently (review-animations), fixes and re-reviews until no Error or Misleading findings remain, and commits each step on a batch branch. Not for a single quick GIF fix (use animation-page directly)."
+description: "Use when asked to run, continue or finish a batch of the numerical-methods animation plan (plans/numerical-methods-animation-plan.md), e.g. \"run batch 1\", \"do the next animation batch\", \"resume batch 4\". Directs the whole batch end to end: writes the text of skeleton pages (content-page), builds the animations (animation-page), reviews them independently (review-animations), fixes and re-reviews until no Error or Misleading findings remain, and commits each step on a batch branch. Also runs the plan's text-only batches (content-page plus a text-only review, no animations). Not for a single quick GIF fix (use animation-page directly)."
 argument-hint: "<batch number> | next"
 ---
 
@@ -10,7 +10,14 @@ You are directing one batch of the plan in `plans/numerical-methods-animation-pl
 
 **Batch for this run:** $ARGUMENTS
 
-If that is empty or a placeholder, take the batch from the user's message. `next` means the lowest-numbered batch whose pages are not all done (a page is done when it is a folder with an `## Animations` section, or, for a "—" page, when it has no "(Planned)" sections). If nothing settles it, ask.
+If that is empty or a placeholder, take the batch from the user's message. `next` means the lowest-numbered batch whose pages are not all done. An animation page is done when it is a folder with an `## Animations` section. A text-only page (its batch is marked `<N> (text)` in the plan's page table) is done when it has no "(Planned)" sections and its plan row says it is done. A batch whose plan row lists tasks besides building pages (batch 14, for example) is run only when it is named by number. If nothing settles it, ask.
+
+**Text-only pages** stay flat `.qmd` files. They get no animations, they never move into a folder, and they need no change to the index. Where a phase below treats them differently, it says so. If every page of the batch is text-only, skip the Julia and GIF checks of Phase 0 and all of Phase 2.
+
+**Batch tasks.** If the plan's "Remaining batches" row for this batch lists tasks other than building or fixing pages, such as retiring a page, changing the index, adding an alias or adding `references.bib` entries, read that row as part of the batch's definition:
+- You make the index, alias, folder and `references.bib` changes yourself.
+- Page edits go through the skill the row names.
+- Commit each task separately, with a message that names it.
 
 ## Why this is set up the way it is
 
@@ -38,12 +45,14 @@ The first 53 animation pages were built quickly and then needed nine independent
 
 For each batch page whose text is a skeleton, give a fresh subagent:
 - the page path and its archive module (from the plan or the page's legacy stub);
-- the instruction to read `.github/skills/content-page/SKILL.md` and follow it in full, including its Accuracy standard and claim ledger, and to open the page with `## Description` because the page will be animated;
+- the instruction to read `.github/skills/content-page/SKILL.md` and follow it in full, including its Accuracy standard and claim ledger. A page that will be animated opens with `## Description`; a text-only page does not, and it stays flat;
 - its scratch folder and ledger path; no git, no quarto, no MATLAB, no edits outside its page.
 
 When it reports, read the ledger as evidence: a number with no recorded computation is not done, so send it back with what is missing. Spot-check one or two numbers yourself. Render the page and commit it ("Write <title> page text (batch <N>)").
 
 ## Phase 2: animations
+
+Skip this phase for text-only pages.
 
 **Pilot first.** Build one page alone, preferably the one with a surviving legacy animation or the most typical of the batch. Brief the subagent to read `.github/skills/animation-page/SKILL.md` and follow it in full for this one page, with these overrides: do not edit `pages/numerical-methods/index.qmd` (you do), do not commit, do not run quarto. Give it the page path, the legacy entry from the plan, its scratch folder, the ledger path, the frame tool (`.github/skills/animation-page/scripts/giftools.jl`) and the Python path.
 
@@ -57,11 +66,13 @@ If something is missing, fix the brief and redo the pilot. Then launch the remai
 
 ## Phase 3: independent review
 
-Invoke the `review-animations` skill with `batch=<N> out=reviews/batch-<N>`. Add one instruction to it: because this batch's page text was written in Phase 1, each reviewer's claim ledger covers the **whole page**, including the worked examples, not only the Animations section and Description. The review commits nothing; when it finishes, commit its report folder ("Add batch <N> review").
+Invoke the `review-animations` skill with `batch=<N> out=reviews/batch-<N>`. Add one instruction to it: because this batch's page text was written in Phase 1, each reviewer's claim ledger covers the **whole page**, including the worked examples, not only the Animations section and Description. The skill reviews text-only pages in its text-only mode. Their ledger always covers the whole page, whether the text was written in Phase 1 or long before. The review commits nothing; when it finishes, commit its report folder ("Add batch <N> review").
 
 ## Phase 4: fix and re-review
 
 For each page with findings, give a fresh fixer subagent the page's findings copied in full from the report (with any independent-check corrections, which take precedence), and the instruction to fix them under `animation-page` step 15 and its Accuracy standard: reproduce each finding before changing anything; fix it or record it as not reproduced with evidence; every changed sentence or number goes in a ledger with its computation; regenerate any changed GIF and confirm only expected files changed. Minor findings are fixed when reproduced; a purely cosmetic one may be deferred with a reason.
+
+For a text-only page, the fixer follows `.github/skills/content-page/SKILL.md` (its Accuracy standard and claim ledger) instead of `animation-page` step 15. The reproduce-first rule and the ledger rule are the same. The page stays flat and there are no GIFs. The fixer corrects what the findings name and does not rewrite the page around them. If the findings are so many that the page is wrong throughout, it stops and says so. Rewriting the page from the module with `content-page` is then a decision for you to record for Jason.
 
 Then give a **different** fresh subagent the original findings and the page's `git diff`, but not the fixer's ledger or reasoning, and ask it, for each finding, whether it is resolved, partly resolved or not resolved, by its own computation and its own look at the frames, plus any new problem in the changed text or GIFs. A checker shown the fixer's argument tends to agree with it; that is why it does not get it. If anything is unresolved, send the checker's notes back to the same fixer and check again; after two failed rounds, stop on that finding and leave it for Jason.
 
