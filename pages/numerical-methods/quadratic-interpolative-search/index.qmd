@@ -15,7 +15,7 @@ $$
 p_{\min} = p_0 + h_{\min}, \qquad h_{\min} = \frac{h\,(4y_1 - 3y_0 - y_2)}{2\,(2y_1 - y_0 - y_2)}.
 $$
 
-The search restarts from $p_0 = p_{\min}$, with $h$ equal to the distance from $p_{\min}$ to the nearest of the three old points. It stops when one of $y_0, y_1, y_2$ agrees with $f(p_{\min})$ to within a tolerance $\varepsilon$.
+The search restarts from $p_0 = p_{\min}$, with $h$ equal (after a step to the right) to the distance from $p_{\min}$ to the nearest of the three old points. It stops when one of $y_0, y_1, y_2$ agrees with $f(p_{\min})$ to within a tolerance $\varepsilon$.
 
 The module also covers **cubic interpolative search**, which uses derivative values explicitly. It fits a cubic $P$ to the values of $f$ and $f'$ at two points $p_0$ and $p_1 = p_0 + h$, and moves to the local minimum of the cubic, $p_2 = p_0 + \gamma h$, where
 
@@ -28,7 +28,7 @@ Then $(p_0, p_1)$ is replaced by $(p_1, p_2)$ and the step repeats. The cubic se
 
 ## Animations
 
-Both animations run Mathews' examples on $f(x) = \tfrac12 + x^5 - \tfrac45 x$, whose minimiser is $p = \sqrt{10}/5 \approx 0.6325$ (the dashed green line in both panels). The top panel keeps the picture of the graphs in Mathews' solutions of Examples 3 and 4: the graph of $f$ in magenta, red dots on the points the current step works from and a blue dot on the newest point. The bottom panel is new. It zooms on the current points and plots $f(x) - f(p)$, evaluated in high precision, so the steps stay visible after they have become too small to see in the top panel. Points are labelled with enough significant figures to tell them apart, so the labels gain digits as the steps shrink, and the last frame is held. The scripts run Mathews' two subroutines line by line in double precision, and every point they compute agrees with the Example 3 and Example 4 tables.
+Both animations run Mathews' examples on $f(x) = \tfrac12 + x^5 - \tfrac45 x$, whose minimiser is $p = \sqrt{10}/5 \approx 0.6325$ (the dashed green line, also in the bottom panel whenever $p$ lies in its window). The top panel keeps the picture of the graphs in Mathews' solutions of Examples 3 and 4: the graph of $f$ in magenta, red dots on the points the current step works from and a blue dot on the newest point. The bottom panel is new. It zooms on the current points and plots $f(x) - f(p)$, evaluated in high precision, so the steps stay visible after they have become too small to see in the top panel. Points are labelled with enough significant figures to tell them apart, so the labels gain digits as the steps shrink, and the last frame is held. The scripts run Mathews' two subroutines line by line in double precision, and every point they compute agrees with the Example 3 and Example 4 tables.
 
 Mathews' module has two animations, a quadratic search linked from Example 3 and a cubic search linked from Example 4. Both GIFs are lost: the archive keeps only their HTML pages. Cases 1 and 2 rebuild them from his subroutines and from the graphs of his Example 3 and Example 4 solutions, which survive (twelve graphs for Example 3, eight for Example 4); how many frames his GIFs had is not recorded. The parabola, the cubic, the slopes and the zoom panel are new. Examples 1 and 2, which run the same two searches on $x^2 - \sin x$, and the secant-method comparison in Example 2 are not animated.
 
@@ -146,16 +146,16 @@ The denominator $2(2y_1 - y_0 - y_2)$ of (5) is zero when the three points are c
 
 ### Restarting and stopping
 
-Mathews notes that $p_{\min}$ is a better approximation to $p$ than $p_0$, so the search replaces $p_0$ by $p_{\min}$ and repeats both processes with a new $h$. His subroutine takes the new step to be the distance from $p_{\min}$ to the nearest point of the old triple,
+Mathews notes that $p_{\min}$ is a better approximation to $p$ than $p_0$, so the search replaces $p_0$ by $p_{\min}$ and repeats both processes with a new $h$. His subroutine computes the new step as
 
 $$
-h_{\text{new}} = \min\bigl\{\,|h_{\min}|,\ |h_{\min} - h|,\ |h_{\min} - 2h|\,\bigr\},
+h_{\text{new}} = \min\bigl\{\,|h|,\ |h_{\min}|,\ \bigl|h_{\min} - |h|\bigr|,\ \bigl|h_{\min} - 2|h|\bigr|\,\bigr\},
 \tag{7}
 $$
 
-and uses $h_{\text{new}} = h_{\min}$ if this minimum is zero. The sign of $f'(p_{\min})$ then sets the direction of the next step. (The subroutine evaluates (7) after replacing $h$ by $|h|$, so the three numbers are the distances to $p_0$, $p_1$, $p_2$ only for a step to the right. Every outer step of Examples 1 and 3 goes to the right.)
+and uses $h_{\text{new}} = h_{\min}$ if this minimum is zero. The sign of $f'(p_{\min})$ then sets the direction of the next step. (For a step to the right, $h > 0$, the last three numbers are the distances to $p_0$, $p_1$, $p_2$, and for a bracketed triple the cap $|h|$ never binds, because $p_{\min}$ lies within $|h|/2$ of $p_1$; so $h_{\text{new}}$ is the distance from $p_{\min}$ to the nearest point of the old triple. For a bracketed step to the left, (7) gives $\min\{|h|, |h_{\min}|\}$ instead. Every outer step of Examples 1 and 3 goes to the right.)
 
-The subroutine stops on function values, not on the distance to $p$. After each vertex it computes $e_i = |y_i - f(p_{\min})|$ for $i = 0, 1, 2$. $\mathrm{Err}$ is the smallest nonzero $e_i$ found so far, starting from $\mathrm{Err} = 1$, and the search stops when $\mathrm{Err} \le \varepsilon$. It also stops after 50 outer steps, and each bracketing loop is limited to 50 passes.
+The subroutine stops on function values, not on the distance to $p$. After each vertex it computes $e_i = |y_i - f(p_{\min})|$ for $i = 0, 1, 2$. $\mathrm{Err}$ is the smallest nonzero $e_i$ found so far, starting from $\mathrm{Err} = 1$ (or $\mathrm{Err} = 0$ if all three $e_i$ are zero), and the search stops when $\mathrm{Err} \le \varepsilon$. It also stops after 50 outer steps, and each bracketing loop is limited to 50 passes.
 
 Mathews writes that the method uses the derivative only implicitly, through (4), and makes no explicit use of $f'$. His subroutine does evaluate $f'(p_0)$ once per outer step, but uses only its sign, to choose the direction.
 
@@ -279,7 +279,7 @@ $$
 
 The new step is the distance to $0.5$, $h = 0.0533333333$, and $\mathrm{Err} = 2.92 \times 10^{-2}$.
 
-**Step 2** (doubling, case ii): the triple $0.4466666667$, $0.5$, $0.5533333333$ has values $0.1604460919$, $0.13125$, $0.1092054735$, which decrease, so double: $q_{5,0} = p_0 + 2(0.1066666667) = 0.66$, with $f = 0.0972332576$, is lower again, so double once more: $q_{5,1} = 0.8733333333$, with $f = 0.3093759954$. The bracket is $(0.4466666667, 0.66, 0.8733333333)$ with $h = 0.2133333333$. Its vertex is $p_6 = 0.6023078449$, with $f(p_6) = 0.0974207564$. This value is higher than $f(0.66) = 0.0972332576$, and $p_6$ is farther from $p$ ($0.0302$) than $0.66$ is ($0.0275$). The vertex is not always the best point found so far. The new step is $h = 0.0576921551$, the distance to $0.66$, and $\mathrm{Err} = 1.87 \times 10^{-4}$.
+**Step 2** (doubling, case ii): the triple $0.4466666667$, $0.5$, $0.5533333333$ has values $0.1604460919$, $0.13125$, $0.1092054735$, which decrease, so double: $q_{5,0} = p_0 + 2(0.1066666667) = 0.66$, with $f = 0.0972332576$, is lower again, so double once more: $q_{5,1} = 0.8733333333$, with $f = 0.3093759954$. The bracket is $(0.4466666667, 0.66, 0.8733333333)$ with $h = 0.2133333333$. Its vertex is $p_6 = 0.6023078449$, with $f(p_6) = 0.0974207564$. This value is higher than $f(0.66) = 0.0972332576$, and $p_6$ is farther from $p$ ($0.0301$) than $0.66$ is ($0.0275$). The vertex is not always the best point found so far. The new step is $h = 0.0576921551$, the distance to $0.66$, and $\mathrm{Err} = 1.87 \times 10^{-4}$.
 
 **Step 3** (bracketed at once): the triple $0.6023078449$, $0.66$, $0.7176921551$ is bracketed without halving or doubling, and its vertex is $p_9 = 0.6317169944$. None of its $e_i$ is below $1.87 \times 10^{-4}$, so $\mathrm{Err}$ does not change.
 
@@ -561,7 +561,7 @@ This variant is not the textbook *successive parabolic interpolation*, which kee
 ## Implementation Notes
 
 - **Quadratic search, direction.** The subroutine evaluates $f'(p_0)$ once per outer step and uses only its sign. A version without derivatives must choose the direction from function values instead.
-- **Quadratic search, step rule.** Rule (7) gives the distance from $p_{\min}$ to the nearest old point only when $h > 0$, because the subroutine replaces $h$ by $|h|$ first. Every outer step in Examples 1 and 3 has $f'(p_0) < 0$ and therefore $h > 0$.
+- **Quadratic search, step rule.** Rule (7) gives the distance from $p_{\min}$ to the nearest old point for every bracketed step with $h > 0$. Because the subroutine replaces $h$ by $|h|$ first, a bracketed step to the left gets $\min\{|h|, |h_{\min}|\}$ instead. Every outer step in Examples 1 and 3 has $f'(p_0) < 0$ and therefore $h > 0$.
 - **Quadratic search, bracketing.** Check that the triple really is bracketed before using (5). The loop can also end because $|h| \le \delta$, and the vertex of an unbracketed or collinear triple is meaningless or undefined.
 - **Quadratic search, stopping.** $\mathrm{Err}$ compares function values, which agree to about the square of the distance to $p$ (Example 3: $8.1 \times 10^{-13}$ in $f$ against $5.7 \times 10^{-7}$ in $x$). A tolerance $\varepsilon$ on $f$ therefore corresponds to a distance of roughly $\sqrt{2\varepsilon / f''(p)}$ (general).
 - **Cubic search, starting step.** Formula (8) needs $f'(a) \ne 0$, and with $f(b) > f(a)$ it sends $p_1$ outside $[a, b]$ (both examples). The method does not keep a bracket, and $p_1$ can land where $f$ is not convex, as in Example 4.
