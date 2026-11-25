@@ -1,9 +1,9 @@
 ---
 title: "van der Pol System"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -11,13 +11,45 @@ Source inspiration: [@mathewsSite].
 
 The **van der Pol equation** $x'' - \mu (1 - x^2)\, x' + x = 0$, with a constant $\mu \ge 0$, is an oscillator whose damping depends on the displacement $x$. For $\mu > 0$, while $|x| < 1$ the damping coefficient $-\mu(1 - x^2)$ is negative and pumps energy in, and while $|x| > 1$ it is positive and drains energy out. For $\mu = 0$ the equation is the harmonic oscillator $x'' + x = 0$, whose solutions other than $x = 0$ run round circles in the phase plane. For every $\mu > 0$ there is exactly one periodic solution, a closed curve called the **limit cycle**, and every other solution except the equilibrium at the origin winds onto it, from outside or from inside.
 
-For $\mu > 0$ Mathews computes the solutions numerically. With $y = x'$ the equation becomes the first-order system $x' = y$, $y' = -x + \mu(1 - x^2)\, y$, and Mathews solves that system with the fourth-order [Runge-Kutta method](runge-kutta-method/) in vector form. With the vector $\mathbf{Z} = (x, y)$, the right-hand side $\mathbf{F}(t, \mathbf{Z}) = \bigl(y,\ -x + \mu(1 - x^2)\, y\bigr)$ and a fixed step $h = (b - a)/n$, each step is
+For $\mu > 0$ Mathews computes the solutions numerically. With $y = x'$ the equation becomes the first-order system $x' = y$, $y' = -x + \mu(1 - x^2)\, y$, and Mathews solves that system with the fourth-order [Runge-Kutta method](../runge-kutta-method/) in vector form. With the vector $\mathbf{Z} = (x, y)$, the right-hand side $\mathbf{F}(t, \mathbf{Z}) = \bigl(y,\ -x + \mu(1 - x^2)\, y\bigr)$ and a fixed step $h = (b - a)/n$, each step is
 
 $$
 \mathbf{Z}_{j+1} = \mathbf{Z}_j + \frac{1}{6}\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr),
 $$
 
 where the four vectors $\mathbf{k}_i$ are $h$ times $\mathbf{F}$ evaluated at the start, twice at the middle and once at the end of the step (equation (5) below). Mathews' module has six examples, $\mu = 0, \tfrac{1}{16}, \tfrac14, \tfrac12, 1, 4$, and plots the solution of Example 1 as a path in the $xy$-plane. Example 1 ($\mu = 0$) survives in full: it starts at $(x, y) = (0, 3)$ and takes $n = 400$ steps over one turn, $0 \le t \le 6.283185$. For Examples 2 to 6 the archive keeps only the value of $\mu$, so this page keeps Example 1's starting point and integrates over $0 \le t \le 60$ with $n = 6000$ steps ($h = 0.01$). Every number below has been recomputed.
+
+## Animations
+
+Each animation below traces **Runge-Kutta solutions (5) in the phase plane**, the $xy$-plane in which Mathews draws his solutions: the computed points $\mathbf{Z}_j$ are joined by straight segments, as in his plot, and a large dot marks the current point. Cases 1 and 3 also plot the computed $x$ and $y$ against $t$. The limit cycles (black, dashed) are computed separately, with the Runge-Kutta method at $h = 0.001$ run for $200$ time units from $(2, 0)$ before one period is drawn. Maxima of $x$ and the other marked times are located by bisection on the size of one Runge-Kutta step from the last computed point, not read off the grid, and agree with the values in the examples below. The last frame of each animation is held for about three seconds.
+
+Mathews' module links no animation, and his animation archive has none for the van der Pol equation, so all three animations are new, with no Mathews original. Case 1 animates Example 1 with Mathews' values and his plot style (magenta, axes marked from $-3$ to $3$, aspect ratio $1$). Cases 2 and 3 animate Examples 2 to 6, whose intervals, starting points and plots are lost, with this page's choices: the start $(0, 3)$ over $0 \le t \le 60$ with $n = 6000$, together with the run from $(0, 0.5)$ of "Starting inside the cycle". Every example of the module is animated; not animated are the page's verification tables (Example 1's errors for $n = 100$ to $1600$ and the comparison of Examples 2 to 6 with the order-8 reference solver), which are checks rather than pictures.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 1: $\mu = 0$, from $(0, 3)$ over $0 \le t \le 6.283185$, $n = 400$
+
+**Behavior:** Four steps per frame, the computed points run clockwise round the circle of radius $3$ from its top point $(0, 3)$ and close it up after $400$ steps at $(-9.31101 \times 10^{-7},\ 2.99999999987)$, Mathews' printed end point $\{-9.31101 \times 10^{-7}, 3.\}$. In the time panel they lie on $3 \sin t$ and $3 \cos t$. The error panel shows, on a logarithmic scale, the distance of each point from the exact point $(3 \sin t_j, 3 \cos t_j)$, which never decreases and reaches $9.563 \times 10^{-9}$ at the end, and the amount by which its distance from the origin falls short of $3$, which also never decreases and reaches $1.252 \times 10^{-10}$: the method loses a tiny amount of energy each step, as the verification of Example 1 explains.
+
+[Julia source](vanderpolaa.jl)
+
+![Runge-Kutta solution of x′′ + x = 0 (μ = 0) from (x, y) = (0, 3) with n = 400 steps over 0 ≤ t ≤ 6.283185, traced four steps per frame in Mathews' style (magenta, axes −3 to 3, aspect ratio 1) clockwise round the dashed exact circle of radius 3 to the end point (−9.31101e−7, 2.99999999987), with x(t) and y(t) on the exact 3 sin t and 3 cos t, and on a log scale the error, growing to 9.563e−9, and the shrink of the distance from the origin, growing to 1.252e−10](vanderpolaa.gif)
+
+### Case 2 — Examples 2 to 5: $\mu = \tfrac{1}{16}, \tfrac14, \tfrac12, 1$, from $(0, 3)$ and $(0, 0.5)$, $h = 0.01$ on $0 \le t \le 60$
+
+**Behavior:** The four examples advance together, $0.25$ time units per frame. In each panel the run from $(0, 3)$ (magenta) winds inwards onto the limit cycle from outside and the run from $(0, 0.5)$ (blue) winds outwards onto it from inside. The diamonds on the positive $x$-axis are the maxima of $x$: from outside they decrease and from inside they increase towards the cycle's largest $x$, which the panel title prints with the factor $\rho$ by which the gap shrinks per turn. The larger $\mu$, the faster the approach. For $\mu = \tfrac{1}{16}$ ($\rho = 0.6751$) the tenth maxima, $2.014879$ and $1.692056$ near $t = 58.12$, are still $0.0148$ above and $0.308$ below the cycle's $2.000041$, and the run from inside is a slowly widening spiral; for $\mu = \tfrac14$ the tenth maxima are $2.000644$ and $2.000637$; for $\mu = \tfrac12$ both runs equal the cycle's $2.002488$ to seven figures from their sixth and seventh maxima, and for $\mu = 1$ they equal $2.008620$ from their third and fourth. As $\mu$ grows the cycle changes from a near circle of radius $2$ into a lopsided loop, with largest $|y|$ $2.6784$ for $\mu = 1$.
+
+[Julia source](vanderpolbb.jl)
+
+![Four phase-plane panels, one each for μ = 1/16, 1/4, 1/2 and 1, in which Runge-Kutta solutions of x′ = y, y′ = −x + μ(1 − x²)y with h = 0.01 from (0, 3) (magenta, outside) and (0, 0.5) (blue, inside) wind onto the dashed limit cycle over 0 ≤ t ≤ 60, with diamonds at the maxima of x closing in on the cycle's largest x (2.000041, 2.000644, 2.002488, 2.008620) from both sides; the approach is slowest for μ = 1/16, where the tenth maxima are still 2.014879 and 1.692056, and fastest for μ = 1](vanderpolbb.gif)
+
+### Case 3 — Example 6: $\mu = 4$, the relaxation oscillation, from $(0, 3)$ and $(0, 0.5)$, $h = 0.01$ on $0 \le t \le 60$
+
+**Behavior:** Both starts are inside this cycle, $0.2$ time units per frame. The run from $(0, 3)$ reaches its first maximum of $x$, $1.957$ at $t = 0.6541$, below the cycle's $2.023$, and its second, at $t = 10.47$, is on the cycle; the run from $(0, 0.5)$ joins it at its own second maximum, after which both repeat the same oscillation, the run from $(0, 0.5)$ $0.9736$ time units ahead. On the cycle $x$ drifts slowly from $2.023$ down to $1$ in $3.86$ time units (yellow band), while the path in the phase plane stays within $0.022$ of the curve $y' = 0$ (orange) for $1.5 \le x \le 2$; then $x$ falls from $1$ to $-1$ in only $0.829$ (red band), and during the fall $|y|$ peaks at $6.344$ at $x = -0.9805$ (star). The other half of the cycle is the mirror image. So the dots crawl along the slow parts and jump across the fast parts in about four frames, and $y(t)$ is a narrow spike on each fall.
+
+[Julia source](vanderpolcc.jl)
+
+![Runge-Kutta solutions of x′ = y, y′ = −x + 4(1 − x²)y with h = 0.01 from (0, 3) (magenta) and (0, 0.5) (blue) over 0 ≤ t ≤ 60, in the phase plane with the dashed limit cycle, the curve y′ = 0 and the lines x = ±1, beside x(t) and y(t): the runs reach the cycle at their second maxima of x and then repeat the relaxation oscillation, x drifting from 2.023 to 1 in 3.86 time units and falling from 1 to −1 in 0.829, with |y| peaking at 6.344 at x = −0.9805](vanderpolcc.gif)
 
 ## The van der Pol Equation
 
@@ -288,7 +320,7 @@ With the same step $h = 0.01$ the largest error grows with $\mu$, from $1.1 \tim
 
 ## Implementation Notes
 
-- **Step size.** The fixed-step method spends the same effort on the slow and the fast parts of a relaxation oscillation. For large $\mu$ an adaptive method such as the [Runge-Kutta-Fehlberg method](runge-kutta-fehlberg-method/) puts small steps only where the solution changes quickly.
+- **Step size.** The fixed-step method spends the same effort on the slow and the fast parts of a relaxation oscillation. For large $\mu$ an adaptive method such as the [Runge-Kutta-Fehlberg method](../runge-kutta-fehlberg-method/) puts small steps only where the solution changes quickly.
 - **Interval length.** How long to integrate depends on $\mu$: the gap to the cycle shrinks by the factor $\rho$ per turn, which is $0.675$ for $\mu = \tfrac{1}{16}$ but $8.6 \times 10^{-4}$ for $\mu = 1$.
 - **End of the interval.** A right end written to a few decimals, such as $6.283185$ for $2\pi$, shifts the exact end point; compare a computed value with the exact solution at the same $t$, as in Example 1.
 - **Symmetry check.** The system (2) is unchanged when $(x, y)$ is replaced by $(-x, -y)$, so the computed cycle should be symmetric about the origin; its largest and smallest $x$ agree to all the digits computed ($\pm 2.022963$ for $\mu = 4$).
