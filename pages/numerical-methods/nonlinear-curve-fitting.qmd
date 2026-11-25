@@ -7,24 +7,381 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Many data sets follow a curve rather than a line: a quantity that grows by a fixed factor per unit step, $y = c\,e^{ax}$, or one that scales like a power of $x$, $y = c\,x^{a}$. Given data points $(x_1, y_1), \ldots, (x_n, y_n)$, we want the constants $a$ and $c$. Both models are nonlinear in $a$, so fitting them by least squares directly leads to nonlinear equations for the coefficients.
 
-### Planned animation ideas
+The **data linearization method** avoids this. Taking logarithms turns either curve into a straight line $Y = AX + B$ in new variables: $X = x$, $Y = \ln y$ for the exponential, and $X = \ln x$, $Y = \ln y$ for the power function. The transformed points $(X_k, Y_k)$ are fitted with the [least-squares line](least-squares-lines/), whose coefficients solve the normal equations
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+$$
+\Bigl(\sum_{k=1}^{n} X_k^2\Bigr) A + \Bigl(\sum_{k=1}^{n} X_k\Bigr) B = \sum_{k=1}^{n} X_k Y_k, \qquad
+\Bigl(\sum_{k=1}^{n} X_k\Bigr) A + n B = \sum_{k=1}^{n} Y_k,
+$$
 
-## Derivation Notes (Planned)
+and the curve is recovered from $a = A$ and $c = e^{B}$. Mathews' module does this for an exponential fit (Example 1), a power fit (Example 2), and both fits to one data set, choosing the better one by the sum of squared residuals (Example 3). The line is the least-squares fit to the *logarithms* of the data, so the curve it gives is not, in general, the curve that minimises the squared errors in $y$ itself; the last section of this page computes those direct fits for comparison. Every fit on this page has been recomputed in 50-digit arithmetic.
 
-Short derivations will be added to explain the core equations and assumptions.
+## The Least-Squares Line in the Transformed Variables
 
-## Worked Example (Planned)
+Both methods on this page end with the same step: fitting a line $Y = AX + B$ to points $(X_k, Y_k)$, $k = 1, \ldots, n$, so that the sum of the squared vertical deviations
 
-A compact numerical example with intermediate steps will be included.
+$$
+\sum_{k=1}^{n} \bigl(A X_k + B - Y_k\bigr)^2
+$$
 
-## Implementation Notes (Planned)
+is as small as possible. Setting its partial derivatives with respect to $A$ and $B$ to zero gives two linear equations.
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+::: {.callout-important appearance="simple"}
+## Normal equations for the line $Y = AX + B$
+
+$$
+\begin{aligned}
+\Bigl(\sum X_k^2\Bigr) A + \Bigl(\sum X_k\Bigr) B &= \sum X_k Y_k, \\
+\Bigl(\sum X_k\Bigr) A + n B &= \sum Y_k,
+\end{aligned}
+\tag{1}
+$$
+
+with all sums over $k = 1, \ldots, n$. When the $X_k$ are not all equal, the determinant $\Delta = n \sum X_k^2 - \bigl(\sum X_k\bigr)^2$ is positive and the solution is
+
+$$
+A = \frac{n \sum X_k Y_k - \sum X_k \sum Y_k}{\Delta}, \qquad
+B = \frac{\sum X_k^2 \sum Y_k - \sum X_k \sum X_k Y_k}{\Delta}.
+\tag{2}
+$$
+:::
+
+The second equation of (1) says $B = \bar Y - A \bar X$, where $\bar X$ and $\bar Y$ are the means: the line passes through the centroid $(\bar X, \bar Y)$ of the transformed points, and the deviations $A X_k + B - Y_k$ sum to zero. Both facts give a quick check on every example below. The [least-squares lines](least-squares-lines/) page derives (1) and treats the line in detail.
+
+## Exponential Fit by Data Linearization
+
+Suppose the data are to be fitted by
+
+$$
+y = c\,e^{ax}.
+\tag{3}
+$$
+
+Taking the natural logarithm of both sides gives $\ln y = \ln\bigl(c\,e^{ax}\bigr) = \ln c + \ln e^{ax}$, so
+
+$$
+\ln y = a x + \ln c .
+$$
+
+With the change of variables $X = x$, $Y = \ln y$ and the constants $A = a$, $B = \ln c$, this is the line $Y = AX + B$.
+
+::: {.callout-note appearance="simple"}
+## Data linearization for $y = c\,e^{ax}$
+1. Transform the data: $(X_k, Y_k) = (x_k, \ln y_k)$ for $k = 1, \ldots, n$.
+2. Fit the least-squares line $Y = AX + B$ to the points $(X_k, Y_k)$ by solving the normal equations (1).
+3. Recover the coefficients of the curve:
+$$
+a = A, \qquad c = e^{B}.
+\tag{4}
+$$
+:::
+
+::: {.callout-warning appearance="simple"}
+## The ordinates must be positive
+The exponential fit takes the logarithm of every $y_k$, so it needs $y_k > 0$ for all $k$; the $x_k$ may be zero or negative. (The caution in Mathews' solution of Example 1 names the abscissas, but it is the ordinates that are logged in this fit, and Example 1 itself has $x_1 = 0$.)
+:::
+
+### Example 1 — Exponential fit to five points
+
+Fit the curve $y = c\,e^{ax}$ to the data points
+
+$$
+(0, 1.5), \quad (1, 2.5), \quad (2, 3.5), \quad (3, 5.0), \quad (4, 7.5).
+$$
+
+**Step 1**: Transform the data with $X_k = x_k$, $Y_k = \ln y_k$, and form the products needed in (1) (values rounded to six decimals).
+
+| $k$ | $x_k$ | $y_k$ | $X_k$ | $Y_k = \ln y_k$ | $X_k^2$ | $X_k Y_k$ |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 0 | 1.5 | 0 | 0.405465 | 0 | 0 |
+| 2 | 1 | 2.5 | 1 | 0.916291 | 1 | 0.916291 |
+| 3 | 2 | 3.5 | 2 | 1.252763 | 4 | 2.505526 |
+| 4 | 3 | 5.0 | 3 | 1.609438 | 9 | 4.828314 |
+| 5 | 4 | 7.5 | 4 | 2.014903 | 16 | 8.059612 |
+| $\sum$ | | | 10 | 6.198860 | 30 | 16.309742 |
+
+**Step 2**: The normal equations (1) are
+
+$$
+\begin{aligned}
+30 A + 10 B &= 16.309742, \\
+10 A + 5 B &= 6.198860 .
+\end{aligned}
+$$
+
+**Step 3**: Here $\Delta = 5 \cdot 30 - 10^2 = 50$, and formula (2) gives
+
+$$
+A = \frac{5(16.309742) - 10(6.198860)}{50} = \frac{19.560115}{50} = 0.391202, \qquad
+B = \frac{30(6.198860) - 10(16.309742)}{50} = \frac{22.868367}{50} = 0.457367 .
+$$
+
+(The numerators are computed from the unrounded sums.)
+
+**Step 4**: By (4), $a = A = 0.391202$ and $c = e^{0.457367} = 1.57991$. The exponential fit is
+
+$$
+\boxed{\,y = 1.57991\, e^{0.391202\,x}\,}
+$$
+
+**Verification:** substituting the computed $A$ and $B$ back into the normal equations:
+
+| Equation | Left-hand side | Right-hand side |
+|---|---|---|
+| 1 | $30(0.391202) + 10(0.457367) = 16.309742$ | $16.309742$ $\checkmark$ |
+| 2 | $10(0.391202) + 5(0.457367) = 6.198860$ | $6.198860$ $\checkmark$ |
+
+(the left-hand sides use the unrounded $A$ and $B$). The line passes through the centroid $(\bar X, \bar Y) = (2, 1.239772)$. The fitted curve and its residuals at the data points are:
+
+| $k$ | $x_k$ | $y_k$ | $f(x_k) = 1.57991\,e^{0.391202 x_k}$ | $f(x_k) - y_k$ |
+|---:|---:|---:|---:|---:|
+| 1 | 0 | 1.5 | 1.5799 | 0.0799 |
+| 2 | 1 | 2.5 | 2.3363 | −0.1637 |
+| 3 | 2 | 3.5 | 3.4548 | −0.0452 |
+| 4 | 3 | 5.0 | 5.1088 | 0.1088 |
+| 5 | 4 | 7.5 | 7.5548 | 0.0548 |
+
+The sum of the squared residuals is $\sum (f(x_k) - y_k)^2 = 0.0500688$.
+
+Mathews carries out these steps in Mathematica: he stores the points, takes the logarithm of the ordinates, fits the line with Mathematica's built-in least-squares routine Fit, reads $A$ and $B$ off the fitted expression, plots the line in the $XY$-plane, and graphs the curve in the $xy$-plane.
+
+## Power Fit by Data Linearization
+
+Suppose instead the data are to be fitted by the power function
+
+$$
+y = c\,x^{a}.
+\tag{5}
+$$
+
+Taking logarithms gives $\ln y = \ln c + \ln x^{a}$, so
+
+$$
+\ln y = a \ln x + \ln c .
+$$
+
+With the change of variables $X = \ln x$, $Y = \ln y$ and the constants $A = a$, $B = \ln c$, this is again the line $Y = AX + B$.
+
+::: {.callout-note appearance="simple"}
+## Data linearization for $y = c\,x^{a}$
+1. Transform the data: $(X_k, Y_k) = (\ln x_k, \ln y_k)$ for $k = 1, \ldots, n$.
+2. Fit the least-squares line $Y = AX + B$ to the points $(X_k, Y_k)$ by solving the normal equations (1).
+3. Recover the coefficients of the curve:
+$$
+a = A, \qquad c = e^{B}.
+\tag{6}
+$$
+:::
+
+::: {.callout-warning appearance="simple"}
+## Both coordinates must be positive
+The power fit takes the logarithm of every $x_k$ and every $y_k$, so it needs $x_k > 0$ and $y_k > 0$. A data point with $x_k = 0$, such as $(0, 1.5)$ in Example 1, cannot be used.
+:::
+
+### Example 2 — Power fit to five points
+
+Fit the curve $y = c\,x^{a}$ to the data points
+
+$$
+(1, 1.1), \quad (2, 2.8), \quad (3, 5.2), \quad (4, 8.0), \quad (5, 11.1).
+$$
+
+::: {.callout-warning appearance="simple"}
+## Where these data come from
+The image holding the data points of Mathews' Example 2 is missing from the archive, but his printed results survive: $B = 0.0709788$, $a = 1.44232$ and $c = 1.07356$. With abscissas $x_k = 1, 2, 3, 4, 5$, a search over every set of ordinates with one decimal place (each within $3$ of the curve $1.07356\,x^{1.44232}$) finds exactly one set that reproduces $A$ and $B$ to all of Mathews' printed digits, the one above; a search in steps of $0.05$ (each ordinate within $1$ of the curve) finds the same set and no other. We take these to be Mathews' data.
+:::
+
+**Step 1**: Transform the data with $X_k = \ln x_k$, $Y_k = \ln y_k$ (values rounded to six decimals).
+
+| $k$ | $x_k$ | $y_k$ | $X_k = \ln x_k$ | $Y_k = \ln y_k$ | $X_k^2$ | $X_k Y_k$ |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 1 | 1.1 | 0 | 0.095310 | 0 | 0 |
+| 2 | 2 | 2.8 | 0.693147 | 1.029619 | 0.480453 | 0.713678 |
+| 3 | 3 | 5.2 | 1.098612 | 1.648659 | 1.206949 | 1.811237 |
+| 4 | 4 | 8.0 | 1.386294 | 2.079442 | 1.921812 | 2.882718 |
+| 5 | 5 | 11.1 | 1.609438 | 2.406945 | 2.590290 | 3.873829 |
+| $\sum$ | | | 4.787492 | 7.259975 | 6.199504 | 9.281461 |
+
+**Step 2**: The normal equations (1) are
+
+$$
+\begin{aligned}
+6.199504\, A + 4.787492\, B &= 9.281461, \\
+4.787492\, A + 5 B &= 7.259975 .
+\end{aligned}
+$$
+
+**Step 3**: Here $\Delta = 5(6.199504) - 4.787492^2 = 8.077445$, and formula (2) gives
+
+$$
+A = \frac{11.650236}{8.077445} = 1.44232, \qquad B = \frac{0.573327}{8.077445} = 0.0709788,
+$$
+
+with the numerators computed from the unrounded sums.
+
+**Step 4**: By (6), $a = A = 1.44232$ and $c = e^{0.0709788} = 1.07356$. The power fit is
+
+$$
+\boxed{\,y = 1.07356\, x^{1.44232}\,}
+$$
+
+These are Mathews' printed values, which is how the data were recovered.
+
+**Verification:**
+
+| Equation | Left-hand side | Right-hand side |
+|---|---|---|
+| 1 | $6.199504(1.44232) + 4.787492(0.0709788) = 9.281461$ | $9.281461$ $\checkmark$ |
+| 2 | $4.787492(1.44232) + 5(0.0709788) = 7.259975$ | $7.259975$ $\checkmark$ |
+
+(again with the unrounded $A$ and $B$). The line passes through the centroid $(\bar X, \bar Y) = (0.957498, 1.451995)$. The fitted curve and its residuals:
+
+| $k$ | $x_k$ | $y_k$ | $f(x_k) = 1.07356\,x_k^{1.44232}$ | $f(x_k) - y_k$ |
+|---:|---:|---:|---:|---:|
+| 1 | 1 | 1.1 | 1.0736 | −0.0264 |
+| 2 | 2 | 2.8 | 2.9175 | 0.1175 |
+| 3 | 3 | 5.2 | 5.2358 | 0.0358 |
+| 4 | 4 | 8.0 | 7.9284 | −0.0716 |
+| 5 | 5 | 11.1 | 10.9386 | −0.1614 |
+
+The sum of the squared residuals is $\sum (f(x_k) - y_k)^2 = 0.0469525$.
+
+## Example 3 — Choosing Between an Exponential and a Power Fit
+
+A scientist often has to decide which formula fits a set of data best. Mathews poses three parts for the data points
+
+$$
+(1, 2), \quad (2, 4), \quad (3, 8), \quad (4, 13), \quad (5, 21).
+$$
+
+**(a)** Find both the exponential fit $y = c\,e^{ax}$ and the power fit $y = c\,x^{a}$. **(b)** Describe how this was done and which transformations were used. **(c)** Decide which curve fits the data best.
+
+### 3(a) — The exponential fit
+
+The transformation is $X_k = x_k$, $Y_k = \ln y_k$:
+
+| $k$ | $x_k$ | $y_k$ | $X_k$ | $Y_k = \ln y_k$ | $X_k^2$ | $X_k Y_k$ |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 1 | 2 | 1 | 0.693147 | 1 | 0.693147 |
+| 2 | 2 | 4 | 2 | 1.386294 | 4 | 2.772589 |
+| 3 | 3 | 8 | 3 | 2.079442 | 9 | 6.238325 |
+| 4 | 4 | 13 | 4 | 2.564949 | 16 | 10.259797 |
+| 5 | 5 | 21 | 5 | 3.044522 | 25 | 15.222612 |
+| $\sum$ | | | 15 | 9.768355 | 55 | 35.186470 |
+
+The normal equations are
+
+$$
+\begin{aligned}
+55 A + 15 B &= 35.186470, \\
+15 A + 5 B &= 9.768355,
+\end{aligned}
+$$
+
+with $\Delta = 5 \cdot 55 - 15^2 = 50$, so $A = 29.407028/50 = 0.588141$ and $B = 9.462466/50 = 0.189249$. Then $a = 0.588141$, $c = e^{0.189249} = 1.20834$, and
+
+$$
+\boxed{\,f_1(x) = 1.20834\, e^{0.588141\,x}\,}
+$$
+
+Substituting back: $55(0.588141) + 15(0.189249) = 35.186470$ and $15(0.588141) + 5(0.189249) = 9.768355$ (with the unrounded $A$, $B$) $\checkmark$.
+
+### 3(a) — The power fit
+
+The transformation is $X_k = \ln x_k$, $Y_k = \ln y_k$. The $X_k$ are those of Example 2 and the $Y_k$ those of the exponential fit just above:
+
+| $k$ | $x_k$ | $y_k$ | $X_k = \ln x_k$ | $Y_k = \ln y_k$ | $X_k^2$ | $X_k Y_k$ |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 1 | 2 | 0 | 0.693147 | 0 | 0 |
+| 2 | 2 | 4 | 0.693147 | 1.386294 | 0.480453 | 0.960906 |
+| 3 | 3 | 8 | 1.098612 | 2.079442 | 1.206949 | 2.284500 |
+| 4 | 4 | 13 | 1.386294 | 2.564949 | 1.921812 | 3.555775 |
+| 5 | 5 | 21 | 1.609438 | 3.044522 | 2.590290 | 4.899970 |
+| $\sum$ | | | 4.787492 | 9.768355 | 6.199504 | 11.701151 |
+
+The normal equations are
+
+$$
+\begin{aligned}
+6.199504\, A + 4.787492\, B &= 11.701151, \\
+4.787492\, A + 5 B &= 9.768355,
+\end{aligned}
+$$
+
+with $\Delta = 8.077445$ as in Example 2, so $A = 11.739835/8.077445 = 1.45341$ and $B = 4.539797/8.077445 = 0.562034$. Then $a = 1.45341$, $c = e^{0.562034} = 1.75424$, and
+
+$$
+\boxed{\,f_2(x) = 1.75424\, x^{1.45341}\,}
+$$
+
+Substituting back: $6.199504(1.45341) + 4.787492(0.562034) = 11.701151$ and $4.787492(1.45341) + 5(0.562034) = 9.768355$ (with the unrounded $A$, $B$) $\checkmark$.
+
+### 3(b) — How it was done
+
+Neither curve can be fitted by a linear least-squares problem as it stands, because $a$ enters nonlinearly. Taking logarithms turns each into a straight line:
+
+| Fit | Curve | $X$ | $Y$ | Line | Back-transformation |
+|---|---|---|---|---|---|
+| exponential | $y = c\,e^{ax}$ | $x$ | $\ln y$ | $Y = AX + B$ | $a = A$, $c = e^{B}$ |
+| power | $y = c\,x^{a}$ | $\ln x$ | $\ln y$ | $Y = AX + B$ | $a = A$, $c = e^{B}$ |
+
+In each case the least-squares line through the transformed points is found from the normal equations (1), and its slope and intercept are converted back into $a$ and $c$. All the data here have $x_k > 0$ and $y_k > 0$, so both transformations apply.
+
+### 3(c) — Which curve fits better?
+
+Mathews compares the sums of the squares of the residuals of the two curves; computed in the original variables they are
+
+$$
+E_1 = \sum_{k=1}^{5} \bigl(f_1(x_k) - y_k\bigr)^2, \qquad
+E_2 = \sum_{k=1}^{5} \bigl(f_2(x_k) - y_k\bigr)^2 .
+$$
+
+| $k$ | $x_k$ | $y_k$ | $f_1(x_k)$ | $f_1(x_k) - y_k$ | $f_2(x_k)$ | $f_2(x_k) - y_k$ |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 1 | 2 | 2.1758 | 0.1758 | 1.7542 | −0.2458 |
+| 2 | 2 | 4 | 3.9178 | −0.0822 | 4.8041 | 0.8041 |
+| 3 | 3 | 8 | 7.0545 | −0.9455 | 8.6605 | 0.6605 |
+| 4 | 4 | 13 | 12.7027 | −0.2973 | 13.1561 | 0.1561 |
+| 5 | 5 | 21 | 22.8729 | 1.8729 | 18.1961 | −2.8039 |
+
+$$
+E_1 = 4.52766, \qquad E_2 = 9.02945 .
+$$
+
+Since $E_1 < E_2$, the exponential fit $f_1(x) = 1.20834\,e^{0.588141\,x}$ is the better of the two. The same ranking holds for the sums of squared deviations of the lines in the $XY$-plane, $0.0311798$ for the exponential fit against $0.0777152$ for the power fit.
+
+## Linearization Is Not Least Squares in $y$
+
+This section is not part of Mathews' module; it shows what the data linearization method gives up. The least-squares fit of $y = c\,e^{ax}$ in the original variables minimises
+
+$$
+E(a, c) = \sum_{k=1}^{n} \bigl(c\,e^{a x_k} - y_k\bigr)^2 .
+$$
+
+Setting $\partial E/\partial c = 0$ and $\partial E/\partial a = 0$ (and dividing the second by $2c$, for $c \neq 0$) gives the nonlinear normal equations
+
+$$
+c \sum_{k=1}^{n} e^{2 a x_k} = \sum_{k=1}^{n} y_k\, e^{a x_k}, \qquad
+\sum_{k=1}^{n} \bigl(c\,e^{a x_k} - y_k\bigr)\, x_k\, e^{a x_k} = 0 .
+\tag{7}
+$$
+
+The first equation gives $c$ in terms of $a$, and substituting it into the second leaves one equation in $a$, to be solved by a root finder such as the [Newton-Raphson method](newton-raphson-method/), with the linearized fit as a natural starting guess. For the power function, replace $e^{a x_k}$ by $x_k^{a}$ and the factor $x_k$ in the second equation by $\ln x_k$. Solving these equations for the four fits above gives:
+
+| Data | Model | Linearized fit | $E$ | Direct least-squares fit | $E$ |
+|---|---|---|---:|---|---:|
+| Example 1 | $c\,e^{ax}$ | $1.57991\,e^{0.391202x}$ | 0.0500688 | $1.61087\,e^{0.383575x}$ | 0.0408661 |
+| Example 2 | $c\,x^{a}$ | $1.07356\,x^{1.44232}$ | 0.0469525 | $1.02217\,x^{1.48217}$ | 0.00974157 |
+| Example 3 | $c\,e^{ax}$ | $1.20834\,e^{0.588141x}$ | 4.52766 | $1.56571\,e^{0.521523x}$ | 1.07912 |
+| Example 3 | $c\,x^{a}$ | $1.75424\,x^{1.45341}$ | 9.02945 | $1.06460\,x^{1.84138}$ | 1.50774 |
+
+In each case the reduced equation in $a$ changes sign only once for $a$ within $2$ of the direct value $a^{*}$, the Hessian of $E$ there is positive definite (so the point is a minimum), and a grid search over $|a - a^{*}| \le 1$, $0.01 \le c \le 3c^{*}$ around the direct fit $(a^{*}, c^{*})$ finds no smaller $E$. The direct fits lower $E$ by factors of $1.23$, $4.82$, $4.20$ and $5.99$. In Example 3 the exponential model still beats the power model, $1.07912$ against $1.50774$, so the conclusion of part (c) does not depend on how the curves are fitted.
+
+::: {.callout-warning appearance="simple"}
+## Logarithms reweight the data
+When a residual is small compared with $y_k$, $\ln f(x_k) - \ln y_k \approx \bigl(f(x_k) - y_k\bigr)/y_k$, so the linearized fit approximately minimises the sum of squared *relative* errors. Points with large $y_k$ count for less, and the fitted curve can miss them by more. In Example 3 the linearized exponential fit has its largest residual, $1.8729$, at the largest ordinate $y_5 = 21$; the direct fit misses that point by only $0.2415$, and its largest residual is $0.6376$, at $(1, 2)$. The linearized fit is still useful: it is quick, needs only the linear normal equations (1), and is a good starting guess for solving (7).
+:::
