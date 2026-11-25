@@ -1,9 +1,9 @@
 ---
 title: "QR method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -16,6 +16,38 @@ $$
 $$
 
 Every $\mathbf{A}_k$ is similar to $\mathbf{A}$ and has the same eigenvalues. When the eigenvalues have distinct absolute values, the entries below the diagonal die out and the diagonal entries converge to the eigenvalues, ordered by decreasing absolute value; for a symmetric matrix the limit is diagonal. In the long run the entry in position $(j+1, j)$ shrinks by about the factor $|\lambda_{j+1}/\lambda_j|$ at each step, so two eigenvalues close in size make the method slow. Mathews applies it to real symmetric matrices: Householder's method first reduces the matrix to a similar tridiagonal one, which makes every QR step cheap, and *shifts*, which factor $\mathbf{A}_k - s_k\mathbf{I}$ instead of $\mathbf{A}_k$, turn the slow linear convergence into a handful of steps. All the iterations below were recomputed in 50-digit arithmetic.
+
+## Animations
+
+Each animation below follows one of Mathews' worked examples, one QR step per frame. The left panel is the current matrix drawn as a heat map: each cell is coloured by $\log_{10}|a_{ij}|$ and prints the entry, diagonal entries to six decimals and the others to four significant figures, and a blank cell is zero. The cells beside the diagonal darken as their entries shrink. In Cases 1 and 2 the right-hand panels follow the diagonal entries $d_j$ toward the eigenvalues $\lambda_j$ (dashed lines), and, on a logarithmic axis, the sizes $|e_j|$ of the subdiagonal entries and the largest diagonal error $\max_j |d_j - \lambda_j|$. A quantity that is multiplied by a fixed ratio $r$ at every step falls on a straight line there; the dashed lines have the slopes $|\lambda_{j+1}/\lambda_j|$ that the convergence theorem predicts and are drawn through the last computed value. The iterations run in 256-bit floating-point arithmetic (about 77 significant digits), with positive diagonal entries in every $\mathbf{R}$ as in the tables below, so the signs of the off-diagonal entries can differ from Mathews' printouts. The entries outside the tridiagonal band, which are zero in exact arithmetic, stay below $10^{-60}$ in this computation and are drawn blank.
+
+All three animations are new: Mathews' QR Method module has no animation, and the archive of his animations has none for eigenvalue methods. The single QR factorizations of Examples 1 and 2, the least-squares parabola of Examples 6 and 7, and the eigenvectors accumulated in $\mathbf{V}_k$ are not animated.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — The unshifted QR method on the tridiagonal matrix of Example 3, $39$ steps
+
+**Behavior:** Every iterate stays symmetric and tridiagonal. The diagonal entries do not settle in place at once: $d_2$ drops to $-0.310169$ at step $1$ and climbs past $\lambda_2 \approx 4.372281$ to $4.904309$ at step $4$ before coming back, while $d_3$ jumps from $3$ to $4.996724$ at step $1$ and then falls to $\lambda_3 \approx -2.358899$. $|e_2|$ grows from $1$ to $3.834$ at step $2$ before it shrinks; $|e_1|$ and $|e_3|$ shrink at every step. From step $10$ on, each $|e_j|$ is multiplied at every step by a ratio within $1\%$ of its predicted value $|\lambda_{j+1}/\lambda_j|$ ($0.6876$, $0.5395$ and $0.5817$), so the three lines run parallel to their dashed slopes. $e_1$ has the largest ratio and is the last entry to fall below Mathews' Chop threshold $5 \times 10^{-6}$, at step $39$ ($|e_1| = 3.568 \times 10^{-6}$). The largest diagonal error falls faster, by a ratio that approaches $0.6876^2 \approx 0.4728$, to $6.410 \times 10^{-12}$ at step $39$.
+
+[Julia source](qraa.jl)
+
+![The unshifted QR method on Mathews' 4 × 4 tridiagonal Example 3, one step per frame: a heat map of the iterate A_k empties toward the diagonal, the diagonal entries, one of them overshooting, settle on the eigenvalues 6.358899, 4.372281, −2.358899 and −1.372281, and on a log scale the three subdiagonal sizes fall parallel to the predicted slopes 0.6876, 0.5395 and 0.5817, the slowest reaching 3.568 × 10⁻⁶ at step 39](qraa.gif)
+
+### Case 2 — Householder reduction of Example 4, then $53$ unshifted QR steps
+
+**Behavior:** The animation opens with the dense matrix $\mathbf{A}$ and the two Householder steps: $\mathbf{P}_1\mathbf{A}\mathbf{P}_1$ has zeros in positions $(3, 1)$, $(4, 1)$, $(1, 3)$ and $(1, 4)$, and $\mathbf{H} = \mathbf{P}_2(\mathbf{P}_1\mathbf{A}\mathbf{P}_1)\mathbf{P}_2$ is tridiagonal. The QR steps start from $\mathbf{A}_0 = \mathbf{H}$. Here every diagonal entry moves monotonically to its eigenvalue and every $|e_j|$ decreases at every step; from step $6$ on, each ratio is within $1\%$ of its predicted value. $|e_1|$ and $|e_2|$ fall fast, by $0.5486$ and $0.4514$ per step, to $4.740 \times 10^{-14}$ and $3.397 \times 10^{-18}$ at step $53$. $|e_3|$ falls only by $0.8229$ per step, because $\lambda_3 \approx 1.645751$ and $\lambda_4 \approx 1.354249$ are close, and reaches $4.334 \times 10^{-6}$ at step $53$, the first step at which all three entries are below $5 \times 10^{-6}$. From step $4$ on the largest diagonal error is that of $d_3$; it falls by a ratio that approaches $0.8229^2 \approx 0.6771$, to $6.444 \times 10^{-11}$ at step $53$.
+
+[Julia source](qrbb.jl)
+
+![Mathews' Example 4: a heat map shows the dense symmetric matrix A reduced by two Householder steps to the tridiagonal H, then the unshifted QR iterates; the diagonal entries move monotonically to 6.645751, −3.645751, 1.645751 and 1.354249, and on a log scale the first two subdiagonal sizes fall quickly to 4.740 × 10⁻¹⁴ and 3.397 × 10⁻¹⁸ while the third falls by only 0.8229 per step, to 4.334 × 10⁻⁶ at step 53](qrbb.gif)
+
+### Case 3 — Shifts and deflation on Example 5 (the $\mathbf{H}$ of Example 4), $\varepsilon = 10^{-5}$, five shifted steps
+
+**Behavior:** Each frame is one shifted step or one deflation. The heat map shows the active block of $\mathbf{A}_{i+1} + \sigma\mathbf{I}$, where $\sigma$ is the running sum of the shifts; adding $\sigma$ back undoes the shifts, so its diagonal entries approach eigenvalues of $\mathbf{H}$. A red frame outlines the active block, and grey cells hold the eigenvalues stored on deflation. The right panel follows the last subdiagonal entry of the active block. With the shifts $s_1 = \sqrt2 \approx 1.414214$, $s_2 \approx -0.06023531$ and $s_3 \approx 0.0002704376$, $|e_3|$ goes $0.2 \to 0.03406 \to 3.195 \times 10^{-5} \to 8.279 \times 10^{-17}$, gaining more digits at each step than at the one before. After step $3$, $\lambda_4 = \sigma \approx 1.354249$ is stored and the block shrinks to $3 \times 3$. One shift, $s_4 \approx 0.2915027$, takes $|e_2|$ from $0.001110$ to $1.357 \times 10^{-11}$ and gives $\lambda_3 = \sigma \approx 1.645751$. On the last $2 \times 2$ block the shift $s_5 \approx -5.291503$ is an exact eigenvalue of the block, so in exact arithmetic step $5$ makes $e_1$ zero; in the 256-bit computation it is below $10^{-60}$, drawn as a triangle on the bottom edge. Then $\lambda_2 = \sigma \approx -3.645751$ and $\lambda_1 \approx 6.645751$. The grey line, for comparison, is $|e_3|$ in the unshifted run of Case 2, still $4.334 \times 10^{-6}$ after $53$ steps.
+
+[Julia source](qrcc.jl)
+
+![The shifted QR method with deflation on Mathews' Example 5: a heat map of the active block plus the accumulated shift shrinks from 4 × 4 to 3 × 3 to 2 × 2 as the eigenvalues 1.354249, 1.645751, −3.645751 and 6.645751 are stored in grey cells, while on a log scale the last subdiagonal entry falls from 0.2 to 8.279 × 10⁻¹⁷ in three steps, then from 0.001110 to 1.357 × 10⁻¹¹ in one, then from 2.657 to zero, against the unshifted run's 4.334 × 10⁻⁶ after 53 steps](qrcc.gif)
 
 ## The QR Decomposition
 
@@ -155,7 +187,7 @@ The method works for any real matrix, but for a full $n \times n$ matrix every Q
 - Hessenberg matrices (zero below the first subdiagonal),
 - symmetric band matrices.
 
-The QR transformation preserves these structures: if $\mathbf{A}$ is upper Hessenberg so is $\mathbf{R}\mathbf{Q}$, and if $\mathbf{A}$ is also symmetric, $\mathbf{R}\mathbf{Q}$ is symmetric tridiagonal. As a general count, one QR step then costs on the order of $n^2$ operations for a Hessenberg matrix and of $n$ for a symmetric tridiagonal one, since the factorization needs only $n - 1$ plane rotations, each removing one subdiagonal entry. Mathews' textbook treatment (the module's proof page) builds $\mathbf{Q}_k$ from exactly such rotations, as in [Jacobi's method](jacobi-method.qmd). The standard practice for a dense symmetric matrix is therefore to reduce it first to a similar tridiagonal matrix by orthogonal transformations, then apply a tridiagonal eigenvalue solver. In LAPACK that solver is the routine DSTEQR, which uses the implicit QL or QR method and can also accumulate the orthogonal transformations to deliver the eigenvectors.
+The QR transformation preserves these structures: if $\mathbf{A}$ is upper Hessenberg so is $\mathbf{R}\mathbf{Q}$, and if $\mathbf{A}$ is also symmetric, $\mathbf{R}\mathbf{Q}$ is symmetric tridiagonal. As a general count, one QR step then costs on the order of $n^2$ operations for a Hessenberg matrix and of $n$ for a symmetric tridiagonal one, since the factorization needs only $n - 1$ plane rotations, each removing one subdiagonal entry. Mathews' textbook treatment (the module's proof page) builds $\mathbf{Q}_k$ from exactly such rotations, as in [Jacobi's method](../jacobi-method/). The standard practice for a dense symmetric matrix is therefore to reduce it first to a similar tridiagonal matrix by orthogonal transformations, then apply a tridiagonal eigenvalue solver. In LAPACK that solver is the routine DSTEQR, which uses the implicit QL or QR method and can also accumulate the orthogonal transformations to deliver the eigenvectors.
 
 ### Example 3 — The unshifted QR method on a symmetric tridiagonal matrix
 
@@ -243,7 +275,7 @@ $$
 \tag{2}
 $$
 
-where $\mathbf{A}_k$ has zeros below the subdiagonal in columns $1, \ldots, k$. Then $\mathbf{H} = \mathbf{A}_{n-2}$ is an upper Hessenberg matrix similar to $\mathbf{A}$. This is *Householder's method* (see also [Householder Transformations](householder-transformations.qmd) and [Hessenberg Factorization](hessenberg-factorization.qmd)). Each $\mathbf{P}_k = \mathbf{I} - 2\mathbf{v}\mathbf{v}^{T}/(\mathbf{v}^{T}\mathbf{v})$ is symmetric and orthogonal, $\mathbf{P}_k^{-1} = \mathbf{P}_k$, so (2) is a similarity transformation. In step $k$, with $\mathbf{x}$ the part of column $k$ below the diagonal, the vector $\mathbf{v}$ is zero in its first $k$ components and equal to $\mathbf{x} - \alpha\mathbf{e}_1$ below them, where $\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert$; then $\mathbf{P}_k$ maps $\mathbf{x}$ to $(\alpha, 0, \ldots, 0)$.
+where $\mathbf{A}_k$ has zeros below the subdiagonal in columns $1, \ldots, k$. Then $\mathbf{H} = \mathbf{A}_{n-2}$ is an upper Hessenberg matrix similar to $\mathbf{A}$. This is *Householder's method* (see also [Householder Transformations](../householder-transformations.qmd) and [Hessenberg Factorization](../hessenberg-factorization.qmd)). Each $\mathbf{P}_k = \mathbf{I} - 2\mathbf{v}\mathbf{v}^{T}/(\mathbf{v}^{T}\mathbf{v})$ is symmetric and orthogonal, $\mathbf{P}_k^{-1} = \mathbf{P}_k$, so (2) is a similarity transformation. In step $k$, with $\mathbf{x}$ the part of column $k$ below the diagonal, the vector $\mathbf{v}$ is zero in its first $k$ components and equal to $\mathbf{x} - \alpha\mathbf{e}_1$ below them, where $\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert$; then $\mathbf{P}_k$ maps $\mathbf{x}$ to $(\alpha, 0, \ldots, 0)$.
 
 If $\mathbf{A}$ is symmetric, every $\mathbf{A}_k$ is symmetric, so the zeros below the subdiagonal are matched by zeros above the superdiagonal and $\mathbf{H}$ is **symmetric tridiagonal**: the form on which the QR iteration is cheapest.
 
@@ -381,7 +413,7 @@ in agreement with Mathews' output, which prints the same shifts ($1.41421$, $-0.
 
 ## Application: Least Squares by the QR Factorization
 
-The QR factorization is a standard way to compute a least-squares solution (compare [Least Squares Polynomials](least-squares-polynomials/)) of an *overdetermined* system, one with more equations than unknowns. (Mathews' text calls the system both overdetermined and underdetermined; it has more equations than unknowns, so overdetermined is the right word.) A system
+The QR factorization is a standard way to compute a least-squares solution (compare [Least Squares Polynomials](../least-squares-polynomials/)) of an *overdetermined* system, one with more equations than unknowns. (Mathews' text calls the system both overdetermined and underdetermined; it has more equations than unknowns, so overdetermined is the right word.) A system
 
 $$
 \mathbf{M}\mathbf{C} = \mathbf{B}
