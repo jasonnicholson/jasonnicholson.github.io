@@ -7,24 +7,678 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+Two masses $m_1$ and $m_2$ slide without friction along a line and are joined to each other, and to one or two walls, by springs with constants $k_1, k_2$ (and $k_3$). Let $x(t)$ and $y(t)$ be the displacements of $m_1$ and $m_2$ from their equilibrium positions. Newton's second law and Hooke's law give a linear system of two second-order differential equations, which in matrix form is
 
-### Planned animation ideas
+$$
+\begin{pmatrix} x'' \\ y'' \end{pmatrix} = \mathbf{A} \begin{pmatrix} x \\ y \end{pmatrix}, \qquad
+\mathbf{A} = \begin{pmatrix} -\dfrac{k_1 + k_2}{m_1} & \dfrac{k_2}{m_1} \\[2mm] \dfrac{k_2}{m_2} & -\dfrac{k_2 + k_3}{m_2} \end{pmatrix},
+$$
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+with $k_3 = 0$ when $m_2$ has a free end. Mathews solves these systems exactly, not numerically: there is no integration method and no step size on this page. He eliminates $y$ to get a fourth-order equation for $x$, whose characteristic roots are two pairs of purely imaginary numbers $\pm i\omega_1$, $\pm i\omega_2$. The $\omega_j$ are the *natural frequencies* (eigenfrequencies), and $-\omega_1^2$, $-\omega_2^2$ are the eigenvalues of $\mathbf{A}$. Every motion is a superposition of two *natural modes*:
 
-## Derivation Notes (Planned)
+$$
+\begin{aligned}
+x(t) &= a_1 \cos\omega_1 t + a_2 \sin\omega_1 t + b_1 \cos\omega_2 t + b_2 \sin\omega_2 t, \\
+y(t) &= \rho_1\,(a_1 \cos\omega_1 t + a_2 \sin\omega_1 t) + \rho_2\,(b_1 \cos\omega_2 t + b_2 \sin\omega_2 t),
+\end{aligned}
+\qquad \rho_j = \frac{k_1 + k_2 - m_1\omega_j^2}{k_2}.
+$$
 
-Short derivations will be added to explain the core equations and assumptions.
+In each mode both masses oscillate at the same frequency with fixed amplitude ratio $y/x = \rho_j$: in the faster mode ($\omega_1$, with $\rho_1 < 0$) the masses move in opposite directions, and in the slower mode ($\omega_2$, with $\rho_2 > 0$) in the same direction. Mathews works ten examples, five with one wall and five with two walls, and plots each mode against time and as a space-time picture with time running up the page. Every frequency, mode ratio and eigenvalue below has been recomputed symbolically, and each general solution has been substituted back into its system.
 
-## Worked Example (Planned)
+## Two Masses and Two Springs
 
-A compact numerical example with intermediate steps will be included.
+::: {.callout-note appearance="simple"}
+## Definition — One-wall spring-mass system
+A spring with constant $k_1$ joins a wall on the left to mass $m_1$, and a spring with constant $k_2$ joins $m_1$ to mass $m_2$, whose right side is free. The masses slide on a frictionless surface with no external force, and $x(t)$, $y(t)$ are the displacements of $m_1$, $m_2$ from static equilibrium (positive to the right).
+:::
 
-## Implementation Notes (Planned)
+The first spring is stretched by $x$ and the second by $y - x$, so Newton's second law and Hooke's law give
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+$$
+\begin{aligned}
+m_1 x'' &= -k_1 x + k_2 (y - x), \\
+m_2 y'' &= -k_2 (y - x).
+\end{aligned}
+\tag{1}
+$$
+
+Dividing by the masses puts (1) in the form $\mathbf{X}'' = \mathbf{A}\mathbf{X}$ with $\mathbf{X} = (x, y)^T$ and
+
+$$
+\mathbf{A} = \begin{pmatrix} -\dfrac{k_1 + k_2}{m_1} & \dfrac{k_2}{m_1} \\[2mm] \dfrac{k_2}{m_2} & -\dfrac{k_2}{m_2} \end{pmatrix}.
+\tag{2}
+$$
+
+### Solving by elimination
+
+Write $D = d/dt$. In operator form (1) is
+
+$$
+(m_1 D^2 + k_1 + k_2)\,x - k_2\,y = 0, \qquad -k_2\,x + (m_2 D^2 + k_2)\,y = 0 .
+$$
+
+Applying $m_2 D^2 + k_2$ to the first equation and adding $k_2$ times the second eliminates $y$ and leaves a fourth-order equation for $x$ alone, $\bigl[(m_1 D^2 + k_1 + k_2)(m_2 D^2 + k_2) - k_2^2\bigr]x = 0$. Its characteristic equation is
+
+$$
+p(r) = (m_1 r^2 + k_1 + k_2)(m_2 r^2 + k_2) - k_2^2 = 0,
+\tag{3}
+$$
+
+a quadratic in $r^2$. (Mathews' *Mathematica* printout gives (3) divided by a constant; where his printout survives, the reduced forms in the examples below match it.) With roots $r = \pm i\omega_1$, $\pm i\omega_2$, the general solution for $x$ is the first line of (4). Mathews then recovers $y$ from the first equation of (1), $y = \bigl(m_1 x'' + (k_1 + k_2)\,x\bigr)/k_2$, which multiplies the $\omega_j$ terms by $\rho_j$:
+
+::: {.callout-important appearance="simple"}
+## General solution
+$$
+\begin{aligned}
+x(t) &= a_1 \cos\omega_1 t + a_2 \sin\omega_1 t + b_1 \cos\omega_2 t + b_2 \sin\omega_2 t, \\
+y(t) &= \rho_1\,(a_1 \cos\omega_1 t + a_2 \sin\omega_1 t) + \rho_2\,(b_1 \cos\omega_2 t + b_2 \sin\omega_2 t),
+\end{aligned}
+\tag{4}
+$$
+
+$$
+\rho_j = \frac{k_1 + k_2 - m_1 \omega_j^2}{k_2}, \qquad j = 1, 2,
+\tag{5}
+$$
+
+with $\omega_1 > \omega_2 > 0$ and four arbitrary constants $a_1, a_2, b_1, b_2$.
+:::
+
+**Remark (eigenfrequencies).** Substituting $\mathbf{X} = \mathbf{v}\cos\omega t$ into $\mathbf{X}'' = \mathbf{A}\mathbf{X}$ gives $\mathbf{A}\mathbf{v} = -\omega^2\mathbf{v}$, so the eigenvalues of $\mathbf{A}$ are $\lambda_j = -\omega_j^2$, and the eigenfrequencies are $\omega_j = \sqrt{-\lambda_j}$; Mathews computes them as the imaginary parts of $\sqrt{\lambda_j}$. The eigenvector for $\lambda_j$ is $(1, \rho_j)^T$, and $\det(\mathbf{A} - \lambda\mathbf{I}) = 0$ is (3) with $r^2 = \lambda$, divided by $m_1 m_2$.
+
+### Natural modes
+
+::: {.callout-note appearance="simple"}
+## Definition — Natural mode
+A *natural mode* is a solution in which both masses oscillate at a single frequency. Taking $b_1 = b_2 = 0$ in (4) gives the first mode, $x = a_1\cos\omega_1 t + a_2 \sin\omega_1 t$, $y = \rho_1 x$; taking $a_1 = a_2 = 0$ gives the second, $y = \rho_2 x$ at frequency $\omega_2$.
+:::
+
+The following holds for every system of this page, not only for the examples:
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Two distinct frequencies, one in-phase and one anti-phase mode (general)
+Let $m_1, m_2, k_1, k_2 > 0$ and $k_3 \ge 0$ (with $k_3 = 0$ for the one-wall system). Then
+
+1. the two roots $s = r^2$ of the characteristic equation are real, distinct and negative, so the roots of (3) are $\pm i\omega_1$, $\pm i\omega_2$ with $\omega_1 > \omega_2 > 0$;
+2. $\rho_1 \rho_2 = -m_1/m_2$, so $\rho_1 < 0 < \rho_2$: in the faster mode the masses move in opposite directions, in the slower mode in the same direction;
+3. the energy $E = \tfrac12 m_1 x'^2 + \tfrac12 m_2 y'^2 + \tfrac12 k_1 x^2 + \tfrac12 k_2 (y - x)^2 + \tfrac12 k_3 y^2$ is constant along every solution.
+:::
+
+*Why.* As a quadratic in $s = r^2$, the characteristic equation $m_1 m_2 s^2 + \bigl(m_1(k_2 + k_3) + m_2(k_1 + k_2)\bigr)s + (k_1 k_2 + k_1 k_3 + k_2 k_3) = 0$ has discriminant $\bigl(m_1(k_2 + k_3) - m_2(k_1 + k_2)\bigr)^2 + 4 m_1 m_2 k_2^2 > 0$, and all its coefficients are positive, so both roots are real, distinct and negative. The product $\rho_1\rho_2 = -m_1/m_2$ is the orthogonality of the two eigenvectors with respect to the mass matrix, $m_1 + m_2\rho_1\rho_2 = 0$, and (5) shows that $\rho_j$ decreases as $\omega_j$ increases, so the faster mode has the negative ratio. Differentiating $E$ and using the equations of motion gives $E' = 0$. All three statements were checked symbolically for general parameters.
+
+A natural mode with $a_1 = 1$, $a_2 = 0$ (or $b_1 = 1$, $b_2 = 0$) is the solution with initial conditions $x(0) = 1$, $y(0) = \rho_j$, $x'(0) = y'(0) = 0$. In general, the initial values $x(0) = x_0$, $y(0) = y_0$, $x'(0) = v_0$, $y'(0) = u_0$ fix the constants:
+
+$$
+a_1 = \frac{\rho_2 x_0 - y_0}{\rho_2 - \rho_1}, \quad
+b_1 = \frac{y_0 - \rho_1 x_0}{\rho_2 - \rho_1}, \quad
+a_2 = \frac{\rho_2 v_0 - u_0}{\omega_1(\rho_2 - \rho_1)}, \quad
+b_2 = \frac{u_0 - \rho_1 v_0}{\omega_2(\rho_2 - \rho_1)}.
+\tag{6}
+$$
+
+### How Mathews presents each example
+
+Every example follows the same steps: the characteristic equation and its roots, the natural frequencies, the general solution (4), the eigenvalues of $\mathbf{A}$, the two natural modes, and a check that each mode satisfies the system. He then draws each mode with $a_1 = 1$, $a_2 = 0$ (first mode) or $b_1 = 1$, $b_2 = 0$ (second mode) in two ways:
+
+- **Against time:** $x(t)$ and $y(t)$ on one set of axes.
+- **Space-time picture:** time on the vertical axis, $m_1$ drawn at horizontal position $2 + x(t)$ and $m_2$ at $6 + y(t)$, with vertical lines at the equilibrium positions $2$ and $6$. In every example whose plots survive, the first picture shows the masses moving in opposite directions at frequency $\omega_1$, the second in the same direction at $\omega_2$.
+
+The time windows and vertical ranges of these plots are listed with each example. For Examples 1 and 4 the archive's images of Mathews' notebook are lost; their results below are computed from the equations in the module's problem statements, and their plot windows are unknown.
+
+### Verification method
+
+To check a mode, substitute $x = \cos\omega_j t$, $y = \rho_j \cos\omega_j t$ into (1) and divide by $\cos\omega_j t$. The two equations become
+
+$$
+\underbrace{-m_1\omega_j^2}_{\text{row 1, left}} = \underbrace{-(k_1 + k_2) + k_2\rho_j}_{\text{row 1, right}}, \qquad
+\underbrace{-m_2\omega_j^2\rho_j}_{\text{row 2, left}} = \underbrace{k_2 - (k_2 + k_3)\rho_j}_{\text{row 2, right}}.
+$$
+
+The $\sin\omega_j t$ terms give the same two equations, so a mode passes when both rows balance. Each example's verification table lists these four numbers for both modes. In addition, the full general solution (4) of every example was substituted into its system symbolically (both residuals simplify to $0$), and each mode was integrated numerically from $x(0) = 1$, $y(0) = \rho_j$, $x'(0) = y'(0) = 0$ over $0 \le t \le 10\pi$ with an adaptive Runge-Kutta solver (relative tolerance $10^{-11}$); the numerical and closed-form solutions differ by at most $2 \times 10^{-10}$.
+
+### Example 1 — Equal masses, unequal spring constants
+
+Find the general solution of (1) with
+
+$$
+m_1 = 6, \quad m_2 = 6, \quad k_1 = 3, \quad k_2 = 2:
+\qquad
+\begin{aligned}
+6x'' &= -3x + 2(y - x), \\
+6y'' &= -2(y - x).
+\end{aligned}
+$$
+
+**Step 1** (characteristic equation): from (3), $(6r^2 + 5)(6r^2 + 2) - 4 = 36r^4 + 42r^2 + 6$, and dividing by $6$,
+
+$$
+6r^4 + 7r^2 + 1 = (6r^2 + 1)(r^2 + 1) = 0, \qquad r = \pm i, \ \pm \frac{i}{\sqrt 6}.
+$$
+
+**Step 2** (frequencies and eigenvalues): $\omega_1 = 1$ and $\omega_2 = 1/\sqrt6 \approx 0.408248$. The matrix (2) is
+
+$$
+\mathbf{A} = \begin{pmatrix} -\tfrac56 & \tfrac13 \\[1mm] \tfrac13 & -\tfrac13 \end{pmatrix}, \qquad \lambda_1 = -1, \quad \lambda_2 = -\tfrac16,
+$$
+
+and $\sqrt{-\lambda_j}$ gives the same frequencies.
+
+**Step 3** (mode ratios): by (5), $\rho_1 = (5 - 6)/2 = -\tfrac12$ and $\rho_2 = (5 - 1)/2 = 2$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos t + a_2 \sin t + b_1 \cos\tfrac{t}{\sqrt6} + b_2 \sin\tfrac{t}{\sqrt6}, \\
+y(t) &= -\tfrac12\,(a_1 \cos t + a_2 \sin t) + 2\,\bigl(b_1 \cos\tfrac{t}{\sqrt6} + b_2 \sin\tfrac{t}{\sqrt6}\bigr)
+\end{aligned}\ }
+$$
+
+In the first mode ($\omega_1 = 1$) the masses move in opposite directions and $m_2$ moves half as far as $m_1$; in the second mode ($\omega_2 = 1/\sqrt6$) they move in the same direction and $m_2$ moves twice as far.
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $1$ | $-\tfrac12$ | $-6$ | $-6$ ✓ | $3$ | $3$ ✓ |
+| 2 | $\tfrac{1}{\sqrt6}$ | $2$ | $-1$ | $-1$ ✓ | $-2$ | $-2$ ✓ |
+
+**Mathews' plots:** the images of this example are lost from the archive, so the windows are unknown. The module also plots one combination of both modes; its coefficients are lost too. With $a_1 = a_2 = b_1 = b_2 = 1$, the choice Mathews makes in Example 6, the motion is
+
+$$
+x(t) = \cos t + \sin t + \cos\tfrac{t}{\sqrt6} + \sin\tfrac{t}{\sqrt6}, \qquad
+y(t) = -\tfrac12(\cos t + \sin t) + 2\bigl(\cos\tfrac{t}{\sqrt6} + \sin\tfrac{t}{\sqrt6}\bigr),
+$$
+
+with energy $E = \tfrac{25}{2}$. Because $\omega_1/\omega_2 = \sqrt6$ is irrational, this combination never repeats exactly (see [Long-term behaviour](#long-term-behaviour-energy-and-periodicity)).
+
+### Example 2 — Unequal masses, unequal spring constants (integer frequencies)
+
+Find the general solution of (1) with
+
+$$
+m_1 = 2, \quad m_2 = 1, \quad k_1 = 4, \quad k_2 = 2:
+\qquad
+\begin{aligned}
+2x'' &= -4x + 2(y - x), \\
+y'' &= -2(y - x).
+\end{aligned}
+$$
+
+**Step 1**: $(2r^2 + 6)(r^2 + 2) - 4 = 2r^4 + 10r^2 + 8$, and dividing by $2$,
+
+$$
+r^4 + 5r^2 + 4 = (r^2 + 1)(r^2 + 4) = 0, \qquad r = \pm 2i, \ \pm i.
+$$
+
+**Step 2**: $\omega_1 = 2$, $\omega_2 = 1$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -3 & 1 \\ 2 & -2 \end{pmatrix}, \qquad \lambda_1 = -4, \quad \lambda_2 = -1 .
+$$
+
+**Step 3**: $\rho_1 = (6 - 8)/2 = -1$ and $\rho_2 = (6 - 2)/2 = 2$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos 2t + a_2 \sin 2t + b_1 \cos t + b_2 \sin t, \\
+y(t) &= -(a_1 \cos 2t + a_2 \sin 2t) + 2\,(b_1 \cos t + b_2 \sin t)
+\end{aligned}\ }
+$$
+
+In the first mode the two masses are mirror images ($y = -x$); in the second, $m_2$ moves in step with $m_1$ with twice the amplitude.
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $2$ | $-1$ | $-8$ | $-8$ ✓ | $4$ | $4$ ✓ |
+| 2 | $1$ | $2$ | $-2$ | $-2$ ✓ | $-2$ | $-2$ ✓ |
+
+These agree with Mathews' printed roots, frequencies, eigenvalues and modes.
+
+**Mathews' plots:** against time, $0 \le t \le 5\pi$, with vertical range $[-1, 1]$ for the first mode and $[-2, 2]$ for the second; space-time pictures for $0 \le t \le 5\pi$, equilibrium positions $2$ and $6$.
+
+### Example 3 — Unequal masses, unequal spring constants
+
+Find the general solution of (1) with
+
+$$
+m_1 = 2, \quad m_2 = 3, \quad k_1 = 1, \quad k_2 = 2:
+\qquad
+\begin{aligned}
+2x'' &= -x + 2(y - x), \\
+3y'' &= -2(y - x).
+\end{aligned}
+$$
+
+**Step 1**: $(2r^2 + 3)(3r^2 + 2) - 4 = 6r^4 + 13r^2 + 2$, so
+
+$$
+6r^4 + 13r^2 + 2 = (r^2 + 2)(6r^2 + 1) = 0, \qquad r = \pm i\sqrt2, \ \pm \frac{i}{\sqrt6}.
+$$
+
+**Step 2**: $\omega_1 = \sqrt2 \approx 1.414214$, $\omega_2 = 1/\sqrt6 \approx 0.408248$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -\tfrac32 & 1 \\[1mm] \tfrac23 & -\tfrac23 \end{pmatrix}, \qquad \lambda_1 = -2, \quad \lambda_2 = -\tfrac16 .
+$$
+
+**Step 3**: $\rho_1 = (3 - 4)/2 = -\tfrac12$ and $\rho_2 = (3 - \tfrac13)/2 = \tfrac43$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos\sqrt2\,t + a_2 \sin\sqrt2\,t + b_1 \cos\tfrac{t}{\sqrt6} + b_2 \sin\tfrac{t}{\sqrt6}, \\
+y(t) &= -\tfrac12\,(a_1 \cos\sqrt2\,t + a_2 \sin\sqrt2\,t) + \tfrac43\,\bigl(b_1 \cos\tfrac{t}{\sqrt6} + b_2 \sin\tfrac{t}{\sqrt6}\bigr)
+\end{aligned}\ }
+$$
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $\sqrt2$ | $-\tfrac12$ | $-4$ | $-4$ ✓ | $3$ | $3$ ✓ |
+| 2 | $\tfrac{1}{\sqrt6}$ | $\tfrac43$ | $-\tfrac13$ | $-\tfrac13$ ✓ | $-\tfrac23$ | $-\tfrac23$ ✓ |
+
+These agree with Mathews' printed results.
+
+**Mathews' plots:** against time, $0 \le t \le 10\pi$, vertical range $[-1, 1]$ for the first mode and $[-\tfrac43, \tfrac43]$ for the second; space-time pictures for $0 \le t \le 10\pi$, equilibrium positions $2$ and $6$. The window $10\pi \approx 31.42$ covers about two periods of the slow mode, $2\pi\sqrt6 \approx 15.39$.
+
+### Example 4 — Unequal masses, frequencies $\sqrt2 \pm 1$
+
+Find the general solution of (1) with
+
+$$
+m_1 = 1, \quad m_2 = 4, \quad k_1 = 1, \quad k_2 = 4:
+\qquad
+\begin{aligned}
+x'' &= -x + 4(y - x), \\
+4y'' &= -4(y - x).
+\end{aligned}
+$$
+
+**Step 1**: $(r^2 + 5)(4r^2 + 4) - 16 = 4r^4 + 24r^2 + 4$, and dividing by $4$,
+
+$$
+r^4 + 6r^2 + 1 = 0, \qquad r^2 = -3 \pm 2\sqrt2 .
+$$
+
+Since $3 \pm 2\sqrt2 = (\sqrt2 \pm 1)^2$, the roots are $r = \pm i(\sqrt2 + 1)$, $\pm i(\sqrt2 - 1)$.
+
+**Step 2**: $\omega_1 = 1 + \sqrt2 \approx 2.414214$, $\omega_2 = \sqrt2 - 1 \approx 0.414214$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -5 & 4 \\ 1 & -1 \end{pmatrix}, \qquad \lambda_{1,2} = -3 \mp 2\sqrt2 \approx -5.828427, \ -0.171573 .
+$$
+
+**Step 3**: $\rho_1 = \bigl(5 - (3 + 2\sqrt2)\bigr)/4 = \tfrac{1 - \sqrt2}{2} \approx -0.207107$ and $\rho_2 = \tfrac{1 + \sqrt2}{2} \approx 1.207107$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos(1 + \sqrt2)t + a_2 \sin(1 + \sqrt2)t + b_1 \cos(\sqrt2 - 1)t + b_2 \sin(\sqrt2 - 1)t, \\
+y(t) &= \tfrac{1 - \sqrt2}{2}\bigl(a_1 \cos(1 + \sqrt2)t + a_2 \sin(1 + \sqrt2)t\bigr) + \tfrac{1 + \sqrt2}{2}\bigl(b_1 \cos(\sqrt2 - 1)t + b_2 \sin(\sqrt2 - 1)t\bigr)
+\end{aligned}\ }
+$$
+
+In the fast mode the heavy mass $m_2 = 4$ moves only $0.207$ times as far as $m_1$, in the opposite direction.
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $1 + \sqrt2$ | $\tfrac{1 - \sqrt2}{2}$ | $-3 - 2\sqrt2$ | $-3 - 2\sqrt2$ ✓ | $2 + 2\sqrt2$ | $2 + 2\sqrt2$ ✓ |
+| 2 | $\sqrt2 - 1$ | $\tfrac{1 + \sqrt2}{2}$ | $-3 + 2\sqrt2$ | $-3 + 2\sqrt2$ ✓ | $2 - 2\sqrt2$ | $2 - 2\sqrt2$ ✓ |
+
+**Mathews' plots:** the images of this example are lost from the archive, so his printed results and plot windows cannot be compared.
+
+### Example 5 — Unequal masses, equal spring constants
+
+Find the general solution of (1) with
+
+$$
+m_1 = 1, \quad m_2 = \sqrt2, \quad k_1 = 4, \quad k_2 = 4:
+\qquad
+\begin{aligned}
+x'' &= -4x + 4(y - x), \\
+\sqrt2\,y'' &= -4(y - x).
+\end{aligned}
+$$
+
+**Step 1**: $(r^2 + 8)(\sqrt2\,r^2 + 4) - 16 = \sqrt2\,r^4 + (4 + 8\sqrt2)\,r^2 + 16$, and dividing by $\sqrt2$,
+
+$$
+r^4 + (8 + 2\sqrt2)\,r^2 + 8\sqrt2 = \bigl(r^2 + 4 + 4\sqrt2\bigr)\bigl(r^2 + 4 - 2\sqrt2\bigr) = 0,
+$$
+
+$$
+r = \pm 2i\sqrt{1 + \sqrt2}, \quad \pm i\sqrt{4 - 2\sqrt2} .
+$$
+
+**Step 2**: $\omega_1 = 2\sqrt{1 + \sqrt2} = \sqrt{4 + 4\sqrt2} \approx 3.107548$, $\omega_2 = \sqrt{4 - 2\sqrt2} = \sqrt{2(2 - \sqrt2)} \approx 1.082392$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -8 & 4 \\ 2\sqrt2 & -2\sqrt2 \end{pmatrix}, \qquad \lambda_1 = -4 - 4\sqrt2 \approx -9.656854, \quad \lambda_2 = -4 + 2\sqrt2 \approx -1.171573 .
+$$
+
+**Step 3**: $\rho_1 = \bigl(8 - (4 + 4\sqrt2)\bigr)/4 = 1 - \sqrt2 \approx -0.414214$ and $\rho_2 = \bigl(8 - (4 - 2\sqrt2)\bigr)/4 = 1 + \tfrac{\sqrt2}{2} \approx 1.707107$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos\omega_1 t + a_2 \sin\omega_1 t + b_1 \cos\omega_2 t + b_2 \sin\omega_2 t, \\
+y(t) &= (1 - \sqrt2)\,(a_1 \cos\omega_1 t + a_2 \sin\omega_1 t) + \bigl(1 + \tfrac{\sqrt2}{2}\bigr)(b_1 \cos\omega_2 t + b_2 \sin\omega_2 t)
+\end{aligned}\ }
+$$
+
+with $\omega_1 = 2\sqrt{1 + \sqrt2}$ and $\omega_2 = \sqrt{4 - 2\sqrt2}$.
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $2\sqrt{1 + \sqrt2}$ | $1 - \sqrt2$ | $-4 - 4\sqrt2$ | $-4 - 4\sqrt2$ ✓ | $4\sqrt2$ | $4\sqrt2$ ✓ |
+| 2 | $\sqrt{4 - 2\sqrt2}$ | $1 + \tfrac{\sqrt2}{2}$ | $-4 + 2\sqrt2$ | $-4 + 2\sqrt2$ ✓ | $-2\sqrt2$ | $-2\sqrt2$ ✓ |
+
+::: {.callout-warning appearance="simple"}
+## Mathews' first frequency in Example 5
+Mathews' roots and eigenvalues are correct, but his frequency list, general solution and first mode use $\omega_1 = \sqrt{1 + \sqrt2} \approx 1.553774$, half the correct value, with $y = \tfrac{7 - \sqrt2}{4}\,x \approx 1.396447\,x$. With that pair the first equation of the system holds but the second does not (the $\cos$ coefficients differ by $-\tfrac{9\sqrt2}{4} \approx -3.18$), so this page uses $\omega_1 = 2\sqrt{1 + \sqrt2}$ and $\rho_1 = 1 - \sqrt2$. His second mode is correct.
+:::
+
+**Mathews' plots:** against time, $0 \le t \le 10\pi$, vertical range $[-1.4, 1.4]$ for the first mode (sized for his incorrect ratio $1.396$; the correct first mode stays within $[-1, 1]$) and $[-1.7, 1.7]$ for the second (whose $y$ amplitude is $1.707$, slightly beyond that range); space-time pictures for $0 \le t \le 10\pi$, equilibrium positions $2$ and $6$.
+
+## Two Masses and Three Springs
+
+::: {.callout-note appearance="simple"}
+## Definition — Two-wall spring-mass system
+As before, but a third spring with constant $k_3$ joins $m_2$ to a wall on the right: wall, spring $k_1$, mass $m_1$, spring $k_2$, mass $m_2$, spring $k_3$, wall.
+:::
+
+The third spring is compressed by $y$, which adds $-k_3 y$ to the force on $m_2$:
+
+$$
+\begin{aligned}
+m_1 x'' &= -k_1 x + k_2 (y - x), \\
+m_2 y'' &= -k_2 (y - x) - k_3 y,
+\end{aligned}
+\tag{7}
+$$
+
+$$
+\mathbf{A} = \begin{pmatrix} -\dfrac{k_1 + k_2}{m_1} & \dfrac{k_2}{m_1} \\[2mm] \dfrac{k_2}{m_2} & -\dfrac{k_2 + k_3}{m_2} \end{pmatrix}.
+\tag{8}
+$$
+
+Elimination now gives the characteristic equation
+
+$$
+(m_1 r^2 + k_1 + k_2)(m_2 r^2 + k_2 + k_3) - k_2^2 = 0,
+\tag{9}
+$$
+
+and the general solution is again (4) with the ratios (5), because $y$ is still recovered from the first equation, which has not changed. The eigenfrequencies are again $\sqrt{-\lambda_j}$ for the eigenvalues $\lambda_j$ of (8), and the theorem above applies.
+
+In the space-time pictures of Examples 6, 7 and 9, Mathews draws a third vertical line at $8$, the right edge of the picture; in Example 10 the equilibrium positions are $2$ and $7$ and the extra line is at $11$.
+
+::: {.callout-warning appearance="simple"}
+## The captions of the space-time pictures
+In Examples 6–10 the sentences that introduce the two space-time pictures say that the first shows the masses moving in the same direction and the second in opposite directions; in Examples 6, 7, 9 and 10 they also give the frequencies as $1$ and $3$, the values of Example 6. In Examples 6, 7, 9 and 10, whose plots survive, the pictures themselves show the first mode (opposite directions, $\omega_1$) and then the second (same direction, $\omega_2$), as described below.
+:::
+
+When $m_1 = m_2$ and $k_1 = k_3$ (Examples 6, 7 and 8) the system is symmetric: $\rho_1 = -1$ and $\rho_2 = 1$. In the slow mode the masses move together and the middle spring is never stretched ($y - x = 0$), so $\omega_2^2 = k_1/m_1$; in the fast mode they are mirror images and $\omega_1^2 = (k_1 + 2k_2)/m_1$.
+
+### Example 6 — Equal masses, a stiff middle spring
+
+Find the general solution of (7) with
+
+$$
+m_1 = 1, \quad m_2 = 1, \quad k_1 = 1, \quad k_2 = 4, \quad k_3 = 1:
+\qquad
+\begin{aligned}
+x'' &= -5x + 4y, \\
+y'' &= 4x - 5y.
+\end{aligned}
+$$
+
+**Step 1**: from (9), $(r^2 + 5)(r^2 + 5) - 16 = r^4 + 10r^2 + 9 = (r^2 + 1)(r^2 + 9) = 0$, so $r = \pm 3i$, $\pm i$.
+
+**Step 2**: $\omega_1 = 3$, $\omega_2 = 1$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -5 & 4 \\ 4 & -5 \end{pmatrix}, \qquad \lambda_1 = -9, \quad \lambda_2 = -1 .
+$$
+
+**Step 3**: $\rho_1 = (5 - 9)/4 = -1$ and $\rho_2 = (5 - 1)/4 = 1$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos 3t + a_2 \sin 3t + b_1 \cos t + b_2 \sin t, \\
+y(t) &= -(a_1 \cos 3t + a_2 \sin 3t) + b_1 \cos t + b_2 \sin t
+\end{aligned}\ }
+$$
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $3$ | $-1$ | $-9$ | $-9$ ✓ | $9$ | $9$ ✓ |
+| 2 | $1$ | $1$ | $-1$ | $-1$ ✓ | $-1$ | $-1$ ✓ |
+
+These agree with Mathews' printed results.
+
+**A combined oscillation.** Mathews notes that there are infinitely many other motions and plots the one with $a_1 = a_2 = b_1 = b_2 = 1$:
+
+$$
+\begin{aligned}
+x(t) &= \cos t + \cos 3t + \sin t + \sin 3t = \sqrt2 \sin\bigl(t + \tfrac{\pi}{4}\bigr) + \sqrt2 \sin\bigl(3t + \tfrac{\pi}{4}\bigr), \\
+y(t) &= \cos t - \cos 3t + \sin t - \sin 3t .
+\end{aligned}
+$$
+
+It starts from $x(0) = 2$, $y(0) = 0$, $x'(0) = 4$, $y'(0) = -2$, has energy $E = 20$, and since $\omega_1/\omega_2 = 3$ it is periodic with period $2\pi$. Over $0 \le t \le 5\pi$ both $x$ and $y$ range between $-2.656893$ and $2.656893$.
+
+**Mathews' plots:** the modes against time for $0 \le t \le 5\pi$ with vertical range $[-1, 1]$; space-time pictures for $0 \le t \le 5\pi$ (lines at $2$, $6$ and $8$); the combined oscillation against time for $0 \le t \le 5\pi$ with vertical range $[-2.7, 2.7]$, and as a space-time picture with horizontal range $[-1, 9]$ and lines at $2$ and $6$.
+
+### Example 7 — Equal masses, middle spring twice as stiff
+
+Find the general solution of (7) with
+
+$$
+m_1 = 1, \quad m_2 = 1, \quad k_1 = 1, \quad k_2 = 2, \quad k_3 = 1:
+\qquad
+\begin{aligned}
+x'' &= -3x + 2y, \\
+y'' &= 2x - 3y.
+\end{aligned}
+$$
+
+**Step 1**: $(r^2 + 3)^2 - 4 = r^4 + 6r^2 + 5 = (r^2 + 1)(r^2 + 5) = 0$, so $r = \pm i\sqrt5$, $\pm i$.
+
+**Step 2**: $\omega_1 = \sqrt5 \approx 2.236068$, $\omega_2 = 1$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -3 & 2 \\ 2 & -3 \end{pmatrix}, \qquad \lambda_1 = -5, \quad \lambda_2 = -1 .
+$$
+
+**Step 3**: $\rho_1 = (3 - 5)/2 = -1$ and $\rho_2 = (3 - 1)/2 = 1$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos\sqrt5\,t + a_2 \sin\sqrt5\,t + b_1 \cos t + b_2 \sin t, \\
+y(t) &= -(a_1 \cos\sqrt5\,t + a_2 \sin\sqrt5\,t) + b_1 \cos t + b_2 \sin t
+\end{aligned}\ }
+$$
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $\sqrt5$ | $-1$ | $-5$ | $-5$ ✓ | $5$ | $5$ ✓ |
+| 2 | $1$ | $1$ | $-1$ | $-1$ ✓ | $-1$ | $-1$ ✓ |
+
+These agree with Mathews' printed results.
+
+**Mathews' plots:** the modes against time for $0 \le t \le 5\pi$, vertical range $[-1, 1]$ for both; space-time pictures for $0 \le t \le 5\pi$ (lines at $2$, $6$ and $8$).
+
+### Example 8 — Equal masses, equal spring constants
+
+Find the general solution of (7) with
+
+$$
+m_1 = m_2 = 1, \quad k_1 = k_2 = k_3 = 1:
+\qquad
+\begin{aligned}
+x'' &= -2x + y, \\
+y'' &= x - 2y.
+\end{aligned}
+$$
+
+**Step 1**: $(r^2 + 2)^2 - 1 = r^4 + 4r^2 + 3 = (r^2 + 1)(r^2 + 3) = 0$, so $r = \pm i\sqrt3$, $\pm i$.
+
+**Step 2**: $\omega_1 = \sqrt3 \approx 1.732051$, $\omega_2 = 1$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -2 & 1 \\ 1 & -2 \end{pmatrix}, \qquad \lambda_1 = -3, \quad \lambda_2 = -1 .
+$$
+
+**Step 3**: $\rho_1 = 2 - 3 = -1$ and $\rho_2 = 2 - 1 = 1$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos\sqrt3\,t + a_2 \sin\sqrt3\,t + b_1 \cos t + b_2 \sin t, \\
+y(t) &= -(a_1 \cos\sqrt3\,t + a_2 \sin\sqrt3\,t) + b_1 \cos t + b_2 \sin t
+\end{aligned}\ }
+$$
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $\sqrt3$ | $-1$ | $-3$ | $-3$ ✓ | $3$ | $3$ ✓ |
+| 2 | $1$ | $1$ | $-1$ | $-1$ ✓ | $-1$ | $-1$ ✓ |
+
+**Mathews' plots:** the images of this example are lost from the archive, so his printed results and plot windows cannot be compared.
+
+### Example 9 — Equal masses, a stiffer left spring
+
+Find the general solution of (7) with
+
+$$
+m_1 = 1, \quad m_2 = 1, \quad k_1 = 2, \quad k_2 = 1, \quad k_3 = 1:
+\qquad
+\begin{aligned}
+x'' &= -3x + y, \\
+y'' &= x - 2y.
+\end{aligned}
+$$
+
+**Step 1**: $(r^2 + 3)(r^2 + 2) - 1 = r^4 + 5r^2 + 5 = 0$, so $r^2 = -\tfrac{5 \pm \sqrt5}{2}$ and
+
+$$
+r = \pm i\sqrt{\tfrac{5 + \sqrt5}{2}}, \quad \pm i\sqrt{\tfrac{5 - \sqrt5}{2}} .
+$$
+
+**Step 2**: $\omega_1 = \sqrt{(5 + \sqrt5)/2} \approx 1.902113$, $\omega_2 = \sqrt{(5 - \sqrt5)/2} \approx 1.175571$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -3 & 1 \\ 1 & -2 \end{pmatrix}, \qquad \lambda_{1,2} = -\frac{5 \pm \sqrt5}{2} \approx -3.618034, \ -1.381966 .
+$$
+
+**Step 3**: $\rho_1 = 3 - \tfrac{5 + \sqrt5}{2} = \tfrac{1 - \sqrt5}{2} \approx -0.618034$ and $\rho_2 = \tfrac{1 + \sqrt5}{2} \approx 1.618034$, the golden ratio.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos\omega_1 t + a_2 \sin\omega_1 t + b_1 \cos\omega_2 t + b_2 \sin\omega_2 t, \\
+y(t) &= \tfrac{1 - \sqrt5}{2}\,(a_1 \cos\omega_1 t + a_2 \sin\omega_1 t) + \tfrac{1 + \sqrt5}{2}\,(b_1 \cos\omega_2 t + b_2 \sin\omega_2 t)
+\end{aligned}\ }
+$$
+
+with $\omega_{1,2} = \sqrt{(5 \pm \sqrt5)/2}$. In the fast mode $m_2$ moves $0.618$ times as far as $m_1$, in the opposite direction; in the slow mode it moves $1.618$ times as far, in the same direction.
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $\sqrt{\tfrac{5 + \sqrt5}{2}}$ | $\tfrac{1 - \sqrt5}{2}$ | $-\tfrac{5 + \sqrt5}{2}$ | $-\tfrac{5 + \sqrt5}{2}$ ✓ | $\sqrt5$ | $\sqrt5$ ✓ |
+| 2 | $\sqrt{\tfrac{5 - \sqrt5}{2}}$ | $\tfrac{1 + \sqrt5}{2}$ | $-\tfrac{5 - \sqrt5}{2}$ | $-\tfrac{5 - \sqrt5}{2}$ ✓ | $-\sqrt5$ | $-\sqrt5$ ✓ |
+
+These agree with Mathews' printed results.
+
+**Mathews' plots:** the modes against time for $0 \le t \le 5\pi$, vertical range $[-1, 1]$ for the first mode and $[-1.7, 1.7]$ for the second; space-time pictures for $0 \le t \le 5\pi$ (lines at $2$, $6$ and $8$).
+
+### Example 10 — Unequal masses, equal spring constants
+
+Find the general solution of (7) with
+
+$$
+m_1 = 2, \quad m_2 = 1, \quad k_1 = k_2 = k_3 = 1:
+\qquad
+\begin{aligned}
+2x'' &= -2x + y, \\
+y'' &= x - 2y.
+\end{aligned}
+$$
+
+**Step 1**: $(2r^2 + 2)(r^2 + 2) - 1 = 2r^4 + 6r^2 + 3 = 0$, so $r^2 = -\tfrac{3 \pm \sqrt3}{2}$ and
+
+$$
+r = \pm i\sqrt{\tfrac{3 + \sqrt3}{2}}, \quad \pm i\sqrt{\tfrac{3 - \sqrt3}{2}} .
+$$
+
+**Step 2**: $\omega_1 = \sqrt{(3 + \sqrt3)/2} \approx 1.538189$, $\omega_2 = \sqrt{(3 - \sqrt3)/2} \approx 0.796225$, and
+
+$$
+\mathbf{A} = \begin{pmatrix} -1 & \tfrac12 \\[1mm] 1 & -2 \end{pmatrix}, \qquad \lambda_{1,2} = -\frac{3 \pm \sqrt3}{2} \approx -2.366025, \ -0.633975 .
+$$
+
+**Step 3**: $\rho_1 = 2 - (3 + \sqrt3) = -(1 + \sqrt3) \approx -2.732051$ and $\rho_2 = 2 - (3 - \sqrt3) = \sqrt3 - 1 \approx 0.732051$.
+
+$$
+\boxed{\
+\begin{aligned}
+x(t) &= a_1 \cos\omega_1 t + a_2 \sin\omega_1 t + b_1 \cos\omega_2 t + b_2 \sin\omega_2 t, \\
+y(t) &= -(1 + \sqrt3)\,(a_1 \cos\omega_1 t + a_2 \sin\omega_1 t) + (\sqrt3 - 1)\,(b_1 \cos\omega_2 t + b_2 \sin\omega_2 t)
+\end{aligned}\ }
+$$
+
+with $\omega_{1,2} = \sqrt{(3 \pm \sqrt3)/2}$. In the fast mode the light mass $m_2$ swings $2.73$ times as far as $m_1$, in the opposite direction.
+
+**Verification:**
+
+| Mode | $\omega_j$ | $\rho_j$ | Row 1: left | Row 1: right | Row 2: left | Row 2: right |
+|---|---|---|---|---|---|---|
+| 1 | $\sqrt{\tfrac{3 + \sqrt3}{2}}$ | $-(1 + \sqrt3)$ | $-3 - \sqrt3$ | $-3 - \sqrt3$ ✓ | $3 + 2\sqrt3$ | $3 + 2\sqrt3$ ✓ |
+| 2 | $\sqrt{\tfrac{3 - \sqrt3}{2}}$ | $\sqrt3 - 1$ | $-3 + \sqrt3$ | $-3 + \sqrt3$ ✓ | $3 - 2\sqrt3$ | $3 - 2\sqrt3$ ✓ |
+
+These agree with Mathews' printed results.
+
+**Mathews' plots:** the modes against time for $0 \le t \le 5\pi$, vertical range $[-3, 3]$ for the first mode and $[-1, 1]$ for the second; space-time pictures for $0 \le t \le 5\pi$ with $m_1$ at $2 + x(t)$ and $m_2$ at $7 + y(t)$ (lines at $2$, $7$ and $11$).
+
+## Long-Term Behaviour: Energy and Periodicity
+
+There is no friction, so no motion of these systems decays: by part 3 of the theorem the energy $E$ is constant, and the amplitudes $a_j$, $b_j$ in (4) never change. Substituting each general solution into $E$ confirms $E' = 0$ symbolically in all ten examples.
+
+Whether a motion repeats depends on the ratio of the frequencies. A single mode is always periodic, with period $2\pi/\omega_j$. The following is a general fact about sums of two sinusoids, not a claim about one example: when both modes are present, the motion is periodic if and only if $\omega_1/\omega_2$ is rational; otherwise it is *quasi-periodic*: it never repeats exactly, although it comes back arbitrarily close to any state it has passed through.
+
+| Example | $(m_1, m_2;\ k_1, k_2, k_3)$ | $\omega_1$ | $\omega_2$ | $\omega_1/\omega_2$ | Every motion periodic? |
+|---|---|---|---|---|---|
+| 1 | $(6, 6;\ 3, 2, 0)$ | $1$ | $0.408248$ | $\sqrt6 \approx 2.449490$ | no |
+| 2 | $(2, 1;\ 4, 2, 0)$ | $2$ | $1$ | $2$ | yes, with period $2\pi$ |
+| 3 | $(2, 3;\ 1, 2, 0)$ | $1.414214$ | $0.408248$ | $2\sqrt3 \approx 3.464102$ | no |
+| 4 | $(1, 4;\ 1, 4, 0)$ | $2.414214$ | $0.414214$ | $3 + 2\sqrt2 \approx 5.828427$ | no |
+| 5 | $(1, \sqrt2;\ 4, 4, 0)$ | $3.107548$ | $1.082392$ | $\sqrt{4 + 3\sqrt2} \approx 2.871000$ | no |
+| 6 | $(1, 1;\ 1, 4, 1)$ | $3$ | $1$ | $3$ | yes, with period $2\pi$ |
+| 7 | $(1, 1;\ 1, 2, 1)$ | $2.236068$ | $1$ | $\sqrt5 \approx 2.236068$ | no |
+| 8 | $(1, 1;\ 1, 1, 1)$ | $1.732051$ | $1$ | $\sqrt3 \approx 1.732051$ | no |
+| 9 | $(1, 1;\ 2, 1, 1)$ | $1.902113$ | $1.175571$ | $\tfrac{1 + \sqrt5}{2} \approx 1.618034$ | no |
+| 10 | $(2, 1;\ 1, 1, 1)$ | $1.538189$ | $0.796225$ | $\sqrt{2 + \sqrt3} \approx 1.931852$ | no |
+
+"No" means that a motion with both modes present is quasi-periodic; each single mode is still periodic. "Yes, with period $2\pi$" means that $2\pi$ is a period of every motion (in Examples 2 and 6 the fast mode alone repeats sooner, after $\pi$ and $2\pi/3$). In every example $\rho_1 < 0 < \rho_2$ and $m_1 + m_2 \rho_1 \rho_2 = 0$, as the theorem says.
