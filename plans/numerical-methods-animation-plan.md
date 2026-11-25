@@ -85,11 +85,11 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 5 | [van der Pol System](../pages/numerical-methods/van-der-pol-system/) | written (all 6 examples); **done (batch 5):** 3 new animations (μ = 0 against the exact circle, μ = 1/16 to 1 from outside and inside, the μ = 4 relaxation oscillation) | none (module `n2003/VanDerPolMod.html`) | 7 | 30 |
 | 5 | [Pendulum](../pages/numerical-methods/pendulum/) | written (all 8 examples); **done (batch 5):** 3 new animations (linear against nonlinear pendulum, Example 6 loops and rotations, Example 7's fourteen damped curves) | none (module `n2003/PendulumMod.html`) | 8 | 86 |
 | 5 | [Spring-Mass Systems](../pages/numerical-methods/spring-mass-systems/) | written (all 10 examples; corrects Mathews' Example 5 first frequency); **done (batch 5):** 2 new animations (Example 6 two walls, Example 5 one wall, with their normal modes) | none (module `n2003/SpringMassMod.html`) | 11 | 225 |
-| 6 | [Projectile Motion](../pages/numerical-methods/projectile-motion.qmd) | skeleton | none | 9 | 71 |
-| 6 | [Compartment Model](../pages/numerical-methods/compartment-model.qmd) | skeleton | none | 4 | 48 |
-| 6 | [Harvesting Model](../pages/numerical-methods/harvesting-model.qmd) | skeleton | none | 20 | 77 |
-| 6 | [Logistic Curve](../pages/numerical-methods/logistic-curve.qmd) | skeleton | none; archive has no module page (Bib and Proof only) | 0 | 0 |
-| 6 | [Earthquake Model](../pages/numerical-methods/earthquake-model.qmd) | skeleton | none | 4 | 9 |
+| 6 | [Projectile Motion](../pages/numerical-methods/projectile-motion.qmd) | skeleton | none (module `n2003/ProjectileMotionMod.html`) | 9 | 71 |
+| 6 | [Compartment Model](../pages/numerical-methods/compartment-model.qmd) | skeleton | none (module `n2003/CompartmentModelMod.html`) | 4 | 48 |
+| 6 | [Harvesting Model](../pages/numerical-methods/harvesting-model.qmd) | skeleton | none (module `n2003/HarvestingModelMod.html`) | 20 | 77 |
+| 6 | [Logistic Curve](../pages/numerical-methods/logistic-curve.qmd) | skeleton | none (module `n2003/Web/LogisticEquationMod/LogisticEquationMod.html`, "Module for Logistic Curve Fitting", 4 examples; the top level has only the Bib and Proof pages) | 0 | 0 |
+| 6 | [Earthquake Model](../pages/numerical-methods/earthquake-model.qmd) | skeleton | none (module `n2003/EarthquakeModelMod.html`) | 4 | 9 |
 | 7 | [Crank-Nicolson Method](../pages/numerical-methods/crank-nicolson-method.qmd) | skeleton | none | 5 | 17 |
 | 7 | [Finite Difference Method](../pages/numerical-methods/finite-difference-method.qmd) | skeleton | none | 4 | 15 |
 | 7 | [Elliptic PDE's](../pages/numerical-methods/elliptic-pdes.qmd) | skeleton | none | 7 | 25 |
