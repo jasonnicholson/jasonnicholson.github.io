@@ -1,9 +1,9 @@
 ---
 title: "Harvesting Model"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -24,6 +24,48 @@ y_{k+1} = y_k + h\, f\!\left(t_k + \tfrac{h}{2},\ y_k + \tfrac{h}{2} f(t_k, y_k)
 $$
 
 always with $m = 110$ steps. He works one example for each case, $(a, b, k) = (2, 1, 1)$, $(4, 1, 3)$ and $(3, 3, 3)$, draws families of solution curves from many starting values $x_0$, and shows that the numerical curves reproduce the formulas. Every formula below has been checked symbolically, and every number recomputed.
+
+## Animations
+
+Cases 1 to 3 show **Mathews' modified Euler runs growing in time**. All the runs of an example share one clock: each frame adds the steps up to the time in the title, so a run that Mathews computes on a shorter interval stops early, and a dot marks the newest point of each run. The left panel is Mathews' final graph for the example, with his intervals, $m = 110$, his window and his colours (taken from his programs, with his green darkened for legibility), except that the window is extended below $x = 0$. Mathews' windows stop at $x = 0$, but several of his runs continue past extinction, and the gray band shows where they go; there the curves are dashed, because a negative $x$ is no longer a population, only the continuation of the formula and of the method. Crosses mark the exact extinction times $t_0$, and dashed vertical lines the asymptotes $t_1$ that lie in the window. The right panel is new. It plots the error $|y_k - x(t_k)|$ of each run against the exact solution on a log scale, solid while the exact $x \ge 0$ and dotted past extinction, and its title gives the largest error so far while $x \ge 0$. A run that starts on a stationary solution has error exactly $0$ and is not drawn there. Every error is $0$ at $t = 0$, where nothing is drawn, and an error too small for the panel leaves its bottom edge. The method runs in double precision, as in Mathews' program, and the exact solutions, formulas (5), (6) and (7) through the same double-precision starting values, are evaluated in 256-bit arithmetic.
+
+Case 4 is a different picture, with one frame per harvest rate $k$. On the left are the exact solutions for twelve starting values, each drawn only until it reaches $x = 0$, where a cross marks the extinction time: blue if the population survives, red if it dies out, black if it is stationary. The band of starting values that die out, $0 \le x < r_1$ (all of $x \ge 0$ when there is no stationary point), is shaded. On the right is the rate $x' = 4x - x^2 - k$, drawn sideways so that $x$ is on the same vertical axis in both panels; the parabola leaves the panel on the left. The vertical line $x' = 0$ is the phase line: where the parabola lies to its right, $x$ increases (blue triangles), where it lies to its left, $x$ decreases (red triangles), and where it crosses are the stationary points, the stable $r_2$ (filled dot) and the unstable $r_1$ (open dot), or at $k = 4$ the double point (gray diamond). The animation pauses at $k = 0$, $3$, $4$ and $6$.
+
+Mathews' module links no animation, and his animation archive has none for the harvesting model, so all four animations are new, with no Mathews original. Cases 1, 2 and 3 animate his numerical Examples 8, 15 and 19. Their starting values include those of his formula graphs in Examples 4, 5, 10, 11, 12 and 17, and he says himself that their graphs are the same as his graphs of Examples 6, 13 and 17; the three graphs in the theory part of his module show families of the same kind. Case 4 uses the $a = 4$, $b = 1$ of Mathews' case (ii) example and passes through his $k = 3$, but its cases (i) and (iii), at $k = 4$ and $k > 4$, are not his parameter sets $(2, 1, 1)$ and $(3, 3, 3)$, which are Cases 1 and 3. Not animated are the S-shaped logistic curve of the Background section, Examples 1, 2, 3, 7, 9, 14, 16 and 18, whose results are formulas rather than graphs, and the extraneous branches beyond the asymptotes that Mathews' plots of Examples 5 and 12 contain.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Case (i), one stationary solution (Mathews' Example 8), $x' = 2x - x^2 - 1$, ten runs with $m = 110$
+
+**Behavior:** The five runs that start above $1$ fall toward the stationary solution $x = 1$ and stay above it, and the run from $x_0 = 1$ stays exactly at $1$, since $f(t, 1) = 0$. The four runs that start below $1$ fall to $x = 0$, at the extinction times $t_0 = \tfrac14, \tfrac23, \tfrac32, 4$ for $x_0 = \tfrac15, \tfrac25, \tfrac35, \tfrac45$. Mathews stops the runs for $\tfrac15$, $\tfrac25$ and $\tfrac35$ at $t = 0.5$, $1$ and $1.5$, short of their asymptotes at $t_1 = \tfrac54, \tfrac53, \tfrac52$. The first two continue past extinction and end in the gray band at $y_{110} = -0.3333$ and $-0.4999$; the run for $\tfrac35$ ends at its extinction time, with $y_{110} = 8.234 \times 10^{-5}$, and the run for $\tfrac45$ reaches its extinction time $t_0 = 4$ at the right edge, with $y_{110} = 7.641 \times 10^{-4}$ (its asymptote, $t_1 = 5$, is outside the window). In the right panel the errors of the runs from $x_0 = 6, 5, 4, 3, 2$ are ordered by $x_0$ at every step, and the largest error while $x \ge 0$, $2.360 \times 10^{-2}$ for $x_0 = 6$ at $t = 0.1091$, is reached by $t = 0.2$, while that curve is still falling steeply. The error of the run from $\tfrac45$ grows at every step, to $7.641 \times 10^{-4}$ at $t = 4$, the largest error at the end of the window.
+
+[Julia source](harvestaa.jl)
+
+![Mathews' modified Euler runs (m = 110) for x′ = 2x − x² − 1 growing in time in his window [0, 4] × [0, 6], extended below zero: runs from x₀ = 2 to 6 fall toward the stationary solution x = 1, runs from 1/5, 2/5, 3/5 and 4/5 reach zero at t₀ = 1/4, 2/3, 3/2 and 4, the first two continuing past extinction (dashed) to −0.3333 and −0.4999, with the asymptotes t₁ = 5/4, 5/3, 5/2 dashed, and a log-scale error panel whose largest error while x ≥ 0 is 2.360e−2 for x₀ = 6 at t = 0.1091](harvestaa.gif)
+
+### Case 2 — Case (ii), two stationary solutions (Mathews' Example 15), $x' = 4x - x^2 - 3$, sixteen runs with $m = 110$
+
+**Behavior:** The five runs that start above $3$ fall toward the stationary solution $x = 3$, the five that start between $1$ and $3$ rise toward it, and the runs from $x_0 = 1$ and $x_0 = 3$ stay exactly on the stationary solutions, with errors exactly zero. The four runs below $1$ reach $x = 0$ at $t_0 = 0.07708$, $0.1839$, $0.3466$ and $0.6496$ for $x_0 = \tfrac15, \tfrac25, \tfrac35, \tfrac45$ and continue into the gray band, to $y_{110} = -0.4857$, $-1.112$, $-3.167$ and $-3.086$ at the ends of their intervals, $t = 0.2$, $0.4$, $0.7$ and $1$. Mathews' shorter intervals stop the first three short of their asymptotes, at $t_1 = 0.6264$, $0.7332$ and $0.8959$; the asymptote of the fourth, at $t_1 = 1.199$, is beyond the window. In the right panel the errors of the runs from $x_0 = 8, 7, 6, 5, 4$ are ordered by $x_0$ at every step, and the largest error while $x \ge 0$, $2.087 \times 10^{-3}$ for $x_0 = 8$ at $t = 0.08182$, is reached by $t = 0.1$. The runs between the two stationary solutions are far more accurate, with errors of at most $5.182 \times 10^{-6}$; the dip in one of them is where the error of the run from $x_0 = 2$ changes sign, between $t = 0.6182$ and $0.6273$. The errors of the four runs below $1$ grow at every step, and past extinction the error of the run from $x_0 = \tfrac45$ becomes the largest in the panel, $7.056 \times 10^{-3}$ at $t = 1$, more than three times the largest error while $x \ge 0$.
+
+[Julia source](harvestbb.jl)
+
+![Mathews' modified Euler runs (m = 110) for x′ = 4x − x² − 3 growing in time in his window [0, 1] × [0, 8], extended below zero: runs from above 3 fall and runs from between 1 and 3 rise toward the stationary solution x = 3, the runs from 1 and 3 stay put, and runs from 1/5, 2/5, 3/5 and 4/5 reach zero at t₀ = 0.07708, 0.1839, 0.3466 and 0.6496 and continue past extinction (dashed) down to −3.167, with the asymptotes t₁ = 0.6264, 0.7332, 0.8959 dashed, and a log-scale error panel whose largest error while x ≥ 0 is 2.087e−3 for x₀ = 8 at t = 0.08182](harvestbb.gif)
+
+### Case 3 — Case (iii), no stationary solution (Mathews' Example 19), $x' = 3x - 3x^2 - 3$, six runs with $m = 110$
+
+**Behavior:** With no stationary solution every run falls, and each reaches $x = 0$ before $t = 0.75$: at $t_0 = 0.4031$ for $x_0 = 1$ and at $0.6046$, $0.6778$, $0.7128$, $0.7330$ and $0.7460$ for $x_0 = 2, 3, 4, 5, 6$, so the crosses crowd toward the right edge. Every run therefore ends in the gray band, from $y_{110} = -0.01041$ for $x_0 = 6$ to $-0.5937$ for $x_0 = 2$, and the run from $x_0 = 1$ drops below the window (its first point below $x = -1$ is at $t = 0.6068$) and ends at $y_{110} = -5.348$, as the note at the bottom of the frame says. Its asymptote, at $t_1 = 0.8061$, is the earliest of the six, so none lies in Mathews' interval. In the right panel the largest error while $x \ge 0$, $9.246 \times 10^{-3}$ for $x_0 = 6$ at $t = 0.02727$, is reached by $t = 0.05$, and as long as all six exact solutions are positive the errors are ordered by $x_0$. Past extinction the error of the run from $x_0 = 1$ grows at every step, to $4.814 \times 10^{-2}$ at $t = 0.75$, which is $0.05613$ before its asymptote.
+
+[Julia source](harvestcc.jl)
+
+![Mathews' modified Euler runs (m = 110) for x′ = 3x − 3x² − 3 from x₀ = 1 to 6 growing in time in his window [0, 0.75] × [0, 6], extended below zero: every run falls through zero, at t₀ from 0.4031 for x₀ = 1 to 0.7460 for x₀ = 6, and continues past extinction (dashed), the run from x₀ = 1 down to −5.348 below the window, with a log-scale error panel whose largest error while x ≥ 0 is 9.246e−3 for x₀ = 6 at t = 0.02727](harvestcc.gif)
+
+### Case 4 — Sweeping the harvest rate, $x' = 4x - x^2 - k$, $k = 0, 0.1, \ldots, 6$, $x_0 = 0.5, 1, \ldots, 6$ on $0 \le t \le 2$ (new)
+
+**Behavior:** At $k = 0$ there is no harvesting and the equation is the logistic equation: $r_1 = 0$, $r_2 = 4$, and every population tends to $4$ (the one from $x_0 = 4$ is stationary). As $k$ grows, $r_1 = 2 - \sqrt{4 - k}$ rises and $r_2 = 2 + \sqrt{4 - k}$ falls, and the shaded band of starting values that die out widens. The population from $x_0 = 0.5$ is the first to die, from $k = 1.8$ on ($r_1$ passes $0.5$ at $k = 1.75$), at $t_0 = 1.104$ for $k = 1.8$. At Mathews' $k = 3$ the stationary points $r_1 = 1$ and $r_2 = 3$ are among the starting values, the population from $x_0 = 0.5$ dies at $t_0 = 0.2554$, and all the others tend to $3$. At $k = 4$ the two stationary points merge into the double point $x = 2$, where the parabola just touches the phase line: the populations from $x_0 = 0.5$, $1$ and $1.5$ die at $t_0 = \tfrac16$, $\tfrac12$ and $\tfrac32$, and those above $2$ approach it only slowly, like $2 + 1/t$, so at $t = 2$ they are still $0.25$ to $0.4444$ above it. One step further, at $k = 4.1$, the parabola has left the phase line and every population dies out, but the large ones die late, $x_0 = 2$ at $t_0 = 4.471$ and $x_0 = 6$ at $t_0 = 9.189$, beyond the window, so only three crosses show. From $k = 5.4$ on all twelve die before $t = 2$, and at $k = 6$ the last of them, from $x_0 = 6$, dies at $t_0 = 1.546$.
+
+[Julia source](harvestdd.jl)
+
+![Exact solutions of x′ = 4x − x² − k for x₀ = 0.5 to 6 as the harvest rate k sweeps from 0 to 6, with the rate x′ = 4x − x² − k drawn sideways beside them as a phase line: at k = 0 every population tends to 4; as k grows the stationary points r₁ and r₂ approach each other and the shaded band of starting values that die out widens; at k = 3 they are 1 and 3; at k = 4 they merge into the double point x = 2; and beyond k = 4 every population dies out, all twelve before t = 2 from k = 5.4 on](harvestdd.gif)
 
 ## Background: the Logistic Equation
 
