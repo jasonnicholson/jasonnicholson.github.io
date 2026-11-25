@@ -102,13 +102,13 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 8 | [Eigenvalues and Eigenvectors](../pages/numerical-methods/eigenvalues-and-eigenvectors/) | written (all examples, plus a section on the powers AʲX₀); **done (batch 8):** 4 new animations (invariant directions, scaled powers, Newton on p(λ), rounded polynomial roots) | none (module `n2003/EigenvaluesMod.html`) | 13 | 173 |
 | 8 | [Jacobi and Gauss-Seidel Iteration](../pages/numerical-methods/jacobi-and-gauss-seidel-iteration/) | written (four errors in the old text corrected); **done (batch 8):** 3 new animations (the two methods in the plane, Example 6, Examples 2 and 4 reordered) | none (module `n2003/GaussSeidelMod.html`) | 8 | 6 |
 | 8 | [Successive Over Relaxation - SOR](../pages/numerical-methods/successive-over-relaxation-sor/) | written (old ω mix and broken \tag corrected); **done (batch 8):** 3 new animations (three methods on Example 1, the ω sweep, Laplace's equation on 5 × 5) | none (module `n2003/SORmethodMod.html`) | 4 | 41 |
-| 9 | [Frobenius Series Solution](../pages/numerical-methods/frobenius-series-solution.qmd) | skeleton | none | 12 | 175 |
+| 9 | [Frobenius Series Solution](../pages/numerical-methods/frobenius-series-solution.qmd) | skeleton | none (module `n2003/FrobeniusSeriesMod.html`) | 12 | 175 |
 | 9 | [Power Series](../pages/numerical-methods/power-series.qmd) | skeleton | none; no archive module | 0 | 0 |
-| 9 | [Circle of Curvature](../pages/numerical-methods/circle-of-curvature.qmd) | written | none | 13 | 104 |
-| 9 | [Linear Programming-Simplex Method](../pages/numerical-methods/linear-programming-simplex-method.qmd) | written | none | 11 | 167 |
-| 9 | [Nonlinear Curve Fitting](../pages/numerical-methods/nonlinear-curve-fitting.qmd) | skeleton | none | 1 | 0 |
-| 9 | [Matrix Exponential](../pages/numerical-methods/matrix-exponential.qmd) | skeleton | none | 11 | 85 |
-| 9 | [Painleve Property](../pages/numerical-methods/painleve-property.qmd) | skeleton | none | 14 | 76 |
+| 9 | [Circle of Curvature](../pages/numerical-methods/circle-of-curvature.qmd) | written | none as a GIF, but the module shows Mathews' collocation-circle animation as 19 still frames (module `n2003/CurvatureMod.html`) | 13 | 104 |
+| 9 | [Linear Programming-Simplex Method](../pages/numerical-methods/linear-programming-simplex-method.qmd) | written | none (module `n2003/LinearProgrammingMod.html`) | 11 | 167 |
+| 9 | [Nonlinear Curve Fitting](../pages/numerical-methods/nonlinear-curve-fitting.qmd) | skeleton | none (module `n2003/Web/NonLinearCurveFitMod/NonLinearCurveFitMod.html`, 3 examples; the top-level `NonLinearCurveMod.html` is a placeholder) | 1 | 0 |
+| 9 | [Matrix Exponential](../pages/numerical-methods/matrix-exponential.qmd) | skeleton | none (module `n2003/MatrixExponentialMod.html`) | 11 | 85 |
+| 9 | [Painleve Property](../pages/numerical-methods/painleve-property.qmd) | skeleton | none (module `n2003/PainlevePropertyMod.html`) | 14 | 76 |
 | — | [Triangular Systems and Back Substitution](../pages/numerical-methods/triangular-systems-and-back-substitution.qmd) | written | none (`backsubstitutionmod.html`) | 0 | 0 |
 | — | [Gauss-Jordan Elimination and Pivoting](../pages/numerical-methods/gauss-jordan-elimination-and-pivoting.qmd) | written | none | 7 | 15 |
 | — | [LU Factorization](../pages/numerical-methods/lu-factorization.qmd) | written | none | 9 | 22 |
