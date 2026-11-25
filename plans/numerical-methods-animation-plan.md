@@ -73,11 +73,11 @@ Start a fresh session on an up-to-date `main` and run `/run-animation-batch <N>`
 | 3 | [Steepest Descent - Gradient Search](../pages/numerical-methods/steepest-descent-gradient-search/) | written; **done (batch 3):** 4 new animations (Examples 1–4 with Mathews' own line search, three panels: path, zoom, φ_k with the parabola fit) | probably never made: `Optimization/Gradient1/Gradientaa.html` shows only the archive's "Under Construction" banner and no GIF; module `n2003/GradientSearchMod.html` | 7 | 61 |
 | 3 | [Nelder Mead Method](../pages/numerical-methods/nelder-mead-method/) | written; **done (batch 3):** 3 animations (Mathews' 16 static Example 4 pictures animated on the exact-arithmetic path, new Rosenbrock run, new Exercise 3 runs) | probably never made: `Optimization/Nelder1/Nelderaa.html` shows only the "Under Construction" banner and no GIF; module `n2003/NelderMeadMod.html` | 5 | 33 |
 | 3 | [Powell's Method](../pages/numerical-methods/powells-method/) | written; **done (batch 3):** 3 animations (rebuilds of Animations 1 and 2 from Mathews' surviving Example 7 and 8 plotting programs, new Rosenbrock run) | probably never made: `Optimization/Powell1/Powellaa.html` and `Powellbb.html` show only the "Under Construction" banner and no GIF; module `n2003/PowellMethodMod.html` | 9 | 62 |
-| 4 | [Predictor-Corrector Methods](../pages/numerical-methods/predictor-corrector-methods.qmd) | skeleton | none | 1 | 0 |
-| 4 | [Picard Iteration](../pages/numerical-methods/picard-iteration.qmd) | skeleton | none | 15 | 116 |
-| 4 | [Shooting Methods for ODE's](../pages/numerical-methods/shooting-methods-for-odes.qmd) | skeleton | none | 7 | 14 |
-| 4 | [Finite Difference Method for ODE's](../pages/numerical-methods/finite-difference-method-for-odes.qmd) | skeleton | none | 7 | 11 |
-| 4 | [Galerkin's Method](../pages/numerical-methods/galerkins-method.qmd) | skeleton | none | 9 | 121 |
+| 4 | [Predictor-Corrector Methods](../pages/numerical-methods/predictor-corrector-methods.qmd) | skeleton | none (module `n2003/PredictCorrectMod.html` is an "under construction" placeholder; only `PredictCorrectBib.html` exists) | 1 | 0 |
+| 4 | [Picard Iteration](../pages/numerical-methods/picard-iteration.qmd) | skeleton | none (module `n2003/PicardIterationMod.html`, 12 examples; notebook `picarditeration/PicardIterationMod.nb`) | 15 | 116 |
+| 4 | [Shooting Methods for ODE's](../pages/numerical-methods/shooting-methods-for-odes.qmd) | skeleton | none (module `n2003/ShootingMod.html`) | 7 | 14 |
+| 4 | [Finite Difference Method for ODE's](../pages/numerical-methods/finite-difference-method-for-odes.qmd) | skeleton | none (module `n2003/FiniteDifferenceMod.html`) | 7 | 11 |
+| 4 | [Galerkin's Method](../pages/numerical-methods/galerkins-method.qmd) | skeleton | none (module `n2003/GalerkinMod.html`) | 9 | 121 |
 | 5 | [Lorenz Attractor](../pages/numerical-methods/lorenz-attractor.qmd) | skeleton | none | 7 | 74 |
 | 5 | [Lotka-Volterra Model](../pages/numerical-methods/lotka-volterra-model.qmd) | skeleton | none | 7 | 32 |
 | 5 | [van der Pol System](../pages/numerical-methods/van-der-pol-system.qmd) | skeleton | none | 7 | 30 |
