@@ -119,7 +119,7 @@ Use this decision path at the start of each topic:
 
 When asked to process a batch:
 
-1. Build a queue of the batch's topic slugs (from `plans/numerical-methods-animation-plan.md` when a batch number is given).
+1. Build a queue of the batch's topic slugs (from `plans/numerical-methods-animation-plan.md` when a batch number is given, or from `plans/numerical-methods-light-pass-plan.md` for batch 15 and later).
 2. Perform read-only discovery in parallel across queued topics (module page, links, image inventory).
 3. Process edits topic-by-topic (folder move, scripts, qmd update, index link), then generate GIFs topic-by-topic to keep failures isolated.
 4. Reserve the main agent image-view budget for final GIF verification only; use subagents for legacy extraction per topic/example.

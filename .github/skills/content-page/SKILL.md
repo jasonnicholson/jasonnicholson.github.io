@@ -1,6 +1,6 @@
 ---
 name: content-page
-description: "Use whenever a numerical-methods page under pages/numerical-methods/ needs its text written or rewritten from the legacy Mathews archive: filling a skeleton page that still has \"(Planned)\" sections, writing the Description and worked examples a page needs before the animation-page skill animates it, or rewriting a text-only page (linear algebra, ODEs, PDEs, optimization, eigenvalues, series, models). Produces QMD pages with KaTeX math, callout-box definitions and theorems, and fully worked examples whose every number is computed and verified. Accepts a list of topic slugs. Not for building animations (use animation-page) or reviewing pages (use review-animations)."
+description: "Use whenever a numerical-methods page under pages/numerical-methods/ needs its text written or rewritten from the legacy Mathews archive: filling a skeleton page that still has \"(Planned)\" sections, writing the Description and worked examples a page needs before the animation-page skill animates it, or rewriting a text-only page (linear algebra, ODEs, PDEs, optimization, eigenvalues, series, models). In overview mode (a brief that says \"overview\"), it writes or extends only the Description of an existing animated page to the overview standard of plans/numerical-methods-light-pass-plan.md, leaving the animations alone. Produces QMD pages with KaTeX math, callout-box definitions and theorems, and fully worked examples whose every number is computed and verified. Accepts a list of topic slugs. Not for building animations (use animation-page) or reviewing pages (use review-animations)."
 ---
 You are a specialist at writing mathematical content pages for the jasonhnicholson.com numerical methods Quarto site. Your job is to convert legacy Mathews HTML pages into clean, self-contained Quarto `.qmd` pages with proper KaTeX math, callout-box definitions and theorems, and fully worked examples with verification.
 
@@ -35,6 +35,45 @@ The animation pages built from this archive were reviewed nine times, and almost
 - **Check every behaviour word** (converges, diverges, oscillates, monotone, "fast", stable) against the computed sequence, and every quantifier ("every", "always") over the whole range it covers.
 - **Attach no textbook result to an example it does not fit** (a convergence order, error bound or stability condition) unless you have checked it for that example; label general statements as general.
 - **Keep a claim ledger** outside the repository (the session scratchpad, or `$TMPDIR/content-ledgers/<slug>.md`): every number and behaviour sentence on the page, with the command and output that confirms it. Remove or reword anything you cannot confirm.
+
+## Overview mode
+
+Use this mode when your brief says **overview**. It comes from the light pass in `plans/numerical-methods-light-pass-plan.md`: the site's purpose is what is instructive, which means the animations plus a short overview of each method. Proofs and the full set of worked examples belong to the course and the book, not to this site.
+
+In overview mode:
+
+- **You edit only the page's `## Description`**, plus the moves allowed below. The page is usually an existing animated folder (`<slug>/index.qmd`): keep its folder, its scripts, its GIFs and its Animations sections as they are. For a new page, the brief says what exists; write the Description and leave `## Animations` to the animation-page skill.
+- **The brief gives the page's action:**
+  - *write*: the page has no Description, so write one to the standard below;
+  - *extend*: the Description is short, so bring it up to the standard;
+  - *check*: the Description is already substantial, so check it against the six points and add only what is missing. If it already meets the standard, change nothing and say so, with the check of each point in the ledger.
+- **The ledger covers every new or changed sentence**, and records every move (where the sentence was, and that its words did not change). Every sentence you add meets the Accuracy standard above.
+- **The Setup, image budget and per-page loop above still apply, scaled down.** Read the module to confirm the method's formulas and hypotheses and to stay faithful to Mathews; you will need few images, often none. Do not write the module's worked examples.
+- **Do not push the page toward the depth of a full content page.** The 41 pages of batches 1–9 go further than this standard; they are not the model.
+
+### The overview standard
+
+A page's `## Description` comes first, before `## Animations`. It has 150–400 words of prose, plus display math. It contains these six things, in this order unless the page reads better otherwise:
+
+1. **The problem.** What the method solves, in one or two sentences.
+2. **The core formula.** The method's formula or formulas, as display math, in the same notation as the page's animations.
+3. **What it assumes.** The method's hypotheses: for example, a sign change, a smooth enough f, f′ ≠ 0 at the root, or an even number of subintervals.
+4. **How accurate it is.** The convergence order or the error term, stated as a general result, with the conditions under which it holds ("for a simple root", "if f ∈ C⁴[a, b]"). Where an animation on the page shows this, point to the case.
+5. **When it fails or misleads.** One or two concrete failure modes. Prefer the ones the page's animations show, and link to the case.
+6. **Where it fits.** One sentence linking related pages on the site, for example Secant → Newton-Raphson and False Position.
+
+**Optional: one short worked example.** It is a table of at most about six rows, or at most five steps. Include it only when it adds something the animations do not show, such as the iterates' digits. Use the page's own animated problem, so the numbers agree with the GIFs.
+
+**Left out:** proofs, derivations beyond a one-line intuition, definition and theorem callout boxes, the module's full set of examples, and Mathematica or MATLAB procedures. One `callout-important` box for the key formula is allowed.
+
+**Accuracy.** The Accuracy standard and the claim ledger above apply to every new sentence. Every number is computed. Every general result is labelled as general and is not attached to an example unless it has been checked for that example. A general convergence result is the easiest place to make a plausible but false claim, so it gets the same check as a number: confirm it on the page's own animated problem (the error ratios of the computed iterates, or the error against h) before you point to a case as showing it.
+
+### Edits outside the Description
+
+- Overview sentences that now sit in the `## Animations` introduction may be moved into the Description, without changing what they say. The ledger records each move.
+- The only change allowed inside the Animations sections is a link or a cross-reference, such as a link from a case to the Description, or from the Description's failure modes to a case heading.
+- Other sections (Derivation Notes, Worked Example, Outside Links, References) stay as they are. If one contradicts the new Description, do not fix it: report the contradiction, with your computation, to whoever briefed you.
+- A one-line link to this page from another page is allowed only when the brief names that page.
 
 ## Legacy Source Structure
 
@@ -119,6 +158,7 @@ Mark the current page todo as **in-progress**, then:
 
 7. **Overwrite the stub `.qmd`** with the complete page (do not create a new file).
    - If the page is in an animation batch of `plans/numerical-methods-animation-plan.md`, open the page with a `## Description` section (1–3 paragraphs: the problem, the method, the core formula) so the animation-page skill can add `## Animations` directly after it.
+   - In overview mode, edit only the Description, to the overview standard above, and do not overwrite the page.
    - Before removing a "Legacy Animation Inventory (Stub)", make sure its archive paths are recorded in the plan; its `localhost:8000` links are dead on the published site, so they must not stay on the page.
 
 8. **Render the page** with `quarto render pages/numerical-methods/<topic>.qmd` and fix any error.
