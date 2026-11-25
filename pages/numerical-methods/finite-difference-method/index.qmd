@@ -1,9 +1,9 @@
 ---
 title: "Finite Difference Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -18,6 +18,38 @@ u_{i,j+1} = (2 - 2r^2)\,u_{i,j} + r^2\,(u_{i+1,j} + u_{i-1,j}) - u_{i,j-1}.
 $$
 
 The first row is $f$, and a second row is built from $f$ and $g$ with a Taylor expansion. This is an explicit method: the rows are computed one after another, with no system of equations to solve. As a general result, it is stable when $r \le 1$; for $r > 1$ the shortest wavelengths that a fine enough grid can carry grow geometrically. When $r = 1$ and the second row is exact, every value it computes is exact. Mathews' three examples show both sides: Examples 1 and 2 use $r = 1$ and reproduce the exact solution to rounding error, and Example 3 takes $r = 1.02$ and is unstable.
+
+## Animations
+
+Each animation below advances the **shape of the string** $u(x, t_j)$ one time row per frame and draws the exact solution at the same time (black) beside it. The computed values $u_{i,j}$ at the grid points are joined by straight lines. Mathews draws all the rows at once as a three-dimensional surface over the indices $i$ and $j$; each frame here is one row of that surface. A second panel shows what one row alone does not: the largest error in each row (Case 1), the grid values seen from above with the paths of the string's corners (Case 2), or the sawtooth mode that makes Example 3 unstable (Case 3). All three cases use Mathews' grid, $n = 11$ and $m = 21$, formula (8) for the second row (except the comparison run in Case 1) and formula (6) for the later rows. The numbers in the titles and legends agree with the tables in the examples.
+
+Mathews' module links no animation, and his animation archive has none for partial differential equations, so all three animations are new, with no Mathews original. Cases 1 to 3 animate his Examples 1 to 3; Case 1 also runs Example 1 with the first-order second row (7), as in "What the exact second row is worth" below. Not animated are Mathews' three-dimensional surfaces themselves (including his surface of the exact solution in Example 1, drawn here as the black curves), his plot of the initial position in Example 2 (the first frame of Case 2), his printed tables, and the refinement table for $r = 0.5$ in Example 1.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Example 1: $f(x) = \sin \pi x + \sin 2\pi x$, $r = 1$, second row by (8) and by (7)
+
+**Behavior:** With Mathews' second row (8) (red), which is exact here, the computed points lie on the exact solution in every row: the largest error in a row is never more than $1.5 \times 10^{-15}$, which is rounding error, and at $t = 1$ the string is back in its initial shape. With the first-order second row (7) (blue, dashed), the second row is already off by $0.2212$, and formula (12) carries that error along without damping it: the largest error in a row reaches $0.3976$ at $t = 0.15$, $0.35$, $0.65$ and $0.85$. At $t = 0.5$ and $t = 1$ it falls back to rounding level ($8.9 \times 10^{-16}$ and $7.8 \times 10^{-16}$), because on this grid any solution of (12) that is zero in row 1, as the error is, is zero again in rows 11 and 21.
+
+[Julia source](fdpdeaa.jl)
+
+![Finite difference solution of u_tt = 4u_xx with u(x, 0) = sin πx + sin 2πx, u_t(x, 0) = 0, h = 0.1, k = 0.05 and r = 1, advanced one time row per frame from t = 0 to t = 1 against the exact solution; the run with Mathews' second row (8) lies on the exact curve in every row, while the run with the first-order second row (7) is off by up to 0.3976; a log-scale panel shows the largest error in each row, at most 1.5 × 10⁻¹⁵ for (8) and between 0.1584 and 0.3976 for (7) except at t = 0.5 and t = 1, where it falls to rounding level](fdpdeaa.gif)
+
+### Case 2 — Example 2: the plucked string, $r = 1$, against d'Alembert's solution
+
+**Behavior:** The corner of the string at $x = 0.6$ splits in two, and the two corners move apart one grid step $h = 0.1$ per time step $k = 0.05$, the wave speed $c = 2$. In the $(x, t)$ plane on the right their paths run along the diagonals of the grid, because $r = 1$ makes $k = h/c$. The corner moving right reaches the fixed end $x = 1$ at $t = 0.2$ and the one moving left reaches $x = 0$ at $t = 0.3$; each is reflected there, and from $t = 0.3$ to $t = 0.7$ the whole string is at or below the axis. At $t = 0.5$ the corners meet at $x = 0.4$, where the string has its lowest point, $-0.6$; the motion then runs in reverse, and at $t = 1$ the string is back in its initial shape. At every grid time the exact string is straight between grid points, so the computed points joined by straight lines are the exact shape, and the largest error in a row is at most $4.5 \times 10^{-16}$.
+
+[Julia source](fdpdebb.jl)
+
+![Finite difference solution of u_tt = 4u_xx for the plucked string peaked at x = 0.6, with h = 0.1, k = 0.05 and r = 1, advanced one time row per frame from t = 0 to t = 1 against d'Alembert's solution, with the corners of the exact string marked; a second panel shows the grid points of the (x, t) plane coloured by the computed values and the paths of the two corners along the grid diagonals, reflected at x = 1 at t = 0.2 and at x = 0 at t = 0.3 and meeting at x = 0.4 at t = 0.5, where the string reaches −0.6](fdpdebb.gif)
+
+### Case 3 — Example 3: the same string with $r = 1.02$, the sawtooth grows
+
+**Behavior:** In the first rows the computed string stays close to the exact one; the largest error after one step is $0.00255$. But the sawtooth $\sin(9\pi x_i) = (-1)^i \sin(\pi x_i)$, the mode $p = 9$, for which $r^2 s_9 = 1.0149 > 1$, is already in $f$ with coefficient $c_9 = -0.01219$. From then on $c_9$ changes sign at every step (open and filled markers) and its size grows at every step, by a ratio that approaches the size of the unstable root $\lambda = -1.2762$ of (9) and is $1.2761$ at the last step; the dashed line, drawn through the last point, has that slope. Over the $20$ steps $|c_9|$ grows by a factor of about $66$, to $0.7997$ at $t = 1.02$. The largest error in a row also grows at every step, and from row 13 ($t = 0.612$) on it is within $3\%$ of $|c_9|$: the error is mostly the sawtooth. From row 18 ($t = 0.867$) on the computed string goes beyond $0.6$, the largest displacement the true string ever has, and at $t = 1.02$ its values alternate in sign from point to point, with $\max|u| = 1.312$. The animation stops where Mathews' rectangle ends, at $t = 1.02$, and every row fits the fixed axis.
+
+[Julia source](fdpdecc.jl)
+
+![Finite difference solution of u_tt = 4u_xx for the plucked string with h = 0.1, k = 0.051 and r = 1.02, advanced one time row per frame from t = 0 to t = 1.02 against d'Alembert's solution, the computed string turning into a growing zigzag; a lower panel shows the sawtooth part of each row, c₉ sin 9πxᵢ, on an axis rescaled every frame, and a log-scale panel shows |c₉| alternating in sign and growing from 0.01219 to 0.7997 by a factor per step that approaches the unstable root's size, 1.2762, with the largest error in each row growing from 0.00255 to 0.7845](fdpdecc.gif)
 
 ## The Wave Equation
 
