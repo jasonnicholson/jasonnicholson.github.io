@@ -108,7 +108,7 @@ Decisions already taken on Jason's behalf, recorded in the batch notes and state
   - Two GIFs are over the 3 MB target: `gradientcc.gif` (3.2 MB) and `nelderbb.gif` (3.1 MB). Accepted, since the GIFs are stored with Git LFS.
 - **Housekeeping:** the section index status note (line 11, "60–80% done") was out of date. Updated on 2026-11-25.
 
-### Batches 10–14 (all done 2026-11-25)
+### Remaining batches (all done 2026-11-25)
 
 Batches 10–13 are text-only (no animations). Each of their pages is handled by `content-page`, either to write it or to fix review findings, and reviewed with `review-animations` as adapted under C. Batch 14 uses the existing skills, so it can run before C is done.
 
