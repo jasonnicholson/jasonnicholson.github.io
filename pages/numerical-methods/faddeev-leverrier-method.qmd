@@ -7,24 +7,480 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+The eigenvalues of an $n\times n$ matrix $A$ are the roots of its characteristic
+polynomial (see [Eigenvalues and Eigenvectors](eigenvalues-and-eigenvectors/)).
+Expanding $\det(\lambda I - A)$ by cofactors gives a sum of $n!$ terms, which is
+impractical beyond small $n$. The
+Faddeev-Leverrier method finds every coefficient of the characteristic polynomial
+from a short recursion that uses only matrix products and traces. The same
+recursion also produces the inverse $A^{-1}$ and the determinant $\det A$ with
+almost no extra work.
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+The method is named after Urbain Le Verrier, who obtained the coefficients from
+the traces of the powers $A^k$ through Newton's identities, and D. K. Faddeev, who
+recast the computation as the matrix recursion below. It is an exact,
+finite algorithm and is well suited to hand computation and computer algebra. As a
+floating-point method for eigenvalues it is a poor choice for all but small
+matrices; the last section shows why.
 
-### Planned animation ideas
+## The Method
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+::: {.callout-note appearance="simple"}
+## Definition — Trace and Characteristic Polynomial
 
-## Derivation Notes (Planned)
+The **trace** of an $n\times n$ matrix $A = (a_{ij})$ is the sum of its diagonal
+entries,
+$$
+\operatorname{tr}(A) = a_{11} + a_{22} + \cdots + a_{nn}.
+$$
+On this page the **characteristic polynomial** is the monic polynomial
+$$
+P(\lambda) = \det(\lambda I - A)
+= \lambda^n - p_1\lambda^{n-1} - p_2\lambda^{n-2} - \cdots - p_{n-1}\lambda - p_n .
+\tag{1}
+$$
+The eigenvalues of $A$ are the roots of $P(\lambda) = 0$.
+:::
 
-Short derivations will be added to explain the core equations and assumptions.
+Mathews first writes the polynomial as $P(\lambda) = \lambda^n + c_1\lambda^{n-1} + \cdots + c_n$,
+then, like this page, as (1), so $c_k = -p_k$. The minus signs in (1) make the
+recursion below free of signs.
 
-## Worked Example (Planned)
+::: {.callout-important appearance="simple"}
+## Algorithm — Faddeev-Leverrier
 
-A compact numerical example with intermediate steps will be included.
+Start with
+$$
+B_1 = A, \qquad p_1 = \operatorname{tr}(B_1).
+\tag{2}
+$$
+For $k = 2, 3, \ldots, n$ compute
+$$
+B_k = A\,(B_{k-1} - p_{k-1} I), \qquad p_k = \frac{1}{k}\operatorname{tr}(B_k).
+\tag{3}
+$$
+Then $p_1, \ldots, p_n$ are the coefficients in (1). If $p_n \neq 0$, the inverse
+of $A$ is
+$$
+A^{-1} = \frac{1}{p_n}\,(B_{n-1} - p_{n-1} I).
+\tag{4}
+$$
+:::
 
-## Implementation Notes (Planned)
+::: {.callout-tip appearance="simple"}
+## Theorem — What the Recursion Produces
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+Let $A$ be any $n\times n$ matrix and let $B_k$, $p_k$ be defined by (2)–(3). Then
+
+1. $P(\lambda) = \lambda^n - p_1\lambda^{n-1} - \cdots - p_n$ is the characteristic polynomial of $A$;
+2. $B_n = p_n I$, which is the Cayley–Hamilton theorem $P(A) = 0$ in disguise;
+3. $\det A = (-1)^{n+1} p_n$, so $A$ is nonsingular exactly when $p_n \neq 0$;
+4. if $p_n \neq 0$, then $A^{-1}$ is given by (4).
+:::
+
+The last product $B_n$ is needed only for $p_n$, and the matrix
+$B_{n-1} - p_{n-1}I$ in (4) has already been formed to compute it. So the inverse
+costs one extra scaling. If the whole of $B_n$ is formed, the identity
+$B_n = p_n I$ is a useful check on the arithmetic.
+
+### Why the Recursion Works
+
+Mathews refers to V. N. Faddeeva's *Computational Methods of Linear Algebra*
+(Dover, 1959) for the proof. Here is a short version.
+
+Write $C_k = B_k - p_k I$ for $k = 1, \ldots, n$ and $C_0 = I$, so that (3) reads
+$B_k = A\,C_{k-1}$. The adjugate (classical adjoint) of $\lambda I - A$ is a matrix
+polynomial of degree $n-1$ in $\lambda$, and
+$$
+(\lambda I - A)\,\operatorname{adj}(\lambda I - A) = P(\lambda)\, I .
+$$
+Write $\operatorname{adj}(\lambda I - A) = \sum_{k=0}^{n-1} \lambda^{n-1-k} D_k$
+and $P(\lambda) = \lambda^n - \sum_{k=1}^{n} q_k \lambda^{n-k}$ with, for the moment,
+unknown $q_k$. Matching powers of $\lambda$ gives
+$$
+D_0 = I, \qquad D_k = A D_{k-1} - q_k I \quad (1 \le k \le n-1), \qquad A D_{n-1} = q_n I .
+\tag{5}
+$$
+To find $q_k$, use Jacobi's formula: the derivative of a determinant is the trace of
+the adjugate times the derivative of the matrix, so
+$P'(\lambda) = \operatorname{tr}\operatorname{adj}(\lambda I - A)$. Comparing the
+coefficients of $\lambda^{n-1-k}$ on both sides gives
+$$
+\operatorname{tr}(D_k) = -(n-k)\,q_k \quad (1 \le k \le n-1).
+$$
+Since $\operatorname{tr}(D_k) = \operatorname{tr}(A D_{k-1}) - n q_k$, this becomes
+$$
+q_k = \frac{1}{k}\operatorname{tr}(A D_{k-1}),
+$$
+and the last relation in (5) gives the same formula for $k = n$. This is exactly
+the recursion (2)–(3), so $q_k = p_k$, $D_k = C_k$ and $B_n = A\,C_{n-1} = p_n I$.
+Dividing $A\,C_{n-1} = p_n I$ by $p_n$ gives (4). Finally, setting $\lambda = 0$ in (1)
+gives $P(0) = \det(-A) = (-1)^n\det A = -p_n$, which is item 3 of the theorem.
+
+The proof also shows that $C_{n-1} = \operatorname{adj}(-A) = (-1)^{n-1}\operatorname{adj}(A)$,
+so the recursion delivers the adjugate even when $A$ is singular.
+
+::: {.callout-note appearance="simple"}
+## Remark — Connection with Newton's Identities
+
+Le Verrier's original method uses the power sums $s_k = \operatorname{tr}(A^k)$,
+which are the sums of the $k$-th powers of the eigenvalues, and Newton's identities
+$$
+k\,p_k = s_k - p_1 s_{k-1} - p_2 s_{k-2} - \cdots - p_{k-1} s_1 .
+$$
+For the matrix of Example 1 below, $s_1 = 6$, $s_2 = 14$ and $s_3 = 36$, and the
+identities give $p_1 = 6$, $p_2 = \tfrac12(14 - 6\cdot 6) = -11$ and
+$p_3 = \tfrac13(36 - 6\cdot 14 + 11\cdot 6) = 6$, the same values the matrix
+recursion produces.
+:::
+
+### Sign Conventions
+
+Many texts and programs, including Mathematica's `CharacteristicPolynomial`, use
+$Q(\lambda) = \det(A - \lambda I)$ instead. Since $A - \lambda I = -(\lambda I - A)$,
+$$
+Q(\lambda) = (-1)^n P(\lambda).
+$$
+In Mathews' examples the two polynomials agree when $n$ is even (Example 2, $n=4$)
+and differ only in sign, $P(\lambda) = -Q(\lambda)$, when $n$ is odd (Examples 1
+and 3, $n = 3$ and $n = 5$). Both have the same roots.
+
+## Example 1 — A $3\times 3$ Matrix
+
+Use the Faddeev-Leverrier method to find the characteristic polynomial, the
+inverse and the eigenvalues of
+$$
+A = \begin{pmatrix} 2 & -1 & 1 \\ -1 & 2 & 1 \\ 1 & -1 & 2 \end{pmatrix}.
+$$
+
+**Step 1**: Start with $B_1 = A$:
+$$
+p_1 = \operatorname{tr}(B_1) = 2 + 2 + 2 = 6 .
+$$
+
+**Step 2**: Subtract $p_1 I$ and multiply by $A$:
+$$
+B_2 = A\,(B_1 - 6I)
+= \begin{pmatrix} 2 & -1 & 1 \\ -1 & 2 & 1 \\ 1 & -1 & 2 \end{pmatrix}
+  \begin{pmatrix} -4 & -1 & 1 \\ -1 & -4 & 1 \\ 1 & -1 & -4 \end{pmatrix}
+= \begin{pmatrix} -6 & 1 & -3 \\ 3 & -8 & -3 \\ -1 & 1 & -8 \end{pmatrix},
+$$
+$$
+p_2 = \tfrac12\operatorname{tr}(B_2) = \tfrac12(-6 - 8 - 8) = \tfrac12(-22) = -11 .
+$$
+
+**Step 3**: Subtract $p_2 I = -11I$ and multiply by $A$:
+$$
+B_3 = A\,(B_2 + 11I)
+= \begin{pmatrix} 2 & -1 & 1 \\ -1 & 2 & 1 \\ 1 & -1 & 2 \end{pmatrix}
+  \begin{pmatrix} 5 & 1 & -3 \\ 3 & 3 & -3 \\ -1 & 1 & 3 \end{pmatrix}
+= \begin{pmatrix} 6 & 0 & 0 \\ 0 & 6 & 0 \\ 0 & 0 & 6 \end{pmatrix},
+$$
+$$
+p_3 = \tfrac13\operatorname{tr}(B_3) = \tfrac13(18) = 6 .
+$$
+
+**Characteristic polynomial**:
+$$
+P(\lambda) = \lambda^3 - 6\lambda^2 + 11\lambda - 6 .
+$$
+
+**Inverse**: from (4) with $p_3 = 6$,
+$$
+A^{-1} = \frac{1}{6}\,(B_2 + 11I)
+= \frac16\begin{pmatrix} 5 & 1 & -3 \\ 3 & 3 & -3 \\ -1 & 1 & 3 \end{pmatrix}
+= \begin{pmatrix} \tfrac56 & \tfrac16 & -\tfrac12 \\[2pt] \tfrac12 & \tfrac12 & -\tfrac12 \\[2pt] -\tfrac16 & \tfrac16 & \tfrac12 \end{pmatrix}.
+$$
+
+**Eigenvalues**: the polynomial factors as
+$P(\lambda) = (\lambda - 1)(\lambda - 2)(\lambda - 3)$, so
+$$
+\boxed{\lambda_1 = 1, \quad \lambda_2 = 2, \quad \lambda_3 = 3.}
+$$
+Also $\det A = (-1)^{4} p_3 = 6$.
+
+**Verification:**
+
+| Check | Result |
+|-------|--------|
+| $B_3 = p_3 I$ | $B_3 = 6I$ $\checkmark$ |
+| $\det(\lambda I - A)$ expanded directly | $\lambda^3 - 6\lambda^2 + 11\lambda - 6$ $\checkmark$ |
+| $P(1),\ P(2),\ P(3)$ | $0,\ 0,\ 0$ $\checkmark$ |
+| $\lambda_1 + \lambda_2 + \lambda_3 = \operatorname{tr}A$ | $6 = 6$ $\checkmark$ |
+| $\lambda_1\lambda_2\lambda_3 = \det A$ | $6 = 6$ $\checkmark$ |
+| $A\,A^{-1}$ | $I$ (this is $B_3/p_3$) $\checkmark$ |
+| $A^{-1}$ by Gauss–Jordan elimination | same matrix $\checkmark$ |
+
+These values agree with Mathews' worked solution. Mathews also expands
+$Q(\lambda) = \det(A - \lambda I) = 6 - 11\lambda + 6\lambda^2 - \lambda^3$ by
+determinants and solves $Q(\lambda) = 0$ to get $\lambda = 1, 2, 3$; this $Q$ is
+$-P(\lambda)$ because $n = 3$ is odd.
+
+## Example 2 — A $4\times 4$ Symmetric Matrix
+
+Find the characteristic polynomial, inverse and eigenvalues of
+$$
+A = \begin{pmatrix} 8 & -1 & 3 & -1 \\ -1 & 6 & 2 & 0 \\ 3 & 2 & 9 & 1 \\ -1 & 0 & 1 & 7 \end{pmatrix}.
+$$
+
+**Step 1**: $B_1 = A$ and $p_1 = 8 + 6 + 9 + 7 = 30$.
+
+**Step 2**:
+$$
+B_2 = A\,(B_1 - 30I)
+= \begin{pmatrix} -165 & 22 & -42 & 18 \\ 22 & -139 & -33 & 3 \\ -42 & -33 & -175 & -17 \\ 18 & 3 & -17 & -159 \end{pmatrix},
+\qquad p_2 = \tfrac12(-638) = -319 .
+$$
+
+**Step 3**:
+$$
+B_3 = A\,(B_2 + 319I)
+= \begin{pmatrix} 1066 & -106 & 146 & -70 \\ -106 & 992 & 132 & -34 \\ 146 & 132 & 1087 & 67 \\ -70 & -34 & 67 & 1085 \end{pmatrix},
+\qquad p_3 = \tfrac13(4230) = 1410 .
+$$
+
+**Step 4**:
+$$
+B_4 = A\,(B_3 - 1410I)
+= \begin{pmatrix} -2138 & 0 & 0 & 0 \\ 0 & -2138 & 0 & 0 \\ 0 & 0 & -2138 & 0 \\ 0 & 0 & 0 & -2138 \end{pmatrix},
+\qquad p_4 = \tfrac14(-8552) = -2138 .
+$$
+
+**Characteristic polynomial**:
+$$
+P(\lambda) = \lambda^4 - 30\lambda^3 + 319\lambda^2 - 1410\lambda + 2138 .
+$$
+
+**Inverse**: from (4) with $p_4 = -2138$,
+$$
+A^{-1} = -\frac{1}{2138}\,(B_3 - 1410I)
+= -\frac{1}{2138}\begin{pmatrix} -344 & -106 & 146 & -70 \\ -106 & -418 & 132 & -34 \\ 146 & 132 & -323 & 67 \\ -70 & -34 & 67 & -325 \end{pmatrix}
+= \frac{1}{2138}\begin{pmatrix} 344 & 106 & -146 & 70 \\ 106 & 418 & -132 & 34 \\ -146 & -132 & 323 & -67 \\ 70 & 34 & -67 & 325 \end{pmatrix}.
+$$
+Since $2138 = 2\cdot 1069$, the entries with an even numerator reduce, for example
+$344/2138 = 172/1069$; Mathews prints the matrix in that reduced form.
+
+**Eigenvalues**: this quartic does not factor over the rationals, but the shift
+$\lambda = \mu + \tfrac{15}{2}$ (one quarter of $p_1$) removes both odd powers:
+$$
+P\!\left(\mu + \tfrac{15}{2}\right) = \mu^4 - \tfrac{37}{2}\mu^2 + \tfrac{233}{16}.
+$$
+This is a quadratic in $\mu^2$ with roots $\mu^2 = \tfrac{37}{4} \pm \sqrt{71}$, so
+$$
+\lambda = \frac{15}{2} \pm \frac12\sqrt{37 \pm 4\sqrt{71}} ,
+$$
+that is,
+$$
+\boxed{\lambda_1 \approx 3.295699, \quad \lambda_2 \approx 6.592338, \quad \lambda_3 \approx 8.407662, \quad \lambda_4 \approx 11.704301.}
+$$
+All four are real, as they must be because $A$ is symmetric. They are also
+positive: each row of $A$ has a diagonal entry larger than the sum of the absolute
+values of its other entries, so by Gershgorin's theorem every eigenvalue lies in
+$[3, 15]$. Also $\det A = (-1)^5 p_4 = 2138$.
+
+**Verification:**
+
+| Check | Result |
+|-------|--------|
+| $B_4 = p_4 I$ | $B_4 = -2138\,I$ $\checkmark$ |
+| $\det(\lambda I - A)$ expanded directly | $\lambda^4 - 30\lambda^3 + 319\lambda^2 - 1410\lambda + 2138$ $\checkmark$ |
+| $P(\lambda_i)$ for the four closed-form roots | $0$ exactly $\checkmark$ |
+| $\lambda_1 + \cdots + \lambda_4 = \operatorname{tr}A$ | $30$ $\checkmark$ |
+| $\lambda_1\lambda_2\lambda_3\lambda_4 = \det A$ | $2138$ $\checkmark$ |
+| Eigenvalues by a standard eigenvalue routine (LAPACK) | $3.295699,\ 6.592338,\ 8.407662,\ 11.704301$ $\checkmark$ |
+| $A^{-1}$ by Gauss–Jordan elimination | same matrix $\checkmark$ |
+
+The matrices $B_2$, $B_3$, $B_4$, the coefficients and the inverse agree with
+Mathews' worked solution. Because $n = 4$ is even, $\det(A - \lambda I)$ is the same
+polynomial as $P(\lambda)$.
+
+## Example 3 — A $5\times 5$ Tridiagonal Matrix
+
+Find the characteristic polynomial, inverse and eigenvalues of
+$$
+A = \begin{pmatrix} 2 & 1 & 0 & 0 & 0 \\ 1 & 2 & 1 & 0 & 0 \\ 0 & 1 & 2 & 1 & 0 \\ 0 & 0 & 1 & 2 & 1 \\ 0 & 0 & 0 & 1 & 2 \end{pmatrix}.
+$$
+
+The output images of Mathews' solution to this example are missing from the
+archive, so every number below is our own exact computation.
+
+**Step 1**: $B_1 = A$ and $p_1 = 10$.
+
+**Step 2**:
+$$
+B_2 = A\,(B_1 - 10I)
+= \begin{pmatrix} -15 & -6 & 1 & 0 & 0 \\ -6 & -14 & -6 & 1 & 0 \\ 1 & -6 & -14 & -6 & 1 \\ 0 & 1 & -6 & -14 & -6 \\ 0 & 0 & 1 & -6 & -15 \end{pmatrix},
+\qquad p_2 = \tfrac12(-72) = -36 .
+$$
+
+**Step 3**:
+$$
+B_3 = A\,(B_2 + 36I)
+= \begin{pmatrix} 36 & 10 & -4 & 1 & 0 \\ 10 & 32 & 11 & -4 & 1 \\ -4 & 11 & 32 & 11 & -4 \\ 1 & -4 & 11 & 32 & 10 \\ 0 & 1 & -4 & 10 & 36 \end{pmatrix},
+\qquad p_3 = \tfrac13(168) = 56 .
+$$
+
+**Step 4**:
+$$
+B_4 = A\,(B_3 - 56I)
+= \begin{pmatrix} -30 & -4 & 3 & -2 & 1 \\ -4 & -27 & -6 & 4 & -2 \\ 3 & -6 & -26 & -6 & 3 \\ -2 & 4 & -6 & -27 & -4 \\ 1 & -2 & 3 & -4 & -30 \end{pmatrix},
+\qquad p_4 = \tfrac14(-140) = -35 .
+$$
+
+**Step 5**:
+$$
+B_5 = A\,(B_4 + 35I) = 6I,
+\qquad p_5 = \tfrac15(30) = 6 .
+$$
+
+**Characteristic polynomial**:
+$$
+P(\lambda) = \lambda^5 - 10\lambda^4 + 36\lambda^3 - 56\lambda^2 + 35\lambda - 6 .
+$$
+
+**Inverse**: from (4) with $p_5 = 6$,
+$$
+A^{-1} = \frac16\,(B_4 + 35I)
+= \frac16\begin{pmatrix} 5 & -4 & 3 & -2 & 1 \\ -4 & 8 & -6 & 4 & -2 \\ 3 & -6 & 9 & -6 & 3 \\ -2 & 4 & -6 & 8 & -4 \\ 1 & -2 & 3 & -4 & 5 \end{pmatrix}.
+$$
+This matches the known formula for this tridiagonal matrix,
+$(A^{-1})_{ij} = (-1)^{i+j}\,\min(i,j)\,\bigl(6 - \max(i,j)\bigr)/6$.
+
+**Eigenvalues**: the polynomial factors as
+$$
+P(\lambda) = (\lambda - 1)(\lambda - 2)(\lambda - 3)(\lambda^2 - 4\lambda + 1),
+$$
+so
+$$
+\boxed{\lambda = 2 - \sqrt3 \approx 0.267949, \quad 1, \quad 2, \quad 3, \quad 2 + \sqrt3 \approx 3.732051.}
+$$
+These are the values $2 + 2\cos\!\bigl(k\pi/6\bigr)$, $k = 1, \ldots, 5$, given by the
+standard formula for the eigenvalues of this tridiagonal matrix.
+
+**Verification:**
+
+| Check | Result |
+|-------|--------|
+| $B_5 = p_5 I$ | $B_5 = 6I$ $\checkmark$ |
+| $\det(\lambda I - A)$ expanded directly | $\lambda^5 - 10\lambda^4 + 36\lambda^3 - 56\lambda^2 + 35\lambda - 6$ $\checkmark$ |
+| $P(\lambda_i)$ for the five roots | $0$ exactly $\checkmark$ |
+| $\sum\lambda_i = \operatorname{tr}A$ | $10$ $\checkmark$ |
+| $\prod\lambda_i = \det A = (-1)^6 p_5$ | $6$ $\checkmark$ |
+| $A^{-1}$ by Gauss–Jordan elimination | same matrix $\checkmark$ |
+
+Since $n = 5$ is odd, $\det(A - \lambda I) = -P(\lambda)$, the sign difference
+Mathews points out.
+
+## Practical Notes
+
+### Integer matrices
+
+In all three examples $A$ has integer entries, and every $B_k$ and every $p_k$ is an
+integer: the divisions by $k$ in (3) come out exact. This holds for every integer
+matrix, because the coefficients of the characteristic polynomial of an integer
+matrix are integers, and then each $B_k = A\,C_{k-1}$ is a product of integer
+matrices. The method needs no fractions until the final division in (4).
+
+### Singular matrices
+
+The recursion never divides by anything but $k$, so it runs to completion for every
+square matrix, singular or not. Only (4) needs $p_n \neq 0$. For example, $A - I$
+from Example 1 is singular (it has eigenvalue $0$). The recursion gives
+$p_1 = 3$, $p_2 = -2$, $p_3 = 0$, so
+$P(\lambda) = \lambda^3 - 3\lambda^2 + 2\lambda = \lambda(\lambda - 1)(\lambda - 2)$,
+the eigenvalues of Example 1 shifted down by one. Here $B_3$ is the zero matrix, and
+$C_2 = B_2 + 2I$ equals $\operatorname{adj}(A - I)$, as the proof above predicts
+for $n = 3$.
+
+::: {.callout-warning appearance="simple"}
+## Caution — Division by $k$
+
+The divisions by $k = 2, \ldots, n$ are harmless over the real or complex numbers.
+In general, the method fails in arithmetic modulo a prime $q \le n$ (where $k = q$
+has no inverse); this is a general remark, not something the examples here exercise.
+:::
+
+### Cost
+
+As a general operation count: the method forms $n - 1$ products of $n\times n$
+matrices. With ordinary matrix multiplication each costs $n^3$ multiplications, so
+the method costs about $n^4$ multiplications; only the diagonal of the last
+product $B_n$ is needed, which saves a little. The standard route to eigenvalues,
+[Householder](householder-transformations.qmd) or
+[Hessenberg](hessenberg-factorization.qmd) reduction followed by the
+[QR method](qr-method/), costs on the order of $n^3$ operations.
+
+### Floating-point accuracy
+
+The method is exact in exact arithmetic, and for the integer matrices above even
+double-precision arithmetic reproduces it exactly, since all the integers involved
+are small. With general real entries two separate problems appear:
+
+1. the coefficients $p_k$ computed in floating point lose accuracy as $n$ grows, and
+2. the roots of a polynomial can be extremely sensitive to its coefficients, so even
+   correctly rounded coefficients may give poor eigenvalues.
+
+To see both, we took symmetric matrices $A = Q\,\operatorname{diag}(1, 2, \ldots, n)\,Q^{\mathsf T}$
+with a random orthogonal $Q$, so the eigenvalues are $1, 2, \ldots, n$. We ran the
+recursion in double precision, compared the coefficients with the same recursion
+run at 120 significant digits, and compared the roots of the double-precision
+polynomial with the eigenvalues from a standard symmetric eigenvalue routine:
+
+| $n$ | largest relative error in $p_k$ | largest eigenvalue error from the roots of $P$ |
+|----:|--------------------------------:|-----------------------------------------------:|
+| 5   | $4.6\times 10^{-16}$ | $1.9\times 10^{-13}$ |
+| 10  | $2.6\times 10^{-14}$ | $3.2\times 10^{-9}$ |
+| 15  | $5.0\times 10^{-11}$ | $1.0\times 10^{-5}$ |
+| 20  | $6.1\times 10^{-9}$  | $1.5\times 10^{-1}$ |
+| 25  | $2.5\times 10^{-6}$  | $3.3$ (20 of the 25 roots complex) |
+| 30  | $8.7\times 10^{-4}$  | $7.0$ (26 of the 30 roots complex) |
+
+The eigenvalue error is the largest distance $|r - \lambda|$ in the complex plane
+when the $n$ roots $r$ are paired one-to-one with the $n$ eigenvalues $\lambda$ so
+as to make that largest distance as small as possible. Up to $n = 20$ every root is
+real, and this is simply the error after sorting both lists. At $n = 25$ and
+$n = 30$ the imaginary parts of the roots reach $3.2$ and $7.0$.
+
+At $n = 20$ the polynomial is, up to rounding, Wilkinson's polynomial
+$(\lambda-1)(\lambda-2)\cdots(\lambda-20)$, and its coefficients range from
+$p_1 \approx 210$ to $|p_{18}| \approx 1.4\times 10^{19}$. To separate the sources
+of error, we repeated the $n = 20$ experiment with 320 random $Q$, also rounding the
+120-digit coefficients to double precision, and finding the roots either with a
+standard double-precision root finder or in high precision (120 digits, so that the
+root finder adds no error of its own):
+
+- the roots of the 120-digit coefficients, found in high precision, give the
+  eigenvalues to about $10^{-14}$;
+- the roots of the coefficients rounded to double precision, found in high
+  precision, are off by about $2\times 10^{-4}$ to $3\times 10^{-2}$;
+- the roots of the double-precision recursion's coefficients (relative errors about
+  $2\times 10^{-10}$ to $7\times 10^{-8}$), found in high precision, are off by about
+  $10^{-3}$ to $0.4$, in most cases several times more than rounding alone;
+- the double-precision root finder by itself moves the roots of the rounded
+  coefficients by about $0.005$ to $0.5$.
+
+So at $n = 20$ both problems matter. The roots are so sensitive (problem 2) that
+every small error is magnified to between about $10^{-4}$ and a few tenths: the
+recursion's coefficient errors (problem 1), the rounding of the coefficients to
+double precision, and the root finder's own rounding. With a double-precision root
+finder, the correctly rounded coefficients give eigenvalue errors of about $0.01$
+to $0.4$, much the same as the recursion's own coefficients (about $0.01$ to $0.5$); computing the
+coefficients more accurately does not help unless the roots are also found in
+higher precision.
+
+This is why practical eigenvalue software never forms the characteristic polynomial.
+For a few eigenvalues use the [power method](power-method/); for all of them, reduce
+$A$ to [Hessenberg](hessenberg-factorization.qmd) (or tridiagonal) form with
+[Householder transformations](householder-transformations.qmd) and apply the
+[QR method](qr-method/). The Faddeev-Leverrier method remains useful for exact or
+symbolic computation, for small matrices, and as a neat proof that the coefficients
+of $P$, the adjugate and the inverse all come from the same short recursion.
+
+## Related Pages
+
+- [Eigenvalues and Eigenvectors](eigenvalues-and-eigenvectors/)
+- [Power Method](power-method/)
+- [QR Method](qr-method/)
+- [Householder Transformations](householder-transformations.qmd)
+- [Hessenberg Factorization](hessenberg-factorization.qmd)
+- [Inverse Matrix](inverse-matrix.qmd)

@@ -18,15 +18,15 @@ $$
 where $L$ is lower triangular and $U$ is upper triangular.
 :::
 
-Common normalizations are:
+An LU factorization, when it exists, is not unique: for any nonsingular diagonal matrix $\Lambda$, $A=(L\Lambda)(\Lambda^{-1}U)$ is another one. Common normalizations fix the choice:
 
 - Doolittle form: diagonal entries of $L$ are all $1$.
 - Crout form: diagonal entries of $U$ are all $1$.
-- Cholesky form (for symmetric positive definite $A$): $A=L_cL_c^\top=R^\top R$.
+- Cholesky form (for symmetric positive definite $A$): $A=R^\top R$, where $R$ is upper triangular with positive diagonal entries (so $L=R^\top$ and $U=R$).
 
 ::: {.callout-tip appearance="simple"}
 ## Theorem - Solve via Factorization
-If $A=LU$, then solving $A\mathbf{x}=\mathbf{b}$ is equivalent to
+If $A=LU$ with $A$ nonsingular (so every diagonal entry of $L$ and of $U$ is nonzero), then solving $A\mathbf{x}=\mathbf{b}$ is equivalent to
 $$
 L\mathbf{y}=\mathbf{b},\qquad U\mathbf{x}=\mathbf{y}.
 $$
@@ -35,22 +35,49 @@ So one forward substitution and one back substitution solve the original system.
 
 ## Formulas
 
-For $A=D-L-U$ splitting (diagonal part $D$, strict lower part $L$, strict upper part $U$), the three practical forms are:
+With $L_D,U_D$ the Doolittle factors, $L_C,U_C$ the Crout factors and $R$ the Cholesky factor, the three forms are:
 
 $$
 A=L_DU_D \quad \text{(Doolittle)},
-	ag{1}
+\tag{1}
 $$
 
 $$
 A=L_CU_C \quad \text{(Crout)},
-	ag{2}
+\tag{2}
 $$
 
 $$
-A=L_cL_c^\top=R^\top R \quad \text{(Cholesky, SPD matrices)}.
-	ag{3}
+A=R^\top R \quad \text{(Cholesky, SPD matrices)}.
+\tag{3}
 $$
+
+Matching the entries of $A$ with those of the product builds each factor one row or column at a time. Write $l_{ij},u_{ij},r_{ij}$ for the entries of the factor being computed; for $k=1,\dots,n$ (an empty sum is $0$):
+
+**Doolittle** (row $k$ of $U$, then column $k$ of $L$; $l_{kk}=1$):
+$$
+u_{kj}=a_{kj}-\sum_{s=1}^{k-1}l_{ks}u_{sj}\quad(j=k,\dots,n),\qquad
+l_{ik}=\frac{1}{u_{kk}}\Bigl(a_{ik}-\sum_{s=1}^{k-1}l_{is}u_{sk}\Bigr)\quad(i=k+1,\dots,n).
+$$
+
+**Crout** (column $k$ of $L$, then row $k$ of $U$; $u_{kk}=1$):
+$$
+l_{ik}=a_{ik}-\sum_{s=1}^{k-1}l_{is}u_{sk}\quad(i=k,\dots,n),\qquad
+u_{kj}=\frac{1}{l_{kk}}\Bigl(a_{kj}-\sum_{s=1}^{k-1}l_{ks}u_{sj}\Bigr)\quad(j=k+1,\dots,n).
+$$
+
+**Cholesky** (row $k$ of $R$):
+$$
+r_{kk}=\sqrt{a_{kk}-\sum_{s=1}^{k-1}r_{sk}^2},\qquad
+r_{kj}=\frac{1}{r_{kk}}\Bigl(a_{kj}-\sum_{s=1}^{k-1}r_{sk}r_{sj}\Bigr)\quad(j=k+1,\dots,n).
+$$
+
+Without pivoting, these recurrences succeed only while every divisor $u_{kk}$, $l_{kk}$ or $r_{kk}$ is nonzero (and, for Cholesky, every quantity under the square root is positive).
+
+::: {.callout-tip appearance="simple"}
+## Theorem - Cholesky Factorization
+If $A$ is real, symmetric and positive definite, then it has a Cholesky factorization $A=R^\top R$ with $R$ upper triangular and $r_{kk}>0$; every quantity under the square root in the recurrence above is positive.
+:::
 
 ## Example 1 - One Matrix, Three Factorizations
 
@@ -73,9 +100,9 @@ $$
 L_D=
 \begin{pmatrix}
 1&0&0&0&0\\
-	frac12&1&0&0&0\\
-	frac12&1&1&0&0\\
-	frac32&-\tfrac13&0&1&0\\
+\tfrac12&1&0&0&0\\
+\tfrac12&1&1&0&0\\
+\tfrac32&-\tfrac13&0&1&0\\
 1&0&\tfrac47&-\tfrac67&1
 \end{pmatrix},
 \qquad
@@ -113,7 +140,7 @@ $$
 
 ### Cholesky ($A=R^\top R$)
 
-One valid upper-triangular Cholesky factor is
+The Cholesky factor (unique, since its diagonal must be positive) is
 
 $$
 R=
@@ -131,7 +158,9 @@ $$
 L_DU_D=A,\qquad L_CU_C=A,\qquad R^\top R=A.
 $$
 
-## Example 2 - Solve $A\mathbf{x}=\mathbf{b}$ with Doolittle Factors
+The Crout factors are the Doolittle factors rescaled by the pivots: $L_C=L_D\operatorname{diag}(U_D)$ with $\operatorname{diag}(U_D)=\operatorname{diag}(2,\tfrac32,7,\tfrac73,2)$, an instance of the non-uniqueness noted above.
+
+## Example 2 - Solve $A\mathbf{x}=\mathbf{b}$ by Doolittle, Crout and Cholesky
 
 Use the same $A$ and
 
@@ -141,6 +170,8 @@ $$
 -2\\4\\3\\-5\\1
 \end{pmatrix}.
 $$
+
+### (a) Doolittle
 
 **Step 1:** Solve $L_D\mathbf{y}=\mathbf{b}$.
 
@@ -157,10 +188,10 @@ $$
 \mathbf{x}=
 \begin{pmatrix}
 -\tfrac{629}{98}\\[2pt]
-	frac{237}{49}\\[2pt]
+\tfrac{237}{49}\\[2pt]
 -\tfrac{53}{49}\\[2pt]
-	frac{62}{49}\\[2pt]
-	frac{23}{14}
+\tfrac{62}{49}\\[2pt]
+\tfrac{23}{14}
 \end{pmatrix}
 \approx
 \begin{pmatrix}
@@ -168,7 +199,41 @@ $$
 \end{pmatrix}.
 $$
 
-**Verification:**
+### (b) Crout
+
+**Step 1:** Solve $L_C\mathbf{y}=\mathbf{b}$ by forward substitution.
+
+$$
+\mathbf{y}=
+\begin{pmatrix}
+-1\\\tfrac{10}{3}\\-\tfrac17\\-\tfrac17\\\tfrac{23}{14}
+\end{pmatrix}.
+$$
+
+This is the Doolittle $\mathbf{y}$ divided entrywise by the pivots $2,\tfrac32,7,\tfrac73,2$.
+
+**Step 2:** Solve $U_C\mathbf{x}=\mathbf{y}$ by back substitution. It returns the same $\mathbf{x}$ as in part (a).
+
+### (c) Cholesky
+
+**Step 1:** Solve $R^\top\mathbf{y}=\mathbf{b}$ by forward substitution.
+
+$$
+\mathbf{y}=
+\begin{pmatrix}
+-\sqrt2\\[2pt]\tfrac{5\sqrt6}{3}\\[2pt]-\tfrac{\sqrt7}{7}\\[2pt]-\tfrac{\sqrt{21}}{21}\\[2pt]\tfrac{23\sqrt2}{14}
+\end{pmatrix}
+\approx
+\begin{pmatrix}
+-1.41421\\4.08248\\-0.37796\\-0.21822\\2.32335
+\end{pmatrix}.
+$$
+
+This is the Doolittle $\mathbf{y}$ divided entrywise by the square roots of the pivots.
+
+**Step 2:** Solve $R\mathbf{x}=\mathbf{y}$ by back substitution. It again returns the same $\mathbf{x}$ as in part (a).
+
+**Verification (all three parts):** parts (a), (b) and (c) give the same $\mathbf{x}$, and substituting it into $A\mathbf{x}=\mathbf{b}$ checks every row.
 
 | Row | Left-hand side $A\mathbf{x}$ | Right-hand side |
 |---|---:|---:|
@@ -177,3 +242,5 @@ $$
 | 3 | $x_1+2x_2+9x_3+x_4+5x_5=3$ | $3\;\checkmark$ |
 | 4 | $3x_1+x_2+x_3+7x_4+x_5=-5$ | $-5\;\checkmark$ |
 | 5 | $2x_1+x_2+5x_3+x_4+8x_5=1$ | $1\;\checkmark$ |
+
+Mathews' module goes on to two applications of the Cholesky factorization that are not reproduced here: a least-squares cubic fitted to the six data points $(0,12)$, $(1,3)$, $(2,3)$, $(3,7)$, $(4,9)$, $(5,2)$ by solving the normal equations (his Example 3), and the continuous least-squares polynomial of degree 4 for $\cos x$ on $[0,1]$, whose Gram matrix is the $5\times5$ Hilbert matrix (his Example 4).

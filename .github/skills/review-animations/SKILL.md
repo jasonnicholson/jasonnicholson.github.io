@@ -92,7 +92,7 @@ Some mismatches fall out of this phase with no judgment needed, and they go stra
 - its Mathews module, found as the `content-page` skill describes (the plan's table does not list modules for these pages), or a note that there is none;
 - the pages it links to;
 - these mechanical checks, whose failures go straight into the report as inventory findings:
-  - control characters in the source (`grep -nP '[\x07-\x0d]'`, excluding ordinary line ends). A tab inside math usually means a LaTeX command lost its `\t`, as in `\tag` or `\tfrac`.
+  - control characters in the source (`grep -nP '[\x07-\x09\x0b-\x0d]'`; the class leaves out the newline `\x0a`, which some greps, such as ugrep, would otherwise match on every line). A tab inside math usually means a LaTeX command lost its `\t`, as in `\tag` or `\tfrac`.
   - any leftover "(Planned)" section, "Animation Focus" block or "Legacy Animation Inventory (Stub)";
   - any `localhost` link, which is dead on the published site;
   - any code block on the page, which the site would try to execute;

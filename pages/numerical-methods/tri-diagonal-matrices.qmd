@@ -29,7 +29,7 @@ a_{1,1} & a_{1,2} & 0       & 0       & \cdots & 0       \\
 a_{2,1} & a_{2,2} & a_{2,3} & 0       & \cdots & 0       \\
 0       & a_{3,2} & a_{3,3} & a_{3,4} & \cdots & 0       \\
 \vdots  &         & \ddots  & \ddots  & \ddots & \vdots  \\
-0       & \cdots  & 0       & a_{n,n-1} & a_{n,n}
+0       & \cdots  & 0       & 0       & a_{n,n-1} & a_{n,n}
 \end{pmatrix}.
 \tag{1}
 $$
@@ -44,7 +44,7 @@ Instead, it is more efficient to store only the three diagonals as vectors:
 |--------|--------|---------|
 | $d_k$ | $n$ | Main diagonal: $d_k = a_{k,k}$ |
 | $a_k$ | $n-1$ | Sub-diagonal: $a_k = a_{k+1,k}$ (element below $d_k$) |
-| $c_k$ | $n-1$ | Super-diagonal: $c_k = a_{k,k+1}$ (element above $d_k$) |
+| $c_k$ | $n-1$ | Super-diagonal: $c_k = a_{k,k+1}$ (element to the right of $d_k$, directly above $d_{k+1}$) |
 
 With this single-subscript notation the matrix becomes
 
@@ -76,7 +76,7 @@ $$
 ## Storage savings
 
 An $n\times n$ tridiagonal system requires storing only $3n - 2$ numbers instead of
-$n^2$.  For $n = 31$ this is $91$ versus $961$ — a reduction to about $9.5\%$ of the
+$n^2$.  For $n = 31$ (the system of Example 2 below) this is $91$ versus $961$ — a reduction to about $9.5\%$ of the
 naive storage.  For $n = 1000$ (common in finite-difference PDE work) the savings
 reach $99.7\%$.
 :::
@@ -86,15 +86,20 @@ reach $99.7\%$.
 ::: {.callout-tip appearance="simple"}
 ## Theorem — Tridiagonal Unique Solution
 
-Suppose the tridiagonal system $A\mathbf{x} = \mathbf{b}$ satisfies $|d_1| > |c_1|$
-and
+Suppose the tridiagonal system $A\mathbf{x} = \mathbf{b}$ has $a_k \ne 0$ and
+$c_k \ne 0$ for $k = 1, \ldots, n-1$, and that
 
 $$
-|d_k| > |a_{k-1}| + |c_k|, \quad k = 2, \ldots, n-1,
-\quad |d_n| > |a_{n-1}|.
+|d_1| > |c_1|,
+\qquad
+|d_k| \ge |a_{k-1}| + |c_k|, \quad k = 2, \ldots, n-1,
+\qquad
+|d_n| > |a_{n-1}|.
 $$
 
-Then there exists a unique solution.  (The condition is *diagonal dominance*.)
+Then there exists a unique solution.  (The condition is *diagonal dominance*,
+strict in the first and last rows.)  If the inequality is strict in every row, the
+hypothesis that the $a_k$ and $c_k$ are nonzero can be dropped.
 :::
 
 ## Thomas Algorithm
@@ -132,7 +137,8 @@ x_k = \frac{b_k - c_k\, x_{k+1}}{d_k},
 $$
 
 The algorithm requires only $O(n)$ operations (versus $O(n^3)$ for general
-Gaussian elimination) and needs no pivoting when diagonal dominance holds.
+Gaussian elimination) and needs no pivoting when the hypotheses of the theorem above
+hold: every modified diagonal entry $d_k$ is then nonzero.
 
 ## Example 1 — Symmetric 4×4 Tridiagonal System
 
@@ -224,6 +230,106 @@ Substitute back into $A\mathbf{x}$:
 | 2 | $1\!\cdot\!\tfrac{3}{5} + 2\!\cdot\!(-\tfrac{1}{5}) + 1\!\cdot\!(-\tfrac{1}{5})$ | $\tfrac{3-2-1}{5}=0$ | $0$ $\checkmark$ |
 | 3 | $1\!\cdot\!(-\tfrac{1}{5}) + 2\!\cdot\!(-\tfrac{1}{5}) + 1\!\cdot\!\tfrac{3}{5}$ | $\tfrac{-1-2+3}{5}=0$ | $0$ $\checkmark$ |
 | 4 | $1\!\cdot\!(-\tfrac{1}{5}) + 2\!\cdot\!\tfrac{3}{5}$ | $\tfrac{-1+6}{5}=1$ | $1$ $\checkmark$ |
+
+## Example 2 — Mathews' 31×31 System
+
+This is the system that all of Mathews' examples for this module solve.  Let $A$ be
+the $31\times 31$ tridiagonal matrix with every main-diagonal entry $2$ and every
+sub- and super-diagonal entry $1$, and solve $A\mathbf{x} = \mathbf{b}$ with
+
+$$
+\mathbf{b} = (1, 2, 3, \ldots, 15, 16, 15, \ldots, 3, 2, 1)^T,
+\qquad b_k = \min(k,\, 32-k).
+$$
+
+In vector form $d_k = 2$ for $k = 1,\ldots,31$ and $a_k = c_k = 1$ for
+$k = 1,\ldots,30$.  The theorem applies: $|d_1| = 2 > 1 = |c_1|$,
+$|d_{31}| = 2 > 1 = |a_{30}|$, every interior row has equality
+$|d_k| = 2 = |a_{k-1}| + |c_k|$, and no off-diagonal entry is zero.  (The interior
+rows are not strictly dominant, so the strict version of the theorem would not
+cover this matrix, nor the matrix of Example 1.)
+
+**Step 1** (forward sweep, diagonal): with $d_1 = 2$, induction on (4)–(5) gives
+
+$$
+w_k = \frac{1}{d_{k-1}} = \frac{k-1}{k},
+\qquad
+d_k \leftarrow 2 - \frac{k-1}{k} = \frac{k+1}{k},
+\qquad k = 2, \ldots, 31.
+$$
+
+**Step 2** (forward sweep, right-hand side, $k \le 16$): here $b_k = k$, and if
+$b_{k-1} = k/2$ after the update, then
+
+$$
+b_k \leftarrow k - \frac{k-1}{k}\cdot\frac{k}{2} = \frac{k+1}{2},
+\qquad k = 2, \ldots, 16,
+$$
+
+starting from $b_1 = 1$.  So $\mathbf{b}'_{1..16} = (1,\, \tfrac{3}{2},\, 2,\,
+\tfrac{5}{2},\, \ldots,\, 8,\, \tfrac{17}{2})$.
+
+**Step 3** (forward sweep, right-hand side, $k = 17,\ldots,31$): here
+$b_k = 32 - k$, and $b_k \leftarrow (32-k) - \tfrac{k-1}{k}\, b_{k-1}$ gives
+
+$$
+b'_{17},\ldots,b'_{31} =
+7,\ \tfrac{133}{18},\ 6,\ \tfrac{63}{10},\ 5,\ \tfrac{115}{22},\ 4,\ \tfrac{25}{6},\
+3,\ \tfrac{81}{26},\ 2,\ \tfrac{29}{14},\ 1,\ \tfrac{31}{30},\ 0 .
+$$
+
+**Step 4** (back substitution, from (6) with $c_k = 1$ and $d'_k = (k+1)/k$):
+
+$$
+\begin{aligned}
+x_{31} &= \frac{0}{32/31} = 0, &
+x_{30} &= \frac{\tfrac{31}{30} - 0}{\tfrac{31}{30}} = 1, &
+x_{29} &= \frac{1 - 1}{\tfrac{30}{29}} = 0, \\
+x_{28} &= \frac{\tfrac{29}{14} - 0}{\tfrac{29}{28}} = 2, &
+x_{27} &= \frac{2 - 2}{\tfrac{28}{27}} = 0, &
+x_{26} &= \frac{\tfrac{81}{26} - 0}{\tfrac{27}{26}} = 3,
+\end{aligned}
+$$
+
+and the same alternation continues: every odd-indexed $x_k$ is $0$, and the even
+ones climb to $x_{16} = \tfrac{17}{2}\cdot\tfrac{16}{17} = 8$ and fall back to
+$x_2 = \tfrac{3}{2}\cdot\tfrac{2}{3} = 1$.  The solution, which matches Mathews'
+rational-arithmetic output, is
+
+$$
+\mathbf{x} = (0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, 7, 0, 6, 0, 5,
+0, 4, 0, 3, 0, 2, 0, 1, 0)^T,
+$$
+
+that is, $x_k = 0$ for odd $k$ and $x_k = \tfrac{1}{2}\min(k,\, 32-k)$ for even $k$.
+The product of the modified diagonal gives $\det A = \prod_{k=1}^{31} \tfrac{k+1}{k}
+= 32$.
+
+**Verification.** Row $k$ of $A\mathbf{x}$ is $x_{k-1} + 2x_k + x_{k+1}$ (with
+$x_0 = x_{32} = 0$), and $\mathbf{x}$ is symmetric, $x_k = x_{32-k}$, as is
+$\mathbf{b}$, so rows $1$–$16$ suffice:
+
+| Rows | Computation | Result | $b_k$ |
+|------|-------------|--------|-------|
+| $k$ odd, $1 \le k \le 15$ | $\tfrac{k-1}{2} + 2\cdot 0 + \tfrac{k+1}{2}$ | $k$ | $k$ $\checkmark$ |
+| $k$ even, $2 \le k \le 16$ | $0 + 2\cdot\tfrac{k}{2} + 0$ | $k$ | $k$ $\checkmark$ |
+
+All $31$ residuals are exactly zero.
+
+Mathews also solves this system with Mathematica's full LinearSolve, with
+TridiagonalSolve, and as $A^{-1}\mathbf{b}$; since the solution is unique, in exact
+arithmetic each must return the $\mathbf{x}$ above.  In decimal arithmetic none
+of them returns it exactly.  Mathews notes "round off error near the 14th decimal
+place" from LinearSolve, and that "Mathematica is able to get a slightly better
+answer" than his own TriDiagonal subroutine.  In a double-precision check, the
+Thomas algorithm (4)–(6), a dense LU solve and $A^{-1}\mathbf{b}$ all miss
+$\mathbf{x}$ by errors of order $10^{-14}$; the zero entries, for instance, come
+back as small nonzero numbers up to a few times $10^{-14}$.  Forming $A^{-1}$ is
+no more accurate, and it is the one to avoid:
+$A^{-1}$ is dense, with
+$(A^{-1})_{ij} = (-1)^{i+j}\,\min(i,j)\,\bigl(32 - \max(i,j)\bigr)/32$, so all $961$ of
+its entries are nonzero, more than ten times the $91$ numbers that hold $A$ in
+vector form.
 
 ## Applications
 

@@ -7,24 +7,437 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+A Hessenberg matrix is zero below its first subdiagonal. Every real square matrix $\mathbf{A}$ can be written as $\mathbf{A} = \mathbf{Q}\mathbf{H}\mathbf{Q}^{T}$ with $\mathbf{Q}$ orthogonal and $\mathbf{H}$ upper Hessenberg, and if $\mathbf{A}$ is symmetric, $\mathbf{H}$ is symmetric tridiagonal. Householder's method finds $\mathbf{Q}$ and $\mathbf{H}$ in $n - 2$ reflection steps. $\mathbf{H}$ is similar to $\mathbf{A}$, so it has the same eigenvalues. This reduction is the preliminary step before the [QR method](qr-method/), which preserves Hessenberg form and costs much less per step on a Hessenberg matrix than on a full one.
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+This page states the factorization, gives Householder's algorithm in the notation of the QR method page, and works all nine of Mathews' examples. The QR method page already shows a symmetric $4 \times 4$ matrix reduced to tridiagonal form and then iterated to its eigenvalues (its [Case 2 animation](qr-method/#animations) and its Example 4), so that second stage is not repeated here.
 
-### Planned animation ideas
+## Hessenberg Matrices and Similarity
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+::: {.callout-note appearance="simple"}
+## Definition — Hessenberg matrix
+An $n \times n$ matrix $\mathbf{H} = (h_{ij})$ with $h_{ij} = 0$ for $i > j + 1$ is called an (upper) **Hessenberg matrix**. Its form is
 
-## Derivation Notes (Planned)
+$$
+\mathbf{H} = \begin{pmatrix}
+h_{11} & h_{12} & h_{13} & \cdots & h_{1,n-1} & h_{1n} \\
+h_{21} & h_{22} & h_{23} & \cdots & h_{2,n-1} & h_{2n} \\
+0 & h_{32} & h_{33} & \cdots & h_{3,n-1} & h_{3n} \\
+\vdots & \ddots & \ddots & \ddots & \vdots & \vdots \\
+0 & \cdots & 0 & h_{n-1,n-2} & h_{n-1,n-1} & h_{n-1,n} \\
+0 & \cdots & 0 & 0 & h_{n,n-1} & h_{nn}
+\end{pmatrix}.
+$$
+:::
 
-Short derivations will be added to explain the core equations and assumptions.
+A symmetric Hessenberg matrix is tridiagonal, because its zeros below the subdiagonal are mirrored above the superdiagonal (see [Tri-Diagonal Matrices](tri-diagonal-matrices.qmd)).
 
-## Worked Example (Planned)
+::: {.callout-note appearance="simple"}
+## Definition — Unitary and orthogonal matrices
+(i) A real matrix $\mathbf{Q}$ with $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$ is called **orthogonal** (Mathews calls it unitary, the name used for the complex case).
 
-A compact numerical example with intermediate steps will be included.
+(ii) A complex matrix $\mathbf{U}$ with $\mathbf{U}^{*}\mathbf{U} = \mathbf{I}$, where $\mathbf{U}^{*}$ is the conjugate transpose, is called **unitary**.
+:::
 
-## Implementation Notes (Planned)
+::: {.callout-tip appearance="simple"}
+## Theorem — Hessenberg factorization
+(i) For every real $n \times n$ matrix $\mathbf{A}$ there are an orthogonal matrix $\mathbf{Q}$ and a real Hessenberg matrix $\mathbf{H}$ with
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+$$
+\mathbf{A} = \mathbf{Q}\mathbf{H}\mathbf{Q}^{T}.
+\tag{1}
+$$
+
+(ii) For every complex $n \times n$ matrix $\mathbf{A}$ there are a unitary matrix $\mathbf{U}$ and a Hessenberg matrix $\mathbf{H}$ with $\mathbf{A} = \mathbf{U}\mathbf{H}\mathbf{U}^{*}$.
+:::
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Symmetric matrices
+If $\mathbf{A}$ is real and symmetric, the $\mathbf{H}$ in (1) is symmetric tridiagonal, because $\mathbf{H}^{T} = (\mathbf{Q}^{T}\mathbf{A}\mathbf{Q})^{T} = \mathbf{Q}^{T}\mathbf{A}^{T}\mathbf{Q} = \mathbf{H}$.
+:::
+
+Mathews remarks that the symmetric case is the easiest to illustrate in a first course; Examples 1–3 below are of that kind.
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Similarity
+If $\mathbf{A} = \mathbf{Q}\mathbf{H}\mathbf{Q}^{T}$ with $\mathbf{Q}$ orthogonal, then $\mathbf{H} = \mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{Q}^{-1}\mathbf{A}\mathbf{Q}$ is similar to $\mathbf{A}$. The two matrices have the same characteristic polynomial,
+
+$$
+\det(\lambda\mathbf{I} - \mathbf{H}) = \det\!\big(\mathbf{Q}^{T}(\lambda\mathbf{I} - \mathbf{A})\mathbf{Q}\big) = \det(\lambda\mathbf{I} - \mathbf{A}),
+$$
+
+and therefore the same eigenvalues. If $\mathbf{A}\mathbf{v} = \lambda\mathbf{v}$, then $\mathbf{H}(\mathbf{Q}^{T}\mathbf{v}) = \lambda(\mathbf{Q}^{T}\mathbf{v})$, so the eigenvectors are related by
+
+$$
+\mathbf{w} = \mathbf{Q}^{T}\mathbf{v}, \qquad \mathbf{v} = \mathbf{Q}\mathbf{w},
+\tag{2}
+$$
+
+and in general they are different vectors (Example 3).
+:::
+
+## Householder Reduction to Hessenberg Form
+
+The reduction is the one on the QR method page, section [Reduction to Tridiagonal (Hessenberg) Form](qr-method/#reduction-to-tridiagonal-hessenberg-form), and this page uses its notation; [Householder Transformations](householder-transformations.qmd) treats the reflections themselves. Start with $\mathbf{A}_0 = \mathbf{A}$ and, for $k = 1, 2, \ldots, n - 2$:
+
+1. Let $\mathbf{x} = (a_{k+1,k}, a_{k+2,k}, \ldots, a_{n,k})$ be the part of column $k$ of $\mathbf{A}_{k-1}$ below the diagonal.
+2. Set $\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert$, with $\operatorname{sign}(0) = +1$.
+3. Let $\mathbf{v}$ be zero in its first $k$ components and equal to $\mathbf{x} - \alpha\mathbf{e}_1$ below them.
+4. Form the Householder matrix and the next matrix:
+
+$$
+\mathbf{P}_k = \mathbf{I} - \frac{2\,\mathbf{v}\mathbf{v}^{T}}{\mathbf{v}^{T}\mathbf{v}}, \qquad \mathbf{A}_k = \mathbf{P}_k\mathbf{A}_{k-1}\mathbf{P}_k .
+\tag{3}
+$$
+
+$\mathbf{P}_k$ is symmetric and orthogonal, so (3) is a similarity transformation. It maps $\mathbf{x}$ to $(\alpha, 0, \ldots, 0)$, so the new subdiagonal entry is $\alpha$ and the entries below it in column $k$ become zero. Because $\mathbf{P}_k$ leaves rows and columns $1, \ldots, k$ alone, the zeros made in earlier columns stay zero. After $n - 2$ steps
+
+$$
+\mathbf{H} = \mathbf{A}_{n-2} = \mathbf{Q}^{T}\mathbf{A}\mathbf{Q}, \qquad \mathbf{Q} = \mathbf{P}_1\mathbf{P}_2\cdots\mathbf{P}_{n-2},
+\tag{4}
+$$
+
+which is the factorization (1). No $\mathbf{P}_k$ touches row or column $1$, so the first row and first column of $\mathbf{Q}$ are those of $\mathbf{I}$, and $h_{11} = a_{11}$.
+
+Mathews' two *Mathematica* programs compute exactly these matrices: *Hessenberg1* prints each $\mathbf{A}_k$ so that you can watch the zeros appear, and *Hessenberg* returns only $\mathbf{Q}$ and $\mathbf{H}$. *Hessenberg1* stores $\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert$, the opposite sign of the $\alpha$ above, calls the vector $\mathbf{u}$, and writes $\mathbf{P}_k = \mathbf{I} - \mathbf{u}\mathbf{u}^{T}/\beta$ with $\beta = \tfrac12\mathbf{u}^{T}\mathbf{u}$; *Hessenberg* writes the same $\mathbf{P}_k$ as $\mathbf{I} - 2\mathbf{u}\mathbf{u}^{T}/(\mathbf{u}^{T}\mathbf{u})$. The choice of sign makes $x_1 - \alpha = x_1 + \operatorname{sign}(x_1)\lVert\mathbf{x}\rVert$ a sum of two numbers of the same sign, so it never suffers cancellation.
+
+::: {.callout-warning appearance="simple"}
+## The case $x_1 = 0$
+Mathews warns that his program "may not work for all cases". One case where it fails is $x_1 = 0$: *Mathematica*'s `Sign[0]` is $0$, so the program sets $\alpha = 0$ and $\mathbf{v} = \mathbf{x}$, and $\mathbf{P}_k$ then maps $\mathbf{x}$ to $-\mathbf{x}$ instead of to a multiple of $\mathbf{e}_1$. For
+
+$$
+\mathbf{A} = \begin{pmatrix} 1 & 1 & 1 \\ 0 & 1 & 1 \\ 1 & 1 & 1 \end{pmatrix}, \qquad \mathbf{x} = (0, 1),
+$$
+
+it returns $\begin{pmatrix} 1 & 1 & -1 \\ 0 & 1 & -1 \\ -1 & -1 & 1 \end{pmatrix}$, which is not Hessenberg. With $\operatorname{sign}(0) = +1$ we get $\alpha = -1$, $\mathbf{v} = (0, 1, 1)$, and
+
+$$
+\mathbf{P}_1 = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 0 & -1 \\ 0 & -1 & 0 \end{pmatrix}, \qquad
+\mathbf{H} = \mathbf{P}_1\mathbf{A}\mathbf{P}_1 = \begin{pmatrix} 1 & -1 & -1 \\ -1 & 1 & 1 \\ 0 & 1 & 1 \end{pmatrix},
+$$
+
+with the characteristic polynomial $\lambda(\lambda^2 - 3\lambda + 1)$ of $\mathbf{A}$. (If all of $\mathbf{x}$ is zero, column $k$ is already reduced and the step can be skipped.) None of Mathews' nine examples meets $x_1 = 0$.
+:::
+
+**Complex matrices.** Mathews' program handles real matrices only, and he points to *Mathematica*'s built-in *HessenbergDecomposition* for complex ones. The same construction works in the complex case if $\operatorname{sign}(x_1)$ is replaced by $x_1/\lvert x_1\rvert$ and every transpose by a conjugate transpose: $\mathbf{P}_k = \mathbf{I} - 2\mathbf{v}\mathbf{v}^{*}/(\mathbf{v}^{*}\mathbf{v})$ is then unitary and Hermitian, and $\mathbf{H} = \mathbf{U}^{*}\mathbf{A}\mathbf{U}$.
+
+**Other reductions.** Hessenberg form can also be reached by Gaussian elimination: each step subtracts multiples of row $k+1$ from the rows below it and adds the same multiples of those columns to column $k+1$, a similarity transformation by an elementary (non-orthogonal) matrix, usually with row and column interchanges for pivoting. It keeps rational matrices rational, but it does not preserve symmetry. On the symmetric matrix of Example 1 it gives a Hessenberg matrix with rational entries and the same characteristic polynomial, but with nonzero entries above the superdiagonal, so not a tridiagonal one. Mathews' module uses only Householder's orthogonal reduction, and every example below uses it.
+
+**Cost.** As a general count, the reduction costs on the order of $n^3$ operations and is done once; afterwards each QR step costs on the order of $n^2$ operations on a Hessenberg matrix and of $n$ on a symmetric tridiagonal one (see [Why tridiagonal and Hessenberg matrices](qr-method/#why-tridiagonal-and-hessenberg-matrices)).
+
+## Worked Examples
+
+All nine examples use Householder's reduction (3)–(4). Mathews computes Examples 1 and 3 with his programs and Example 2 with *Mathematica*'s *HessenbergDecomposition*; in Examples 4–9 he computes $\mathbf{H}$ with *HessenbergDecomposition* and compares it with his program. Every $\mathbf{H}$ below was recomputed in exact arithmetic (square roots kept symbolic) and in 60-digit arithmetic, and the LAPACK routine behind SciPy's `hessenberg` gives the same matrices to within $10^{-14}$. In each example the exact characteristic polynomials of $\mathbf{A}$ and $\mathbf{H}$ agree, $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$ and $\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}$ hold exactly, and the computed $\mathbf{H}$ matches every printed digit of Mathews' result where his output survives in the archive (Examples 2, 4, 6, 7 and 9); for Examples 1, 3, 5 and 8 the printed results are lost and the page gives the recomputed ones. Decimals are rounded to six places. (The characteristic polynomial itself can be computed by the [Faddeev–Leverrier method](faddeev-leverrier-method.qmd).)
+
+### Example 1 — A $5 \times 5$ symmetric matrix, step by step
+
+Find the upper-Hessenberg form of the real symmetric matrix
+
+$$
+\mathbf{A} = \begin{pmatrix} 5 & 1 & 2 & 0 & 4 \\ 1 & 4 & 2 & 1 & 3 \\ 2 & 2 & 5 & 4 & 0 \\ 0 & 1 & 4 & 1 & 3 \\ 4 & 3 & 0 & 3 & 4 \end{pmatrix}
+$$
+
+with Mathews' program *Hessenberg1*, which prints each step. Since $n = 5$, there are three steps.
+
+**Step 1**: below the diagonal, column 1 is $\mathbf{x} = (1, 2, 0, 4)$ with $\lVert\mathbf{x}\rVert = \sqrt{21} \approx 4.582576$, so $\alpha = -\sqrt{21}$, $\mathbf{v} = (0,\ 1 + \sqrt{21},\ 2,\ 0,\ 4)$ and $\mathbf{v}^{T}\mathbf{v} = 42 + 2\sqrt{21}$. Then
+
+$$
+\mathbf{A}_1 = \mathbf{P}_1\mathbf{A}\mathbf{P}_1 \approx \begin{pmatrix}
+5 & -4.582576 & 0 & 0 & 0 \\
+-4.582576 & 5.714286 & 0.992136 & -4.582576 & 3.075361 \\
+0 & 0.992136 & 4.057824 & 2 & -1.135203 \\
+0 & -4.582576 & 2 & 1 & -1 \\
+0 & 3.075361 & -1.135203 & -1 & 3.227890
+\end{pmatrix}.
+$$
+
+Row and column 1 are now reduced. Because $x_3 = 0$, $\mathbf{P}_1\mathbf{e}_4 = \mathbf{e}_4$, so the $(4, 4)$ entry is unchanged, $a_{44} = 1$.
+
+**Step 2**: column 2 of $\mathbf{A}_1$ below the diagonal is $\mathbf{x} \approx (0.992136, -4.582576, 3.075361)$; exactly, $\lVert\mathbf{x}\rVert^2 = 13866/441$, so $\alpha = -\sqrt{13866}/21 \approx -5.607332$, and
+
+$$
+\mathbf{A}_2 = \mathbf{P}_2\mathbf{A}_1\mathbf{P}_2 \approx \begin{pmatrix}
+5 & -4.582576 & 0 & 0 & 0 \\
+-4.582576 & 5.714286 & -5.607332 & 0 & 0 \\
+0 & -5.607332 & 1.863603 & 0.786519 & -2.235531 \\
+0 & 0 & 0.786519 & 3.743239 & -1.511448 \\
+0 & 0 & -2.235531 & -1.511448 & 2.678873
+\end{pmatrix}.
+$$
+
+**Step 3**: column 3 of $\mathbf{A}_2$ below the diagonal is $\mathbf{x} \approx (0.786519, -2.235531)$, with $\lVert\mathbf{x}\rVert \approx 2.369855$, so $\alpha \approx -2.369855$, and the result is
+
+$$
+\boxed{\ \mathbf{H} = \mathbf{A}_3 \approx \begin{pmatrix}
+5 & -4.582576 & 0 & 0 & 0 \\
+-4.582576 & 5.714286 & -5.607332 & 0 & 0 \\
+0 & -5.607332 & 1.863603 & -2.369855 & 0 \\
+0 & 0 & -2.369855 & 3.742499 & -1.511708 \\
+0 & 0 & 0 & -1.511708 & 2.679612
+\end{pmatrix}\ }
+$$
+
+symmetric tridiagonal, as the theorem predicts. Exactly, its diagonal is $\big(5,\ \tfrac{40}{7},\ \tfrac{60295}{32354},\ \tfrac{889443145457}{237660194102},\ \tfrac{137783893}{51419341}\big)$ and its subdiagonal is $\big(-\sqrt{21},\ -\tfrac{\sqrt{13866}}{21},\ -\tfrac{\sqrt{1079806161}}{13866},\ -\tfrac{660114\sqrt{13866}}{51419341}\big)$. Mathews also displays the orthogonal matrix $\mathbf{Q} = \mathbf{P}_1\mathbf{P}_2\mathbf{P}_3$:
+
+$$
+\mathbf{Q} \approx \begin{pmatrix}
+1 & 0 & 0 & 0 & 0 \\
+0 & -0.218218 & 0.555950 & -0.158454 & -0.786252 \\
+0 & -0.436436 & 0.022238 & -0.845366 & 0.307221 \\
+0 & 0 & 0.817247 & 0.215707 & 0.534395 \\
+0 & -0.872872 & -0.150107 & 0.462297 & 0.042952
+\end{pmatrix}.
+$$
+
+**Verification.** In exact arithmetic $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$ and $\mathbf{Q}\mathbf{H}\mathbf{Q}^{T} = \mathbf{A}$, and $\mathbf{A}$ and $\mathbf{H}$ have the same characteristic polynomial,
+
+$$
+\lambda^5 - 19\lambda^4 + 79\lambda^3 + 146\lambda^2 - 1153\lambda + 1222 .
+$$
+
+### Example 2 — The same matrix with *HessenbergDecomposition*
+
+Mathews repeats Example 1 with *Mathematica*'s built-in *HessenbergDecomposition*, which returns a pair of matrices, the transformation and the Hessenberg form (he enters $a_{11}$ as $5.0$ so that the routine receives a decimal matrix). Its $\mathbf{H}$ is the one of Example 1: his printout,
+
+$$
+\mathbf{H} = \begin{pmatrix}
+5. & -4.58258 & 0 & 0 & 0 \\
+-4.58258 & 5.71429 & -5.60733 & 0 & 0 \\
+0 & -5.60733 & 1.8636 & -2.36985 & 0 \\
+0 & 0 & -2.36985 & 3.7425 & -1.51171 \\
+0 & 0 & 0 & -1.51171 & 2.67961
+\end{pmatrix},
+$$
+
+agrees with the boxed $\mathbf{H}$ above in every printed digit, signs included. **Verification:** rounding the exact entries of Example 1 to six significant figures reproduces each printed entry.
+
+### Example 3 — Eigenvalues and eigenvectors of $\mathbf{A}$ and $\mathbf{H}$
+
+For the matrix $\mathbf{A}$ of Example 1 and its Hessenberg form $\mathbf{H}$, compare the eigenvalues and the eigenvectors.
+
+**Eigenvalues.** The characteristic polynomial does not factor over the rationals; its roots, the eigenvalues of both $\mathbf{A}$ and $\mathbf{H}$, are
+
+$$
+\lambda_1 \approx 12.025754, \quad \lambda_2 \approx 5.672551, \quad \lambda_3 \approx 3.361876, \quad \lambda_4 \approx 1.497658, \quad \lambda_5 \approx -3.557839 .
+$$
+
+**Eigenvectors for $\lambda_1$.** The unit eigenvectors of $\mathbf{A}$ and of $\mathbf{H}$ for $\lambda_1$ (signs chosen so that the first component is positive) are
+
+$$
+\mathbf{v} \approx \begin{pmatrix} 0.485108 \\ 0.411359 \\ 0.450676 \\ 0.343352 \\ 0.523884 \end{pmatrix}, \qquad
+\mathbf{w} = \mathbf{Q}^{T}\mathbf{v} \approx \begin{pmatrix} 0.485108 \\ -0.743741 \\ 0.440682 \\ -0.129915 \\ 0.021013 \end{pmatrix}.
+$$
+
+They are not the same vector, nor multiples of each other: $\lvert\mathbf{v}\cdot\mathbf{w}\rvert \approx 0.0944$, far from $1$. Only their first components agree, because the first row of $\mathbf{Q}$ is $(1, 0, 0, 0, 0)$. The same holds for the other four eigenvalues: the largest value of $\lvert\mathbf{v}\cdot\mathbf{w}\rvert$ among the five pairs is $0.891$, for $\lambda_4$. To recover an eigenvector of $\mathbf{A}$ from one of $\mathbf{H}$, use (2), $\mathbf{v} = \mathbf{Q}\mathbf{w}$.
+
+**Verification.** In 60-digit arithmetic $\lVert\mathbf{A}\mathbf{v} - \lambda_1\mathbf{v}\rVert$ and $\lVert\mathbf{H}\mathbf{w} - \lambda_1\mathbf{w}\rVert$ are both below $3 \times 10^{-60}$.
+
+### Example 4 — A $3 \times 3$ nonsymmetric matrix
+
+Find the upper-Hessenberg form of
+
+$$
+\mathbf{A} = \begin{pmatrix} 2 & -1 & 1 \\ -1 & 2 & 1 \\ 1 & -1 & 2 \end{pmatrix}
+$$
+
+and compare the eigenvalues. For $n = 3$ there is one step.
+
+**Step 1**: $\mathbf{x} = (-1, 1)$, $\lVert\mathbf{x}\rVert = \sqrt2$, so $\alpha = \sqrt2$ and $\mathbf{v} = (0,\ -1 - \sqrt2,\ 1)$. The Householder matrix and the result are
+
+$$
+\mathbf{Q} = \mathbf{P}_1 = \begin{pmatrix} 1 & 0 & 0 \\ 0 & -\tfrac{\sqrt2}{2} & \tfrac{\sqrt2}{2} \\[1mm] 0 & \tfrac{\sqrt2}{2} & \tfrac{\sqrt2}{2} \end{pmatrix}, \qquad
+\boxed{\ \mathbf{H} = \begin{pmatrix} 2 & \sqrt2 & 0 \\ \sqrt2 & 2 & -1 \\ 0 & 1 & 2 \end{pmatrix} \approx \begin{pmatrix} 2 & 1.414214 & 0 \\ 1.414214 & 2 & -1 \\ 0 & 1 & 2 \end{pmatrix}\ }
+$$
+
+Mathews' program and *HessenbergDecomposition* both print this $\mathbf{H}$.
+
+**Eigenvalues.** Both characteristic polynomials equal $\lambda^3 - 6\lambda^2 + 11\lambda - 6 = (\lambda - 1)(\lambda - 2)(\lambda - 3)$, so the eigenvalues are $3, 2, 1$, as Mathews prints for both matrices. Mathews' text for this example says that some eigenvalues are complex; that sentence is shared by Examples 4–9 and does not apply here, since all three are real.
+
+**Verification.** $\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}$ exactly, and $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$.
+
+### Example 5 — A $3 \times 3$ matrix with complex eigenvalues
+
+Find the upper-Hessenberg form of
+
+$$
+\mathbf{A} = \begin{pmatrix} 3 & -4 & 4 \\ 1 & -2 & 4 \\ -1 & -1 & 3 \end{pmatrix}
+$$
+
+and compare the eigenvalues.
+
+**Step 1**: $\mathbf{x} = (1, -1)$, $\lVert\mathbf{x}\rVert = \sqrt2$, so $\alpha = -\sqrt2$ and $\mathbf{v} = (0,\ 1 + \sqrt2,\ -1)$. This $\mathbf{P}_1$ is the same matrix as in Example 4 (its $\mathbf{v}$ is the negative of that one), and
+
+$$
+\boxed{\ \mathbf{H} = \begin{pmatrix} 3 & 4\sqrt2 & 0 \\ -\sqrt2 & -1 & 0 \\ 0 & 5 & 2 \end{pmatrix} \approx \begin{pmatrix} 3 & 5.656854 & 0 \\ -1.414214 & -1 & 0 \\ 0 & 5 & 2 \end{pmatrix}\ }
+$$
+
+**Eigenvalues.** Both characteristic polynomials equal $\lambda^3 - 4\lambda^2 + 9\lambda - 10 = (\lambda - 2)(\lambda^2 - 2\lambda + 5)$, so the eigenvalues are $2$ and the conjugate pair $1 \pm 2i$. Here $\mathbf{H}$ shows them: its third column is $(0, 0, 2)$, so $\mathbf{H}\mathbf{e}_3 = 2\mathbf{e}_3$, and the leading $2 \times 2$ block $\begin{pmatrix} 3 & 4\sqrt2 \\ -\sqrt2 & -1 \end{pmatrix}$ has trace $2$ and determinant $5$, which give $\lambda^2 - 2\lambda + 5$. By (2) the eigenvector of $\mathbf{A}$ for $\lambda = 2$ is $\mathbf{Q}\mathbf{e}_3 = \tfrac{\sqrt2}{2}(0, 1, 1)$.
+
+**Verification.** $\mathbf{A}(0, 1, 1)^{T} = (0, 2, 2)^{T} = 2\,(0, 1, 1)^{T}$, and $\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}$ exactly.
+
+### Example 6 — A $4 \times 4$ matrix whose Hessenberg form splits
+
+Find the upper-Hessenberg form of
+
+$$
+\mathbf{A} = \begin{pmatrix} 1 & -4 & 0 & 3 \\ -1 & 3 & 0 & -2 \\ 3 & -7 & -2 & 6 \\ 0 & 4 & 0 & -2 \end{pmatrix}
+$$
+
+and compare the eigenvalues.
+
+**Step 1**: $\mathbf{x} = (-1, 3, 0)$, $\lVert\mathbf{x}\rVert = \sqrt{10}$, so $\alpha = \sqrt{10}$ and $\mathbf{v} = (0,\ -1 - \sqrt{10},\ 3,\ 0)$:
+
+$$
+\mathbf{A}_1 = \begin{pmatrix}
+1 & \tfrac{2\sqrt{10}}{5} & -\tfrac{6\sqrt{10}}{5} & 3 \\[1mm]
+\sqrt{10} & \tfrac35 & -\tfrac{39}{5} & 2\sqrt{10} \\[1mm]
+0 & -\tfrac45 & \tfrac25 & 0 \\[1mm]
+0 & -\tfrac{2\sqrt{10}}{5} & \tfrac{6\sqrt{10}}{5} & -2
+\end{pmatrix}.
+$$
+
+**Step 2**: $\mathbf{x} = \big(-\tfrac45, -\tfrac{2\sqrt{10}}{5}\big)$, $\lVert\mathbf{x}\rVert^2 = \tfrac{56}{25}$, so $\alpha = \tfrac{2\sqrt{14}}{5}$, and
+
+$$
+\boxed{\ \mathbf{H} = \begin{pmatrix}
+1 & \tfrac{2\sqrt{10}}{5} & -\tfrac{3\sqrt{35}}{35} & \tfrac{9\sqrt{14}}{7} \\[1mm]
+\sqrt{10} & \tfrac35 & -\tfrac{11\sqrt{14}}{35} & \tfrac{59\sqrt{35}}{35} \\[1mm]
+0 & \tfrac{2\sqrt{14}}{5} & \tfrac25 & \tfrac{6\sqrt{10}}{5} \\[1mm]
+0 & 0 & 0 & -2
+\end{pmatrix} \approx \begin{pmatrix}
+1 & 1.264911 & -0.507093 & 4.810702 \\
+3.162278 & 0.6 & -1.175949 & 9.972820 \\
+0 & 1.496663 & 0.4 & 3.794733 \\
+0 & 0 & 0 & -2
+\end{pmatrix}\ }
+$$
+
+as in Mathews' printout.
+
+**Eigenvalues.** Both characteristic polynomials equal $\lambda^4 - 5\lambda^2 + 4 = (\lambda - 2)(\lambda - 1)(\lambda + 1)(\lambda + 2)$, so the eigenvalues are $\pm1$ and $\pm2$, all real; Mathews' remark about complex eigenvalues does not apply to this example either. The entry $h_{43}$ is exactly zero, so $\mathbf{H}$ is block upper triangular: $h_{44} = -2$ is one eigenvalue, and the leading $3 \times 3$ block has the characteristic polynomial $(\lambda - 2)(\lambda - 1)(\lambda + 1)$. When the QR method meets such a zero on the subdiagonal it can split the problem in two (deflation, see [Acceleration Shifts](qr-method/#acceleration-shifts)).
+
+**Verification.** $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$ and $\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}$ exactly, with $\mathbf{Q} = \mathbf{P}_1\mathbf{P}_2$.
+
+### Example 7 — A $4 \times 4$ matrix with two conjugate pairs
+
+Find the upper-Hessenberg form of
+
+$$
+\mathbf{A} = \begin{pmatrix} 1 & -1 & 0 & 0 \\ 2 & -1 & 0 & 0 \\ 3 & -2 & 3 & 4 \\ -1 & 1 & -2 & -1 \end{pmatrix}
+$$
+
+and compare the eigenvalues.
+
+**Step 1**: $\mathbf{x} = (2, 3, -1)$, $\lVert\mathbf{x}\rVert = \sqrt{14} \approx 3.741657$, so $\alpha = -\sqrt{14}$ and $\mathbf{v} = (0,\ 2 + \sqrt{14},\ 3,\ -1)$.
+
+**Step 2**: column 2 of $\mathbf{A}_1$ below the diagonal is $\mathbf{x} \approx (-0.471905, 0.869998)$, with $\lVert\mathbf{x}\rVert = \tfrac{4\sqrt3}{7} \approx 0.989743$, so $\alpha = \tfrac{4\sqrt3}{7}$. The result simplifies to
+
+$$
+\boxed{\ \mathbf{H} = \begin{pmatrix}
+1 & \tfrac{\sqrt{14}}{7} & -\tfrac{2\sqrt{42}}{21} & \tfrac{\sqrt3}{3} \\[1mm]
+-\sqrt{14} & \tfrac17 & -\tfrac{3\sqrt3}{7} & -\tfrac{11\sqrt{42}}{14} \\[1mm]
+0 & \tfrac{4\sqrt3}{7} & -\tfrac{10}{21} & -\tfrac{25\sqrt{14}}{42} \\[1mm]
+0 & 0 & \tfrac{\sqrt{14}}{3} & \tfrac43
+\end{pmatrix} \approx \begin{pmatrix}
+1 & 0.534522 & -0.617213 & 0.577350 \\
+-3.741657 & 0.142857 & -0.742307 & -5.092011 \\
+0 & 0.989743 & -0.476190 & -2.227177 \\
+0 & 0 & 1.247219 & 1.333333
+\end{pmatrix}\ }
+$$
+
+as in Mathews' printout.
+
+**Eigenvalues.** Both characteristic polynomials equal $\lambda^4 - 2\lambda^3 + 6\lambda^2 - 2\lambda + 5 = (\lambda^2 + 1)(\lambda^2 - 2\lambda + 5)$, so the eigenvalues are the two conjugate pairs $1 \pm 2i$ and $\pm i$, as Mathews prints. Every subdiagonal entry of $\mathbf{H}$ is nonzero, so, unlike Example 6, $\mathbf{H}$ does not split.
+
+**Verification.** $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$ and $\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}$ exactly.
+
+### Example 8 — A $5 \times 5$ nonsymmetric matrix
+
+Find the upper-Hessenberg form of
+
+$$
+\mathbf{A} = \begin{pmatrix} 6 & 1 & -2 & 19 & 4 \\ 1 & 4 & 2 & 1 & 3 \\ 7 & 12 & 5 & 11 & -1 \\ -3 & 21 & 4 & 1 & 3 \\ 4 & 6 & -1 & 3 & 7 \end{pmatrix}
+$$
+
+and compare the eigenvalues.
+
+**Steps.** In step 1, $\mathbf{x} = (1, 7, -3, 4)$ and $\lVert\mathbf{x}\rVert = \sqrt{75} = 5\sqrt3 \approx 8.660254$, so $\alpha = -5\sqrt3$. Steps 2 and 3 give the subdiagonal entries $\alpha \approx -7.760298$ and $\alpha \approx -5.877438$, and
+
+$$
+\boxed{\ \mathbf{H} \approx \begin{pmatrix}
+6 & 6.235383 & 17.519230 & -3.192879 & 5.099226 \\
+-8.660254 & -0.066667 & -11.767017 & 0.369384 & 1.791580 \\
+0 & -7.760298 & 14.837427 & 13.552189 & -11.852593 \\
+0 & 0 & -5.877438 & -0.089957 & 8.843696 \\
+0 & 0 & 0 & 4.304351 & 2.319197
+\end{pmatrix}\ }
+$$
+
+The exact entries are rational numbers or rational multiples of square roots of squarefree integers with up to 14 digits, with denominators of up to 16 digits, and are not shown.
+
+**Eigenvalues.** Both characteristic polynomials equal
+
+$$
+\lambda^5 - 23\lambda^4 + 138\lambda^3 - 1716\lambda^2 + 6922\lambda + 42031,
+$$
+
+which does not factor over the rationals. Its roots are
+
+$$
+19.177813, \quad 7.842531, \quad -0.510403 \pm 9.638777\,i, \quad -2.999538 .
+$$
+
+The last one is close to $-3$ but is not $-3$: the polynomial has the value $-11$ at $\lambda = -3$.
+
+**Verification.** The exact characteristic polynomial of the exact $\mathbf{H}$ simplifies to the one above, and $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$, $\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}$ hold exactly.
+
+### Example 9 — Mathews' Exercise 9, a $5 \times 5$ nonsymmetric matrix
+
+Find the upper-Hessenberg form of
+
+$$
+\mathbf{A} = \begin{pmatrix} 5 & 4 & 3 & 2 & 1 \\ 1 & 4 & 0 & 3 & 3 \\ 2 & 0 & 3 & 0 & 0 \\ 3 & 2 & 1 & 2 & 5 \\ 4 & 2 & 1 & 4 & 1 \end{pmatrix}
+$$
+
+and compare the eigenvalues.
+
+**Steps.** In step 1, $\mathbf{x} = (1, 2, 3, 4)$ and $\lVert\mathbf{x}\rVert = \sqrt{30} \approx 5.477226$, so $\alpha = -\sqrt{30}$. Steps 2 and 3 give $\alpha \approx -4.213866$ and $\alpha \approx 2.864062$ (in step 3 the leading entry of $\mathbf{x}$ is negative, $x_1 \approx -2.353976$, so $\alpha$ is positive), and
+
+$$
+\boxed{\ \mathbf{H} \approx \begin{pmatrix}
+5 & -3.651484 & 2.599620 & -0.237003 & -3.138865 \\
+-5.477226 & 6.9 & -2.291641 & 0.207284 & 0.703858 \\
+0 & -4.213866 & 2.305557 & 2.749359 & 0.857570 \\
+0 & 0 & 2.864062 & -1.115822 & 0.817995 \\
+0 & 0 & 0 & 0.683519 & 1.910266
+\end{pmatrix}\ }
+$$
+
+as in Mathews' printout.
+
+**Eigenvalues.** Both characteristic polynomials equal
+
+$$
+\lambda^5 - 15\lambda^4 + 33\lambda^3 + 77\lambda^2 - 320\lambda + 422,
+$$
+
+which does not factor over the rationals. Its roots are
+
+$$
+11.832831, \quad 3.309775, \quad 1.358725 \pm 1.386126\,i, \quad -2.860056,
+$$
+
+which agree with the values Mathews prints for both $\mathbf{A}$ and $\mathbf{H}$ ($11.8328$, $3.30977$, $-2.86006$, $1.35872 \pm 1.38613\,i$).
+
+**Verification.** As in Example 8, the characteristic polynomials agree exactly, and $\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}$, $\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}$ hold exactly.
+
+### What the examples show
+
+- **The Hessenberg form of a real matrix is real.** Every $\mathbf{H}$ above is real, including those of Examples 5, 7, 8 and 9, whose eigenvalues are complex; the complex eigenvalues come in conjugate pairs, as they must for a real matrix.
+- **Similarity is exact.** In all nine examples the characteristic polynomials of $\mathbf{A}$ and $\mathbf{H}$ are identical, so the eigenvalues agree; the eigenvectors do not (Example 3) and are recovered through (2).
+- **Symmetric input gives tridiagonal output** (Examples 1–3), the form on which the QR method is cheapest.
+- **Zeros in $\mathbf{H}$ can expose eigenvalues.** In Example 6 a zero subdiagonal entry splits $\mathbf{H}$ into two blocks, and in Example 5 a column with a single nonzero entry gives an eigenvector at once.
+
+## From Hessenberg Form to the Eigenvalues
+
+The reduction produces a matrix similar to $\mathbf{A}$ but does not by itself find its eigenvalues. The [QR method](qr-method/) does that, and because each QR step $\mathbf{R}\mathbf{Q}$ of a Hessenberg matrix is again Hessenberg (and symmetric tridiagonal stays symmetric tridiagonal), the reduction needs to be done only once. The QR method page shows the whole sequence on a symmetric $4 \times 4$ matrix: two Householder steps to a tridiagonal $\mathbf{H}$, then the unshifted QR iteration, in its [Case 2 animation](qr-method/#animations) and its Example 4 under [Reduction to Tridiagonal (Hessenberg) Form](qr-method/#reduction-to-tridiagonal-hessenberg-form), and the shifted iteration with deflation on the same $\mathbf{H}$ in its Example 5. Its Householder step uses the same $\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert$ as this page, so the two pages produce the same matrices.

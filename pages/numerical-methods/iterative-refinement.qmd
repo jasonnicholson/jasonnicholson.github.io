@@ -27,6 +27,8 @@ $$
 
 then each refinement step uses only triangular solves.
 
+Refinement is most useful when the residual is computed in higher precision than the rest of the work; Mathews calls this the "signal feature" of the method. With residuals computed in working precision it can still remove a gross error in a starting vector (Example 2), but the residual stalls at roundoff level and further steps bring no steady gain.
+
 ::: {.callout-note appearance="simple"}
 ## Definition - Residual
 For an approximation $\mathbf{x}^{(k)}$, the residual is
@@ -72,7 +74,7 @@ A\Delta\mathbf{x}^{(k)}=\mathbf{r}^{(k)},
 \mathbf{x}^{(k+1)}=\mathbf{x}^{(k)}+\Delta\mathbf{x}^{(k)}.
 \tag{6}
 $$
-Stop when $\|\mathbf{r}^{(k)}\|$ is sufficiently small.
+Compute $\mathbf{r}^{(k)}$ in higher precision than the rest when possible. Stop when $\|\mathbf{r}^{(k)}\|$ is sufficiently small or stops decreasing.
 :::
 
 ## Example 1 - One Refinement Step on a 4x4 System
@@ -130,7 +132,7 @@ $$
 \end{pmatrix}.
 $$
 
-This is the exact solution.
+This is the exact solution. In exact arithmetic this always happens: (4) gives $\Delta\mathbf{x}^{(0)}=\mathbf{x}-\mathbf{x}^{(0)}$, so one step from any $\mathbf{x}^{(0)}$ lands on the solution. In floating point the correction is only approximate (Example 2).
 
 **Verification:**
 
@@ -179,6 +181,8 @@ $$
 \end{pmatrix}.
 $$
 
+(Mathews' module also has a review $PA=LU$ solve, a second $5\times5$ system, and the same experiment for the Hilbert matrices $H_6$ to $H_{10}$, whose condition number $\kappa_\infty$ grows from about $2.9\times10^{7}$ to $3.5\times10^{13}$; those examples are not reproduced here.)
+
 The module then uses the pedagogical starting vector
 
 $$
@@ -188,70 +192,75 @@ $$
 \end{pmatrix}.
 $$
 
-**Step 1**: Compute residual
+**Step 1**: Compute residual. In exact arithmetic
 
 $$
 \mathbf{r}^{(0)}=\mathbf{b}-H_5\mathbf{x}^{(0)}=
 \begin{pmatrix}
--61.66666666666674\\
+-\tfrac{185}{3}\\
 -46\\
--35.09523809502379\\
--27.76190476190473\\
--22.65079365079377
+-\tfrac{737}{21}\\
+-\tfrac{583}{21}\\
+-\tfrac{1427}{63}
+\end{pmatrix}
+\approx
+\begin{pmatrix}
+-61.666666666666667\\
+-46\\
+-35.095238095238095\\
+-27.761904761904762\\
+-22.650793650793651
 \end{pmatrix}.
 $$
+
+Mathews' Mathematica printout, which stores $H_5$ in 16-digit floating point, shows this vector with errors of up to $2.5\times10^{-13}$ in the last digits (for example $-46.00000000000025$).
 
 **Step 2**: Solve correction system
 
 $$
-H_5\Delta\mathbf{x}^{(0)}=\mathbf{r}^{(0)},
+H_5\Delta\mathbf{x}^{(0)}=\mathbf{r}^{(0)}.
 $$
 
-giving
+Exactly, $\Delta\mathbf{x}^{(0)}=\mathbf{x}_{\text{true}}-\mathbf{x}^{(0)}=(5,160,-710,-80,550)^\top$. A floating-point solve with the LU factors is only approximate; Mathews' printed (Mathematica) values are
 
 $$
 \Delta\mathbf{x}^{(0)}=
 \begin{pmatrix}
 5.000000000190141\\
 159.9999999968922\\
--709.999999877721\\
+-709.9999999877721\\
 -80.0000000172662\\
-550.000000080213
-\end{pmatrix}.
+550.0000000080213
+\end{pmatrix},
 $$
 
-**Step 3**: Update
+off from the exact correction by up to about $1.7\times10^{-8}$.
+
+**Step 3**: Update. Mathews' printed values are
 
 $$
 \mathbf{x}^{(1)}=\mathbf{x}^{(0)}+\Delta\mathbf{x}^{(0)}=
 \begin{pmatrix}
 -94.9999999998099\\
 2159.999999996892\\
--10709.9999998777\\
+-10709.99999998777\\
 17919.99999998273\\
--9449.9999999198
-\end{pmatrix}.
-$$
-
-The source reports residuals before and after refinement as
-
-$$
-\mathbf{r}^{(0)}=
-\begin{pmatrix}
--61.66666666666674\\-46\\-35.09523809502379\\-27.76190476190473\\-22.65079365079377
+-9449.99999999198
 \end{pmatrix},
-\qquad
-\mathbf{r}^{(1)}\approx
-\begin{pmatrix}
-1.77635683940025\times10^{-15}\\
--1.77635683940025\times10^{-14}\\
--7.993605777301127\times10^{-15}\\
--1.021405182655144\times10^{-14}\\
--1.643130076445232\times10^{-14}
-\end{pmatrix}.
 $$
 
-This illustrates rapid residual reduction after one correction step.
+about $1.7\times10^{-8}$ from $\mathbf{x}_{\text{true}}$. Substituting these printed digits exactly gives the residual
+
+$$
+\mathbf{r}^{(1)}=\mathbf{b}-H_5\mathbf{x}^{(1)}\approx
+\begin{pmatrix}
+7.3\\7.8\\2.5\\3.8\\4.8
+\end{pmatrix}\times10^{-13},
+$$
+
+so the residual has fallen from $\|\mathbf{r}^{(0)}\|_\infty=\tfrac{185}{3}\approx 61.7$ to below $10^{-12}$ in one step. Mathews' printout lists smaller residuals, about $10^{-14}$, which cannot be reproduced from the 16 printed digits: at this level the residual depends on the last bits of $\mathbf{x}^{(1)}$ (one unit in the last place of $x^{(1)}_4$, $3.6\times10^{-12}$, changes it by up to about $9\times10^{-13}$) and on the order of the floating-point operations.
+
+The step has not made $\mathbf{x}^{(1)}$ more accurate than a plain LU solve: Mathews' LU-solve solution of $H_5\mathbf{x}=\mathbf{b}$ is within $3.5\times10^{-9}$ of $\mathbf{x}_{\text{true}}$, against $1.7\times10^{-8}$ for $\mathbf{x}^{(1)}$. The gain is relative to the artificial starting vector only. Mathews adds the caveat that if the iteration is done one more time the values will not get closer to the solution: his second step changes $\mathbf{x}^{(1)}$ by at most about $5\times10^{-10}$ and leaves it about $1.7\times10^{-8}$ from $\mathbf{x}_{\text{true}}$. Repeating the run in IEEE double precision (NumPy, LAPACK LU with partial pivoting) from the same $\mathbf{x}^{(0)}$ shows the same stagnation: the errors after steps 1 to 5 are $6.0\times10^{-8}$, $2.7\times10^{-8}$, $1.7\times10^{-9}$, $8.9\times10^{-8}$ and $3.6\times10^{-8}$ (the plain LU solve: $3.4\times10^{-9}$), while $\|\mathbf{r}^{(k)}\|_\infty$ stays between $4.5\times10^{-13}$ and $6.8\times10^{-13}$. If instead each residual is computed exactly (rational arithmetic) and only the correction solves use the double-precision LU factors, the iterates reach the exact integer solution after two steps from $\mathbf{x}^{(0)}$, and after one step from the LU-solve solution.
 
 ## Conditioning and Accuracy Loss
 
@@ -261,22 +270,26 @@ $$
 \operatorname{Cond}(A)=943656.
 $$
 
-With machine epsilon $\varepsilon=2.22045\times10^{-16}$ and $\|\mathbf{x}\|_2=23017.6$,
+This is the condition number in the $\infty$-norm, $\kappa_\infty(H_5)=\|H_5\|_\infty\|H_5^{-1}\|_\infty$ (equal here to $\kappa_1$; in the 2-norm, $\kappa_2(H_5)\approx 476607.25$).
+
+Mathews' error estimate comes from perturbation theory. Suppose every entry of $A$ and $\mathbf{b}$ is rounded to nearest in machine precision (relative error at most $\varepsilon/2$), and $\hat{\mathbf{x}}$ is the exact solution of the rounded system. Then, to first order in $\varepsilon$,
 
 $$
-\|\mathbf{x}-\hat{\mathbf{x}}\|\le \|\mathbf{x}\|\,\operatorname{Cond}(A)\,\varepsilon
+\|\mathbf{x}-\hat{\mathbf{x}}\|_\infty\lesssim \|\mathbf{x}\|_\infty\,\kappa_\infty(A)\,\varepsilon.
 \tag{7}
 $$
 
-gives
+For a solution computed by elimination, (7) is an estimate of the error, not a guaranteed bound, because elimination adds rounding errors of its own. With machine epsilon $\varepsilon=2.22045\times10^{-16}$ and $\|\mathbf{x}_{\text{true}}\|_\infty=17920$, it gives
 
 $$
-\|\mathbf{x}-\hat{\mathbf{x}}\|
-\le
-(23017.6)(943656)(2.22045\times10^{-16})
-\approx 4.82295\times10^{-6}.
+\|\mathbf{x}-\hat{\mathbf{x}}\|_\infty
+\lesssim
+(17920)(943656)(2.22045\times10^{-16})
+\approx 3.75\times10^{-6}.
 \tag{8}
 $$
+
+Mathews' printout gives $4.82295\times10^{-6}$ instead, because it multiplies the $\infty$-norm condition number by the 2-norm $\|\mathbf{x}_{\text{true}}\|_2=23017.6$. Using the 2-norm throughout gives $\kappa_2\|\mathbf{x}_{\text{true}}\|_2\,\varepsilon\approx 2.44\times10^{-6}$. For example, the exact solution of the system with the entries of $H_5$ rounded to double precision (solved in rational arithmetic) lies $1.7\times10^{-8}$ from $\mathbf{x}_{\text{true}}$, and the floating-point errors in Example 2 are at most $8.9\times10^{-8}$: both are well inside these estimates. Mathews' second refinement iterate $\mathbf{x}^{(2)}$ agrees with that rounded-system solution to within $6\times10^{-12}$ in every component (its error matches to 3 to 4 significant digits), so refinement with the rounded $H_5$ has settled on the rounded system's solution, not on $\mathbf{x}_{\text{true}}$.
 
 ::: {.callout-warning appearance="simple"}
 Iterative refinement can dramatically reduce residuals, but ill-conditioning still limits attainable accuracy. For this case, roughly $\log_{10}(943656)\approx 5.97$ digits may be lost.

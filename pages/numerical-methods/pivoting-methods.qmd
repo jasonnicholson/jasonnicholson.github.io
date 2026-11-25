@@ -56,7 +56,7 @@ s_i=\max_{1\le j\le n}|a_{ij}|,
 u=\arg\max_{i\ge p}\frac{|a_{ip}|}{s_i},
 \tag{3}
 $$
-then swap rows $p$ and $u$.
+then swap rows $p$ and $u$. The scale factors $s_i$ are computed once, from the original matrix; when rows are swapped, their scale factors are swapped with them.
 
 Total pivoting:
 $$
@@ -98,7 +98,7 @@ The first pivot selected by each strategy is:
 |---|---|---|
 | Trivial | $a_{11}=1$ | No swap |
 | Partial | largest $|a_{i1}|=2$ | swap row 1 with row 3 (or row 4) |
-| Scaled partial | largest $|a_{i1}|/s_i$ with $s=(7,2,4,5)$ | swap row 1 with row 4 |
+| Scaled partial | largest $|a_{i1}|/s_i$ with $s=(7,2,4,5)$ (ratios $\tfrac17,0,\tfrac12,\tfrac25$) | swap row 1 with row 3 |
 | Total | largest entry in full matrix is $7$ at $(1,4)$ | swap column 1 with column 4 |
 
 Using partial pivoting, elimination gives the equivalent triangular system
@@ -155,7 +155,7 @@ In exact arithmetic, all four pivoting strategies produce this same solution; in
 
 ## Example 2 - Hilbert Matrix Sensitivity
 
-The module's Hilbert test uses $n=5$ with
+The module also works a second $5\times5$ integer system the same way as Example 1; it is left out here. Its first Hilbert test (of six, $n=5$ to $10$, each with $\mathbf{b}=(n,n-1,\dots,1)^\top$) uses $n=5$ with
 
 $$
 H_5=
@@ -187,6 +187,8 @@ The same source run reports these absolute 2-norm errors for the four pivoting c
 
 For this example, partial pivoting gave the smallest error among the four reported runs.
 
+That ranking does not carry over to other cases. For $n=6,7,8,9,10$ the module names trivial, partial, total, scaled partial and trivial pivoting, in turn, as slightly better than the others. A double-precision rerun of the same four eliminations shows that even the order of the floating-point operations (forming the multiplier first or not, normalizing the pivot row or not) changes which strategy wins, at every $n$ from 5 to 10 except 9. Which strategy wins is a roundoff accident, while the size of the error follows the conditioning of $H_n$, which worsens rapidly with $n$: about $10^{-9}$ to $8\times10^{-8}$ at $n=5$ and $7.6\times10^{4}$ to $1.4\times10^{5}$ at $n=10$, for every strategy and every ordering tried.
+
 **Verification:**
 
 | Row | Left-hand side | Right-hand side |
@@ -199,31 +201,35 @@ For this example, partial pivoting gave the smallest error among the four report
 
 ## Conditioning Warning for Hilbert Systems
 
-The module reports
+For $A=H_5$ the module reports the condition number
 
 $$
-\kappa(A)=943656.
+\kappa_\infty(A)=\lVert A\rVert_\infty\,\lVert A^{-1}\rVert_\infty=943656.
 $$
 
-With machine epsilon $\varepsilon=2.22045\times10^{-16}$, the page gives the bound
+The 2-norm condition number is smaller, $\kappa_2(A)\approx 4.77\times10^{5}$.
+
+The module also gives a rule of thumb: if $A$ and $\mathbf{b}$ are stored to machine precision, with machine epsilon $\varepsilon=2.22045\times10^{-16}$, the error this causes in the solution is roughly at most
 
 $$
-\lVert X-\hat X\rVert\le \lVert \hat X\rVert\,\kappa(A)\,\varepsilon,
+\lVert X-\hat X\rVert\lesssim \lVert X\rVert\,\kappa(A)\,\varepsilon.
 \tag{5}
 $$
 
-and for this example ($\lVert X\rVert=23017.6$)
+This is an estimate of the effect of rounding the data, not a bound on the error of elimination itself, whose roundoff brings further factors that depend on $n$ and on how much the entries grow during elimination. For this example, with $\lVert X\rVert_2=23017.6$ and the module's $\kappa_\infty(A)$,
 
 $$
-\lVert X-\hat X\rVert
-\le
+\lVert X\rVert\,\kappa(A)\,\varepsilon
+=
 (23017.6)(943656)(2.22045\times10^{-16})
-\approx 4.82295\times10^{-6}.
+\approx 4.823\times10^{-6}.
 \tag{6}
 $$
 
+Using 2-norms throughout ($\kappa_2$) gives $2.44\times10^{-6}$, and using $\infty$-norms throughout ($\lVert X\rVert_\infty=17920$) gives $3.75\times10^{-6}$. The reported errors, about $10^{-8}$, are well inside all three.
+
 ::: {.callout-warning appearance="simple"}
 Hilbert matrices are highly ill-conditioned: here,
-$\log_{10}(\kappa(A))\approx 5.975$, so about 6 decimal digits can be lost due to conditioning and roundoff.
-This is why pivoting strategy and precision both matter.
+$\log_{10}\kappa_\infty(A)\approx 5.975$, so about 6 decimal digits can be lost due to conditioning and roundoff.
+No pivoting strategy can remove this sensitivity: for $n=5$ the module's four errors lie within a factor of about 2 of one another, and in the rerun above the errors of every strategy grow together with $n$. Higher working precision (or a better-conditioned formulation) is what helps.
 :::
