@@ -32,3 +32,29 @@ Fidelity findings (for Jason to decide as a group): LU F1 (Misleading), F3; Gaus
 - **Archive examples dropped without a word** on every page (Mathews' 4×4 LU cases, Gauss-Jordan Examples 4–6, Cholesky 2(b)–4, Pivoting's other Hilbert sizes). Where the dropped example is the one that teaches the module's point, the omission became Misleading.
 - **Correct results with a wrong reason or a wrong label** (the Newton triangularity reason, the D − L − U sentence, the scaled-pivoting row).
 - **Error estimates presented as theorems,** with the condition number's norm unstated and mixed with a 2-norm. The same pattern appears on Iterative Refinement (batch 12).
+
+## Closing (batch 11 run, 2026-11-25)
+
+**Pages:** Triangular Systems and Back Substitution, Gauss-Jordan Elimination and Pivoting, LU Factorization, Cholesky Doolittle and Crout Factorizations, Pivoting Methods. All stay flat text-only pages; none needed text written (no skeletons).
+
+**Findings by round:**
+
+| Round | Error | Misleading | Minor | Report |
+|---|---|---|---|---|
+| 1 | 6 (1 inventory: the nine lost `\t`s on Cholesky) | 5 | 14 | `reviews/batch-11` |
+| 2 | 0 | 0 | 2 | `reviews/batch-11-r2` |
+
+Every round-1 Error and Misleading finding was confirmed by an independent check before fixing. Every finding of both rounds was fixed. Each fix was checked by a fresh checker who saw the findings and the diff but not the fixer's reasoning; all were resolved. Fix-checks raised three new Minor points, which were fixed before committing and covered by round 2: Cholesky's verification lead-in, Gauss-Jordan's tie-breaking rule, and Pivoting's rerun winners, which depend on the order of floating-point operations. Nothing is open.
+
+**What was fixed (main items):** Back Substitution's wrong $x_1$ in Example 1(b), a sign slip and a false triangularity reason; Pivoting's scaled-pivoting row, its error "bound" (now a labelled rule-of-thumb estimate with consistent norms), the false claim that pivoting cures ill-conditioning, and the Hilbert tests n = 6–10; Cholesky's broken markup and false $D - L - U$ sentence, plus entry recurrences, the SPD theorem and Examples 2(b)–(c); LU's Example 3, redone with real partial pivoting; Gauss-Jordan's account of Mathews' failure case (a zero pivot arising mid-elimination), plus his inverse and interpolation examples.
+
+**Decisions taken for Jason (revisit if wanted):**
+- Back Substitution: Example 1 now uses Mathews' matrix (row 2 = (0, −2, 7, −4)), not the page's original. Round 1 had kept the page's matrix with a disclosure; round 2 asked for the original.
+- LU: Mathews' 4×4 Examples 2 and 5 are left out with a sentence.
+- Gauss-Jordan: the page's own Example 2 is kept, with its solution now stated, and Mathews' failure case added as Worked Example 3. Worked Example 5 (the quintic) does not show its six 6×7 intermediate matrices, and says so.
+- Pivoting: Mathews' second 5×5 system is left out with a sentence. The n = 6–10 Hilbert results are a prose paragraph quoting his winners beside a double-precision rerun.
+- Cholesky: Examples 3 and 4 (least squares) are left out with a sentence. The Cholesky factor is written only as $R^\top R$.
+
+**Commits on `batch-11`:** Add batch 11 review; Fix Triangular Systems and Back Substitution; Fix LU Factorization; Fix Cholesky, Doolittle and Crout Factorizations; Fix Gauss-Jordan Elimination and Pivoting; Fix Pivoting Methods; Add batch 11 review, round 2; Fix Cholesky (round 2); Fix Triangular Systems (round 2); Mark batch 11 done.
+
+**Note for the skills:** `review-animations` tells the director to check for control characters with `grep -nP '[\x07-\x0d]'`. On this machine `grep` is ugrep 7.8.4, where that class also matches the newline and so flags every line. The manifests for this run used `[\x07-\x09\x0b-\x0d]`, which is correct. The skill's command should be changed the same way.
