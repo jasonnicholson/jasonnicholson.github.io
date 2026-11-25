@@ -6,7 +6,8 @@
 # One frame per number of subintervals n = 5, 10, 25, 50, 100, 200, 400
 # (25 and 50 are Mathews' Examples 2 and 3). Left: the finite-difference
 # solution against the exact solution, on the t-range of Mathews' graphs,
-# with the exact solution magenta as in his graphs. Right (new): the error
+# with the exact solution in magenta (in Mathews' graphs magenta is his joined
+# finite-difference points; he never plots the exact solution). Right (new): the error
 # |x_j - x(t_j)| at the interior mesh points on a log scale, earlier n in gray.
 # The tridiagonal systems are solved and the exact solution evaluated in
 # 256-bit floating point; the plots use Float64 copies.
