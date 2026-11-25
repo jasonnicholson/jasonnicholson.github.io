@@ -1,9 +1,9 @@
 ---
 title: "Frobenius Series Solution"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -18,6 +18,38 @@ $$
 Substituting this series into the equation and setting the coefficient of the lowest power of $x$ to zero gives the *indicial equation* $r(r-1) + p_0 r + q_0 = 0$ (with $p_0$ and $q_0$ read off the equation, as defined below), whose roots are the admissible exponents $r$. Setting the coefficient of every higher power to zero gives a *recurrence* that produces $c_1, c_2, \ldots$ from $c_0$. Each root of the indicial equation can give one solution; whether the second root gives a second solution depends on how the two roots differ. Examples 2 and 3 show the usual case of two Frobenius solutions, and Examples 1, 4 and 5 the special cases of roots that are equal or differ by an integer.
 
 Mathews works five equations: three that have elementary or Bessel-function solutions, and Bessel's equations of order $0$ and $1$, whose Frobenius series define $J_0(x)$ and (up to a factor $2$) $J_1(x)$. He then uses the series to prove $J_0'(x) = -J_1(x)$ and applies $J_0$ to the radial vibrations of a circular drum, where the zeros of $J_0$ fix the drum's frequencies and the circles that stay at rest. Every coefficient, closed form, zero and radius below has been recomputed: the series by solving the equations power by power in exact rational arithmetic, and the numbers in 30- or 40-digit arithmetic.
+
+## Animations
+
+The first animation shows **partial sums of a Frobenius series** closing in on the solution they define, two more powers of $x$ (one more nonzero term) per frame. Its top row plots the partial sums against the closed form, and its bottom row the error on a logarithmic scale, with green shading over $0 < x < x^*$, the interval where the error stays below $10^{-3}$ (the $x^*$ of the tables below). The other two animate the **vibrating drum**. The second sweeps the separation constant $\lambda$ and shows why only the zeros of $J_0$ give a drum whose rim stays still. The third shows the first three normal modes vibrating, as surfaces over the drum and as cross-sections through its centre. As in Mathews' graphs of the drum, pink marks displacement above the rest position and cyan below it.
+
+Mathews' module links no animation, and his animation archive has none for this module, so all three animations are new, with no Mathews original. (The archive's Maclaurin- and Taylor-series animations of Bessel functions belong to his Taylor polynomial module.) Case 1 animates Example 1. The partial sums of Examples 2 to 5 are not animated: each would look like Case 1, and their tables give the same information. Example 6 is an identity with no graph. Example 7's static plots of $J_0$ on $[-15, 15]$ and of $Y_0$ are not animated, but Case 2 shows $J_0$ in Mathews' Example 8 window. Mathews' disk diagrams of Example 10 are replaced by the nodal circles drawn on the surfaces of Case 3. The scripts find the zeros $\lambda_n$ as Mathews does, with a root finder started at $n\pi$ (here Newton's method, in 256-bit arithmetic).
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Both Frobenius solutions of Example 1, $r = \pm\tfrac12$, partial sums through $x^N$ for $N = 0, 2, \ldots, 20$, on $0 < x \le 10$
+
+**Behavior:** The factor $x^r$ is part of every partial sum $S_N(x) = x^r \sum_{n=0}^{N} c_n x^n$. So the partial sums of $y_2 = \cos x/\sqrt{x}$ grow without bound like $x^{-1/2}$ as $x \to 0^+$, just as $y_2$ does, and their error still tends to $0$ there. A partial sum fails far from $0$, not near it. The interval where the error stays below $10^{-3}$ widens with every new partial sum, from $x^* = 0.1292$ at $N = 0$ to $x^* = 7.319$ at $N = 20$ for $y_1$, and from $0.01587$ to $6.939$ for $y_2$. From $N = 8$ on, each two more terms move $x^*$ about $0.76$ farther out. For every $N$, $x^*$ is smaller for $y_2$ than for $y_1$. The values for $N = 4, 8, \ldots, 20$ are those in the table of Example 1. On $0.1 \le x \le 10$, $S_N$ lies above the solution for $N = 0, 4, 8, \ldots, 20$ and below it for $N = 2, 6, \ldots, 18$. The only error curve that falls back below $10^{-3}$ beyond its $x^*$ is that of $S_0$ for $y_2$. There $S_0 = x^{-1/2}$ touches $y_2$ at $x = 2\pi$, where $\cos x = 1$, and the error is below $10^{-3}$ again for $6.213 < x < 6.354$. Mathews' graphs of this example are lost, so the window is chosen here.
+
+[Julia source](frobeniusaa.jl)
+
+![Partial sums of the two Frobenius solutions of x²y″ + xy′ + (x² − 1/4)y = 0, appearing one per frame for N = 0, 2, …, 20 on 0 < x ≤ 10: left, x^(1/2) times a polynomial approaching y1 = sin x/√x; right, x^(−1/2) times a polynomial approaching y2 = cos x/√x, which is unbounded at 0. Below each, the error on a log scale with the tolerance 10⁻³ dashed. The shaded interval where the error stays below 10⁻³ grows from 0 < x < 0.1292 to 0 < x < 7.319 for y1 and from 0 < x < 0.01587 to 0 < x < 6.939 for y2](frobeniusaa.gif)
+
+### Case 2 — The rim condition $J_0(\lambda) = 0$ (Examples 8 and 9), $\lambda$ from $0$ to $\lambda_5$
+
+**Behavior:** The drum's radial profile is $R(r) = J_0(\lambda r)$ on $0 \le r \le 1$. This is the stretch $0 \le x \le \lambda$ of the graph of $J_0$ (blue, left) squeezed into the drum's radius (right, a cross-section through the centre). The rim value is $J_0(\lambda)$, the red dot. At $\lambda = 0$ the profile is flat at height $1$. As $\lambda$ grows in steps of $0.2$, the rim value is zero only when $\lambda$ is one of the zeros $\lambda_1 = 2.405$, $\lambda_2 = 5.520$, $\lambda_3 = 8.654$, $\lambda_4 = 11.79$ and $\lambda_5 = 14.93$ of Example 8, and the animation pauses at each of them. Only these values give a drum fixed at its rim, and the profile at each pause is the mode shape $J_0(\lambda_n x)$ of Example 9. Every time $\lambda$ passes a zero, the rim value changes sign, because the zeros are simple ($J_0'(\lambda_n) = -J_1(\lambda_n) \ne 0$), and a new node enters at the rim. The nodes $r = \lambda_k/\lambda$ then move inward as $\lambda$ grows. So mode $n$ has $n - 1$ nodal circles, at the radii of the table above, which the titles give to four figures. Between $\lambda_1$ and $\lambda_2$ the rim value reaches $J_0(3.8317) = -0.40276$. The window on the left is Mathews' Example 8 window $[0, 5\pi] \times [-0.5, 1]$, and on the right the window $[-1, 1] \times [-0.45, 1]$ of his Example 10 cross-sections. Both tops are raised to $1.05$ so that the value $J_0(0) = 1$ is not drawn on the frame edge.
+
+[Julia source](frobeniusbb.jl)
+
+![Left: the graph of J0(x) on [0, 5π] with the stretch 0 ≤ x ≤ λ in blue and the rim value J0(λ) as a red dot, as λ sweeps from 0 to the fifth zero 14.93 of J0. Right: the drum's cross-section J0(λ|x|) on −1 ≤ x ≤ 1, pink where positive and cyan where negative, with its nodes and its rim value. The animation pauses at the zeros 2.405, 5.520, 8.654, 11.79 and 14.93, where the rim is at rest and the profile is mode 1 to mode 5 with 0 to 4 nodal circles](frobeniusbb.gif)
+
+### Case 3 — The normal modes $u_n(t, r) = J_0(\lambda_n r)\cos(\lambda_n t)$ for $n = 1, 2, 3$ (Example 10), one period each
+
+**Behavior:** Each mode is a standing wave. The fixed shape $J_0(\lambda_n r)$ is scaled by $\cos(\lambda_n t)$, so the drum head is flat at a quarter and at three quarters of a period, and upside down at half a period, when its centre is at $-1$. The rim and the nodal circles never move. Mode 1 has no nodal circle, mode 2 has one at $r = 0.4357$, and mode 3 has two, at $r = 0.2779$ and $0.6379$. Neighbouring regions between them move in opposite directions: pink rises while cyan falls. The three columns share the phase $\lambda_n t$, not the time. Each runs through its own period, $2.613$, $1.138$ and $0.7261$, in 24 frames, so in real time mode 2 vibrates $2.2954$ and mode 3 $3.5985$ times as fast as mode 1. Unlike a string's overtones, these are not whole-number multiples. Mathews' box for these surfaces, $[-1, 1]^2 \times [-0.45, 1]$ with height ratio $0.3$, holds only the initial shapes. Over a period the centre reaches $-1$, so the box here runs from $-1.05$ to $1.05$ in height and is drawn with the plotting library's default proportions. The lines for the rim and the nodal circles are drawn over the surface, so their far halves stay visible even where the surface would hide them. The surface is drawn on a $201 \times 201$ grid with the points outside the disk left out, which makes its edge slightly ragged.
+
+[Julia source](frobeniuscc.jl)
+
+![The first three normal modes of a circular drum of radius 1, side by side, each animated over one of its own periods (2.613, 1.138 and 0.7261): top, the surface J0(λn r) cos(λn t) over the unit disk, pink above rest and cyan below, with the nodal circles r = 0.4357 (mode 2) and r = 0.2779, 0.6379 (mode 3) and the rim in black and gray; bottom, the cross-section through the centre with the envelope ±J0(λn x) dashed and the nodes marked. Each surface flattens, inverts and returns while its nodal circles stay at rest](frobeniuscc.gif)
 
 ## Background
 
