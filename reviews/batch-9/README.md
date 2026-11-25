@@ -58,3 +58,86 @@ Frobenius Series Solution was the calibration page. Its reviewer worked on a scr
 ## Phase 1 inventory
 
 All 23 scripts ran from scratch copies against the global Julia environment (Plots 1.41.2) and reproduced all 23 committed GIFs byte for byte. Every page reference resolves.
+
+---
+
+# Batch 9: closing summary (2026-11-25)
+
+## Pages built
+
+| Page | Text (Phase 1) | Animations (Phase 2) |
+|---|---|---|
+| [Frobenius Series Solution](../../pages/numerical-methods/frobenius-series-solution/) | written from `FrobeniusSeriesMod`, 10 examples; Mathews' plot data for Examples 1–5 is lost | 3 new: both Frobenius solutions of Example 1, the rim condition J₀(λ) = 0, the drum's normal modes |
+| [Power Series](../../pages/numerical-methods/power-series/) | written from standard sources (no Mathews module): Airy, Legendre and a third example | 3 new: Airy's equation, Legendre's equation with p = 1, a series about 0 and about 1 |
+| [Circle of Curvature](../../pages/numerical-methods/circle-of-curvature/) | already written; the builder fixed seven broken `\tag`s and a table header | 3: a rebuild of Mathews' collocation-circle animation (which survives as still frames in the module), the osculating circle on y = x² and on the cardioid |
+| [Linear Programming-Simplex Method](../../pages/numerical-methods/linear-programming-simplex-method/) | already written; the builder noted where Mathews' statement and computation differ in Examples 1 and 3(b) | 4 new: the level line swept across the region, the simplex tableau path, one region with two objectives, Example 5 in three variables |
+| [Nonlinear Curve Fitting](../../pages/numerical-methods/nonlinear-curve-fitting/) | written from Mathews' `NonLinearCurveFitMod` (the plan's path was a placeholder); Example 2's data reconstructed | 3 new: the exponential and power fits by data linearization, Gauss–Newton from the linearized fits |
+| [Matrix Exponential](../../pages/numerical-methods/matrix-exponential/) | written from `MatrixExponentialMod`; Example 6 follows Mathews' worked solution rather than his statement | 4 new: the partial sums of Example 1, Mathews' solution families of Examples 3, 4 and 5 |
+| [Painleve Property](../../pages/numerical-methods/painleve-property/) | written from `PainlevePropertyMod`; Examples 1, 3a, 5 and 10 images are lost | 3 new: a pole on a grid point, two poles of y' = 1 + y², two poles of a Riccati equation |
+
+Every GIF regenerates byte for byte from its committed script (checked by each builder, by the director, and in each review's Phase 1). Frobenius Series Solution was the Phase 2 pilot and passed unchanged.
+
+## Findings by round and severity
+
+| Round | Folder | Error | Misleading | Minor | Calibration pilot (planted errors caught) |
+|---|---|---|---|---|---|
+| 1 | `reviews/batch-9` | 1 | 2 | 12 | Frobenius Series Solution (2 of 2) |
+| 2 | `reviews/batch-9-r2` | 0 | 0 | 7 | Matrix Exponential (2 of 2) |
+
+Round 2 found no Error or Misleading findings, so the loop ended there.
+
+## What was fixed
+
+Every finding of both rounds was reproduced and either fixed or recorded as not reproduced, and judged by a different checker who saw only the findings and the diff.
+
+- **Round 1.** Power Series: the left end moves 0.4424 between N = 15 and 18 (Error; the fixer kept the frames and corrected the number); "from N = 6 on". Circle of Curvature: the center is above the parabola only for |x| < 1/√2, the evolute crossing it at (±√2, 2) (Misleading); the rounding comment in the script (its GIF regenerates byte for byte). Nonlinear Curve Fitting: "costs the most" made explicitly absolute, with the factors given (Misleading); Mathews' "3 (b)" heading noted. Frobenius: the rim value the animation shows; when pink rises. Simplex: the colour key; the frame-count comment; F2 not reproduced (above). Matrix Exponential: the bound stated for the operator norm; "nonnegative, and positive for n ≥ 1". Painlevé: the jump direction stated for Mathews' runs; the multiples −1, −½, −e.
+- **Round 2.** Frobenius: three wording slips. Power Series: the interval stops widening at N = 90. Circle of Curvature: the off-window note applies to the right-hand panel. Simplex: Mathews' full definition of the feasible region (bounded). Nonlinear Curve Fitting: the power panel now uses its own contour levels; `nlcurvecc.jl` and its GIF changed, and the new GIF regenerates byte for byte.
+
+## Open
+
+Nothing.
+
+## Decisions taken for Jason to revisit
+
+1. **Simplex F2 not reproduced:** Mathews' Example 6 statement has ≤ 300 in the second constraint (the director viewed the original image), so the page was left as it was.
+2. **Power Series has no Mathews module;** the page is from standard sources and says its animations are new.
+3. **Matrix Exponential Example 6** follows Mathews' worked solution where it differs from his statement; **Nonlinear Curve Fitting Example 2's data** is reconstructed. Both pages say so.
+4. **Plan corrections** (recorded in the plan): Circle of Curvature's legacy animation survives as still frames in the module (rebuilt as Case 1); Nonlinear Curve Fitting's real module is `n2003/Web/NonLinearCurveFitMod/NonLinearCurveFitMod.html`.
+5. **Compartment Model's link** to Matrix Exponential was changed to the folder form in this batch's Matrix Exponential commit.
+
+## Process notes
+
+- Reviewers returned reports as text; the director wrote them. MATLAB was not run; quarto only by the director.
+- As in batches 6–8, the page states were committed from saved copies after the review loop finished. With every page now in place, `quarto render pages/numerical-methods/` completed with no errors and no warnings.
+
+## Commits on `batch-9`
+
+```
+8c45a64 Record batch 9 archive paths in the plan
+9465840 Write Frobenius Series Solution page text (batch 9)
+ff46dee Write Power Series page text (batch 9)
+554ed45 Write Nonlinear Curve Fitting page text (batch 9)
+0aea228 Write Matrix Exponential page text (batch 9)
+b2f202b Write Painleve Property page text (batch 9)
+6eb422b Add Frobenius Series Solution animations (batch 9)
+f020e2e Add Power Series animations (batch 9)
+3ff1382 Add Circle of Curvature animations (batch 9)
+5f53ac3 Add Linear Programming-Simplex Method animations (batch 9)
+ffbda55 Add Nonlinear Curve Fitting animations (batch 9)
+3c6b181 Add Matrix Exponential animations (batch 9)
+45ec1f7 Add Painleve Property animations (batch 9)
+3d3604e Add batch 9 review
+9c6155e Fix Frobenius Series Solution (batch 9 review)
+03cd782 Fix Power Series (batch 9 review)
+3c7ab68 Fix Circle of Curvature (batch 9 review)
+05e70a0 Fix Linear Programming-Simplex Method (batch 9 review)
+7977daa Fix Nonlinear Curve Fitting (batch 9 review)
+db71a95 Fix Matrix Exponential (batch 9 review)
+331dd89 Fix Painleve Property (batch 9 review)
+eacc0ee Add batch 9 review, round 2
+f4ce893 Fix Frobenius Series Solution (batch 9 review, round 2)
+6cd6989 Fix Power Series (batch 9 review, round 2)
+274c9f1 Fix Circle of Curvature (batch 9 review, round 2)
+8ba4c76 Fix Linear Programming-Simplex Method (batch 9 review, round 2)
+e3db08c Fix Nonlinear Curve Fitting (batch 9 review, round 2)
+```
