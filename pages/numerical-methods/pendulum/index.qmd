@@ -1,9 +1,9 @@
 ---
 title: "Pendulum"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -15,9 +15,41 @@ $$
 \theta'' + \frac{g}{l}\sin\theta = 0 .
 $$
 
-For small swings $\sin\theta \approx \theta$, and the equation becomes the linear equation of simple harmonic motion, whose solutions are sines and cosines with period $2\pi\sqrt{l/g}$ whatever the amplitude. The nonlinear equation has no solution in elementary functions, so Mathews solves it numerically: the substitution $y = x'$ turns the second-order equation $x'' = f(t, x, x')$ into the first-order system $x' = y$, $y' = f(t, x, y)$, and the classical fourth-order [Runge-Kutta method](runge-kutta-method/) is applied to that system in vector form, $\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4)$ with $\mathbf{Z}_j = (x_j, y_j)$. With a damping term $\tfrac{1}{10}x'$ added, the module compares the linear and the nonlinear model in the $(t, x)$ plane (Examples 1 to 4).
+For small swings $\sin\theta \approx \theta$, and the equation becomes the linear equation of simple harmonic motion, whose solutions are sines and cosines with period $2\pi\sqrt{l/g}$ whatever the amplitude. The nonlinear equation has no solution in elementary functions, so Mathews solves it numerically: the substitution $y = x'$ turns the second-order equation $x'' = f(t, x, x')$ into the first-order system $x' = y$, $y' = f(t, x, y)$, and the classical fourth-order [Runge-Kutta method](../runge-kutta-method/) is applied to that system in vector form, $\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4)$ with $\mathbf{Z}_j = (x_j, y_j)$. With a damping term $\tfrac{1}{10}x'$ added, the module compares the linear and the nonlinear model in the $(t, x)$ plane (Examples 1 to 4).
 
 The second half of the module draws **phase portraits**: curves $(x(t), y(t))$ in the plane of angle and angular velocity. Without damping (Examples 5 and 6) the energy $E = \tfrac12 y^2 + \tfrac{g}{l}(1 - \cos x)$ is constant along every solution, so small swings are closed loops around the rest positions $x = 2k\pi$, and swings with enough energy run over the top, round and round the pivot. With damping (Example 7) the energy decreases, the loops become spirals, and every curve of Example 7 tends to rest at one of the points $(2k\pi, 0)$. Every number on this page was recomputed: the Runge-Kutta runs with Mathews' own step counts, and the reference solutions with an adaptive eighth-order integrator at a tolerance of $10^{-13}$.
+
+## Animations
+
+Each animation below draws **Runge-Kutta solutions (8) of the pendulum three ways at once**: as a swinging pendulum, a rod and a bob at the computed angle $x_j$ measured from the downward vertical; as a curve in the phase plane of angle $x$ and angular velocity $y = x'$, with the computed points $\mathbf{Z}_j$ joined by straight segments as in Mathews' graphs; and against time. The gray dashed curve in the phase plane is the level $E = 2\omega_0^2$ of the energy, the energy of the pendulum at rest at the top. Every curve is computed with $m = 100$ steps, as in Mathews' examples. In Case 1 and in the first part of Case 3 the frames advance by steps; where several curves with different step sizes move together, the frames advance by time, and each curve shows its points with $t_j \le t$.
+
+Mathews' module links no animation, and his animation archive has none for the pendulum, so all three animations are new, with no Mathews original. Case 1 animates Examples 1, 3 and 4, Case 2 the phase portrait of Example 6 with the curves this page chose, and Case 3 all fourteen curves of Example 7 with Mathews' starting points, time intervals, plot windows and colours. Not animated are the analytic solution of Example 2, which differs from the Runge-Kutta values of Case 1 by less than $10^{-3}$ at every grid point and could not be told apart from them, together with Example 1's first step, error table and step-halving check; Example 5, whose portrait is Example 6's with $y$ divided by $\sqrt2$ and time multiplied by $\sqrt2$ (Example 6, Step 1); and the separatrix runs of Examples 5 and 6, which are drawn only as the dashed level curve.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Examples 1, 3 and 4: $x'' + \tfrac{1}{10}x' + 2x = 0$ against $x'' + \tfrac{1}{10}x' + 2\sin x = 0$, $x(0) = 1$, $x'(0) = 2$, $m = 100$, $h = 0.2$
+
+**Behavior:** The linear pendulum (blue, the colour of Mathews' analytic solution in Example 2) and the nonlinear one (red, his colour for Example 3) leave $x = 1$ together, but the restoring term $2\sin x$ is weaker than $2x$, so the nonlinear pendulum swings wider at first and comes back later: its first swing reaches $1.9766$ ($113.25°$) at $t = 0.9963$, against $1.7036$ at $t = 0.6593$ for the linear one. Its first four extremes are wider than the linear ones; from the fifth on, the damping has had longer to act and they are slightly narrower. Each zero is marked in the time panel as it is passed: the linear solution crosses zero every $\pi/\omega = 2.223$ time units, nine times on $[0, 20]$, the nonlinear one eight times, after half-swings that shorten from $2.681$ to $2.305$ as its amplitude decays (the last frame lists all seven). At $t = 20$ the two pendulums hang on opposite sides of the vertical, at $x_{100} = -0.3629$ ($-20.79°$) and $0.3838$ ($21.99°$). In the phase plane both curves spiral in towards $(0, 0)$; the energy of the nonlinear run falls from $2.919$ to $0.4484$, below the dashed level $E = 4$ throughout, so the nonlinear pendulum never goes over the top.
+
+[Julia source](pendulumaa.jl)
+
+![Runge-Kutta solutions of the damped linear pendulum x″ + x′/10 + 2x = 0 (blue) and the damped nonlinear pendulum x″ + x′/10 + 2 sin x = 0 (red) from x(0) = 1, x′(0) = 2 on [0, 20] with m = 100 steps, one step per frame: two pendulums swinging from one pivot, x(t) of both with each zero marked as it is passed, nine for the linear and eight for the nonlinear solution, and both phase curves spiralling in inside the dashed energy level E = 4; the last frame lists the times between zeros, 2.223 every time for the linear and 2.681 down to 2.305 for the nonlinear pendulum](pendulumaa.gif)
+
+### Case 2 — Example 6: $x'' + 2\sin x = 0$, four closed loops and four rotations
+
+**Behavior:** First, four pendulums start together at the bottom with speeds $y_0 = 2\sqrt2\,k = 0.7071$, $1.414$, $2.121$ and $2.687$ ($k = 0.25$, $0.5$, $0.75$, $0.95$), swing out to $28.96°$, $60.00°$, $97.18°$ and $143.6°$, and come back to the start after one period, $T = 4.515$, $4.768$, $5.405$ and $7.326$ (diamonds in the time panel). Every period is longer than the linear period $2\pi/\sqrt2 = 4.443$ (dotted), the widest swing by a factor of $1.649$, so the pendulums fall out of step. Each loop closes on itself to within $1.8 \times 10^{-5}$. Next, four rotations outside the dashed separatrix: from $(0, 3.536)$ and $(0, 4.243)$ the pendulum turns one way, from $(4\pi, -3.536)$ and $(4\pi, -4.243)$ the other way, a mirror image. Each run goes over the top twice, in $2T_{\text{rot}} = 4.515$ and $3.412$ time units, and is slowest at the tops, where $|y|$ drops to $2.121$ and $3.162$. The last frame adds the loops of the first part started at $(2\pi, y_0)$ and $(4\pi, y_0)$: the same swings, with the angle counted after one and two full turns; their points are those of the first loops shifted by $2\pi$ and $4\pi$, to $7 \times 10^{-14}$. The colours are those of Mathews' Example 7 curves 1 to 8, which start at the same speeds except the widest loop ($1.9\sqrt2$ here, $2\sqrt2$ in his curve 4).
+
+[Julia source](pendulumbb.jl)
+
+![Runge-Kutta solutions of the undamped pendulum x″ + 2 sin x = 0 with m = 100 steps per curve, on a common clock: four pendulums started at the bottom with speeds 0.7071, 1.414, 2.121 and 2.687 swing on closed loops around (0, 0) inside the dashed separatrix and return after periods 4.515, 4.768, 5.405 and 7.326, longer than the linear period 4.443, so they fall out of step; then four rotations, two from x = 0 and two in the opposite direction from x = 4π, go over the top twice, slowest at the tops; the last frame adds the same loops around (2π, 0) and (4π, 0)](pendulumbb.gif)
+
+### Case 3 — Example 7: the damped pendulum $x'' + \tfrac{1}{10}x' + 2\sin x = 0$, Mathews' fourteen curves
+
+**Behavior:** The portrait is built curve by curve in Mathews' order, each curve with his start, interval $[0, b]$, $m = 100$ and colour, and with his plot window dotted around it while it is drawn (curve 4 has none: his window there is automatic); every curve stays inside its window. Curves 1 to 4 spiral towards $(0, 0)$ inside the dashed level $E = 4$; curve 4 starts on it, with $E_0 = 4$, and the damping takes it inside at once. Curves 5 and 6 start at the bottom with $E_0 = 6.25$ and $9$ and go over two and three tops. The energy panel marks the moment the energy falls below $4$, at $t = 6.554$ and $t = 7.471$: from then on the pendulum can no longer pass a top, since $E$ never increases, and it swings about $x = 4\pi$ and $x = 6\pi$. Curves 7 and 8 start at $x_0 = 6\pi$ moving left, cross two and three tops, fall below $E = 4$ at the same times, and are still swinging when their shorter intervals end. Curves 9 to 12 are curves 1 to 4 started at $x_0 = 2\pi$, drawn together in their combined window. The last part redraws Mathews' final figure, curves 5, 6, 7′ and 8′ on the longer intervals, with the other curves faded: 7′ and 8′ are 5 and 6 reflected through $(3\pi, 0)$, so their pendulums are mirror images and their energy curves coincide. The tops crossed are counted on the Runge-Kutta points, and the counts and the times at which $E$ falls below $4$ agree with the reference solution.
+
+[Julia source](pendulumcc.jl)
+
+![The phase portrait of the damped pendulum x″ + x′/10 + 2 sin x = 0 built from Mathews' fourteen Runge-Kutta curves with m = 100 steps each, in his colours and with his plot windows dotted: four spirals around (0, 0); curves 5 and 6 from the bottom over two and three tops, settling about 4π and 6π; curves 7 and 8 from 6π moving left; four spirals around (2π, 0); and his final figure of curves 5, 6, 7′ and 8′; beside it the pendulum with the number of tops crossed, and the energy, which falls below the dashed level E = 4 of the tops at t = 6.554 and t = 7.471](pendulumcc.gif)
 
 ## The Pendulum Equation
 
