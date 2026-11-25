@@ -1,9 +1,9 @@
 ---
 title: "Eigenvalues and Eigenvectors"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -18,6 +18,46 @@ $$
 a polynomial of degree $n$ for an $n \times n$ matrix, and the eigenvectors for each root $\lambda_j$ are the nonzero solutions of $(\mathbf{A} - \lambda_j\mathbf{I})\mathbf{X} = \mathbf{0}$, found by reducing that matrix to row reduced echelon form and choosing values for its free variables.
 
 This is the direct method that Mathews' module works through, on a sequence of examples that starts at $2 \times 2$ and reaches $11 \times 11$ in Example 10. For small matrices built to have simple eigenvalues the roots of $p$ can be found exactly. Otherwise they are found numerically, for example by the Newton–Raphson iteration $\lambda_{k+1} = \lambda_k - p(\lambda_k)/p'(\lambda_k)$ that Mathews runs in Example 2. The module ends (Examples 10 and 11) by comparing roots of the characteristic polynomial with the answers of a dedicated eigenvalue routine, and for larger matrices the roots can be badly wrong. That is why eigenvalues are normally computed by methods that never form $p(\lambda)$ (the power method, Jacobi's method, the QR method). A last section of this page shows, on the matrix of Example 2, how the eigenvalues govern the sequence $\mathbf{A}^j\mathbf{X}_0$, which is the idea behind the power method.
+
+## Animations
+
+The first three animations use the $2 \times 2$ matrix $\mathbf{A} = \begin{pmatrix} 1 & 2 \\ 1 & 1 \end{pmatrix}$ of Example 2, with eigenpairs $\lambda_1 = 1 - \sqrt2$, $\mathbf{V}_1 = (\sqrt2, -1)$ and $\lambda_2 = 1 + \sqrt2$, $\mathbf{V}_2 = (\sqrt2, 1)$. Case 1 shows what an eigenvector is geometrically, Case 2 follows the powers $\mathbf{A}^j\mathbf{X}_0$ of the last section of this page, and Case 3 animates Mathews' two Newton–Raphson runs on the characteristic polynomial. Case 4 animates the root-sensitivity computation of the Example 11 section on the transition matrices of Example 10's pattern for $n = 11, \ldots, 40$; its first frame, $n = 11$, is Example 10. Cases 2 and 3 compute in exact rational arithmetic, and their log-scale panels show filled markers for positive errors and hollow markers for negative ones.
+
+All four animations are new. Mathews' Eigenvalues and Eigenvectors module has no animation, and the archive of his animations has none for eigenvalue problems. Not animated are the homogeneous system of Example 1, the eigenvectors found by row reduction and free variables in Examples 2–9 with their checks and comparisons with *Mathematica*'s `Eigensystem`, the complex eigenvalues of Examples 5 and 6, the larger matrices of Examples 3, 4 and 6–9, and Mathews' Newton–Raphson run on the cubic of Example 3, whose output the archive does not preserve.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Eigenvectors as invariant directions: $\mathbf{X} = (\cos t, \sin t)$ and $\mathbf{A}\mathbf{X}$ for $t = 0^\circ$ to $352.5^\circ$
+
+**Behavior:** As $\mathbf{X}$ goes once around the unit circle in steps of $7.5^\circ$, the tip of $\mathbf{A}\mathbf{X}$ goes once around the ellipse $\mathbf{A}(\text{unit circle})$, whose semi-axes are $(3 \pm \sqrt5)/2 \approx 2.618$ and $0.3820$. $\mathbf{X}$ and $\mathbf{A}\mathbf{X}$ lie on one line through the origin at exactly four angles, $t = 35.26^\circ$, $144.74^\circ$, $215.26^\circ$ and $324.74^\circ$, which are added to the steps and held for four frames each. There $\mathbf{X}$ points along $\pm\mathbf{V}_2$, and $\mathbf{A}\mathbf{X} = 2.414\,\mathbf{X}$ is stretched in the same direction, or along $\pm\mathbf{V}_1$, and $\mathbf{A}\mathbf{X} = -0.4142\,\mathbf{X}$ is reversed and shortened. These angles are the zeros of $\det[\mathbf{X}, \mathbf{A}\mathbf{X}] = \cos^2 t - 2\sin^2 t = 1 - 3\sin^2 t$ in the right panel. It is positive ($\mathbf{A}\mathbf{X}$ turned counterclockwise from $\mathbf{X}$) within $35.26^\circ$ of $t = 0^\circ$ and $t = 180^\circ$, and negative ($\mathbf{A}\mathbf{X}$ turned clockwise from $\mathbf{X}$) at the other angles. The matrix is not symmetric, so its eigenvectors are not perpendicular (they meet at $70.53^\circ$) and are not the axes of the ellipse, whose major axis is at $31.72^\circ$. The first frame, $\mathbf{X} = (1, 0)$ and $\mathbf{A}\mathbf{X} = (1, 1)$, is the first step of Case 2.
+
+[Julia source](eigenaa.jl)
+
+![A unit vector X turns once around the unit circle and its image AX, for A = [1 2; 1 1], runs around an ellipse; at the four angles 35.26°, 144.74°, 215.26° and 324.74° X and AX lie on the dashed eigenvector lines, with AX = 2.414 X along V₂ and AX = −0.4142 X along V₁, and a second panel shows det[X, AX] = cos²t − 2 sin²t crossing zero at those angles](eigenaa.gif)
+
+### Case 2 — The scaled powers $\mathbf{X}_k = \mathbf{A}\mathbf{X}_{k-1}/c_k$ from $\mathbf{X}_0 = (1, 0)$, $k = 0, \ldots, 10$
+
+**Behavior:** Each frame splits $\mathbf{X}_k = (1, x_k)$ into its components $a_k\mathbf{V}_1 + b_k\mathbf{V}_2$ along the eigenvectors (dotted parallelogram), starting from $a_0 = b_0 = 1/(2\sqrt2) \approx 0.3536$. Multiplication by $\mathbf{A}$ multiplies the $\mathbf{V}_1$ component by $\lambda_1 \approx -0.4142$ and the $\mathbf{V}_2$ component by $\lambda_2 \approx 2.414$. After scaling, $a_k = -e_k/2$ changes sign and shrinks at every step, and $\mathbf{X}_k$ turns onto the eigenvector line of $\mathbf{V}_2$, its tip $(1, x_k)$ jumping from one side of the line to the other: $x_k = 0, 1, \tfrac23, \tfrac57, \tfrac{12}{17}, \ldots$. From $k = 3$ on, $a_k\mathbf{V}_1$ is shorter than $0.0063$ and is no longer drawn, and $\mathbf{X}_k$ can hardly be told from the eigenvector line. The right panel follows the error further. $|e_k| = |x_k - 1/\sqrt2|$ decreases at every step while its sign alternates, and its line runs parallel to the grey dashed line of slope $|\lambda_1/\lambda_2| = 3 - 2\sqrt2 \approx 0.1716$; the measured ratio $e_k/e_{k-1}$ is within $2 \times 10^{-4}$ of $\lambda_1/\lambda_2 = -0.171573$ from $k = 5$ on. Because $c_k = 1 + 2x_{k-1}$, the eigenvalue error is exactly $c_k - \lambda_2 = 2e_{k-1}$: its line is the line of $|e_k|$ moved one step to the right and up by a factor $2$, and it ends at $|c_{10} - \lambda_2| = 3.644 \times 10^{-7}$, against $|e_{10}| = 3.126 \times 10^{-8}$.
+
+[Julia source](eigenbb.jl)
+
+![Scaled powers of A = [1 2; 1 1] from X₀ = (1, 0): the arrow X_k = (1, x_k), drawn with its components along the eigenvectors V₁ and V₂, swings from one side of the eigenvector line of V₂ to the other and settles on it, while a log-scale panel shows |x_k − 1/√2| and |c_k − λ₂| alternating in sign and falling by the ratio 0.1716 per step to 3.126 × 10⁻⁸ and 3.644 × 10⁻⁷ at k = 10](eigenbb.gif)
+
+### Case 3 — Newton–Raphson on $p(\lambda) = \lambda^2 - 2\lambda - 1$ (Example 2), $p_0 = -0.5$ (4 steps) and $p_0 = 1.5$ (6 steps)
+
+**Behavior:** Each frame takes one step of both of Mathews' runs (run (a) stops after four): a vertical line up to the curve, then the tangent line down to the axis. Run (a) approaches $\lambda_1$ from below. Its first step, from $-0.5$ to $-\tfrac{5}{12}$, is short at the scale of the full view and is shown again in the zoomed lower panel; its later steps are shorter than $0.0025$. In run (b) the tangent at $1.5$, where $p'(1.5) = 1$, overshoots to $3.25$. After that the iterates decrease toward $\lambda_2$ from above, and from $p_3$ on they sit on $\lambda_2$ at the scale of the full view. The right panel shows $|e_k|$ on a log scale, where both lines bend down more steeply at every step: the number of correct digits roughly doubles per step once the iterates are close. The grey crosses mark the quadratic-convergence prediction $C e_{k-1}^2$ with $C = 1/(2\sqrt2) \approx 0.3536$. They are within $6\%$ of the measured error at every step of run (a) and within $10\%$ from $k = 3$ on in run (b), but far from its first two errors ($0.2955$ predicted against $0.8358$, and $0.2470$ against $0.1552$). The title shows $e_k/e_{k-1}^2$ settling at $-0.3536$ in run (a) and $+0.3536$ in run (b); the last errors are $-8.993 \times 10^{-25}$ at $k = 4$ and $8.151 \times 10^{-21}$ at $k = 6$.
+
+[Julia source](eigencc.jl)
+
+![Newton–Raphson on p(λ) = λ² − 2λ − 1: tangent lines from p₀ = −0.5 approach the root 1 − √2 from below, shown also in a zoomed panel, and tangent lines from p₀ = 1.5 overshoot to 3.25 and then descend to the root 1 + √2; a log-scale panel shows both errors bending down ever more steeply, to 8.993 × 10⁻²⁵ after 4 steps and 8.151 × 10⁻²¹ after 6, beside grey crosses at the prediction 0.3536 e²ₖ₋₁](eigencc.gif)
+
+### Case 4 — Roots of the rounded characteristic polynomial against an eigenvalue routine, Example 10's pattern for $n = 11, \ldots, 40$
+
+**Behavior:** For each $n$, the left panel places the roots of the characteristic polynomial of the $n \times n$ matrix, with its exact coefficients rounded to double precision and the roots then found in 512-bit arithmetic, against the true eigenvalues (black ticks, all real), so that the only error is the rounding of the coefficients. The right panel collects the largest errors, measured as in the table above (both lists sorted by real part, error in the real part, imaginary parts separately). The largest root error grows from $4.4 \times 10^{-13}$ at $n = 11$ to $0.056$ at $n = 40$, though not at every step: it falls from $n = 17$ to $18$, $19$ to $20$, $25$ to $26$, $31$ to $32$ and $35$ to $36$. Up to $n = 28$ every root is real. At $n = 29$ the first complex pair appears, with imaginary part $0.0037$, and at $n = 40$ ten roots, with real parts between $0.78$ and $1.04$, are off the real axis, with imaginary parts up to $0.10$. The eigenvalue routine (Julia's `eigvals`, which calls LAPACK, on the double-precision matrix) stays between $6 \times 10^{-16}$ and $3.8 \times 10^{-15}$ for every $n$. These errors are not exactly the table's (for example $2.4 \times 10^{-15}$ against $1.2 \times 10^{-15}$ at $n = 40$), which were computed with NumPy's build of LAPACK, but both are at the level of rounding error.
+
+[Julia source](eigendd.jl)
+
+![For the transition matrices of Example 10's pattern with n = 11 to 40, the roots of the characteristic polynomial with coefficients rounded to double precision drift away from the true real eigenvalues, the first complex pair appearing at n = 29 and ten complex roots with imaginary parts up to 0.10 at n = 40, while a log-scale panel shows their largest error rising from 4.4 × 10⁻¹³ to 0.056 and the eigenvalue routine's error staying near 10⁻¹⁵](eigendd.gif)
 
 ## Homogeneous Linear Systems
 
@@ -260,10 +300,10 @@ He starts at $p_0 = -0.5$ for $\lambda_1$ (4 iterations) and at $p_0 = 1.5$ for 
 | $k$ | $p_k$ | $p(p_k)$ | $e_k = p_k - \lambda_1$ | $e_k / e_{k-1}^2$ |
 |----:|------:|---------:|------------------------:|------------------:|
 | 0 | $-0.5$ | $0.25$ | $-0.08579$ | — |
-| 1 | $-0.4166666666666667$ | $0.006944$ | $-0.002453$ | $0.3333$ |
-| 2 | $-0.4142156862745098$ | $6.007 \times 10^{-6}$ | $-2.124 \times 10^{-6}$ | $0.3529$ |
-| 3 | $-0.4142135623746899$ | $4.511 \times 10^{-12}$ | $-1.595 \times 10^{-12}$ | $0.3536$ |
-| 4 | $-0.4142135623730950$ | $2.544 \times 10^{-24}$ | $-8.993 \times 10^{-25}$ | $0.3536$ |
+| 1 | $-0.4166666666666667$ | $0.006944$ | $-0.002453$ | $-0.3333$ |
+| 2 | $-0.4142156862745098$ | $6.007 \times 10^{-6}$ | $-2.124 \times 10^{-6}$ | $-0.3529$ |
+| 3 | $-0.4142135623746899$ | $4.511 \times 10^{-12}$ | $-1.595 \times 10^{-12}$ | $-0.3536$ |
+| 4 | $-0.4142135623730950$ | $2.544 \times 10^{-24}$ | $-8.993 \times 10^{-25}$ | $-0.3536$ |
 
 **Run (b):** $p_0 = 1.5$, converging to $\lambda_2 = 1 + \sqrt2 = 2.414213562373095\ldots$
 
@@ -277,7 +317,7 @@ He starts at $p_0 = -0.5$ for $\lambda_1$ (4 iterations) and at $p_0 = 1.5$ for 
 | 5 | $2.414213562524932$ | $4.295 \times 10^{-10}$ | $1.518 \times 10^{-10}$ | $0.3535$ |
 | 6 | $2.414213562373095$ | $2.305 \times 10^{-20}$ | $8.151 \times 10^{-21}$ | $0.3536$ |
 
-In run (a) every iterate lies below $\lambda_1$ and increases toward it. In run (b) the first step overshoots, because $p'(1.5) = 1$ is small, from $1.5$ to $3.25$; from then on every iterate lies above $\lambda_2$ and decreases toward it. Both runs converge quadratically: the ratio $e_k/e_{k-1}^2$ settles at $|p''(\lambda)/(2p'(\lambda))| = 2/(2 \cdot 2\sqrt2) = 1/(2\sqrt2) \approx 0.3536$, the same at both roots because $|p'(\lambda_1)| = |p'(\lambda_2)| = 2\sqrt2$. Once the iterates are close, the number of correct digits roughly doubles at each step.
+In run (a) every iterate lies below $\lambda_1$ and increases toward it. In run (b) the first step overshoots, because $p'(1.5) = 1$ is small, from $1.5$ to $3.25$; from then on every iterate lies above $\lambda_2$ and decreases toward it. Both runs converge quadratically: the ratio $e_k/e_{k-1}^2$ settles at $p''(\lambda)/(2p'(\lambda))$, which is $2/(2 \cdot (-2\sqrt2)) = -1/(2\sqrt2) \approx -0.3536$ at $\lambda_1$ (every error of run (a) is negative) and $+1/(2\sqrt2) \approx 0.3536$ at $\lambda_2$, the same size at both roots because $|p'(\lambda_1)| = |p'(\lambda_2)| = 2\sqrt2$. Once the iterates are close, the number of correct digits roughly doubles at each step.
 
 Mathews computed in double precision and prints about 16 digits; his iterates agree with these except in the last digit or two, where machine rounding enters (for example he prints $p_3 = 2.4218903638151420$ in run (b)). His residuals for the last iterates, $p(p_4) = -2.78 \times 10^{-17}$ in run (a) and $p(p_6) = 0$ in run (b), are what $-1 - 2x + x^2$ gives in double-precision arithmetic (reproduced exactly here); in exact arithmetic the residuals are the positive values $2.5 \times 10^{-24}$ and $2.3 \times 10^{-20}$ in the tables. Both final iterates round to the correct double-precision eigenvalues, $-0.4142135623730950$ and $2.414213562373095$.
 
