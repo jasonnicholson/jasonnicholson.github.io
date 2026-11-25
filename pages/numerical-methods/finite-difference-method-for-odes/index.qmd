@@ -1,9 +1,9 @@
 ---
 title: "Finite Difference Method for ODE's"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -24,6 +24,38 @@ $$
 where $p_j = p(t_j)$, $q_j = q(t_j)$, $r_j = r(t_j)$, $x_0 = \alpha$ and $x_n = \beta$. These $n - 1$ equations form a tridiagonal linear system, which tridiagonal elimination solves in $O(n)$ operations, and the solution values together with the two boundary values give the approximate solution curve.
 
 Both difference quotients are accurate to $O(h^2)$. Under the conditions stated below, and for a smooth solution, the error of the method is then $O(h^2)$, so halving $h$ cuts it by about a factor of four, and two runs with $h$ and $h/2$ can be combined by Richardson extrapolation into a much more accurate answer. Mathews' examples do exactly this for one equation on $[1, 6]$ with $25$ and $50$ subintervals; every number below has been recomputed (the example tables in 40-digit arithmetic), and the computed solutions are compared with the exact solution.
+
+## Animations
+
+All three animations solve Mathews' boundary value problem (7) below, $x'' + \tfrac1t x' + \bigl(1 - \tfrac{1}{4t^2}\bigr)x = \sqrt t\,\cos t$ with $x(1) = 1$ and $x(6) = -0.5$, and compare the results with its exact solution (8). Case 1 refines the grid one frame at a time and draws the finite difference solution over the interval $1 \le t \le 6$ of Mathews' graphs, with the exact solution in magenta as in his graphs. Case 2 follows his Examples 4 to 6, from the solutions $X_1$ ($n = 25$) and $X_2$ ($n = 50$) to the extrapolated values $X_3$, and Case 3 continues the halving of $h$ to $n = 400$. In every case the right panel, or both panels in Case 3, plots errors on a logarithmic scale; the log-scale panels plotted against $t$ leave out $t = 1$ and $t = 6$, where every error is exactly zero because the boundary values are imposed. Each frame shows one second in Case 1 and two seconds in Cases 2 and 3, and the last frame is held for three seconds. The scripts build the tridiagonal system (6), solve it and evaluate the exact solution in 256-bit floating point, and check their results against the tables on this page.
+
+Mathews' module links no animation, and his animation archive has none for this topic, so all three animations are new, with no Mathews original. They animate the graphs of his Examples 1 to 4 (the solutions for $n = 25$ and $n = 50$, and the difference $X_2 - X_1$, drawn in green as he draws it) and the computations of Examples 5 and 6 (the graph of Example 5 is missing from the archive, and Example 6 has none). Not animated are the setup of the tridiagonal system in Example 1 (the coefficients and the matrix) and the counterexample $x'' = -x$ for the boundary value theorem.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Refining the grid, $n = 5, 10, 25, 50, 100, 200, 400$
+
+**Behavior:** With $n = 5$ ($h = 1$) the joined points follow the shape of the exact solution only roughly: the largest error is $0.4533$, at $t = 5$, where the computed value $-3.285$ lies below the exact minimum of about $-2.906$. Each refinement brings the points closer, and from $n = 50$ on the two curves cannot be told apart at this scale. In the right panel the error falls with every refinement; halving $h$ divides the largest error by $4.78$ from $n = 5$ to $n = 10$, and by $4.00$ to $4.01$ at each halving from $n = 25$ on. Its title gives the largest error divided by $h^2$: $0.4533$ for $n = 5$, $0.3791$ for $n = 10$, and between $0.3648$ and $0.3660$ from $n = 25$ on, so the largest error is about $0.365\,h^2$, as for a method of order $O(h^2)$. The largest error is at $t = 5$ for $n = 5$ and $10$ and between $t = 4.8$ and $t = 4.9$ for the finer meshes. For every $n$ the error changes sign once, between $t = 3$ and $t = 4$, and the error curve dips there; for $n = 400$ the change is between $t = 3.4625$ and $t = 3.475$.
+
+[Julia source](fdodeaa.jl)
+
+![Finite difference solutions of x″ + x′/t + (1 − 1/(4t²))x = √t cos t, x(1) = 1, x(6) = −0.5, for n = 5, 10, 25, 50, 100, 200 and 400 subintervals, one per frame, against the exact solution on 1 ≤ t ≤ 6, with a log-scale panel of the error at the interior mesh points: the largest error falls from 0.4533 for n = 5 to 5.699e−05 for n = 400, and the largest error divided by h² settles between 0.3648 and 0.3660 from n = 25 on](fdodeaa.gif)
+
+### Case 2 — Richardson extrapolation (Examples 4 to 6), $X_3 = (4X_2 - X_1)/3$
+
+**Behavior:** The frames add, in turn, the errors $X_1 - x$ and $X_2 - x$, the difference $X_2 - X_1$, and the error $X_3 - x$, all at the $26$ points $t = 1.0, 1.2, \ldots, 6.0$ that the two meshes share. $X_1 - x$ and $X_2 - x$ have the same shape and signs, positive from $t = 1.2$ to $3.4$ and negative from $3.6$ to $5.8$, and the largest error of $X_2$ is $0.2485$ times that of $X_1$, both at $t = 4.8$. The difference $X_2 - X_1$ has the opposite signs and the same shape. The dashed curve $-\tfrac43(X_2 - X_1)$, the error estimate of Example 4, lies on $X_1 - x$ at this scale: the two differ by exactly $-(X_3 - x)$, at most $2.869 \times 10^{-5}$. On the linear scale $X_3 - x$ lies flat on the zero line; the log panel shows its largest size, $2.869 \times 10^{-5}$ at $t = 4.8$, which is $510.2$ times smaller than the largest error of $X_1$, and a dip to $2.825 \times 10^{-7}$ at $t = 3.6$, the last point before its sign changes.
+
+[Julia source](fdodebb.jl)
+
+![Richardson extrapolation for Mathews' boundary value problem at t = 1, 1.2, …, 6: the frames add the errors of the finite difference solutions X₁ (n = 25) and X₂ (n = 50), the difference X₂ − X₁ in green, the estimate −(4/3)(X₂ − X₁) dashed on top of X₁ − x, and the error of X₃ = (4X₂ − X₁)/3, signed on a linear scale on the left and in size on a log scale on the right, where the largest error falls from 0.01464 for X₁ and 0.003638 for X₂ to 2.869e−05 for X₃, all at t = 4.8](fdodebb.gif)
+
+### Case 3 — Orders of convergence, $n = 25, 50, 100, 200, 400$
+
+**Behavior:** The right panel plots the largest error against $h$ on log-log axes, with dashed reference lines of slope $2$ and $4$ through the first point of each kind; extrapolated values are plotted at the $h$ of the finer of the two meshes they use. The largest error of $X_n$ is multiplied by $0.2496$, $0.2496$, $0.2500$ and $0.2500$ at the four halvings, and its points lie on the slope-$2$ line. The extrapolation from $n/2$ and $n$ (formula (9), at the points of the coarser mesh) has largest errors $2.869 \times 10^{-5}$, $1.788 \times 10^{-6}$, $1.115 \times 10^{-7}$ and $6.964 \times 10^{-9}$, multiplied by $0.06232$, $0.06236$ and $0.06247$, close to $\tfrac{1}{16} = 0.0625$, so its points follow the slope-$4$ line. The extrapolation from $n = 25$ and $50$ alone is already more accurate than $X_{400}$, whose largest error, $5.699 \times 10^{-5}$, is $1.986$ times larger. In the left panel the error of $X_n$ dips where it changes sign, between $t = 3.4$ and $3.5$ for $n \ge 50$, and the error of every extrapolation dips at $t = 3.6$, the last coarse point before its sign change.
+
+[Julia source](fdodecc.jl)
+
+![Largest errors of the finite difference solution X_n for n = 25, 50, 100, 200 and 400, and of the Richardson extrapolation from n/2 and n, added one n per frame on log-log axes against h with reference lines of slope 2 and 4, beside a log-scale panel of the errors along 1 ≤ t ≤ 6: the error of X_n falls by about a factor of 4 per halving of h, to 5.699e−05 for n = 400, and that of the extrapolation by about a factor of 16, to 6.964e−09](fdodecc.gif)
 
 ## Boundary Value Problems
 
@@ -140,7 +172,7 @@ a_2 & d_2 & c_2 & & \\
 \tag{6}
 $$
 
-which has the familiar [tridiagonal](tri-diagonal-matrices.qmd) form and is solved by elimination in $O(n)$ operations.
+which has the familiar [tridiagonal](../tri-diagonal-matrices.qmd) form and is solved by elimination in $O(n)$ operations.
 
 ::: {.callout-tip appearance="simple"}
 ## When the system has a unique solution (general result)
@@ -301,7 +333,7 @@ Is that small or large? Since the method is of order $O(h^2)$, the error of $X_2
 
 ### Example 5 — Richardson extrapolation
 
-Use [Richardson extrapolation](richardson-extrapolation/) and the results of Examples 2 and 3 to construct a more accurate solution at the $26$ points of the $25$-subinterval mesh.
+Use [Richardson extrapolation](../richardson-extrapolation/) and the results of Examples 2 and 3 to construct a more accurate solution at the $26$ points of the $25$-subinterval mesh.
 
 If the error of the method behaves like $C h^2$ at a fixed point $t$, then $X_1 \approx x + Ch^2$ and $X_2 \approx x + C h^2/4$. Eliminating $C$ gives the extrapolated values
 
