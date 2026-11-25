@@ -50,7 +50,7 @@ g(w) = maximum(abs.((w^2 * I + A) \ (-e * w^2 * b)))
 gp(p) = g(2pi / p)
 
 # Bands g >= 0.3 around each natural period: bisection on g(p) = 0.3 between the
-# natural period and the local minima of g on either side
+# natural period and the halfway points to its neighbours
 function bisect(f, lo, hi)
     flo = f(lo)
     for _ in 1:200
