@@ -1,9 +1,9 @@
 ---
 title: "Picard Iteration"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -15,9 +15,49 @@ $$
 Y_{n+1}(x) = y_0 + \int_{x_0}^{x} f\bigl(t, Y_n(t)\bigr)\,dt, \qquad n = 0, 1, 2, \ldots
 $$
 
-The iterates are functions, not numbers. This is the second meaning of "Picard iteration": the first is [fixed point iteration](fixed-point-iteration/) $p_{n+1} = g(p_n)$ for an equation $x = g(x)$, and Picard's method for differential equations is fixed point iteration applied to the integral operator on the right-hand side. If $f$ and $\partial f/\partial y$ are continuous near $(x_0, y_0)$, the iterates converge to the unique solution on a small enough interval around $x_0$ (Theorem 2). This is the classical proof of the existence theorem, and it needs no numerical arithmetic at all: the integrals are done exactly, which a computer algebra system does without the drudgery that makes the method tedious by hand.
+The iterates are functions, not numbers. This is the second meaning of "Picard iteration": the first is [fixed point iteration](../fixed-point-iteration/) $p_{n+1} = g(p_n)$ for an equation $x = g(x)$, and Picard's method for differential equations is fixed point iteration applied to the integral operator on the right-hand side. If $f$ and $\partial f/\partial y$ are continuous near $(x_0, y_0)$, the iterates converge to the unique solution on a small enough interval around $x_0$ (Theorem 2). This is the classical proof of the existence theorem, and it needs no numerical arithmetic at all: the integrals are done exactly, which a computer algebra system does without the drudgery that makes the method tedious by hand.
 
 Mathews' module (a revision of his 1989 article *Symbolic Computational Algebra Applied to Picard Iteration*, *Mathematics and Computer Education*, Vol. 23, No. 2) applies the method to first-order equations, to systems of two and three first-order equations, and to second-order equations, in twelve examples. In all of them $f$ is a polynomial, so every iterate is a polynomial. Every iterate on this page was recomputed exactly with SymPy in rational arithmetic, and every exact solution was checked by substitution into its differential equation and initial conditions.
+
+## Animations
+
+Each animation below shows **Picard's iterates appearing one per frame**, $n = 0, 1, \ldots, 6$, against the exact solution. The left panel is the graph Mathews draws for the example, in his window and with his colours for the exact solution (magenta) and the initial point (red dot); the current iterate is blue and the earlier ones are gray. The right panel is new. It plots the error of the current iterate on a logarithmic scale, $|y(x) - Y_n(x)|$ (in Case 3 the distance $\lVert (X_n(t), Y_n(t)) - (x(t), y(t)) \rVert$), with the errors of the earlier iterates in gray and the tolerance $0.01$ dashed. Green shading in both panels marks where the error is at most $0.01$. The left panel's title gives that interval, and the right panel's title gives the largest error on the window and where it occurs. The error is exactly zero at the initial point, and wherever it is below $10^{-6}$ its curve leaves the bottom of the right panel; a curve that leaves Mathews' window is cut at the window's edge. Each frame is shown for one second, and the last for three. The scripts compute the iterates exactly, as polynomials with rational coefficients, and check them against formulas (6) and (7) and the iterates $X_6$, $Y_6$ of Example 6 and $Y_6$ of Example 10. They evaluate the errors in 256-bit arithmetic at $20001$ equally spaced points of the window and refine the ends of each shaded interval by bisection.
+
+Mathews' module links no animation, and his animation archive has none for Picard iteration, so all four animations are new, with no Mathews original. They animate the graphs of his Examples 3, 4, 7 and 11, with his windows and parameter ranges. Mathews shows the iterates in groups of three and then all together; here they appear one at a time. Not animated are Example 8, whose iterates Mathews draws as space curves in three dimensions, and Example 12, which is Example 11 shifted by $1$ in $x$. Examples 1, 2, 5, 9 and 10 have no graphs, and Example 6 graphs only its exact solution, the ellipse drawn in every frame of Case 3.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — First-order equation (Example 3), $y' = y - x$, $y(0) = 2$, $Y_0$ to $Y_6$ on $-3 \le x \le 3$
+
+**Behavior:** Every iterate passes through the initial point $(0, 2)$, where its error is zero, and near $x_0 = 0$ the error of $Y_n$ behaves like $2|x|^{n+1}/(n+1)!$ (by formula (6)), so the dip in the right panel widens with every iteration. The interval where $|y - Y_n| \le 0.01$ widens at every step, from $[-0.005006, 0.004994]$ for $Y_0$ to $[-0.5968, 0.5795]$ for $Y_3$ and $[-1.606, 1.561]$ for $Y_6$, and always reaches a little farther to the left of $x_0$ than to the right. Away from $x_0$ the gap stays large: the largest error on Mathews' interval is at $x = 3$ for every iterate and falls from $22.09$ to $1.107$, as in the table of Example 3. $Y_1$ dips below the bottom of the window near $x = -3$, where $Y_1(-3) = -8.5$.
+
+[Julia source](picardaa.jl)
+
+![Picard iterates Y0 to Y6 for y' = y − x, y(0) = 2, appearing one per frame against the exact solution 1 + x + e^x in Mathews' window [−3, 3] × [−8, 25], with a log-scale panel of the error |y − Yn|: the interval where the error is at most 0.01 (shaded green) widens from [−0.005006, 0.004994] for Y0 to [−1.606, 1.561] for Y6, while the largest error, at x = 3, falls from 22.09 to 1.107](picardaa.gif)
+
+### Case 2 — Initial point $x_0 = 1$ (Example 4), $y' = -2xy$, $y(1) = 1$, $Y_0$ to $Y_6$ on $-1.7 \le x \le 1.7$
+
+**Behavior:** $Y_n$ and $y$ depend on $x$ only through $w = 1 - x^2$ (formula (7)), so both panels are symmetric about $x = 0$. Since $w = 0$ at $x = -1$ as well as at $x_0 = 1$, $Y_n(-1) = 1 = y(-1)$ for every $n$, and each iterate is as accurate near $x = -1$ as near the initial point. The shading is therefore two intervals, around $x = -1$ and $x = 1$, which widen until at $n = 4$ they merge into $[-1.440, 1.440]$; there the error at $x = 0$, $y(0) - Y_4(0) = 0.009948$, is just under the tolerance. At $n = 6$ the interval is $[-1.674, 1.674]$, and the largest error, $0.01377$ at both ends $x = \pm 1.7$, is still above $0.01$. $Y_1$ and $Y_3$ drop below the bottom of Mathews' window near the ends, $Y_1$ for $|x| > \sqrt2 \approx 1.414$ and $Y_3$ for $|x| > 1.611$.
+
+[Julia source](picardbb.jl)
+
+![Picard iterates Y0 to Y6 for y' = −2xy, y(1) = 1, appearing one per frame against the exact solution e^(1 − x²) in Mathews' window [−1.7, 1.7] × [0, 2.75], with a log-scale panel of the error |y − Yn|, which is symmetric about x = 0 and zero at x = 1 and x = −1: two shaded intervals where the error is at most 0.01, around x = ±1, widen and merge at n = 4 into [−1.440, 1.440], and reach [−1.674, 1.674] at n = 6, when the largest error, at x = ±1.7, is 0.01377](picardbb.gif)
+
+### Case 3 — A system in the phase plane (Example 7), $x' = x + 2y$, $y' = -x - y$, $x(0) = y(0) = 1$, $n = 0$ to $6$ on $-2 \le t \le 2$
+
+**Behavior:** The left panel is drawn to scale, with equal units on both axes. $(X_0, Y_0)$ is the single point $(1, 1)$. Every later iterate is a polynomial curve through $(1, 1)$ at $t = 0$ that runs along the ellipse $x^2 + 2xy + 2y^2 = 5$ near that point and leaves it toward the ends $t = \pm 2$; $(X_1, Y_1)$ is a straight line and $(X_2, Y_2)$ a parabola, and both leave the window at both ends. The stretch of $t$ where the distance to the exact point is at most $0.01$ grows from $[-0.002773, 0.002774]$ for $n = 0$ to $[-1.460, 1.466]$ for $n = 6$, which covers nearly half of the ellipse (its period is $2\pi$). The largest distance on $-2 \le t \le 2$ rises from $4.211$ to $4.750$ at the first step and falls at every step after that, to $0.08875$, as in the table of Example 7; for $n \ge 1$ it is at an end of the interval, alternately $t = 2$ and $t = -2$.
+
+[Julia source](picardcc.jl)
+
+![Picard iterates for the system x' = x + 2y, y' = −x − y, x(0) = y(0) = 1, appearing one per frame as parametric curves (Xn(t), Yn(t)) for −2 ≤ t ≤ 2 against the exact solution, the ellipse x² + 2xy + 2y² = 5, in Mathews' window [−3.2, 3.2] × [−2.3, 2.3], with a log-scale panel of the distance to the exact solution: the stretch of t where the distance is at most 0.01 (green) grows from [−0.002773, 0.002774] for n = 0 to [−1.460, 1.466] for n = 6, and the largest distance falls to 0.08875](picardcc.gif)
+
+### Case 4 — Second-order equation (Example 11), $y'' = -2y' - y$, $y(0) = 1$, $y'(0) = 2$, $Y_0$ to $Y_6$ on $-2 \le x \le 2$
+
+**Behavior:** Every iterate satisfies both initial conditions, so every curve passes through $(0, 1)$ with slope $2$; $Y_0 = 1 + 2x$ is the tangent line there. The interval where $|y - Y_n| \le 0.01$ widens at every step, from $[-0.06220, 0.06433]$ for $Y_0$ to $[-1.050, 1.009]$ for $Y_6$. The largest error on Mathews' interval is at $x = -2$ for $n \le 3$ and at $x = 2$ for $n \ge 4$, and it falls from $33.95$ to $2.773$, as in the table of Example 11. Mathews' window cuts off the exact solution itself, which leaves the bottom edge at $x \approx -1.270$ and reaches $y(-2) = -5e^2 \approx -36.95$. Every iterate from $Y_1$ on also leaves the window on the left, and $Y_2$ on the right as well.
+
+[Julia source](picarddd.jl)
+
+![Picard iterates Y0 to Y6 of the second-order method for y'' = −2y' − y, y(0) = 1, y'(0) = 2, appearing one per frame against the exact solution (1 + 3x)e^(−x) in Mathews' window [−2, 2] × [−10, 10], starting from the tangent line Y0 = 1 + 2x, with a log-scale panel of the error |y − Yn|: the interval where the error is at most 0.01 (shaded green) widens from [−0.06220, 0.06433] to [−1.050, 1.009], and the largest error falls from 33.95 at x = −2 to 2.773 at x = 2](picarddd.gif)
 
 ## Existence and Uniqueness
 
@@ -662,4 +702,4 @@ Because $Y_n$ and $y$ are those of Example 10 shifted by $1$, these are the erro
 - **Picard iteration is a symbolic method.** Each step needs the antiderivative of $f(t, Y_n(t))$ in closed form. That always works when $f$ is a polynomial in $y$ (and in $x$) and $y_0$ is a number, as in all twelve examples, because then every iterate is a polynomial. For other $f$ the integrals soon have no closed form, and the iterates have to be truncated to Taylor polynomials, as Mathews' first-order subroutine does at degree $100$, or the integrals done numerically.
 - **Expression growth.** A nonlinear $f$ makes the degree grow quickly: in Example 2 the degree of $Y_n$ is $2^n - 1$, roughly doubling at every step, while only one more term becomes correct. Truncating each iterate to a Taylor polynomial, as Mathews' first-order subroutine does at degree $100$, limits this growth.
 - **Accuracy is local.** In every error table above (Examples 3, 4, 7, 8, 11 and 12), the largest error of each iterate $Y_n$ with $n \ge 1$ is at an end of the interval, away from $x_0$. The general bound (5) guarantees convergence only on $|x - x_0| \le \delta$, which can be much smaller than the interval where the solution exists ($\delta = 1/2$ against $\pi/2$ in Example 2).
-- **What it is good for.** Picard iteration proves existence and uniqueness, and it produces the first terms of the Taylor series of the solution with no differentiation of $f$. For numerical values of a solution over a long interval, step-by-step methods such as [Euler's method](eulers-method-for-odes/), the [Taylor series method](taylor-series-method-for-odes/) and the [Runge-Kutta method](runge-kutta-method/) are the practical tools.
+- **What it is good for.** Picard iteration proves existence and uniqueness, and it produces the first terms of the Taylor series of the solution with no differentiation of $f$. For numerical values of a solution over a long interval, step-by-step methods such as [Euler's method](../eulers-method-for-odes/), the [Taylor series method](../taylor-series-method-for-odes/) and the [Runge-Kutta method](../runge-kutta-method/) are the practical tools.
