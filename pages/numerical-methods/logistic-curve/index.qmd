@@ -1,9 +1,9 @@
 ---
 title: "Logistic Curve"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -24,6 +24,42 @@ Y = \ln(c) + a X .
 $$
 
 A least squares line $Y = AX + B$ through the transformed points then gives $a = A$ and $c = e^{B}$. With $L = 800$ million this predicts $281.75$ million people for 2000, within $0.13\%$ of the census figure. The second method, *true least squares*, chooses $L$, $c$ and $a$ together to minimise the sum of squared errors in $y$ itself; the equations are nonlinear, so it is solved iteratively from starting values such as those of the first method.
+
+## Animations
+
+Mathews' module links no animation, and his animation archive has none for curve fitting or the logistic equation, so all three animations below are new, with no Mathews original. His plots of the least squares line in the $XY$-plane and of the curve $f_1$ in Example 1 have not survived, so their windows and colours are not known. Case 1 draws both for his $L = 800$, as one frame of a sweep over the guessed limit $L$, together with the prediction for 2000 of Examples 2 and 4. Case 2 animates the Gauss–Newton iteration of Example 5, and Case 3 the logistic differential equation of the background section, with the growth rate and limit of $f_1$. Not animated are Example 3, which only looks up the census figure for 2000 (it appears as the red star in Case 1), the transformation, sums and normal equations of Steps 1 to 3 of Example 1 (Case 1 shows only their result, $A$ and $B$), the breakdown of the Gauss–Newton iteration from starting values with $L \ge 1100$ in the caution after Example 5, and the symmetry of the logistic curve about its inflection point. All the scripts compute in 256-bit arithmetic.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Data linearization as the guessed limit varies, $L = 300, 320, \ldots, 1200$ million (Mathews' Examples 1, 2 and 4)
+
+Each frame is Example 1 repeated with one guess for $L$. Top left is the $XY$-plane, with the transformed census points $(X_k, Y_k)$, $Y_k = \ln(L/y_k - 1)$, and their least squares line $Y = AX + B$. Top right is the curve $f(t) = L/(1 + c\,e^{a(t - 1900)})$, $a = A$, $c = e^B$, with the census points it was fitted to and, as an open red star, the July 2000 census figure, which it was not. The bottom panels trace, as $L$ grows, the sum of squared errors in $y$, $E = \sum (y_k - f(t_k))^2$ (log scale), and the prediction $f(2000)$. The animation pauses at Mathews' $L = 800$.
+
+**Behavior:** At $L = 300$, not far above the largest census figure $249.46$, the transformed points bend away from the line, below it at both ends and above it in the middle, and the curve misses the data, with $E = 665.3$ and a prediction $f(2000) = 252.0$ that is $10.68\,\%$ low. For larger $L$ the points lie close to a line: the correlation coefficient of the transformed points, $0.988$ at $L = 300$, is at least $0.9978$ from $L = 500$ on. $E$ falls to its smallest value in the sweep, $102.13$ at $L = 660$, and then rises again, slowly, to $129.9$ at $L = 1200$. Every curve has $E$ above the true least squares minimum $102.06$ of Example 5 (dashed green), and comes closest to it, on a finer grid, at $L \approx 655.3$ with $E = 102.126$, near the $L^* = 650.03$ of that example. The prediction $f(2000)$ increases with $L$ across the whole sweep, from $252.0$ to $286.7$, and crosses the census figure $282.1246$ near $L = 820.0$, where $E = 108.2$. At Mathews' $L = 800$ the frame shows Example 1, with $A = -0.01609871$, $B = 2.219304$ and $E = 107.1$, and Examples 2 and 4, with $f(2000) = 281.8$, $0.1325\,\%$ below the census figure. So the guess that fits 1900–1990 best, $L \approx 655.3$, predicts 2000 with an error of $1.36\,\%$, and the guess that predicts 2000 exactly fits the data worse.
+
+[Julia source](logisticaa.jl)
+
+![Data linearization of the U.S. census 1900–1990 for guessed limits L from 300 to 1200 million, in four panels: the transformed points Y = ln(L/y − 1) and their least squares line, which bend apart at L = 300 and line up for larger L; the fitted logistic curve with the census points and the 2000 census figure; the sum of squared errors, which falls from 665.3 at L = 300 to its smallest value near L = 655, just above the true least squares minimum 102.06, and rises to 129.9 at L = 1200; and the prediction for 2000, which rises from 252.0 to 286.7 and crosses the census figure 282.1246 near L = 820; the animation pauses at Mathews' L = 800, where f(2000) = 281.8](logisticaa.gif)
+
+### Case 2 — True least squares by Gauss–Newton from the $L = 800$ fit (Example 5), $k = 0, 1, \ldots, 10$
+
+One frame per iterate $\mathbf{p}_k = (L_k, c_k, a_k)$ of the undamped step (9). On the left is the curve of iterate $k$ from 1880 to 2200, with its limit $L_k$ (dotted), its inflection point $(t^*, L_k/2)$ (diamond), the previous iterate (gray dashed) and the census points. Top right are the residuals $y_k - f(t_k)$ at the census years, with those of the previous iterate as open circles. Bottom right is the distance from the minimum on a log scale: $E_k - E_{\min}$ and $|L_k - L^*|$, where $E_{\min} = 102.0601$ and $L^* = 650.0271$ are the limit of the same iteration run to 80 steps.
+
+**Behavior:** The first step overshoots: $L$ drops from $800$ to $596.9$, well below $L^* = 650.03$, and $E$ nearly doubles, from $107.06$ to $206.85$, as the largest residual grows from $5.041$ (1940) to $7.637$ (1970). The second step brings $L$ back to $650.84$ and $E$ to $102.72$, and the third step brings $E - E_{\min}$ down to $8.6 \times 10^{-7}$. After $k = 3$ the curve and the residuals no longer change visibly (later steps move the curve by at most $0.003$ million), and the largest residual stays at $5.659$, in 1940. $L_k - L^*$ changes sign at every step, so the iterates alternate about $L^*$. The bottom right panel shows linear, not quadratic, convergence: from $k = 4$ to $k = 10$, $|L_k - L^*|$ shrinks by a factor between $0.039$ and $0.042$ per step, from $3.439 \times 10^{-4}$ to $1.550 \times 10^{-12}$, and from $k = 5$ on, $E_k - E_{\min}$ shrinks by about the square of that factor, $0.0017$ per step, to $8.300 \times 10^{-28}$ at $k = 10$. (In general, when the residuals at the minimum are not zero, as here, Gauss–Newton converges only linearly, if it converges at all.)
+
+[Julia source](logisticbb.jl)
+
+![Gauss–Newton iterates for the least squares logistic curve through the U.S. census 1900–1990, starting from the L = 800 linearization fit: the first step overshoots to L = 596.9 and E = 206.85, the second returns to L = 650.84, and from k = 3 the curve settles on L = 650.0271 with E = 102.0601, shown with its limit and inflection point, its residuals at the census years, and a log-scale panel in which E − E_min and |L − L*| fall linearly to 8.300e−28 and 1.550e−12 at k = 10](logisticbb.gif)
+
+### Case 3 — Solutions of the logistic equation of $f_1$, $y' = 0.0160987\,y\,(1 - y/800)$, $t_0 = 1900$, $y_0 = 5$ to $1000$ million
+
+The logistic equation (1) with the growth rate $r = 0.0160987$ (the unrounded $-A$ of Example 1) and the limit $L = 800$ of $f_1$, solved from $t_0 = 1900$ for nine starting values: $y_0 = 5$, $20$, $f_1(1900) = 78.4243$ (whose solution is $f_1$ itself), $200$, $400 = L/2$, $600$, $800 = L$, $900$ and $1000$ million. The exact solutions (2) grow in time from 1900 to 2300, ten years per frame, and a diamond marks each inflection point (3) once the solution reaches it. On the right is the rate $y' = r\,y\,(1 - y/L)$, drawn sideways so that $y$ is on the same vertical axis in both panels, with the phase line $y' = 0$ and a dot for each solution at its current $(y', y)$.
+
+**Behavior:** Every solution except the stationary $y \equiv 800$ moves toward $L = 800$: those below rise, those above fall. The three solutions that start below $L/2$, and $f_1$, are concave up until they cross $y = 400$ at $t^* = 1968.24$ ($y_0 = 200$), $2037.86$ ($f_1$), $2127.57$ ($y_0 = 20$) and $2214.86$ ($y_0 = 5$), and concave down after. At each crossing the solution's dot passes the tip of the parabola, where the rate is largest, $rL/4 = 3.220$ million per year. The solution from $y_0 = 400$ has its inflection point at $t_0$ itself, and the one from $600$ is concave down for all $t \ge 1900$ (its inflection point, by (3), would be at $1831.76$). The solutions from $900$ and $1000$ fall toward $800$ and are concave up. The census points lie along $f_1$, which was fitted to them. Growth from a small start is slow: by 2300 the solution from $y_0 = 5$ has reached only $638.0$ and $f_1$ is at $788.4$.
+
+[Julia source](logisticcc.jl)
+
+![Solutions of y′ = 0.0160987 y (1 − y/800) from 1900 to 2300 for nine starting values from 5 to 1000 million, including the census fit f₁ through 78.4243: solutions below 800 rise in S-shaped curves, those starting below 400 marked with diamonds at their inflection points y = 400 (1968.24, 2037.86, 2127.57, 2214.86), solutions above 800 fall toward it, and y = 800 is stationary; beside them the rate y′ = r y (1 − y/L) drawn sideways as a phase line, with its largest value rL/4 = 3.220 at y = 400](logisticcc.gif)
 
 ## The Logistic Differential Equation
 
