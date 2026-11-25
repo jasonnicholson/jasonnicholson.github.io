@@ -1,9 +1,9 @@
 ---
 title: "Power method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -16,6 +16,46 @@ $$
 $$
 
 Each multiplication by $\mathbf{A}$ stretches the component of the vector along $\mathbf{V}_1$ by $|\lambda_1|$ and every other component by less, so the other components fade, at a rate set by the ratio $|\lambda_2/\lambda_1|$ of the two largest eigenvalue magnitudes. The *shifted-inverse power method* applies the same iteration to $(\mathbf{A} - \alpha\mathbf{I})^{-1}$, which turns the eigenvalue of $\mathbf{A}$ closest to a chosen shift $\alpha$ into the dominant one, so that any eigenvalue can be found, and found quickly, once a good approximation $\alpha$ to it is known. Mathews' module works two examples of the power method (a $3\times 3$ and a $6\times 6$ matrix), one of the shifted-inverse method, and two Markov chains, whose limiting distribution is the dominant eigenvector of the transition matrix. Every number below has been recomputed, most of them in exact rational arithmetic.
+
+## Animations
+
+Each animation below follows one of Mathews' worked examples, one iteration per frame. A panel with a logarithmic axis shows how fast the errors shrink: an error that is multiplied by a fixed ratio $r$ at every step falls on a straight line there, and grey dashed lines show the slopes that the eigenvalue ratios predict. The iterations run in exact rational arithmetic, as in the tables below, so every error is computed exactly before it is rounded for display.
+
+All four animations are new. Mathews' Power Method module has no animation, and the archive of his animations has none for eigenvalue methods. Every example of the module appears in one of them, but the hand-worked first steps, the Aitken acceleration of Example 1, and the checks of the eigenpairs (among them Mathews' comparisons with *Mathematica*'s `Eigensystem`) are not animated.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — The power method on the $3 \times 3$ matrix of Example 1, $\mathbf{X}_0 = (1, 1, 1)$, $\varepsilon = 10^{-6}$, $22$ iterations
+
+**Behavior:** The third coordinate of every $\mathbf{X}_k$ is $1$, so the left panel draws $\mathbf{X}_k$ in the plane $x_3 = 1$, as offsets from $\mathbf{V}_1 = (0.4, 0.6, 1)$, and zooms in each frame on $\mathbf{X}_{k-1}$ and $\mathbf{X}_k$. Since $\mathbf{X}_0 = (2, 3, 5) - (1, 2, 4)$ has no component along the eigenvector $(1, 1, 2)$, every $\mathbf{X}_k$ lies on the dashed line through $\mathbf{V}_1$ and the normalized eigenvector $\mathbf{W}_2 = (\tfrac14, \tfrac12, 1)$ for $\lambda = 2$ (shown in the first two frames). The iterates approach $\mathbf{V}_1$ along this line from the side away from $\mathbf{W}_2$, with $\mathbf{X}_k - \mathbf{V}_1 = (3, 2, 0)/\bigl(5(5 \cdot 2^k - 4)\bigr)$. The distance to $\mathbf{V}_1$ is multiplied at each step by a ratio that rises from $\tfrac16$ toward $\tfrac12 = |\lambda_2/\lambda_1|$ without reaching it, so after the first few frames the window shrinks by about half per frame. In the right panel $c_k - 4$ falls from $8$ at $k = 1$ to $7.629 \times 10^{-7}$ at $k = 22$, and $\lVert \mathbf{X}_k - \mathbf{V}_1 \rVert_2$ falls from $0.7211$ to $3.439 \times 10^{-8}$; both lines become parallel to the dashed line of slope $\tfrac12$. The step of the stopping test (4) is $|c_k - c_{k-1}|$ at every $k$, because the vector part is smaller. From $k = 9$ on it is within $1\%$ of $c_k - 4$, as the ratio $\tfrac12$ predicts, and it first falls below $\varepsilon$ at $k = 22$.
+
+[Julia source](poweraa.jl)
+
+![The power method on Mathews' Example 1: in the plane x₃ = 1 the iterates X_k move along a straight line toward the eigenvector V₁ = (0.4, 0.6, 1), the window zooming in with every frame, while a log-scale panel shows c_k − 4 falling from 8 to 7.629 × 10⁻⁷ and the vector error from 0.7211 to 3.439 × 10⁻⁸ in 22 iterations, parallel to a line of slope ½](poweraa.gif)
+
+### Case 2 — The power method on the $6 \times 6$ matrix of Example 2, $\mathbf{X}_0 = (1, 1, 1, 1, 1, 1)$, $\varepsilon = 2 \times 10^{-6}$, $40$ iterations
+
+**Behavior:** The bars of $\mathbf{X}_k$ settle onto the black marks of $\mathbf{V}_1 = (\tfrac13, 0, -\tfrac23, 1, 0, \tfrac13)$. From $k = 3$ on the largest coordinate error is in $x_2$ or $x_5$, the coordinates where $\mathbf{V}_1$ is $0$ but the eigenvector $(-1, 4, 1, 0, 4, 3)$ for $\lambda_2 = 3$ is not, and at $k = 40$ both are still $3.576 \times 10^{-6}$. The right panel shows the two rates explained in Example 2. The vector error $\lVert \mathbf{X}_k - \mathbf{V}_1 \rVert_2$ decreases at every step, by a ratio that approaches $\tfrac34 = |\lambda_2/\lambda_1|$ ($0.7500$ to four decimals from $k = 23$ on). The eigenvalue estimate $c_k$ is read from the fourth coordinate, where the eigenvectors for $3$ and $-1$ are $0$. So $c_2 - 4$ is exactly $0$ (it has no point on the log axis), and from $k = 3$ on $c_k - 4$ changes sign at every step: $c_k > 4$ (filled markers) at odd $k$ and $c_k < 4$ (hollow markers) at even $k$. Its size zigzags down by a factor approaching $\tfrac14$ every two steps, to $1.698 \times 10^{-12}$ at $k = 40$. From $k = 7$ on, the step of the stopping test runs below the vector error, and from $k = 9$ on it is the vector part $\lVert \mathbf{X}_k - \mathbf{X}_{k-1} \rVert_2$. At $k = 40$ the step is $1.954 \times 10^{-6} < \varepsilon$ and the run stops, while the error $\lVert \mathbf{X}_{40} - \mathbf{V}_1 \rVert_2 = 5.862 \times 10^{-6}$ is three times larger.
+
+[Julia source](powerbb.jl)
+
+![The power method on Mathews' 6 × 6 Example 2: bars of the six coordinates of X_k settle onto the eigenvector (1/3, 0, −2/3, 1, 0, 1/3), with the second and fifth coordinates last; on a log scale the vector error falls by about 3/4 per step to 5.862 × 10⁻⁶ while c_k − 4 alternates in sign and falls by about 1/4 every two steps to 1.698 × 10⁻¹² at k = 40](powerbb.gif)
+
+### Case 3 — Shifted-inverse power method with $\alpha = 4.2$ (Example 3) against the power method (Example 1), $\mathbf{X}_0 = (1, 1, 1)$, $\varepsilon = 10^{-7}$
+
+**Behavior:** Both runs start from $\mathbf{X}_0 = (1, 1, 1)$ on the matrix of Example 1, and both use the tolerance $\varepsilon = 10^{-7}$ of Example 3, so the plain power method runs $25$ iterations here instead of the $22$ of Example 1. Each shifted-inverse step solves $(\mathbf{A} - 4.2\,\mathbf{I})\mathbf{Y}_k = \mathbf{X}_k$ using one factorization of $\mathbf{A} - 4.2\,\mathbf{I}$. Its eigenvalue error $\alpha + 1/c_k - 4$ is multiplied at each step by a ratio that approaches $\tfrac{1}{11} = |\mu_2/\mu_1|$, so its line is much steeper than the plain method's, whose ratio approaches $\tfrac12$. The shifted-inverse run stops at $k = 10$ with $\alpha + 1/c_{10} - 4 = 6.169 \times 10^{-11}$ and $\lVert \mathbf{X}_{10} - \mathbf{V}_1 \rVert_2 = 5.560 \times 10^{-12}$. The plain run stops at $k = 25$ with $c_{25} - 4 = 9.537 \times 10^{-8}$ and $\lVert \mathbf{X}_{25} - \mathbf{V}_1 \rVert_2 = 4.298 \times 10^{-9}$. At every iteration $k \ge 1$ of both runs the vector error (dotted) lies below the eigenvalue error (solid).
+
+[Julia source](powercc.jl)
+
+![Log-scale errors of the shifted-inverse power method with shift 4.2 and of the plain power method on the matrix of Example 1, both from (1, 1, 1) with tolerance 10⁻⁷: the shifted-inverse errors fall by about 1/11 per step and stop at k = 10 with eigenvalue error 6.169 × 10⁻¹¹, while the plain errors fall by about 1/2 per step and stop at k = 25 with eigenvalue error 9.537 × 10⁻⁸](powercc.gif)
+
+### Case 4 — The Markov chains of Examples 4 and 5, $\mathbf{P}_{k+1} = \mathbf{A}\mathbf{P}_k$, months $0$ to $12$
+
+**Behavior:** Each month the bars of $\mathbf{P}_k$ move toward the black marks of the limiting distributions $(3000, 4500, 4500)$ (Example 4) and $(2800, 4400, 3600)$ (Example 5), while the totals stay $12000$ and $10800$. By month $6$ the largest deviations from the limits are $1.362$ and $5.734$ users, too small to see on the bars, and the right panel follows them further. In Example 5 the largest deviation is exactly $1400\,(0.4)^k$ from $k = 1$ on, a straight line with ratio $\lambda_2 = 0.4$. In Example 4 its ratio is $0.2$, $0.4$ and $0.35$ in the first three months and then decreases toward $\lambda_2 = 0.3$ ($0.3009$ at $k = 12$). Example 4's deviation is the smaller of the two in every month, and it falls by the smaller ratio in every month except the second, where both ratios are $0.4$: at $k = 12$ it is $0.001057$, against $0.02349$ in Example 5. Example 4 is carried one month past Mathews' last term $\mathbf{P}_{11}$, so that both chains run for twelve months.
+
+[Julia source](powerdd.jl)
+
+![Two Markov chains from Mathews' Examples 4 and 5: bars for the numbers of users of brands X, Y and Z move onto the limiting distributions (3000, 4500, 4500) and (2800, 4400, 3600) over twelve months, while a log-scale panel shows the largest deviation from the limit falling by ratios approaching 0.3 and 0.4, to 0.001057 and 0.02349 at month 12](powerdd.gif)
 
 ## The Power Method
 
@@ -83,7 +123,7 @@ $$
 \tag{3}
 $$
 
-that converges faster (see [Aitken's method and Steffensen's acceleration](aitken-method-and-steffensen-acceleration/)). It can be applied to the eigenvalue estimates $c_k$ of the power method; Example 1 shows the effect.
+that converges faster (see [Aitken's method and Steffensen's acceleration](../aitken-method-and-steffensen-acceleration/)). It can be applied to the eigenvalue estimates $c_k$ of the power method; Example 1 shows the effect.
 
 ### Algorithm
 
@@ -242,7 +282,7 @@ The fourth coordinate is the largest at every step of the run. The test (4) is f
 | 8 | 3.9928257 | (0.3256367, 0.0345987, −0.6586221, 1, 0.0351182, 0.3607542) | −0.007174 | 0.03512 | 0.03067 |
 | 9 | 4.0057652 | (0.3277906, 0.0261704, −0.6599057, 1, 0.0264313, 0.3526574) | 0.005765 | 0.02643 | 0.01478 |
 | 10 | 3.9981844 | (0.3286298, 0.0197686, −0.6618763, 1, 0.0198987, 0.3485284) | −0.001816 | 0.01990 | 0.01026 |
-| 11 | 4.0014345 | (0.3298615, 0.0148861, −0.6628908, 1, 0.0149512, 0.3444220) | 0.001435 | 0.01495 | 0.008229 |
+| 11 | 4.0014345 | (0.3298615, 0.0148861, −0.6628908, 1, 0.0149512, 0.3444220) | 0.001435 | 0.01495 | 0.008230 |
 | 12 | 3.9995447 | (0.3305934, 0.0111985, −0.6639050, 1, 0.0112311, 0.3418244) | $-4.553 \times 10^{-4}$ | 0.01123 | 0.005979 |
 | 13 | 4.0003582 | (0.3312921, 0.0084144, −0.6645495, 1, 0.0084307, 0.3396251) | $3.582 \times 10^{-4}$ | 0.008431 | 0.004619 |
 | 14 | 3.9998861 | (0.3317685, 0.0063191, −0.6650964, 1, 0.0063273, 0.3380957) | $-1.139 \times 10^{-4}$ | 0.006327 | 0.003418 |
@@ -251,14 +291,14 @@ The fourth coordinate is the largest at every step of the run. The test (4) is f
 | 17 | 4.0000224 | (0.3326696, 0.0026707, −0.6659982, 1, 0.0026717, 0.3353351) | $2.238 \times 10^{-5}$ | 0.002672 | 0.001461 |
 | 18 | 3.9999929 | (0.3328334, 0.0020035, −0.6661664, 1, 0.0020040, 0.3348374) | $-7.121 \times 10^{-6}$ | 0.002004 | 0.001093 |
 | 19 | 4.0000056 | (0.3329586, 0.0015029, −0.6662907, 1, 0.0015031, 0.3344602) | $5.595 \times 10^{-6}$ | 0.001503 | $8.215 \times 10^{-4}$ |
-| 20 | 3.9999982 | (0.3330517, 0.0011273, −0.6663850, 1, 0.0011274, 0.3341792) | $-1.780 \times 10^{-6}$ | 0.001127 | $6.154 \times 10^{-4}$ |
+| 20 | 3.9999982 | (0.3330517, 0.0011273, −0.6663850, 1, 0.0011274, 0.3341792) | $-1.780 \times 10^{-6}$ | 0.001127 | $6.155 \times 10^{-4}$ |
 | 21 | 4.0000014 | (0.3331222, 0.0008455, −0.6664552, 1, 0.0008456, 0.3339674) | $1.399 \times 10^{-6}$ | $8.456 \times 10^{-4}$ | $4.621 \times 10^{-4}$ |
 | 22 | 3.9999996 | (0.3331748, 0.0006342, −0.6665082, 1, 0.0006342, 0.3338091) | $-4.450 \times 10^{-7}$ | $6.342 \times 10^{-4}$ | $3.464 \times 10^{-4}$ |
 | 23 | 4.0000003 | (0.3332145, 0.0004756, −0.6665477, 1, 0.0004757, 0.3336901) | $3.497 \times 10^{-7}$ | $4.757 \times 10^{-4}$ | $2.599 \times 10^{-4}$ |
 | 24 | 3.9999999 | (0.3332442, 0.0003567, −0.6665775, 1, 0.0003568, 0.3336009) | $-1.113 \times 10^{-7}$ | $3.568 \times 10^{-4}$ | $1.949 \times 10^{-4}$ |
 | 25 | 4.0000001 | (0.3332665, 0.0002676, −0.6665998, 1, 0.0002676, 0.3335340) | $8.742 \times 10^{-8}$ | $2.676 \times 10^{-4}$ | $1.462 \times 10^{-4}$ |
 | 26 | 4.0000000 | (0.3332832, 0.0002007, −0.6666165, 1, 0.0002007, 0.3334838) | $-2.782 \times 10^{-8}$ | $2.007 \times 10^{-4}$ | $1.097 \times 10^{-4}$ |
-| 27 | 4.0000000 | (0.3332957, 0.0001505, −0.6666290, 1, 0.0001505, 0.3334462) | $2.185 \times 10^{-8}$ | $1.505 \times 10^{-4}$ | $8.225 \times 10^{-5}$ |
+| 27 | 4.0000000 | (0.3332957, 0.0001505, −0.6666290, 1, 0.0001505, 0.3334462) | $2.186 \times 10^{-8}$ | $1.505 \times 10^{-4}$ | $8.225 \times 10^{-5}$ |
 | 28 | 4.0000000 | (0.3333051, 0.0001129, −0.6666384, 1, 0.0001129, 0.3334180) | $-6.954 \times 10^{-9}$ | $1.129 \times 10^{-4}$ | $6.168 \times 10^{-5}$ |
 | 29 | 4.0000000 | (0.3333122, 0.0000847, −0.6666455, 1, 0.0000847, 0.3333968) | $5.464 \times 10^{-9}$ | $8.466 \times 10^{-5}$ | $4.626 \times 10^{-5}$ |
 | 30 | 4.0000000 | (0.3333175, 0.0000635, −0.6666508, 1, 0.0000635, 0.3333810) | $-1.738 \times 10^{-9}$ | $6.350 \times 10^{-5}$ | $3.470 \times 10^{-5}$ |
