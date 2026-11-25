@@ -7,24 +7,463 @@ bibliography: ../../references.bib
 
 Source inspiration: [@mathewsSite].
 
-## Animation Focus
+## Description
 
-This page will prioritize intuitive animations that show the algorithm behavior step by step.
+The solution of an initial value problem $y' = f(x, y)$, $y(x_0) = y_0$, can become infinite at a point $x = c$ even when $f$ is a polynomial: the solution of $y' = y^2$, $y(0) = 1$, is $y = 1/(1 - x)$, which has a vertical asymptote at $x = 1$. A fixed-step method such as the Runge-Kutta method cannot follow the curve there, because it computes each rise as a huge slope times a small run. The location $c$ of such a singularity depends on the initial value, so it cannot be read off the equation in advance; it is a *movable* singularity. An equation has the **Painlevé property** when every movable singularity of every solution is a pole, the kind of singularity that $1/x$ has at $0$.
 
-### Planned animation ideas
+At a pole, $y$ becomes infinite but its reciprocal $Y = 1/y$ is smooth and has a zero there. Mathews' pole-vaulting method exploits this. It tracks $y$ while $\lvert y \rvert$ is at most a bound $B$, and tracks $Y$ while $\lvert y \rvert > B$, using the **companion equation**
 
-- Visual state evolution of the method
-- Parameter sensitivity controls
-- Convergence and failure side-by-side comparison
+$$
+Y' = g(x, Y) = -Y^2 f\!\left(x, \frac{1}{Y}\right), \qquad Y = \frac{1}{y},
+$$
 
-## Derivation Notes (Planned)
+so each Runge-Kutta step is taken on whichever of $y$ and $Y$ is of moderate size. At a simple pole, the kind met in all of Mathews' runs, $Y$ crosses zero, $y = 1/Y$ jumps from $+\infty$ to $-\infty$, and the computed curve vaults the vertical asymptote and continues on its other side. Mathews uses $B = 3$ with the fourth-order Runge-Kutta method.
 
-Short derivations will be added to explain the core equations and assumptions.
+The page first sets out the kinds of singularity (removable singularities, poles, logarithmic and algebraic branch points) and the Painlevé property, with Mathews' examples of removable singularities and poles (Examples 1 to 3) and three equations whose solutions can be found in closed form (Examples 4 to 6). Then it derives the companion equation and the extended Runge-Kutta method and runs it on six initial value problems (Examples 7 to 12). Every number below was recomputed. The runs were made in two independent double-precision implementations (Python and Julia), which agree on every switch point, sign change and final value given, and were checked against the exact solutions.
 
-## Worked Example (Planned)
+## Singularities
 
-A compact numerical example with intermediate steps will be included.
+::: {.callout-note appearance="simple"}
+## Definition — Singularity
+A *singularity* of $f(x)$ is a point $x = c$ at which $f(x)$ "blows up" or is not defined.
+:::
 
-## Implementation Notes (Planned)
+### Example 1 — Singularities at $x = 0$ and at $x = \pi/2$
 
-Implementation details, numerical stability notes, and practical pitfalls will be added.
+The functions
+
+$$
+f(x) = \frac{\sin x}{x}, \quad \frac{1}{x}, \quad \cot x, \quad \csc x, \quad \frac{1}{x^2}, \quad \csc^2 x, \quad \ln x
+$$
+
+have singularities at $x = 0$, and the functions $\tan x$, $\sec x$ and $\sec^2 x$ have singularities at $x = \pi/2$. None of them is defined at its singular point, but the singularities are of different kinds, which the definitions below separate:
+
+| Function | Singular point | Kind | Shown in |
+|---|---|---|---|
+| $\sin x / x$ | $0$ | removable | Example 2 |
+| $1/x$, $\cot x$, $\csc x$ | $0$ | simple pole | Example 3(a) |
+| $1/x^2$, $\csc^2 x$ | $0$ | pole of order 2 | Example 3(a) |
+| $\tan x$, $\sec x$ | $\pi/2$ | simple pole | Example 3(b) |
+| $\sec^2 x$ | $\pi/2$ | pole of order 2 | Example 3(b) |
+| $\ln x$ | $0$ | logarithmic singularity | definition below |
+
+Mathews' own solution to Example 1 does not survive in the archive (its images are missing); the classification in the table comes from the series computed in Examples 2 and 3.
+
+::: {.callout-note appearance="simple"}
+## Definition — Removable singularity
+A singular point $x = c$ is a *removable singularity* of $f(x)$ if $f(x)$ has a Taylor series expansion about $x = c$, that is, a representation
+
+$$
+f(x) = a_0 + a_1 (x - c) + a_2 (x - c)^2 + \cdots + a_n (x - c)^n + \cdots = \sum_{i=0}^{\infty} a_i (x - c)^i
+$$
+
+valid for $\lvert x - c \rvert < r$. A common situation is that $f(c)$ is not defined, and we only need to define $f(c) = a_0$ to "remove the singularity".
+:::
+
+### Example 2 — $f(x) = \sin x / x$ has a removable singularity at $x = 0$
+
+**Step 1** (the difficulty): $f(0) = \sin 0 / 0$ is the indeterminate form $0/0$.
+
+**Step 2** (the limit): the correct way to remove the singularity is to take the limit as $x \to 0$:
+
+$$
+\lim_{x \to 0} \frac{\sin x}{x} = 1.
+$$
+
+**Step 3** (the series): expand $\sin x$ in its Maclaurin series and divide through by $x$:
+
+$$
+\frac{\sin x}{x} = 1 - \frac{x^2}{6} + \frac{x^4}{120} - \frac{x^6}{5040} + \frac{x^8}{362880} - \frac{x^{10}}{39916800} + \frac{x^{12}}{6227020800} - \frac{x^{14}}{1307674368000} + \cdots
+$$
+
+whose denominators are $3!, 5!, \ldots, 15!$. The series has constant term $a_0 = 1$, so defining $f(0) = 1$ removes the singularity, in agreement with Step 2.
+
+**Verification:** the series and the limit agree with a symbolic computation (sympy), and with Mathews' printed series up to the $x^{14}$ term.
+
+::: {.callout-note appearance="simple"}
+## Definition — Pole
+A singular point $x = c$ is a *pole* of $f(x)$ if $f(x)$ has a series expansion about $x = c$ that includes only a finite number of negative powers $(x - c)^j$, $j < 0$:
+
+$$
+f(x) = \frac{a_{-m}}{(x - c)^m} + \cdots + \frac{a_{-1}}{x - c} + a_0 + a_1 (x - c) + a_2 (x - c)^2 + \cdots = \sum_{i=-m}^{\infty} a_i (x - c)^i
+$$
+
+valid for $0 < \lvert x - c \rvert < r$. The leading coefficient must be nonzero, $a_{-m} \neq 0$, and we say that $f(x)$ has a *pole of order* $m$ at $x = c$. When $m = 1$ it is a *simple pole*. On the graph of $y = f(x)$, a pole at $x = c$ is a vertical asymptote $x = c$.
+:::
+
+::: {.callout-tip appearance="simple"}
+## Theorem — Poles and zeros
+If $f(x)$ has a pole at $x = c$, then $g(x) = 1/f(x)$ has a removable singularity at $x = c$. If we define $g(c) = 0$, then the equation $g(x) = 0$ has a root at $x = c$; in general, a pole of order $m$ of $f$ is a zero of order $m$ of $g$.
+:::
+
+This theorem is the basis of the pole-vaulting method: near a pole, $1/f$ is smooth and has a zero.
+
+### Example 3(a) — Poles at $x = 0$
+
+The functions $1/x$, $1/x^2$, $\cot x$, $\csc x$ and $\csc^2 x$ have poles at $x = 0$. Their series about $0$ are
+
+$$
+\begin{aligned}
+\cot x &= \frac{1}{x} - \frac{x}{3} - \frac{x^3}{45} - \frac{2x^5}{945} - \cdots, \\
+\csc x &= \frac{1}{x} + \frac{x}{6} + \frac{7x^3}{360} + \frac{31x^5}{15120} + \cdots, \\
+\csc^2 x &= \frac{1}{x^2} + \frac{1}{3} + \frac{x^2}{15} + \frac{2x^4}{189} + \cdots,
+\end{aligned}
+$$
+
+while $1/x$ and $1/x^2$ are their own series. So $1/x$, $\cot x$ and $\csc x$ have simple poles ($m = 1$), and each begins with the same term $1/x$, which is why their graphs look alike near $x = 0$; $1/x^2$ and $\csc^2 x$ have poles of order $m = 2$, both beginning with $1/x^2$. Mathews' computer output and graphs for this part are missing from the archive; the series above were computed with sympy.
+
+### Example 3(b) — Poles at $x = \pi/2$
+
+The functions $\tan x$, $\sec x$ and $\sec^2 x$ have poles at $x = \pi/2$. Mathews expands each to order $5$ about $c = \pi/2$ and reads the order $m$ off the most negative power. With $t = x - \pi/2$:
+
+$$
+\begin{aligned}
+\tan x &= -\frac{1}{t} + \frac{t}{3} + \frac{t^3}{45} + \frac{2t^5}{945} + \cdots, && m = 1, \\
+\sec x &= -\frac{1}{t} - \frac{t}{6} - \frac{7t^3}{360} - \frac{31t^5}{15120} + \cdots, && m = 1, \\
+\sec^2 x &= \frac{1}{t^2} + \frac{1}{3} + \frac{t^2}{15} + \frac{2t^4}{189} + \cdots, && m = 2.
+\end{aligned}
+$$
+
+Mathews graphs $\tan x$ and $\sec x$ in red on $[0, \pi] \times [-40, 40]$ and $\sec^2 x$ in blue on $[0, \pi] \times [0, 500]$, with tick marks every $\pi/4$ on the $x$-axis and leaving out $\lvert x - \pi/2 \rvert < 0.0001$. The graphs of $\tan x$ and $\sec x$ look alike near $\pi/2$ because both are simple poles beginning with the same term $-1/(x - \pi/2)$: each tends to $+\infty$ as $x \to \pi/2^-$ and to $-\infty$ as $x \to \pi/2^+$. **Verification:** all three expansions agree with sympy and with Mathews' printed series.
+
+### Branch points
+
+Two other kinds of singularity are *not* poles.
+
+::: {.callout-note appearance="simple"}
+## Definition — Logarithmic singularity
+A *logarithmic singularity* involves a logarithmic branch point in the complex plane. For example, $f(x) = \ln x$ has a logarithmic singularity at $x = 0$: $\ln x \to -\infty$ as $x \to 0^+$, yet $x^m \ln x \to 0$ for every $m \geq 1$, so no finite number of negative powers can describe it.
+:::
+
+::: {.callout-note appearance="simple"}
+## Definition — Algebraic branch point
+An *algebraic branch point* is a singular point associated with a fractional power. For example, the "multivalued function" $f(x) = \pm x^{1/2}$ has an algebraic branch point at $x = 0$.
+:::
+
+::: {.callout-warning appearance="simple"}
+## Restriction
+The Painlevé property excludes logarithmic branch points and algebraic branch points. The solution must be analytic except at isolated points where it has poles. It is not necessary to dwell on the definitions above, but it is important to know which kinds of singularity are allowed.
+:::
+
+## The Painlevé Property
+
+::: {.callout-note appearance="simple"}
+## Definition — Movable singularity
+If the singularities of the solutions of a differential equation depend on the initial conditions, they are called *movable singularities*. Singular points that are the same for every solution, such as the points where a coefficient of the equation is singular, are *fixed*.
+:::
+
+::: {.callout-note appearance="simple"}
+## Definition 1 — Painlevé property (second order)
+The second-order ordinary differential equation $y'' = F(y', y, x)$ has the *Painlevé property* if all movable singularities of all solutions are poles.
+:::
+
+Mathews takes the liberty of extending the concept to first-order equations.
+
+::: {.callout-note appearance="simple"}
+## Definition 2 — Painlevé property (first order)
+The first-order ordinary differential equation $y' = F(y, x)$ has the *Painlevé property* if all movable singularities of all solutions are poles.
+:::
+
+Movable singularities depend on the initial condition, and in general their location is hard to predict. Examples 4 to 6 were chosen because their solutions can be found in closed form, with a parameter $c > 0$ in the initial condition that turns out to be the location of the singularity. In each, the test is the theorem on poles and zeros: $y$ has a pole at $x = c$ exactly when $1/y$ has a Taylor series about $c$ that starts with a zero.
+
+### Example 4 — $y' = y^2$, $y(0) = 1/c$
+
+**Step 1** (solve): separating variables gives
+
+$$
+y = f(x) = \frac{1}{c - x},
+$$
+
+and indeed $f' = 1/(c - x)^2 = f^2$ and $f(0) = 1/c$.
+
+**Step 2** (reciprocal): $g(x) = 1/f(x) = c - x = -(x - c)$ is its own Taylor series about $x = c$ and has a simple zero there, so $g$ has a removable singularity at $x = c$ and $f$ has a simple pole at $x = c$.
+
+**Conclusion:** the singularity of the solution is at $x = c$, which moves with the initial value $y(0) = 1/c$. It is a pole, so $y' = y^2$ has the Painlevé property. The companion equation of Example 7 is $Y' = -1$, with nothing singular in it.
+
+### Example 5 — $y' = y^3$, $y(0) = 1/\sqrt{2c}$
+
+**Step 1** (solve): separating variables gives
+
+$$
+y = f(x) = \frac{1}{\sqrt{2(c - x)}},
+$$
+
+with $f' = (2(c - x))^{-3/2} = f^3$ and $f(0) = 1/\sqrt{2c}$.
+
+**Step 2** (reciprocal): $g(x) = 1/f(x) = \sqrt{2(c - x)}$ vanishes at $x = c$ but has no Taylor series about $c$, since $g'(x) = -1/\sqrt{2(c - x)}$ is unbounded there. So $g$ does not have a removable singularity at $x = c$. Regarded as a multivalued function, $\pm\sqrt{2(c - x)}$ has an algebraic branch point at $x = c$, and so does $f$.
+
+**Conclusion:** the movable singularity at $x = c$ is an algebraic branch point, not a pole, so $y' = y^3$ does **not** have the Painlevé property. The companion equation shows the same thing: $g(x, Y) = -Y^2 (1/Y)^3 = -1/Y$, which is itself unbounded as $Y \to 0$, so pole vaulting cannot step through $Y = 0$ here. (Mathews' computer output for this example is missing from the archive; his text survives.)
+
+### Example 6 — $y' = y^2 / x$, $y(1) = 1/\ln c$
+
+**Step 1** (solve): with $c > 0$, $c \neq 1$,
+
+$$
+y = f(x) = \frac{1}{\ln c - \ln x},
+$$
+
+and $f' = \dfrac{1}{x(\ln c - \ln x)^2} = f^2 / x$, $f(1) = 1/\ln c$.
+
+**Step 2** (reciprocal): $g(x) = 1/f(x) = \ln c - \ln x$ has the Taylor series
+
+$$
+g(x) = -\frac{x - c}{c} + \frac{(x - c)^2}{2c^2} - \frac{(x - c)^3}{3c^3} + \frac{(x - c)^4}{4c^4} - \cdots
+$$
+
+about $x = c$, which starts with a simple zero. So $f$ has a simple pole at $x = c$.
+
+**Conclusion:** the singularity at $x = c$ moves with the initial value and is a pole, so Mathews concludes that $y' = y^2 / x$ has the Painlevé property. The point $x = 0$, where $\ln x$ and the coefficient $1/x$ of the equation are singular, is the same for every solution: it is a fixed singularity, which the definition does not count.
+
+**Verification (Examples 4 to 6):** each solution was substituted into its equation and initial condition with sympy (residuals simplify to $0$), and each series of $1/y$ about $x = c$ was recomputed with sympy; the series of Example 6 agrees with Mathews' printed expansion through the $(x - c)^9$ term that he prints.
+
+## Pole Vaulting: Computed Solution Curves
+
+### The companion differential equation
+
+An important problem in numerical analysis is to compute approximate solutions of
+
+$$
+y'(x) = f\bigl(x, y(x)\bigr).
+\tag{1}
+$$
+
+Under modest assumptions on $f$, the "general solution" of (1) is an infinite family of functions, each distinguished by an initial point $(a, y(a))$. Starting from this point, a numerical method approximates the solution $y = y(x)$ on an interval $a \leq x \leq b$. But continuity of $f(x, y)$ does not ensure continuity of $y(x)$.
+
+Suppose that $y(x)$ has an infinite discontinuity at $x = c$, that is, $\lim_{x \to c} \lvert y(x) \rvert = \infty$. Then the reciprocal $Y(x) = 1/y(x)$ tends to zero as $x \to c$, and $Y(x)$ has a removable singularity at $x = c$ once we define $Y(c) = 0$. Make the change of variable
+
+$$
+Y(x) = \frac{1}{y(x)}.
+\tag{2}
+$$
+
+Differentiating each side of (2) gives
+
+$$
+Y'(x) = -\frac{y'(x)}{(y(x))^2} = -\bigl(Y(x)\bigr)^2\, y'(x),
+$$
+
+and substituting $y'(x)$ from (1) gives
+
+$$
+Y'(x) = -\bigl(Y(x)\bigr)^2 f\!\left(x, \frac{1}{Y(x)}\right).
+\tag{3}
+$$
+
+Equation (3) is equivalent to (1) in this sense: given a neighbourhood $N$ of $x_0$ and a number $y_0 \neq 0$, equation (1) has a solution with $y(x_0) = y_0$ and $y(x) \neq 0$ for all $x$ in $N$ if and only if equation (3) has a solution with $Y(x_0) = 1/y_0$ and $Y(x) \neq 0$ for all $x$ in $N$. Equation (3) is the **companion differential equation**, written
+
+$$
+Y'(x) = g\bigl(x, Y(x)\bigr), \qquad g(x, Y) = -Y^2 f\!\left(x, \frac{1}{Y}\right).
+\tag{4}
+$$
+
+::: {.callout-warning appearance="simple"}
+## Simplify $g$ before computing
+Before (4) is used for numerical computations, the formula for $g(x, Y)$ should be simplified by hand so that the forms $0/0$ or $\infty/\infty$ cannot occur at $Y = 0$. For example, $f(x, y) = 1 + y^2$ gives $-Y^2\bigl(1 + 1/Y^2\bigr)$, which must be simplified to $g(x, Y) = -1 - Y^2$.
+:::
+
+### The extended Runge-Kutta method
+
+A numerical method "tracks" the solution curve through the starting point $(x_0, y_0)$. Equation (4) can track it near a singularity because $\lvert y(x) \rvert \to \infty$ as $x \to c$ if and only if $\lvert Y(x) \rvert \to 0$ as $x \to c$. A numerical solution $Y(x)$ of (4) can be computed over a small interval containing $c$, and then (2) gives a solution curve for (1) on both sides of the vertical asymptote $x = c$.
+
+The Runge-Kutta method uses a fixed step size $h = (b - a)/m$, and for each $x_j = a + jh$, $j = 1, 2, \ldots, m$, it computes an approximation $y_j$ to $y(x_j)$. If $\lvert y(x) \rvert \to \infty$ as $x \to c$, the method fails to follow the true solution, because of the inherent instability of computing a "rise" as the product of a very large slope and a very small "run", which magnifies the error already present in $y_{j-1}$. One way to reduce this error is to choose a bound $B$ and change strategy as soon as a value $y_L$ with $\lvert y_L \rvert > B$ is computed, that is, as soon as a singularity is "sensed": stop using (1), take $(x_L, 1/y_L)$ as the initial point for (4), and track the reciprocal $Y(x)$, which does not suffer from steep slopes.
+
+The strategy extends any single-step method. Use (1) with $y(x_0) = y_0$ to compute $\{(x_j, y_j)\}_{j=1}^{L}$, where $\lvert y_j \rvert \leq B$ for $j = 1, 2, \ldots, L - 1$ and $\lvert y_L \rvert > B$. Then switch to (4) with $Y(x_L) = 1/y_L$ and compute $\{(x_j, Y_j)\}_{j=L+1}^{N}$, where $\lvert y_j \rvert > B$ for $j = L, L+1, \ldots, N - 1$ and $\lvert y_N \rvert \leq B$. Continue in the same way, alternating between (1) and (4), until $j = m$.
+
+::: {.callout-important appearance="simple"}
+## Extended Runge-Kutta step (pole vaulting)
+For $j = 0, 1, \ldots, m - 1$:
+
+- **if** $\lvert y_j \rvert \leq B$: perform one Runge-Kutta step on $y' = f(x, y)$ from $(x_j, y_j)$ to compute $y_{j+1}$, and set $Y_{j+1} = 1/y_{j+1}$;
+- **else**: perform one Runge-Kutta step on $Y' = g(x, Y)$ from $(x_j, Y_j)$, $Y_j = 1/y_j$, to compute $Y_{j+1}$, and set $y_{j+1} = 1/Y_{j+1}$.
+
+Mathews' subroutine (PoleVault Runge-Kutta) uses the fourth-order Runge-Kutta step,
+
+$$
+\begin{aligned}
+k_1 &= h F(x_j, u_j), & k_2 &= h F\bigl(x_j + \tfrac{h}{2}, u_j + \tfrac{k_1}{2}\bigr), \\
+k_3 &= h F\bigl(x_j + \tfrac{h}{2}, u_j + \tfrac{k_2}{2}\bigr), & k_4 &= h F(x_j + h, u_j + k_3), \\
+u_{j+1} &= u_j + \tfrac16 (k_1 + 2k_2 + 2k_3 + k_4),
+\end{aligned}
+$$
+
+with $(F, u) = (f, y)$ or $(g, Y)$, and the bound $B = 3$. Its inputs are $a$, $b$, $y(a) = \alpha$ and the number of steps $m$; it keeps both $y_j$ and $Y_j$ and returns the points $(x_j, y_j)$. A reciprocal of exactly zero is stored as complex infinity.
+:::
+
+Since the method switches as soon as $\lvert y \rvert$ passes $3$, each $Y$ phase starts with $\lvert Y_L \rvert$ just under $1/3$ and ends when $\lvert Y \rvert$ is back to at least $1/3$. In every run below, $Y$ changes sign during each $Y$ phase, and $y$ with it, as the curve vaults the pole. The six examples below are Mathews' runs. For each, the table lists where the method changes equations, the grid interval where $Y_j$ changes sign, the pole estimated by linear interpolation of $Y$ across that interval, the exact pole, and the computed value at $x = b$ against the exact solution. For each run that survives in the archive (all but Example 10), Mathews plots the points $(x_j, y_j)$ joined in magenta and the analytic solution in blue, on the vertical range $-15 \leq y \leq 15$.
+
+Every pole in Examples 7 to 12 is simple, and near it $y$ behaves like a negative multiple of $1/(x - c)$ (the multiple is $1$ in Examples 7, 8, 11 and 12, $\tfrac12$ in Example 9 and $e$ in Example 10). So in each example $y \to +\infty$ as $x \to c^-$ and $y \to -\infty$ as $x \to c^+$, and $Y$ goes from positive to negative across the pole.
+
+### Example 7 — $y' = y^2$, $y(0) = 1$, on $[0, 2]$
+
+**Step 1** (companion equation): with $f(x, y) = y^2$,
+
+$$
+g(x, Y) = -Y^2 \left(\frac{1}{Y}\right)^2 = -1, \qquad Y' = -1.
+$$
+
+**Step 2** (exact solution): $y = 1/(1 - x)$, with a simple pole at $x = 1$; and $Y = 1 - x$.
+
+**Step 3** (run): Mathews' call uses $a = 0$, $b = 2$, $\alpha = 1$, $m = 500$, so $h = 0.004$, and plots on $[0, 2] \times [-15, 15]$.
+
+| Steps | Equation | From $x$ | To $x$ | Number of steps |
+|---|---|---|---|---|
+| $j = 0, \ldots, 166$ | $y' = y^2$ | $0$ | $0.668$ | $167$ |
+| $j = 167, \ldots, 333$ | $Y' = -1$ | $0.668$ | $1.336$ | $167$ |
+| $j = 334, \ldots, 499$ | $y' = y^2$ | $1.336$ | $2$ | $166$ |
+
+The switch happens at $x_L = 0.668$, where $y_L = 3.012048192$ (the step before gave $y = 2.976190475$), so the $Y$ phase starts from $Y_L = 1/y_L = 0.3320000001$. It ends at $x = 1.336$ with $y = -2.976190477$. The grid point $x = 1$ is the pole itself: there $Y_{250} = 9.36 \times 10^{-11}$, so the stored value is $y_{250} = 1.07 \times 10^{10}$, and at the next point, $x = 1.004$, $Y = -0.004$ and $y = -250.0$. Linear interpolation of $Y$ puts the zero at $x = 1.0000000001$.
+
+Because the fourth-order Runge-Kutta step reduces to Simpson's rule when $g$ does not depend on $Y$, it integrates $Y' = -1$ exactly; the error in $Y$ stays at $9.36 \times 10^{-11}$, the error carried in at $x_L$, throughout the $Y$ phase.
+
+**Verification:** $y_{500} = -1.00000000018$ against $y(2) = -1$, an error of $-1.8 \times 10^{-10}$. The largest error at points with $\lvert y_j \rvert \leq 3$ is $8.6 \times 10^{-10}$, at $x = 1.364$.
+
+For comparison, the plain fourth-order Runge-Kutta method with the same $h$ stays within $1\%$ of the solution up to $x = 0.996$ ($248.2$ against $250$), gives $2049.8$ at $x = 1$, then $2.5 \times 10^{13}$ at $x = 1.004$ where the true value is $-250$, and overflows to infinity at $x = 1.012$. It never reaches the branch of the curve beyond the pole.
+
+### Example 8 — $y' = 1 + y^2$, $y(0) = 0$, on $[0, 5]$
+
+**Step 1** (companion equation): $-Y^2\bigl(1 + 1/Y^2\bigr)$ simplifies to
+
+$$
+g(x, Y) = -1 - Y^2.
+$$
+
+**Step 2** (exact solution): $y = \tan x$, with simple poles at $\pi/2 = 1.570796327$ and $3\pi/2 = 4.712388980$ in $[0, 5]$.
+
+**Step 3** (run): $a = 0$, $b = 5$, $\alpha = 0$, $m = 1000$, $h = 0.005$; Mathews plots on $[0, 5] \times [-15, 15]$ with $x$ tick marks every $\pi/4$.
+
+| Steps | Equation | From $x$ | To $x$ | Number of steps |
+|---|---|---|---|---|
+| $j = 0, \ldots, 249$ | $y' = 1 + y^2$ | $0$ | $1.25$ | $250$ |
+| $j = 250, \ldots, 378$ | $Y' = -1 - Y^2$ | $1.25$ | $1.895$ | $129$ |
+| $j = 379, \ldots, 878$ | $y' = 1 + y^2$ | $1.895$ | $4.395$ | $500$ |
+| $j = 879, \ldots, 999$ | $Y' = -1 - Y^2$ | $4.395$ | $5$ | $121$ |
+
+| Pole | Switch to $Y$ at | $Y_j$ changes sign on | Interpolated zero of $Y$ | Exact pole |
+|---|---|---|---|---|
+| first | $x = 1.25$, $y = 3.009569673$ | $[1.570, 1.575]$ | $1.5707963231$ | $1.5707963268$ |
+| second | $x = 4.395$, $y = 3.044194287$ | $[4.710, 4.715]$ | $4.7123889802$ | $4.7123889804$ |
+
+The first $Y$ phase ends at $x = 1.895$ with $y = -2.975647979$. The second is still running at $x = 5$, since $\lvert y \rvert = 3.38 > 3$ there.
+
+**Verification:** $y_{1000} = -3.38051501028$ against $\tan 5 = -3.38051500625$, an error of $-4.0 \times 10^{-9}$. The largest error at points with $\lvert y_j \rvert \leq 3$ is $3.1 \times 10^{-9}$, and the largest error in $Y_j$ at points with $\lvert y_j \rvert > 3$ is $3.6 \times 10^{-10}$. The plain Runge-Kutta method with the same $h$ gives $868.7$ at $x = 1.570$ (true value $1255.8$), $3.2 \times 10^{9}$ at $x = 1.575$ (true value $-237.9$), and overflows at $x = 1.585$.
+
+### Example 9 — $y' = 2xy^2$, $y(0) = 1$, on $[0, 1.5]$
+
+**Step 1** (companion equation): $g(x, Y) = -Y^2 \cdot 2x / Y^2 = -2x$.
+
+**Step 2** (exact solution): $y = 1/(1 - x^2)$, with a simple pole at $x = 1$ in $[0, 1.5]$; and $Y = 1 - x^2$.
+
+**Step 3** (run): $a = 0$, $b = 1.5$, $\alpha = 1$, $m = 300$, $h = 0.005$; plot window $[0, 1.5] \times [-15, 15]$. (Mathews states the problem with $t$ as the variable, $y' = 2ty^2$; his program uses $x$.)
+
+| Steps | Equation | From $x$ | To $x$ | Number of steps |
+|---|---|---|---|---|
+| $j = 0, \ldots, 163$ | $y' = 2xy^2$ | $0$ | $0.82$ | $164$ |
+| $j = 164, \ldots, 230$ | $Y' = -2x$ | $0.82$ | $1.155$ | $67$ |
+| $j = 231, \ldots, 299$ | $y' = 2xy^2$ | $1.155$ | $1.5$ | $69$ |
+
+The switch happens at $x_L = 0.82$ with $y_L = 3.052503046$ and $Y_L = 0.3276000007$ (exact $1 - 0.82^2 = 0.3276$); the $Y$ phase ends at $x = 1.155$ with $y = -2.993787896$. As in Example 7 the pole is a grid point: $Y_{200} = 6.97 \times 10^{-10}$ at $x = 1$, so $y_{200} = 1.43 \times 10^{9}$, and at $x = 1.005$, $Y = -0.010025$ and $y = -99.75$. Interpolation puts the zero of $Y$ at $x = 1.0000000003$. Again $g$ does not depend on $Y$ and is linear in $x$, so the Runge-Kutta step integrates it exactly and the error in $Y$ stays at $6.97 \times 10^{-10}$ throughout the $Y$ phase.
+
+**Verification:** $y_{300} = -0.800000006442$ against $y(1.5) = -0.8$, an error of $-6.4 \times 10^{-9}$; the largest error at points with $\lvert y_j \rvert \leq 3$ is $2.7 \times 10^{-8}$, at $x = 1.205$.
+
+### Example 10 — $y' = y^2 / x$, $y(1) = 1$, on $[0, 3]$
+
+This is Example 6 with $c = e$.
+
+**Step 1** (companion equation): $g(x, Y) = -Y^2 \cdot \dfrac{1}{xY^2} = -\dfrac{1}{x}$.
+
+**Step 2** (exact solution): $y = 1/(1 - \ln x)$, with a simple pole at $x = e = 2.718281828$; and $Y = 1 - \ln x$. On $(0, 1]$ the solution has no singularity: it increases from $y \to 0$ as $x \to 0^+$ to $y(1) = 1$; $x = 0$ is the fixed singular point of the equation.
+
+**Step 3** (run): Mathews' solution to this example is missing from the archive, so the step count and the treatment of $x = 0$ here are this page's choices. The equation cannot be evaluated at $x = 0$, so the run starts at the initial point $x = 1$ and goes forward to $x = 3$ with $m = 200$, $h = 0.01$, the same step size as Example 12.
+
+| Steps | Equation | From $x$ | To $x$ | Number of steps |
+|---|---|---|---|---|
+| $j = 0, \ldots, 94$ | $y' = y^2/x$ | $1$ | $1.95$ | $95$ |
+| $j = 95, \ldots, 199$ | $Y' = -1/x$ | $1.95$ | $3$ | $105$ |
+
+The switch happens at $x_L = 1.95$ with $y_L = 3.010500976$. $Y_j$ changes sign between $x = 2.71$ ($y = 327.7$) and $x = 2.72$ ($y = -1582.6$), and linear interpolation puts the zero at $2.7182844$, against $e = 2.7182818$; the interpolation error, $2.6 \times 10^{-6}$, is larger than in Examples 7 to 9 because $Y = 1 - \ln x$ is curved and $h$ is larger. The $Y$ phase is still running at $x = 3$.
+
+**Verification:** $y_{200} = -10.14072405$ against $y(3) = 1/(1 - \ln 3) = -10.14072398$, an error of $-7.0 \times 10^{-8}$. The largest error at points with $\lvert y_j \rvert \leq 3$ is $5.8 \times 10^{-9}$.
+
+The left part of the interval can be covered by running backward from $x = 1$ with $h = -0.01$: $99$ steps reach $x = 0.01$, all with the $y$ equation since $\lvert y_j \rvert \leq 1$, and give $0.1783555$ against $y(0.01) = 0.1784067$. The error is far larger near $x = 0$, where the coefficient $1/x$ of the equation is unbounded: its size is $7.8 \times 10^{-11}$ at $x = 0.5$, $2.0 \times 10^{-8}$ at $x = 0.1$ and $5.1 \times 10^{-5}$ at $x = 0.01$.
+
+### Example 11 — $y' = x + y^2$, $y(0) = 1$, on $[0, 3.5]$
+
+**Step 1** (companion equation): $-Y^2\bigl(x + 1/Y^2\bigr)$ simplifies to
+
+$$
+g(x, Y) = -1 - xY^2.
+$$
+
+**Step 2** (exact solution): this Riccati equation is linearised by $y = -u'/u$, which turns $y' = x + y^2$ into $u'' + xu = 0$ with $u(0) = 1$, $u'(0) = -1$. So
+
+$$
+y = -\frac{u'(x)}{u(x)}, \qquad u(x) = a\,\mathrm{Ai}(-x) + b\,\mathrm{Bi}(-x), \quad a = \pi\bigl(\mathrm{Bi}'(0) - \mathrm{Bi}(0)\bigr), \quad b = \pi\bigl(\mathrm{Ai}(0) - \mathrm{Ai}'(0)\bigr),
+$$
+
+with $a = -0.523510$ and $b = 1.928459$. Mathews' DSolve output writes the same solution with Bessel functions of orders $\pm\tfrac13$ and $\pm\tfrac23$ of $\tfrac23 x^{3/2}$; the two forms agree to $15$ digits at $x = 0.0001$, $0.5$, $2$ and $3.5$. The poles of $y$ are the zeros of $u$, which are simple, so every pole is simple. In $[0, 3.5]$ there are two:
+
+$$
+c_1 = 0.930564508526, \qquad c_2 = 3.123493003957.
+$$
+
+They were found from the Airy form, and again (to all $15$ digits) from a high-precision Taylor-series solution of $u'' + xu = 0$ and from the zeros of the denominator of Mathews' formula.
+
+**Step 3** (run): $a = 0$, $b = 3.5$, $\alpha = 1$, $m = 400$, $h = 0.00875$; plot window $[0, 3.5] \times [-15, 15]$.
+
+| Steps | Equation | From $x$ | To $x$ | Number of steps |
+|---|---|---|---|---|
+| $j = 0, \ldots, 69$ | $y' = x + y^2$ | $0$ | $0.6125$ | $70$ |
+| $j = 70, \ldots, 142$ | $Y' = -1 - xY^2$ | $0.6125$ | $1.25125$ | $73$ |
+| $j = 143, \ldots, 322$ | $y' = x + y^2$ | $1.25125$ | $2.82625$ | $180$ |
+| $j = 323, \ldots, 391$ | $Y' = -1 - xY^2$ | $2.82625$ | $3.43$ | $69$ |
+| $j = 392, \ldots, 399$ | $y' = x + y^2$ | $3.43$ | $3.5$ | $8$ |
+
+| Pole | Switch to $Y$ at | $Y_j$ changes sign on | Interpolated zero of $Y$ | Exact pole |
+|---|---|---|---|---|
+| first | $x = 0.6125$, $y = 3.070261105$ | $[0.9275, 0.93625]$ | $0.9305644959$ | $0.9305645085$ |
+| second | $x = 2.82625$, $y = 3.071693526$ | $[3.115, 3.12375]$ | $3.1234930240$ | $3.1234930040$ |
+
+The $Y$ phases end at $x = 1.25125$ ($y = -2.992188995$) and $x = 3.43$ ($y = -2.912711856$).
+
+**Verification:** $y_{400} = -2.21453762533$ against $y(3.5) = -2.21453761415$, an error of $-1.1 \times 10^{-8}$. The largest error at points with $\lvert y_j \rvert \leq 3$ is $1.7 \times 10^{-8}$, and the largest error in $Y_j$ at points with $\lvert y_j \rvert > 3$ is $1.9 \times 10^{-9}$.
+
+### Example 12 — $y' = x^2 + y^2$, $y(0) = 1$, on $[0, 3]$
+
+**Step 1** (companion equation): $-Y^2\bigl(x^2 + 1/Y^2\bigr)$ simplifies to
+
+$$
+g(x, Y) = -1 - x^2 Y^2.
+$$
+
+**Step 2** (exact solution): $y = -u'/u$ with $u'' + x^2 u = 0$, $u(0) = 1$, $u'(0) = -1$. Mathews' DSolve output writes $y$ with Bessel functions of orders $\pm\tfrac14$ and $\pm\tfrac34$ of $x^2/2$; it agrees to $15$ digits with a high-precision Taylor-series solution of the linear equation at $x = 0.0001$, $0.5$, $2$ and $3$. The poles of $y$ in $[0, 3]$ are the two zeros of $u$ there,
+
+$$
+c_1 = 0.969810653931, \qquad c_2 = 2.651806921117,
+$$
+
+found from the Taylor-series solution and again, to all $15$ digits, from the denominator of Mathews' formula; the next zero, $3.645776$, lies outside the interval. Mathews plots the analytic solution on $[0, 3.3]$, which contains no further pole.
+
+**Step 3** (run): $a = 0$, $b = 3$, $\alpha = 1$, $m = 300$, $h = 0.01$; plot window $[0, 3] \times [-15, 15]$.
+
+| Steps | Equation | From $x$ | To $x$ | Number of steps |
+|---|---|---|---|---|
+| $j = 0, \ldots, 64$ | $y' = x^2 + y^2$ | $0$ | $0.65$ | $65$ |
+| $j = 65, \ldots, 128$ | $Y' = -1 - x^2Y^2$ | $0.65$ | $1.29$ | $64$ |
+| $j = 129, \ldots, 237$ | $y' = x^2 + y^2$ | $1.29$ | $2.38$ | $109$ |
+| $j = 238, \ldots, 291$ | $Y' = -1 - x^2Y^2$ | $2.38$ | $2.92$ | $54$ |
+| $j = 292, \ldots, 299$ | $y' = x^2 + y^2$ | $2.92$ | $3$ | $8$ |
+
+| Pole | Switch to $Y$ at | $Y_j$ changes sign on | Interpolated zero of $Y$ | Exact pole |
+|---|---|---|---|---|
+| first | $x = 0.65$, $y = 3.069377113$ | $[0.96, 0.97]$ | $0.9698106626$ | $0.9698106539$ |
+| second | $x = 2.38$, $y = 3.118149455$ | $[2.65, 2.66]$ | $2.6518066978$ | $2.6518069211$ |
+
+The $Y$ phases end at $x = 1.29$ ($y = -2.965094427$) and $x = 2.92$ ($y = -2.972132579$). The largest $\lvert y_j \rvert$ on the grid is $5281.4$, at $x = 0.97$, just past the first pole.
+
+**Verification:** $y_{300} = -1.81637998729$ against $y(3) = -1.81638002727$, an error of $4.0 \times 10^{-8}$. The largest error at points with $\lvert y_j \rvert \leq 3$ is $4.0 \times 10^{-8}$, and the largest error in $Y_j$ at points with $\lvert y_j \rvert > 3$ is $3.6 \times 10^{-9}$.
+
+## Further Reading
+
+- John H. Mathews, "Computed Solution Curves for Differential Equations", *The AMATYC Review*, Vol. 11, No. 1 (Part I), Fall 1989, pp. 30–33.
+- George F. Corliss, "Integrating ODE's in the Complex Plane — Pole Vaulting", *Mathematics of Computation*, Vol. 35, No. 152 (Oct. 1980), pp. 1181–1189.
+- John H. Mathews and Kurtis D. Fink, *Numerical Methods Using MATLAB*, 4th edition, Prentice-Hall, 2004.
