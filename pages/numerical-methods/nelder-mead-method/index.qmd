@@ -1,9 +1,9 @@
 ---
 title: "Nelder Mead Method"
-bibliography: ../../references.bib
+bibliography: ../../../references.bib
 ---
 
-← [Numerical Methods](./)
+← [Numerical Methods](../)
 
 Source inspiration: [@mathewsSite].
 
@@ -22,6 +22,38 @@ $$
 $$
 
 The shrink replaces $\mathbf{G}$ by $\mathbf{M}$ and $\mathbf{W}$ by $\mathbf{S} = (\mathbf{B} + \mathbf{W})/2$. Mathews works in two variables. He gives two sets of rules for choosing among these points, the decision table of his textbook and the shorter rule of his Mathematica program, and both are set out below. Every run on this page has been computed in exact rational arithmetic.
+
+## Animations
+
+Each animation below shows the **triangles of a Nelder-Mead search on a contour plot** of $f$, one step per frame. As in the pictures Mathews' graphics program draws in Example 4, every triangle so far is outlined, the current triangle is filled cyan and the vertices are red dots; grey contours of $f$ and a green × at each minimum are added. All three runs use Mathews' subroutine rule (accept the first of $\mathbf{E}$, $\mathbf{R}$, $\mathbf{C}_1$, $\mathbf{C}_2$ whose value is below $f(\mathbf{W})$, otherwise shrink), computed in exact rational arithmetic with the tie conventions given in [Logical Decisions for Each Step](#logical-decisions-for-each-step), and their triangles are those of the tables in the worked examples. In Cases 1 and 2 the right panel shows the step just taken: the triangle before the step (dashed, with its vertices labelled $\mathbf{B}$, $\mathbf{G}$, $\mathbf{W}$), the midpoint $\mathbf{M}$, the dotted line from $\mathbf{W}$ through $\mathbf{M}$, the test points in the order the subroutine evaluates them (a hollow circle for each one rejected, a star for the one accepted) and the new triangle. Its title compares each test value with $f(\mathbf{W})$, printing as many digits as it takes to tell them apart.
+
+Mathews' module links one animation, "Nelder-Mead Search", but the archived animation page shows only an "Under Construction" banner and no animation, so it is not known whether he ever made it. Case 1 turns the 16 static pictures of his Example 4 into an animation, in his window; Cases 2 and 3 are new, with no Mathews original. Not animated are the textbook rules of Table 8.5 and their run in Example 1 (Mathews' Table 8.6), steps 16 to 50 of the 50-step run of Example 1, the run with $\epsilon = 10^{-10}$ in Example 2, the `FindMinimum` comparisons of Exercise 3, and Mathews' static surface and contour plots of $f$ in Examples 1 and 4 and Exercise 3.
+
+Julia source scripts that generated these animations are linked under each case.
+
+### Case 1 — Mathews' Example 4, $f(x, y) = x^2 - 4x + y^2 - y - xy$, starting triangle $(0, 0)$, $(1.2, 0)$, $(0, 0.8)$, $15$ steps
+
+**Behavior:** Steps 1 and 2 expand to $\mathbf{E} = (1.8, 1.2)$ and reflect to $\mathbf{R} = (3, 0.4)$. At step 3 the subroutine takes $\mathbf{E} = (4.8, 2.4)$, because $f(\mathbf{E}) = -4.32 < f(\mathbf{W}) = -3.36$, and step 4 rejects $\mathbf{E} = (-2.4, -2.4)$ and $\mathbf{R} = (0, -0.8)$ and contracts to $\mathbf{C}_1 = (3.6, 1.6)$, the reflection point that step 3 passed over. The frame of step 6 shows the tie $f(\mathbf{R}) = f(\mathbf{W}) = -5.88$: $\mathbf{R} = (4.2, 2.8)$ fails the strict test, and the triangle contracts to $\mathbf{C}_1 = (2.4, 1.6)$. Mathews' floating-point run took $\mathbf{R}$ there, so from step 6 on his pictures are the mirror images through $(3, 2)$ of these frames, one step behind (see Example 4). The $15$ steps are $2$ expansions, $3$ reflections and $10$ contractions to $\mathbf{C}_1$, and steps 10 to 15 are all contractions, which close in on the minimum: after step 15, $\mathbf{B} = (2.989709, 1.979285)$ is $0.0231$ from $(3, 2)$, with $f(\mathbf{B}) = -6.999678$. The left panel is Mathews' window $[0, 5] \times [0, 3]$, widened by $0.1$ on each side so that the vertices on its edges show whole.
+
+[Julia source](nelderaa.jl)
+
+![Rebuild of Mathews' Example 4 pictures for f = x² − 4x + y² − y − xy from the triangle (0, 0), (1.2, 0), (0, 0.8): fifteen Nelder-Mead steps, two expansions, three reflections and ten contractions, outlined in blue with the current triangle in cyan, ending with best vertex (2.989709, 1.979285) near the minimum (3, 2), with a right panel showing each step's test points and the tie f(R) = f(W) = −5.88 at step 6](nelderaa.gif)
+
+### Case 2 — Rosenbrock's parabolic valley (Example 2), $f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2$, starting triangle $(-1.2, 1)$, $(-1, 1)$, $(-1.2, 1.2)$, $\epsilon = 10^{-5}$ (new)
+
+**Behavior:** The triangle starts on the left arm of the valley and follows the floor round the bend to $(1, 1)$. Its best vertex reaches $x > 0$ at step 29, and the search stops after $77$ steps, when $f(\mathbf{W}) - f(\mathbf{B}) = 7.653 \times 10^{-6} \le 10^{-5}$, at $\mathbf{B} = (0.998047, 0.996008)$ with $f(\mathbf{B}) = 4.609 \times 10^{-6}$. The steps are $23$ expansions, $16$ reflections and $38$ contractions to $\mathbf{C}_1$. The triangles are long and thin and lie along the valley: the ratio of a triangle's longest side to its height on that side is $2$ at the start, about $9.6$ for the median triangle and $103$ at the end, and at every step the longest side is within $26^\circ$ of the direction of the valley floor $y = x^2$ at the triangle's centroid. The left panel shows the window $[-1.5, 1.5] \times [-0.5, 1.5]$ with the valley floor dotted; the late triangles are too small to see there, and the right panel follows them. To keep the file small, the right panel keeps its window from one frame to the next while the triangles fit in it, so a rejected test point that falls outside the window is not drawn (its value is still in the title).
+
+[Julia source](nelderbb.jl)
+
+![Nelder-Mead on Rosenbrock's function from the triangle (−1.2, 1), (−1, 1), (−1.2, 1.2): 77 steps of long, thin triangles that follow the curved valley y = x² from the left arm round the bend to the minimum (1, 1), stopping at best vertex (0.998047, 0.996008) with f = 4.609e−6, with a right panel showing each step's test points](nelderbb.gif)
+
+### Case 3 — Three local minima (Exercise 3), $f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x$, Mathews' three starting triangles, $\epsilon = 10^{-5}$ (new)
+
+**Behavior:** The three searches of Exercise 3 run together, one step per frame. The top panel is Mathews' contour window $[-3, 3] \times [-0.5, 2]$, with the three local minima (green) and the two saddle points (black) of the table in Exercise 3, and each bottom panel zooms on one search and the local minimum it ends near. Each search stays near the minimum it starts by: every vertex of a search lies within $0.31$ of that minimum, and no vertex comes within $1$ of a saddle point. Searches (i), (ii) and (iii) stop after $17$, $22$ and $20$ steps, at the points in the table of Exercise 3, $6.9 \times 10^{-4}$, $8.9 \times 10^{-4}$ and $1.05 \times 10^{-3}$ from their minimisers; a search that has stopped stays in place. Only search (iii) finds the global minimum. The last frame shows that the stopping test, on values of $f$ alone, does not need the triangle to surround the minimiser: the final triangles of searches (i) and (iii) contain it, but that of search (ii) does not.
+
+[Julia source](neldercc.jl)
+
+![Three Nelder-Mead searches on f = 5x² + x⁴ − 9x²y + 3y² + 2y⁴ + x/4 from Mathews' starting triangles near (0, 0), (2, 1.5) and (−2, 1.5), on a contour plot with the three local minima and two saddle points, and three zoom panels: each search shrinks onto the local minimum it starts near and stops after 17, 22 and 20 steps](neldercc.gif)
 
 ## The Triangle and Its Test Points
 
