@@ -49,7 +49,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 [Julia source](fdpdecc.jl)
 
-![Finite difference solution of u_tt = 4u_xx for the plucked string with h = 0.1, k = 0.051 and r = 1.02, advanced one time row per frame from t = 0 to t = 1.02 against d'Alembert's solution, the computed string turning into a growing zigzag; a lower panel shows the sawtooth part of each row, c₉ sin 9πxᵢ, on an axis rescaled every frame, and a log-scale panel shows |c₉| alternating in sign and growing from 0.01219 to 0.7997 by a factor per step that approaches the unstable root's size, 1.2762, with the largest error in each row growing from 0.00255 to 0.7845](fdpdecc.gif)
+![Finite difference solution of u_tt = 4u_xx for the plucked string with h = 0.1, k = 0.051 and r = 1.02, advanced one time row per frame from t = 0 to t = 1.02 against d'Alembert's solution, the computed string turning into a growing zigzag; a lower panel shows the sawtooth part of each row, c₉ sin 9πxᵢ, on an axis rescaled every frame, and a log-scale panel shows |c₉|, with c₉ alternating in sign (open and filled markers), growing from 0.01219 to 0.7997 by a factor per step that approaches the unstable root's size, 1.2762, with the largest error in each row growing from 0.00255 to 0.7845](fdpdecc.gif)
 
 ## The Wave Equation
 
@@ -174,7 +174,7 @@ $$
 For $r > 1$, on any grid fine enough that $r^2 s_{n-2} > 1$, the highest modes the grid can carry grow without bound as the rows are computed.
 :::
 
-The condition has a physical reading. The exact value $u(x, t)$ depends on the initial data in $[x - ct,\ x + ct]$, while the value $u_{i,j}$ computed by (6) can depend only on initial values in $[x_i - (j-1)h,\ x_i + (j-1)h]$, because each row reaches one grid point further to each side. The numerical interval contains the true one only when $h/k \ge c$, which is $r \le 1$ (the Courant–Friedrichs–Lewy condition). Implicit methods, which are more work to implement, have no stability restriction on $r$.
+The condition has a physical reading. The exact value $u(x, t)$ depends on the initial data in $[x - ct,\ x + ct]$, while the value $u_{i,j}$ computed by (6) can depend only on initial values in $[x_i - (j-1)h,\ x_i + (j-1)h]$, because each row reaches one grid point further to each side. The numerical interval contains the true one only when $h/k \ge c$, which is $r \le 1$ (the Courant–Friedrichs–Lewy condition). Suitable implicit methods, which are more work to implement, have no stability restriction on $r$.
 
 ::: {.callout-warning appearance="simple"}
 ## On a coarse grid the threshold is slightly above 1
@@ -190,7 +190,7 @@ u(x, t) = F(x + ct) + G(x - ct)
 \tag{10}
 $$
 
-solves the wave equation (1), as direct substitution shows: $u_{tt} = c^2 F''(x + ct) + c^2 G''(x - ct) = c^2 u_{xx}$. The boundary conditions $u(0, t) = u(a, t) = 0$ hold when $F$ and $G$ are odd and have period $2a$: $F(-z) = -F(z)$, $F(z + 2a) = F(z)$, and likewise for $G$. The solution with $u(x, 0) = f(x)$ and $u_t(x, 0) = 0$ is
+solves the wave equation (1), as direct substitution shows: $u_{tt} = c^2 F''(x + ct) + c^2 G''(x - ct) = c^2 u_{xx}$. The boundary conditions $u(0, t) = u(a, t) = 0$ hold when $G(z) = -F(-z)$ and $F$ has period $2a$, since then $u(0, t) = F(ct) - F(ct) = 0$ and $u(a, t) = F(ct + a) - F(ct - a) = 0$; in particular they hold when $G = F$ with $F$ odd and of period $2a$, as in (11) below. The solution with $u(x, 0) = f(x)$ and $u_t(x, 0) = 0$ is
 
 $$
 u(x, t) = \tfrac12 \bigl(\tilde f(x + ct) + \tilde f(x - ct)\bigr),
@@ -213,14 +213,14 @@ $$
 and the values it produces throughout the grid are exact values of the solution (apart from computer rounding).
 :::
 
-**Proof.** With $ck = h$, $x_i - ct_j = (i - 1)h - (j - 1)h = (i - j)h$ and $x_i + ct_j = (i + j - 2)h$, so by (10) every exact grid value has the form $u_{i,j} = F((i - j)h) + G((i + j - 2)h)$. Substituting this into the right side of (12),
+**Proof.** With $ck = h$, $x_i - ct_j = (i - 1)h - (j - 1)h = (i - j)h$ and $x_i + ct_j = (i + j - 2)h$, so by (10) every exact grid value has the form $u_{i,j} = F((i + j - 2)h) + G((i - j)h)$. Substituting this into the right side of (12),
 
 $$
 \begin{aligned}
 u_{i+1,j} + u_{i-1,j} - u_{i,j-1}
-&= F((i + 1 - j)h) + F((i - 1 - j)h) - F((i - j + 1)h) \\
-&\quad + G((i + j - 1)h) + G((i + j - 3)h) - G((i + j - 3)h) \\
-&= F((i - (j + 1))h) + G((i + (j + 1) - 2)h) = u_{i,j+1}. \qquad \blacksquare
+&= F((i + j - 1)h) + F((i + j - 3)h) - F((i + j - 3)h) \\
+&\quad + G((i + 1 - j)h) + G((i - 1 - j)h) - G((i - j + 1)h) \\
+&= F((i + (j + 1) - 2)h) + G((i - (j + 1))h) = u_{i,j+1}. \qquad \blacksquare
 \end{aligned}
 $$
 
