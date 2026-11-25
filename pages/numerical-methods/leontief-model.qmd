@@ -42,7 +42,9 @@ $$
 ::: {.callout-tip appearance="simple"}
 ## Theorem - Closed Model Feasibility
 Nontrivial production levels in a closed model exist only if $\det(I-A)=0$.
-Any nonzero vector in $\mathcal{N}(I-A)$ gives a feasible production proportion.
+A feasible production vector is a nonzero vector in $\mathcal{N}(I-A)$ with nonnegative entries; a null vector with a negative entry, such as $-(25,34,49)^T$ in Example 1, is not feasible.
+If each column of $A$ sums to 1, then $\det(I-A)=0$ automatically.
+If, in addition, $A$ is irreducible (no proper group of industries draws all its inputs from within the group; this holds when every entry is positive, as in Examples 1 and 2), then $\mathcal{N}(I-A)$ is one-dimensional and spanned by a vector $\mathbf{v}$ with positive entries, so the feasible productions are its positive multiples $t\mathbf{v}$, $t>0$.
 :::
 
 ### Example 1 - Closed 3-Sector Economy
@@ -221,6 +223,19 @@ $$
 | 3 | $162620.000$ | $162620.000\ \checkmark$ |
 | 4 | $236593.712$ | $236593.712\ \checkmark$ |
 | 5 | $216365.295$ | $216365.295\ \checkmark$ |
+
+## Solving by Iteration
+
+Mathews also solves both models by simple iteration.
+
+**Closed model.** If each column of $A$ sums to 1, the iteration $\mathbf{x}_{k+1}=A\mathbf{x}_k$ keeps the total $x_1+\cdots+x_n$ fixed, because $\mathbf{1}^TA=\mathbf{1}^T$.
+When $1$ is a simple eigenvalue of $A$ and every other eigenvalue has modulus less than 1, $\mathbf{x}_k$ converges to the multiple of the null vector that has the starting total; this is the power method for the dominant eigenvalue $1$.
+In Example 1 the eigenvalues are $1$, $0.1$ and $-0.2$. Starting from $\mathbf{x}_0=(36,36,36)^T$, whose total is $108=25+34+49$, the error falls by a factor that approaches $0.2$ per step, and $\mathbf{x}_8\approx(25.000008,\ 33.999985,\ 49.000008)^T$.
+
+**Open model.** The iteration $\mathbf{x}_{k+1}=A\mathbf{x}_k+\mathbf{b}$ has error $\mathbf{x}_k-\mathbf{x}=A^k(\mathbf{x}_0-\mathbf{x})$, so it converges from every starting vector exactly when the spectral radius $\rho(A)<1$; a column-sum norm $\lVert A\rVert_1<1$ is enough to guarantee this.
+In Example 3 the column sums are $0.7$, $0.7$ and $0.8$, so $\lVert A\rVert_1=0.8$, and $\rho(A)\approx0.7513$.
+Starting from $\mathbf{x}_0=(365,365,365)^T$, the error falls by a factor that settles near $0.75$ per step: $\mathbf{x}_{22}\approx(234.990,\ 334.983,\ 524.972)^T$ still differs from the solution by up to $0.028$, and the iterates first round to $(235,335,525)^T$ at three decimals at step 37. Mathews calls this iteration slow.
+In Example 4, $\lVert A\rVert_1=0.9$ and $\rho(A)\approx0.8540$, so the iteration converges there too, more slowly.
 
 ## Summary
 
