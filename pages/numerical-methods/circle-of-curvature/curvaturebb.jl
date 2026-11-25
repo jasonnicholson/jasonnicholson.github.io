@@ -36,7 +36,9 @@ title_str = "Osculating circle of y = x² and the evolute traced by its center"
 
 # Unit tangent, unit normal (equation (2)), radius and center (equations (1), (3), (4)).
 # x is the exact rational k//20, so the center (a, b) is computed exactly and
-# rounded once (labels then round exact ties such as b(0.95) = 3.2075 consistently).
+# converted to Float64 once. Labels print that Float64 with %#.4g, so an exact
+# decimal tie rounds up or down by its Float64 value (b(0.95) = 3.2075 -> 3.208,
+# b(0.55) = 1.4075 -> 1.407); either way the label is a correct 4-s.f. rounding.
 function curv(x::Rational)
     s = sqrt(Float64(1 + df(x)^2))
     u = (1 / s, Float64(df(x)) / s)
