@@ -10,12 +10,15 @@ Source inspiration: [@mathewsSite].
 ## Background
 
 Given an $n\times n$ nonsingular matrix $A$, its **inverse** $A^{-1}$ is the unique
-matrix satisfying $A A^{-1} = A^{-1} A = I_n$.  The inverse is useful for solving
-multiple right-hand-side problems (once $A^{-1}$ is known, each new system
-$A\mathbf{x} = \mathbf{b}$ is answered by $\mathbf{x} = A^{-1}\mathbf{b}$ at only
-$O(n^2)$ cost) and in theoretical analysis.  For single solves, LU factorization is
-more efficient; the inverse pays off when the same matrix is reused with many
-different right-hand sides.
+matrix satisfying $A A^{-1} = A^{-1} A = I_n$.  Once $A^{-1}$ is known, each new
+system $A\mathbf{x} = \mathbf{b}$ is answered by $\mathbf{x} = A^{-1}\mathbf{b}$ at
+$O(n^2)$ cost.  A stored LU factorization of $A$ gives the same $O(n^2)$ cost per
+right-hand side (two triangular solves), takes about a third of the work to compute
+(roughly $\tfrac{2}{3}n^3$ operations against $2n^3$ for $A^{-1}$), and in floating
+point usually gives the more accurate solution.  So even with many right-hand sides,
+LU is the better way to solve systems; the inverse is mainly useful in theoretical
+analysis, or when its entries themselves are wanted (as with the Hilbert matrix
+below).
 
 ## Theorem — Computing the Inverse by Gauss–Jordan
 
@@ -77,6 +80,11 @@ $$
 \end{array}
 \right).
 $$
+
+For hand computation we take the pivots in order without row interchanges and
+postpone dividing by the pivots to the end.  The algorithm above would swap $R_2$
+and $R_3$ at step 2 (pivot $3$) and normalize each pivot row as it goes, so its
+intermediate matrices differ, but it reaches the same $A^{-1}$.
 
 **Step 1 — Eliminate column 1** (pivot $= 4$; subtract multiples of $R_1$ from
 $R_2, R_3, R_4$):
@@ -172,7 +180,7 @@ $$
 $$
 :::
 
-The first three Hilbert matrices are:
+The Hilbert matrices of orders 2, 3 and 4 are:
 
 $$
 H_2 = \begin{pmatrix}1 & \tfrac{1}{2}\\\tfrac{1}{2} & \tfrac{1}{3}\end{pmatrix},
@@ -190,10 +198,15 @@ $$
 ::: {.callout-warning appearance="simple"}
 ## Ill-Conditioning of Hilbert Matrices
 
-Hilbert matrices become extremely ill-conditioned as $n$ grows.  For $n=5$,
-$\kappa(H_5) \approx 4.77 \times 10^5$.  Numerical inversion in floating-point
-arithmetic introduces large errors — this is why the exact formulas below are
-valuable when exact computation is required.
+Hilbert matrices become extremely ill-conditioned as $n$ grows.  For $n=5$ the
+2-norm condition number is $\kappa(H_5) \approx 4.77 \times 10^5$: a small relative
+change in the data can change the inverse, or a solution, by up to about
+$5\times10^5$ times as much (Example 2 below).  Inverting $H_5$ in double precision
+(about 16 digits) still gives every entry to about 12 digits, but by $n=12$,
+$\kappa(H_{12}) \approx 1.7\times10^{16}$ and a computed inverse has at most about
+two correct digits: its relative error ranges from about 1% to 30%, depending on
+the method and on last-bit rounding of the entries.  The exact formulas below give
+$H_n^{-1}$ with no rounding at all.
 :::
 
 ## Inverse Hilbert Matrix
@@ -236,6 +249,54 @@ $$
 
 *Verification of entry $(1,2)$:* $(H_5^{-1})_{12} = (-1)^3 \cdot 2 \cdot \binom{5}{3}\binom{6}{4}\binom{1}{0}^2 = -2 \cdot 10 \cdot 15 \cdot 1 = -300$ $\checkmark$
 
+## Example 2 — The Hilbert Matrix Rounded to Six Decimals
+
+Round each entry of $H_5$ to six decimal places (Mathews calls this the chopped
+Hilbert matrix) and find the inverse of
+
+$$
+A =
+\begin{pmatrix}
+1        & 0.5      & 0.333333 & 0.25     & 0.2 \\
+0.5      & 0.333333 & 0.25     & 0.2      & 0.166667 \\
+0.333333 & 0.25     & 0.2      & 0.166667 & 0.142857 \\
+0.25     & 0.2      & 0.166667 & 0.142857 & 0.125 \\
+0.2      & 0.166667 & 0.142857 & 0.125    & 0.111111
+\end{pmatrix}.
+$$
+
+### Solution
+
+Gauss–Jordan elimination on $[A \mid I_5]$, carried out in exact rational arithmetic
+so that no further rounding enters, gives (to two decimals)
+
+$$
+A^{-1} \approx
+\begin{pmatrix}
+   26.93 &    -336.02 &    1205.11 &   -1634.03 &     744.41 \\
+ -336.02 &    5471.18 &  -21788.96 &   31237.24 &  -14729.52 \\
+ 1205.11 &  -21788.96 &   91810.65 & -136343.92 &   65859.12 \\
+-1634.03 &   31237.24 & -136343.92 &  207458.85 & -102006.85 \\
+  744.41 &  -14729.52 &   65859.12 & -102006.85 &   50845.21
+\end{pmatrix}.
+$$
+
+No entry of $A$ differs from the corresponding entry of $H_5$ by more than
+$3.4\times10^{-7}$, yet $A^{-1}$ is far from the exact $H_5^{-1}$ above: entry
+$(4,4)$ is $207458.85$ instead of $179200$, an error of $28258.85$ (16%), and entry
+$(1,1)$ is $26.93$ instead of $25$.  Measured in the 2-norm, a relative change of
+$3.9\times10^{-7}$ in the matrix has become a relative change of $0.16$ in its
+inverse, a magnification of about $4\times10^5$, close to
+$\kappa(H_5) \approx 4.77\times10^5$.
+
+### Verification
+
+In exact arithmetic $A A^{-1} = I_5$ (for example, row 1 of $A$ times the exact
+$A^{-1}$ is $(1, 0, 0, 0, 0)$), so the matrix above is the true inverse of the
+rounded matrix, to the two decimals shown.  The error is caused by rounding the data, not by the elimination:
+a double-precision inversion of $A$ agrees with its exact inverse to a relative
+error of about $2\times10^{-12}$.
+
 ## Application: Continuous Least-Squares Approximation
 
 ### Theory
@@ -269,11 +330,12 @@ When the basis is $\{1, x, x^2, \ldots, x^{n-1}\}$ with inner product
 $\langle f,g\rangle = \int_0^1 f(x)g(x)\,dx$, the Gram matrix equals $H_n$.
 :::
 
-The coefficient vector is $\mathbf{c} = H_n^{-1}\,\mathbf{y}$.  Because $H_n$ is
-severely ill-conditioned, using the *exact* formula (7)–(8) for $H_n^{-1}$ is far
-preferable to numerical inversion.
+The coefficient vector is $\mathbf{c} = H_n^{-1}\,\mathbf{y}$.  With the exact
+formula (7)–(8) for $H_n^{-1}$ the inverse carries no rounding error and each $c_i$
+comes out in closed form.  Because $H_n$ is ill-conditioned, $\mathbf{c}$ is
+sensitive to errors in $\mathbf{y}$, so the $y_i$ must be known to many digits.
 
-### Example 2 — Degree-4 Polynomial Approximation of $\cos x$ on $[0,1]$
+### Example 3 — Degree-4 Polynomial Approximation of $\cos x$ on $[0,1]$
 
 Find the continuous least-squares polynomial of degree 4 that approximates
 $f(x) = \cos x$ over $[0,1]$.
@@ -312,31 +374,61 @@ c_1 = 25\sin(1) - 300\bigl[\sin(1)+\cos(1)-1\bigr] + 1050\bigl[2\cos(1)-\sin(1)\
 $$
 
 After collecting terms the coefficient simplifies to
-$c_1 = 13865\sin(1) - 6600\cos(1) - 8100 \approx 1.000$ $\checkmark$
-(which correctly reproduces $\cos(0) = 1$).
+$c_1 = 13865\sin(1) - 6600\cos(1) - 8100 \approx 0.999986$, close to but not equal
+to $\cos 0 = 1$: a least-squares fit need not pass through $f(0)$.
 
-The remaining coefficients follow by the same row products.  Due to the heavy cancellation caused by the ill-conditioning of $H_5$, exact integer arithmetic with $H_5^{-1}$ (rather than floating-point inversion of $H_5$) is essential.  The resulting degree-4 least-squares polynomial is approximately
+The same row products give all five coefficients:
 
 $$
-p(x) \approx 1.000 - 0.502\,x^2 + 0.042\,x^4,
+\begin{aligned}
+c_1 &= 13865\sin(1) - 6600\cos(1) - 8100 \approx 0.999986, \\[4pt]
+c_2 &= 156480 + 138360\cos(1) - 274800\sin(1) \approx 0.000415, \\[4pt]
+c_3 &= 1227870\sin(1) - 641340\cos(1) - 686700 \approx -0.502729, \\[4pt]
+c_4 &= 1048320 + 1018080\cos(1) - 1899520\sin(1) \approx 0.006496, \\[4pt]
+c_5 &= 945630\sin(1) - 516600\cos(1) - 516600 \approx 0.036152.
+\end{aligned}
 $$
 
-closely matching the leading terms of the Taylor series $\cos x = 1 - \tfrac{x^2}{2} + \tfrac{x^4}{24} - \cdots$
+The terms of each row product are large (up to about $3\times10^4$ for $c_4$) and
+cancel to leave small coefficients, so the $y_i$ must be accurate: with the
+five-decimal values of $y_i$ shown above, the same exact $H_5^{-1}$ gives
+$\mathbf{c} \approx (0.99665,\ 0.0612,\ -0.7581,\ 0.3836,\ -0.1449)$, in which
+only $c_1$ is right even to two decimals.  With the $y_i$ in full double precision,
+both the exact $H_5^{-1}$ and a floating-point solve of $H_5\mathbf{c} = \mathbf{y}$
+give $\mathbf{c}$ to a norm-wise relative error of a few parts in $10^{12}$.  The resulting
+degree-4 least-squares polynomial is
 
-**Verification.**  Check that $c_1 = p(0) = \cos(0)$ holds exactly, and compare at $x = 1$:
+$$
+p(x) \approx 0.999986 + 0.000415\,x - 0.502729\,x^2 + 0.006496\,x^3 + 0.036152\,x^4,
+$$
 
-| $x$ | $\cos x$ | $p(x)$ |
-|-----|----------|--------|
-| $0$ | $1.0000$ | $1.0000$ $\checkmark$ |
-| $1$ | $0.5403$ | $0.540$ (error $< 10^{-3}$) $\checkmark$ |
+as Mathews also finds.  Its coefficients are close to, but not the same as, the
+Taylor coefficients $1, 0, -\tfrac{1}{2}, 0, \tfrac{1}{24}$ of
+$\cos x = 1 - \tfrac{x^2}{2} + \tfrac{x^4}{24} - \cdots$, because least squares
+spreads the error over all of $[0,1]$ instead of making it small near $x=0$.
+
+**Verification.**  Substituting the exact $\mathbf{c}$ back gives
+$H_5\mathbf{c} - \mathbf{y} = \mathbf{0}$ identically.  Compare $p$ with $\cos x$ at
+$x = 0$ and $x = 1$:
+
+| $x$ | $\cos x$ | $p(x)$ | error |
+|-----|----------|--------|-------|
+| $0$ | $1.00000$ | $0.99999$ | $1.4\times10^{-5}$ |
+| $1$ | $0.54030$ | $0.54032$ | $1.7\times10^{-5}$ |
+
+The largest error on $[0,1]$ is $1.7\times10^{-5}$ (at $x=1$), against
+$1.4\times10^{-3}$ for the Taylor polynomial $1 - \tfrac{x^2}{2} + \tfrac{x^4}{24}$.
 
 ::: {.callout-important appearance="simple"}
 ## Key observation
 
-The Gram matrix for the monomial basis on $[0,1]$ *is* the Hilbert matrix.
-Solving the normal equations numerically (even in double precision) leads to
-significant errors because $\kappa(H_5) \approx 5 \times 10^5$.  Using the
-*exact* closed-form $H_n^{-1}$ provides exact rational coefficients and completely
-avoids this numerical instability.
+The Gram matrix for the monomial basis on $[0,1]$ *is* the Hilbert matrix, so the
+normal equations inherit its ill-conditioning: with
+$\kappa(H_5) \approx 4.77 \times 10^5$, errors in $\mathbf{y}$ can be magnified by
+up to that factor in $\mathbf{c}$.  For $n = 5$ double precision still has digits
+to spare, but the margin shrinks quickly as $n$ grows.  The exact $H_n^{-1}$ gives
+the coefficients in exact closed form (integer combinations of $1$, $\sin 1$ and
+$\cos 1$ here), so they can be evaluated to any precision.  It removes the error of
+inverting $H_n$, not the sensitivity of $\mathbf{c}$ to errors in $\mathbf{y}$.
 :::
 
