@@ -150,7 +150,7 @@ Establish four things for each script.
 *The numbers are right.* The values the script computes (iterates, nodes, weights, coefficients, approximations, error estimates) are what the method produces for the stated problem. Reading the code and finding it reasonable does not establish this. Instrument a scratch copy so it prints the values it computes, write your own independent computation of what the method should produce, and compare the two. Wherever you can, prefer a check whose outcome does not depend on your remembering a formula correctly, since your memory of a coefficient table is as fallible as the author's was. Properties make good checks of this kind:
 
 - A quadrature rule integrates polynomials exactly up to its degree of precision and not beyond it.
-- A method of order $p$ shrinks its error by about $2^p$ when the step is halved.
+- A method of order $p$ shrinks its error by a factor of about 2ᵖ (2 to the power $p$) when the step is halved.
 - An interpolant reproduces its data at the nodes.
 - A least-squares fit leaves a residual orthogonal to its basis functions.
 - A claimed root gives a residual near zero, and the iterates approach it at the method's known rate.
