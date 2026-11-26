@@ -30,3 +30,47 @@ None of concern. The builders reproduced every value Mathews' legacy GIFs print 
 - Calibration: one reviewer was given a scratch copy of Heun's page with two planted errors in the new Description (a table entry wrong in the third significant digit; a general order claim attached to Case 2 that its computed slopes contradict). It found both, with independent numbers. That report was discarded and the real page reviewed afresh from its committed folder.
 - Reviewers returned their reports as text; the director wrote these files.
 - Mechanical checks (control characters, leftovers, localhost links, code blocks, links and case anchors, unreferenced files, index links, Description word counts) found nothing.
+
+## Batch close-out (director)
+
+### Pages built
+
+- **Heun's Method** (new, `heuns-method/`): Description; Case 1 rebuilds Mathews' `Heunaa.gif` (21 runs, m = 12 to 150, every printed y(5) reproduced to 7 decimals); Case 2 new, log-log errors at t = 5 and largest grid error for Euler, midpoint and Heun (m = 125 to 16000; slopes 1.00, 2.00, 2.00). One-line links added on the Euler and Predictor-Corrector pages.
+- **Lin-Bairstow Method** (new, `lin-bairstow-method/`): Description following Mathews' module (Example 4 iterate table); Case 1 Example 4 in four panels, zoomed per frame, in 256-bit arithmetic; Case 2 deflation of the module's quintic. No Mathews animation exists (checked by grep and find of `a2001`).
+- **Big "O" Truncation Error** (new, `big-o-truncation-error/`, opening the new Fundamentals section): Description to the adapted standard; one new case, Taylor polynomials P₁–P₃ of e^h with |E|/hᵖ bounded, in 256-bit arithmetic. The writer judged the animation worth more than a table, so the page is animated, not flat.
+- **Numerical Differentiation** (extend): Description extended with D₂^±, D₃^±, D₃^(2) and their error terms, a 5-row table at x = 1 and the roundoff limit; Cases 3–6 rebuild `ForwardDfaa`, `ForwardD1faa`, `BackwardDfaa`, `BackwardD1faa` (all 116 printed values reproduced).
+
+### Findings by round
+
+| Round | Error | Misleading | Minor |
+|---|---|---|---|
+| 1 (this folder) | 0 | 0 | 5 |
+
+All five Minor findings were reproduced, fixed by a fixer under the Accuracy standard with a ledger, and confirmed resolved (no new problem) by a different checker who saw only the findings and the diff:
+- Heun F1: "$3 \le m \le 68$ … (and at $m = 2$ the value $y_1$ is)" in the Description and the script comment. The fixer departed from the review's wording, which would have been false at m = 1; the GIF is byte-identical. Heun F2: "([Case 2](#case-2), right panel)" added.
+- Lin-Bairstow F1: the marker key is limited to the full-scale panels, and the zoom panels' open circle is described as the previous iterate.
+- Big O F1: the remainder is credited to Taylor's theorem. Big O F2: the reading under which Mathews' condition fails is stated, with the counterexample.
+
+Nothing is open.
+
+### Decisions taken for Jason to revisit
+
+- **No round 2.** Round 1 had no Error or Misleading finding, which is the batch's stopping condition. The five Minor fixes are text-only (one script comment, GIF byte-identical), and each was confirmed by an independent checker, so no second full review round was run.
+- **Euler page link.** The plan asks for links to Heun's Method "where [the Euler and Predictor-Corrector pages] mention Heun's method", but the Euler page did not mention it. The smallest option was taken: one sentence at the end of the Euler Description ("Heun's Method, which corrects an Euler predictor with the trapezoidal rule, is also of order 2"). Batch 22 will extend that Description anyway.
+- **Plan correction (Numerical Differentiation).** The plan said the four legacy GIFs show h "falling from 0.6". The frames start at h = 1 (O(h) GIFs) and h = 0.5 (O(h²) GIFs). Mathews' last frame prints "h = 0.001", but in the O(h) GIFs its value is that of h = 0.0005, so all four cases end at 0.0005; the page says so. The cases use one frame per distinct h (34/24/34/24 frames against Mathews' 38/28), Case 2's y-window (−0.1, 0.55) instead of his (0, 0.45) so the legend fits, and add the true tangent.
+- **Heun Case 2 shows two panels.** The plan asked for the error at t = 5; on this problem late damping distorts it (slope 3.56 over the first halving), so the right panel adds the largest grid error, where the orders are clean over the whole range. The page says exactly what each panel plots.
+- **Big O deviates from Mathews twice, with reasons on the page.** It states the quotient rule with $q(0) \ne 0$ in place of Mathews' condition, and adds $c\,O(h^p) = O(h^p)$, which is not in his list.
+
+### Notes
+
+- Archive gaps found: Example 13 (and most of Examples 11 and 16) of the Numerical Differentiation module lost their solution images; Example 13's GIF survives and confirms D₃⁻. The Heun module lost every equation image, but `heunsmethod/Heun'sMethodProof.pdf` (Mathews and Fink §9.3) is readable and was used.
+- Commit `602f519` ("feat: Adding a contact page") on this branch is Jason's own, made during the run; it was left as is and will merge with the branch.
+
+### Commits
+
+- `e72d75e` index task: Fundamentals section, Big O, Lin-Bairstow and Heun skeletons
+- `884f417`, `1c02cee`, `43901aa`, `68cddbe` overviews (Heun, Lin-Bairstow, Big O, Numerical Differentiation)
+- `c6bd4e5`, `7b74c05`, `09a1109`, `aecca91` animations (Heun, Big O, Lin-Bairstow, Numerical Differentiation)
+- `0d8b90a` batch 15 review
+- `41ddc00`, `22da782`, `8ab63d4` review fixes (Lin-Bairstow, Big O, Heun)
+- the close-out commit that adds this section and the plan status

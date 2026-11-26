@@ -134,4 +134,9 @@ After batch 22:
 - Step 2 (pilot): run 2026-11-25 on branch `light-pass-pilot` (branched from `light-pass-skills`), review in `reviews/light-pass-pilot`, merged into `main`. **Format approved by Jason 2026-11-25**, as built: 150–400 words with inline math counted as one word, the optional short table, and explicit `{#case-N}` heading ids for case links (all now written into the standard).
   - Newton-Raphson Method (write): Description written (386 words, six points, 6-row table of Case 1's iterates, case anchors `{#case-1}`…`{#case-6}`); review round 1 clean (0 Error, 0 Misleading, 0 Minor). Done (counts as done in batch 16).
   - Simpson's Rule (extend): Description extended (334 words, 5-row table of Case 1's errors, anchor `{#case-1}`); review round 1 clean (0/0/0). Done (counts as done in batch 20).
-- Batches 15–22: not started.
+- Batch 15 (new topics and index): run 2026-11-25 on branch `batch-15`, review in `reviews/batch-15`. Index: Fundamentals section with Big "O", Lin-Bairstow after Horner's Method, Heun's Method after Euler's Method. Review round 1: 0 Error, 0 Misleading, 5 Minor; all five fixed and independently checked.
+  - Heun's Method (new): Description (379 words); Case 1 rebuilds `Heunaa.gif` (21 runs, every printed y(5) reproduced), Case 2 new (log-log errors of Euler, midpoint and Heun). One-line links from the Euler and Predictor-Corrector pages. Done.
+  - Lin-Bairstow Method (new): Description (374 words, Example 4 table); two new cases (Example 4 convergence, quintic deflation), no Mathews original. Done.
+  - Big "O" Truncation Error (new): Description (390 words, adapted standard); one new case (Taylor polynomials of e^h, |E|/hᵖ bounded); the page is animated, not flat. Done.
+  - Numerical Differentiation (extend, plus 4 new animations): Description extended (392 words); Cases 3–6 rebuild the four forward/backward legacy GIFs. Their h starts at 1 (O(h)) and 0.5 (O(h²)), not 0.6 as this plan said, and Mathews' last frame is h = 0.0005. Done.
+- Batches 16–22: not started.
