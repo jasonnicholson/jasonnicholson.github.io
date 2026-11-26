@@ -14,7 +14,7 @@ gr()
 
 # --- ODE and parameters ---
 f(t, y)  = 1.0 - t * cbrt(y)              # cbrt is the real cube root (Mathews: Sign[y] Abs[y]^(1/3));
-                                          # for m <= 68 some predictions p_{k+1} are negative
+                                          # for 3 <= m <= 68 some predictions p_{k+1} are negative (at m = 2, y_1 is)
 fy(t, y) = -t / (3 * cbrt(y)^2)          # ∂f/∂y
 t0, y0 = 0.0, 1.0
 T  = 5.0
