@@ -6,3 +6,50 @@ bibliography: ../../references.bib
 ← [Numerical Methods](./)
 
 Source inspiration: [@mathewsSite].
+
+## Description
+
+Most numerical methods have a step size $h$ or an index $n$, and their error vanishes as $h \to 0$ or $n \to \infty$. Big "O" notation says how fast, by comparing the error with a simple function such as $h^p$ or $1/n$.
+
+::: {.callout-important appearance="simple"}
+## Big "O" (Mathews' definitions)
+A function satisfies $f(h) = O(g(h))$ if there are constants $C > 0$ and $\delta > 0$ such that
+$$
+|f(h)| \le C\,|g(h)| \quad \text{whenever } 0 \le |h| \le \delta .
+$$
+A sequence satisfies $\{x_n\} = O(\{y_n\})$ if there are $C > 0$ and $N$ such that
+$$
+|x_n| \le C\,|y_n| \quad \text{whenever } n \ge N .
+$$
+If $|f(h) - p(h)| \le M\,|h|^n$ for a constant $M$ and all sufficiently small $h$, then $p(h)$ approximates $f(h)$ with order of approximation $O(h^n)$:
+$$
+f(h) = p(h) + O(h^n).
+$$
+:::
+
+These describe the limit only: the inequality need hold only near $h = 0$ or for $n \ge N$, and the constants are not part of the notation. Mathews' first two examples find them: for $|h| \le 1$, $|h^4 + 2h^5| \le |h|^4 + 2|h|^5 \le 3|h|^3$, so $h^4 + 2h^5 = O(h^3)$ with $C = 3$, $\delta = 1$; and $(n^2-1)/n^3 \le 1/n$ for every $n \ge 1$, so $\{(n^2-1)/n^3\} = O(\{1/n\})$ with $C = 1$, $N = 1$.
+
+As $h \to 0$, orders combine by Mathews' rules:
+$$
+O(h^p) + O(h^p) = O(h^p), \qquad O(h^p) + O(h^q) = O(h^{\min\{p,q\}}), \qquad O(h^p)\,O(h^q) = O(h^{p+q}),
+$$
+and $c\,O(h^p) = O(h^p)$ for a constant $c$. So if $p$ and $q$ are polynomials with $f(h) = p(h) + O(h^n)$ and $g(h) = q(h) + O(h^m)$, then $p + q$ and $pq$ approximate $f + g$ and $fg$ with order $O(h^{\min\{m,n\}})$, and $p/q$ approximates $f/g$ with the same order provided $q(0) \ne 0$. (Mathews' condition, $g(h) \ne 0$ and $q(h) \ne 0$, is not enough.) His Example 4 combines two Maclaurin expansions:
+$$
+e^h = 1 + h + \tfrac{h^2}{2} + \tfrac{h^3}{6} + O(h^4), \qquad \cos h = 1 - \tfrac{h^2}{2} + \tfrac{h^4}{24} + O(h^6),
+$$
+$$
+e^h + \cos h = 2 + h + \tfrac{h^3}{6} + O(h^4), \qquad e^h \cos h = 1 + h - \tfrac{h^3}{3} + O(h^4), \qquad \frac{e^h}{\cos h} = 1 + h + h^2 + \tfrac{2h^3}{3} + O(h^4).
+$$
+
+Big "O" is only an upper bound. In general, if the error is $E(h) = K h^p + O(h^{p+1})$ with $K \ne 0$, then $|E(h)|/h^p$ tends to $|K|$ and halving $h$ divides the error by about $2^p$ once $h$ is small. For the sum above, $E(h) = e^h + \cos h - (2 + h + h^3/6)$ has leading term $h^4/12$:
+
+| $h$ | $E(h)$ | $E(h)/h^4$ | $E(2h)/E(h)$ |
+|---:|---:|---:|---:|
+| 0.1 | $8.417\times10^{-6}$ | 0.08417 | |
+| 0.05 | $5.234\times10^{-7}$ | 0.08375 | 16.08 |
+| 0.025 | $3.263\times10^{-8}$ | 0.08354 | 16.04 |
+| 0.0125 | $2.037\times10^{-9}$ | 0.08344 | 16.02 |
+
+Big "O" says nothing about a fixed $h$, where the constants and the size of $h$ decide which error is smaller. Mathews' Example 3 takes the Taylor polynomials $P_3(h) = h - h^3/6$ and $P_5(h) = P_3(h) + h^5/120$ of $\sin h$, with errors $O(h^5)$ and $O(h^7)$; at $h = 7$ the higher-order $P_5$ has error 89.2, against 50.8 for $P_3$. Roundoff also stops the trend: the $O(h^2)$ central difference $(e^h - e^{-h})/(2h)$ for the derivative of $e^x$ at 0 has error $1.7\times10^{-9}$ at $h = 10^{-4}$ in double precision, but about $6\times10^{-9}$ at $h = 10^{-8}$.
+
+Other pages state errors this way: a degree-$n$ Taylor polynomial on [Maclaurin and Taylor Series](../maclaurin-and-taylor-series/) leaves a remainder $O(h^{n+1})$ when $f \in C^{n+1}$, the [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/) and [Simpson's Rule](../simpsons-rule-for-numerical-integration/) have errors $O(h^2)$ and $O(h^4)$ for smooth integrands, [Euler's Method](../eulers-method-for-odes/) has global error $O(h)$, and [Numerical Differentiation](../numerical-differentiation/) uses the central difference above.
