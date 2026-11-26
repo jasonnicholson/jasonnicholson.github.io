@@ -1,0 +1,83 @@
+---
+title: 'Big "O" Truncation Error'
+bibliography: ../../../references.bib
+---
+
+← [Numerical Methods](../)
+
+Source inspiration: [@mathewsSite].
+
+## Description
+
+Most numerical methods have a step size $h$ or an index $n$, and their error vanishes as $h \to 0$ or $n \to \infty$. Big "O" notation says how fast, by comparing the error with a simple function such as $h^p$ or $1/n$.
+
+::: {.callout-important appearance="simple"}
+## Big "O" (Mathews' definitions)
+A function satisfies $f(h) = O(g(h))$ if there are constants $C > 0$ and $\delta > 0$ such that
+$$
+|f(h)| \le C\,|g(h)| \quad \text{whenever } 0 \le |h| \le \delta .
+$$
+A sequence satisfies $\{x_n\} = O(\{y_n\})$ if there are $C > 0$ and $N$ such that
+$$
+|x_n| \le C\,|y_n| \quad \text{whenever } n \ge N .
+$$
+If $|f(h) - p(h)| \le M\,|h|^n$ for a constant $M$ and all sufficiently small $h$, then $p(h)$ approximates $f(h)$ with order of approximation $O(h^n)$:
+$$
+f(h) = p(h) + O(h^n).
+$$
+:::
+
+These describe the limit only: the inequality need hold only near $h = 0$ or for $n \ge N$, and the constants are not part of the notation. Mathews' first two examples find them: for $|h| \le 1$, $|h^4 + 2h^5| \le |h|^4 + 2|h|^5 \le 3|h|^3$, so $h^4 + 2h^5 = O(h^3)$ with $C = 3$, $\delta = 1$; and $(n^2-1)/n^3 \le 1/n$ for every $n \ge 1$, so $\{(n^2-1)/n^3\} = O(\{1/n\})$ with $C = 1$, $N = 1$.
+
+As $h \to 0$, orders combine by Mathews' rules:
+$$
+O(h^p) + O(h^p) = O(h^p), \qquad O(h^p) + O(h^q) = O(h^{\min\{p,q\}}), \qquad O(h^p)\,O(h^q) = O(h^{p+q}),
+$$
+and $c\,O(h^p) = O(h^p)$ for a constant $c$. So if $p$ and $q$ are polynomials with $f(h) = p(h) + O(h^n)$ and $g(h) = q(h) + O(h^m)$, then $p + q$ and $pq$ approximate $f + g$ and $fg$ with order $O(h^{\min\{m,n\}})$, and $p/q$ approximates $f/g$ with the same order provided $q(0) \ne 0$. (Mathews' condition, $g(h) \ne 0$ and $q(h) \ne 0$, is not enough.) His Example 4 combines two Maclaurin expansions:
+$$
+e^h = 1 + h + \tfrac{h^2}{2} + \tfrac{h^3}{6} + O(h^4), \qquad \cos h = 1 - \tfrac{h^2}{2} + \tfrac{h^4}{24} + O(h^6),
+$$
+$$
+e^h + \cos h = 2 + h + \tfrac{h^3}{6} + O(h^4), \qquad e^h \cos h = 1 + h - \tfrac{h^3}{3} + O(h^4), \qquad \frac{e^h}{\cos h} = 1 + h + h^2 + \tfrac{2h^3}{3} + O(h^4).
+$$
+
+Big "O" is only an upper bound. In general, if the error is $E(h) = K h^p + O(h^{p+1})$ with $K \ne 0$, then $|E(h)|/h^p$ tends to $|K|$ and halving $h$ divides the error by about $2^p$ once $h$ is small ([Case 1](#case-1) shows both for the Taylor polynomials of $e^h$). For the sum above, $E(h) = e^h + \cos h - (2 + h + h^3/6)$ has leading term $h^4/12$:
+
+| $h$ | $E(h)$ | $E(h)/h^4$ | $E(2h)/E(h)$ |
+|---:|---:|---:|---:|
+| 0.1 | $8.417\times10^{-6}$ | 0.08417 | |
+| 0.05 | $5.234\times10^{-7}$ | 0.08375 | 16.08 |
+| 0.025 | $3.263\times10^{-8}$ | 0.08354 | 16.04 |
+| 0.0125 | $2.037\times10^{-9}$ | 0.08344 | 16.02 |
+
+Big "O" says nothing about a fixed $h$, where the constants and the size of $h$ decide which error is smaller. Mathews' Example 3 takes the Taylor polynomials $P_3(h) = h - h^3/6$ and $P_5(h) = P_3(h) + h^5/120$ of $\sin h$, with errors $O(h^5)$ and $O(h^7)$; at $h = 7$ the higher-order $P_5$ has error 89.2, against 50.8 for $P_3$. Roundoff also stops the trend: the $O(h^2)$ central difference $(e^h - e^{-h})/(2h)$ for the derivative of $e^x$ at 0 has error $1.7\times10^{-9}$ at $h = 10^{-4}$ in double precision, but about $6\times10^{-9}$ at $h = 10^{-8}$.
+
+Other pages state errors this way: a degree-$n$ Taylor polynomial on [Maclaurin and Taylor Series](../maclaurin-and-taylor-series/) leaves a remainder $O(h^{n+1})$ when $f \in C^{n+1}$, the [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/) and [Simpson's Rule](../simpsons-rule-for-numerical-integration/) have errors $O(h^2)$ and $O(h^4)$ for smooth integrands, [Euler's Method](../eulers-method-for-odes/) has global error $O(h)$, and [Numerical Differentiation](../numerical-differentiation/) uses the central difference above.
+
+## Animations
+
+The animation is new, with no Mathews original. The module's Animations link goes to his Taylor and Maclaurin polynomial animations, the subject of the [Maclaurin and Taylor Series](../maclaurin-and-taylor-series/) page; the 30 whose GIFs survive draw polynomials of increasing degree over a function with a tolerance band, and none plots an error against $h$.
+The animation plots the errors $E_n(h) = e^h - P_n(h)$ of the Taylor polynomials of $e^h$ about 0,
+$$
+P_1(h) = 1 + h, \qquad P_2(h) = 1 + h + \tfrac{h^2}{2}, \qquad P_3(h) = 1 + h + \tfrac{h^2}{2} + \tfrac{h^3}{6},
+$$
+whose orders of approximation are $O(h^2)$, $O(h^3)$ and $O(h^4)$; $P_3$ is the expansion of $e^h$ in Example 4.
+From one frame to the next $h$ halves, from $h = 1$ down to $h = 2^{-10} = 1/1024$, and every curve gains a point; the newest point is the large marker, so it moves left, and the last frame is held.
+The left panel plots $|E_n(h)|$ on log-log axes, where an error close to $K h^p$ is a line of slope $p$; the dashed lines are $h^2$, $h^3$ and $h^4$.
+The right panel plots the ratio $|E_n(h)|/h^p$, with $p = n + 1$, against the dotted limits $1/2$, $1/6$ and $1/24$.
+The labels give, for the newest $h$, each error, the factor $E(2h)/E(h)$ by which the last halving divided it, and the ratio.
+The errors are computed in 256-bit `BigFloat` arithmetic (about 77 significant digits): in double precision, $e^h - P_3(h)$ loses digits to cancellation, and at $h = 2^{-10}$ it would come out as $3.775\times10^{-14}$ instead of $3.790\times10^{-14}$.
+
+Not animated: Examples 1 and 2 (finding the constants for $h^4 + 2h^5 = O(h^3)$ and $\{(n^2-1)/n^3\} = O(\{1/n\})$), Example 3 (the Taylor polynomials $P_3$, $P_5$, $P_7$ of $\sin h$, whose errors Mathews plots on $[-2, 2]$), the sums, products and quotients of $e^h$ and $\cos h$ in Examples 4 and 5 (expanded to orders $O(h^4)$ and $O(h^6)$, then $O(h^5)$ and $O(h^7)$), and Example 6 ($\{\cos n / n^2\} = O(\{1/n^2\})$, which Mathews plots as points).
+
+The Julia script that generated the animation is linked under the case.
+
+### Case 1 — Taylor polynomials $P_1$, $P_2$, $P_3$ of $e^h$, errors $O(h^2)$, $O(h^3)$, $O(h^4)$, $h = 1$ to $2^{-10}$ {#case-1}
+
+**Behavior:** The error $E_n(h) = \sum_{j > n} h^j/j!$ has only positive terms for $h > 0$, so the ratio $|E_n(h)|/h^{n+1} = 1/(n+1)! + h/(n+2)! + \cdots$ shrinks steadily with $h$: from $e - P_n(1) = 0.7183$, $0.2183$, $0.05162$ at $h = 1$ to $0.5002$, $0.1667$, $0.04167$ at $h = 2^{-10}$, always above its limit $1/2$, $1/6$, $1/24$.
+It stays bounded, and below 1, so each error curve lies under its dashed line: $|E_n(h)| \le h^{n+1}$ for $0 < h \le 1$, the definition's inequality with $C = 1$ and $\delta = 1$ (for $-1 \le h < 0$ it holds too, since Lagrange's remainder gives $|E_n(h)| \le |h|^{n+1}/(n+1)!$ there).
+The halving factor $E(2h)/E(h)$ falls from $4.830$, $9.202$, $17.873$ (from $h = 1$ to $1/2$) to $4.001$, $8.002$, $16.003$ (from $2^{-9}$ to $2^{-10}$), approaching $2^2$, $2^3$, $2^4$ from above, so the slopes of the three curves approach 2, 3 and 4.
+
+[Julia source](bigoaa.jl)
+
+![Two-panel animation in which h halves ten times, from 1 to 2^-10. Left: log-log plot of the errors of the Taylor polynomials P1, P2, P3 of e^h, which lie below the dashed lines h squared, h cubed and h to the fourth and become parallel to them; labels give each error and the halving factor E(2h)/E(h), which ends at 4.001, 8.002 and 16.003. Right: the ratios of the errors to h squared, h cubed and h to the fourth, falling from 0.7183, 0.2183 and 0.05162 at h = 1 to 0.5002, 0.1667 and 0.04167, just above the dotted limits 1/2, 1/6 and 1/24.](bigoaa.gif)
