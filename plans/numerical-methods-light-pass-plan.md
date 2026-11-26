@@ -13,7 +13,7 @@ The site's purpose is what is instructive and insightful. That means the animati
 
 ## The overview standard
 
-A page's `## Description` comes first, before `## Animations`. It has 150–400 words of prose, plus display math. It contains these six things, in this order unless the page reads better otherwise:
+A page's `## Description` comes first, before `## Animations`. It has 150–400 words of prose, plus display math. In the count, each inline math expression is one word, and display math and table rows are not counted. It contains these six things, in this order unless the page reads better otherwise:
 
 1. **The problem.** What the method solves, in one or two sentences.
 2. **The core formula.** The method's formula or formulas, as display math, in the same notation as the page's animations.
@@ -30,7 +30,7 @@ A page's `## Description` comes first, before `## Animations`. It has 150–400 
 
 **Edits outside the Description:**
 - Overview sentences that now sit in the `## Animations` introduction may be moved into the Description, without changing what they say. The ledger records each move.
-- The only change allowed inside the Animations sections is a link or a cross-reference.
+- The only change allowed inside the Animations sections is a link or a cross-reference. To link to a case, add an explicit id to its heading (`### Case 2 — … {#case-2}`) and link `[Case 2](#case-2)`, as the pilot pages do.
 - Other sections (Derivation Notes, Worked Example, Outside Links, References) stay as they are, unless they contradict the new Description. A contradiction is reported to the director, not fixed silently.
 
 ## Step 1: adapt the skills (own branch, `light-pass-skills`)
@@ -130,8 +130,8 @@ After batch 22:
 
 ## Status
 
-- Step 1 (skills): done 2026-11-25 on branch `light-pass-skills` (commit 965fc1b), not yet merged.
-- Step 2 (pilot): run 2026-11-25 on branch `light-pass-pilot` (branched from `light-pass-skills`), review in `reviews/light-pass-pilot`. **Waiting for Jason to approve the format.**
-  - Newton-Raphson Method (write): Description written (386 words, six points, 6-row table of Case 1's iterates, case anchors `{#case-1}`…`{#case-6}`); review round 1 clean (0 Error, 0 Misleading, 0 Minor). Done once the format is approved.
-  - Simpson's Rule (extend): Description extended (334 words, 5-row table of Case 1's errors, anchor `{#case-1}`); review round 1 clean (0/0/0). Done once the format is approved.
+- Step 1 (skills): done 2026-11-25 on branch `light-pass-skills` (commit 965fc1b), merged into `main` with the pilot; skill-text fix 88a48a6.
+- Step 2 (pilot): run 2026-11-25 on branch `light-pass-pilot` (branched from `light-pass-skills`), review in `reviews/light-pass-pilot`, merged into `main`. **Format approved by Jason 2026-11-25**, as built: 150–400 words with inline math counted as one word, the optional short table, and explicit `{#case-N}` heading ids for case links (all now written into the standard).
+  - Newton-Raphson Method (write): Description written (386 words, six points, 6-row table of Case 1's iterates, case anchors `{#case-1}`…`{#case-6}`); review round 1 clean (0 Error, 0 Misleading, 0 Minor). Done (counts as done in batch 16).
+  - Simpson's Rule (extend): Description extended (334 words, 5-row table of Case 1's errors, anchor `{#case-1}`); review round 1 clean (0/0/0). Done (counts as done in batch 20).
 - Batches 15–22: not started.

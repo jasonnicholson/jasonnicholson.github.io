@@ -104,7 +104,7 @@ The Python path is still needed, because the reviewer recomputes every example.
 
 - **The diff.** Save the page's diff against the branch point with `main`, `git diff $(git merge-base main HEAD) -- pages/numerical-methods/<slug>/`, to `$WORK/<slug>/diff.patch`. It defines the text under review. If it touches a script or a GIF, or adds a case, the changed scripts and GIFs get the full treatment of this phase and the full review.
 - **Frames.** Extract frames and contact sheets from every committed GIF the page embeds, as above, because the reviewer checks the new text against what the animations show. Skip regeneration for scripts the diff does not touch.
-- **Mechanical checks.** Run the text-only page checks above on the page, and count the words of the Description's prose (excluding display math). A count outside 150–400 goes into the report as a Minor inventory finding.
+- **Mechanical checks.** Run the text-only page checks above on the page, and count the words of the Description's prose (each inline math expression is one word; display math and table rows are not counted). A count outside 150–400 goes into the report as a Minor inventory finding.
 - **The standard.** Copy the "The overview standard" and "Edits outside the Description" parts of `.github/skills/content-page/SKILL.md` into the manifest, so the reviewer has them.
 
 The manifest records all of this, and the page's module, found as for text-only pages.

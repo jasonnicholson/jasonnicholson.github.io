@@ -53,7 +53,7 @@ In overview mode:
 
 ### The overview standard
 
-A page's `## Description` comes first, before `## Animations`. It has 150–400 words of prose, plus display math. It contains these six things, in this order unless the page reads better otherwise:
+A page's `## Description` comes first, before `## Animations`. It has 150–400 words of prose, plus display math. In the count, each inline math expression is one word, and display math and table rows are not counted. It contains these six things, in this order unless the page reads better otherwise:
 
 1. **The problem.** What the method solves, in one or two sentences.
 2. **The core formula.** The method's formula or formulas, as display math, in the same notation as the page's animations.
@@ -71,7 +71,7 @@ A page's `## Description` comes first, before `## Animations`. It has 150–400 
 ### Edits outside the Description
 
 - Overview sentences that now sit in the `## Animations` introduction may be moved into the Description, without changing what they say. The ledger records each move.
-- The only change allowed inside the Animations sections is a link or a cross-reference, such as a link from a case to the Description, or from the Description's failure modes to a case heading.
+- The only change allowed inside the Animations sections is a link or a cross-reference, such as a link from a case to the Description, or from the Description's failure modes to a case heading. To link to a case, add an explicit id to its heading (`### Case 2 — … {#case-2}`) and link `[Case 2](#case-2)`, as the approved pilot pages (Newton-Raphson, Simpson's Rule) do; record each id in the ledger.
 - Other sections (Derivation Notes, Worked Example, Outside Links, References) stay as they are. If one contradicts the new Description, do not fix it: report the contradiction, with your computation, to whoever briefed you.
 - A one-line link to this page from another page is allowed only when the brief names that page.
 
