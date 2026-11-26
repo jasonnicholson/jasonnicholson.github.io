@@ -9,13 +9,32 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Composite Simpson's rule approximates
-$\int_a^b f(x)\,dx$ by fitting a quadratic interpolant across each pair of subintervals. With $h=(b-a)/n$ and even $n$,
+Simpson's rule approximates a definite integral $\int_a^b f(x)\,dx$ from values of $f$ at equally spaced points. It splits $[a,b]$ into $n$ subintervals of width $h=(b-a)/n$, with nodes $x_k=a+kh$ for $k=0,1,\dots,n$, and on each pair of subintervals $[x_{2k-2},x_{2k}]$ it replaces $f$ by the parabola through the three nodes. Adding the areas under the parabolas gives the composite rule
 $$
 S_n = \frac{h}{3}\left[f(x_0)+f(x_n)+4\sum_{k=1}^{n/2} f(x_{2k-1}) + 2\sum_{k=1}^{n/2-1} f(x_{2k})\right].
 $$
 
-Because the method integrates cubics exactly, the composite error for smooth $f$ (four times continuously differentiable on $[a,b]$) is $O(h^4)$, typically much smaller than trapezoidal error at the same spacing.
+Each parabola spans two subintervals, so $n$ must be even. The sums $S_n$ converge to the integral for any continuous $f$, but the error formula below needs more: $f$ must be four times continuously differentiable on $[a,b]$, $f\in C^4[a,b]$.
+
+Although each panel uses a parabola, the rule is exact for every cubic, because the cubic term's error cancels by symmetry about the panel's midpoint; the first term it misses involves $f^{(4)}$. The general result, as Mathews states it: if $f\in C^4[a,b]$, there is a $c$ with $a<c<b$ such that
+$$
+\int_a^b f(x)\,dx - S_n = -\frac{(b-a)\,f^{(4)}(c)}{180}\,h^4 .
+$$
+The error is therefore $O(h^4)$, and halving $h$ typically divides it by about 16. The animation on this page does not show this rate, because its integrand is not in $C^4[0,2]$.
+
+[Case 1](#case-1) shows what happens when that hypothesis fails. Its integrand $f(x)=e^{-x}\sin(8x^{2/3})+1$ has $f'$ unbounded at $x=0$, and the error shrinks only like $h^{5/3}$: in the table below, halving $h$ divides it by 3.38 and then 3.22, approaching $2^{5/3}\approx 3.17$, not 16. The [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/)'s error on the same integrand also shrinks like $h^{5/3}$, so Simpson's rule keeps only a constant-factor advantage, an error about 3.5 times smaller for $n$ from 48 to 108. On the coarsest frames ($n\le 6$) its error is larger than the trapezoidal rule's.
+
+| $n$ | $h$ | $S_n$ | $S_n-I$ | ratio |
+|---:|---:|---:|---:|---:|
+| 6 | $1/3$ | 1.840560 | $-0.1757$ | |
+| 12 | $1/6$ | 1.991249 | $-0.02503$ | 7.02 |
+| 24 | $1/12$ | 2.010370 | $-0.005910$ | 4.24 |
+| 48 | $1/24$ | 2.014531 | $-0.001748$ | 3.38 |
+| 96 | $1/48$ | 2.015737 | $-0.0005427$ | 3.22 |
+
+The rows are frames of Case 1, each halving $h$, against $I=\int_0^2 f(x)\,dx\approx 2.016280$; the ratio is the previous row's error divided by this row's.
+
+Simpson's rule is the degree-2 member of the [Newton-Cotes](../newton-cotes-integration/) family, between the trapezoidal rule and the higher-degree [Simpson's 3/8 Rule](../simpsons-3-8-rule-for-numerical-integration/) and [Boole's Rule](../booles-rule/); with $T_n$ the trapezoidal sum, $S_{2n}=(4T_{2n}-T_n)/3$ is one Richardson step and forms the second column of [Romberg Integration](../romberg-integration/), and [Adaptive Simpson's Rule](../adaptive-simpsons-rule/) applies the rule panel by panel.
 
 ## Animations
 
@@ -24,7 +43,7 @@ $y = e^{-x}\sin(8x^{2/3})+1$. After an opening frame showing only $f$, each fram
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Composite Simpson's Rule, $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$
+### Case 1 — Composite Simpson's Rule, $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ {#case-1}
 
 **Behavior:** Quadratic panels are rebuilt over the full interval as sample density increases, and the approximation converges toward the true integral $\int_0^2 f(x)\,dx \approx 2.016280$; the last frame (109 sample points) gives 2.015834, about 0.00045 low. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error shrinks like $O(h^{5/3})$ rather than $O(h^4)$: halving $h$ divides it by about 3.38 (from 24 to 48 subintervals), tending to $2^{5/3}\approx 3.17$, instead of 16.
 
