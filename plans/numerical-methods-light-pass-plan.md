@@ -131,5 +131,7 @@ After batch 22:
 ## Status
 
 - Step 1 (skills): done 2026-11-25 on branch `light-pass-skills` (commit 965fc1b), not yet merged.
-- Step 2 (pilot): not started.
+- Step 2 (pilot): run 2026-11-25 on branch `light-pass-pilot` (branched from `light-pass-skills`), review in `reviews/light-pass-pilot`. **Waiting for Jason to approve the format.**
+  - Newton-Raphson Method (write): Description written (386 words, six points, 6-row table of Case 1's iterates, case anchors `{#case-1}`…`{#case-6}`); review round 1 clean (0 Error, 0 Misleading, 0 Minor). Done once the format is approved.
+  - Simpson's Rule (extend): Description extended (334 words, 5-row table of Case 1's errors, anchor `{#case-1}`); review round 1 clean (0/0/0). Done once the format is approved.
 - Batches 15–22: not started.
