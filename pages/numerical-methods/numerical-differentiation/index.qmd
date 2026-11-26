@@ -47,7 +47,7 @@ f''(x) &= D_3^{(2)}(x,h) - \tfrac{h^2}{12}\,f^{(4)}(c).
 \end{aligned}
 $$
 
-So the two-point formulas are $O(h)$ and the three-point formulas are $O(h^2)$, and the central constant $\tfrac16$ is half the one-sided $\tfrac13$.
+So the two-point formulas are $O(h)$ ([Cases 3](#case-3) and [5](#case-5)) and the three-point formulas are $O(h^2)$ ([Cases 4](#case-4) and [6](#case-6)), and the central constant $\tfrac16$ is half the one-sided $\tfrac13$.
 [Case 1](#case-1) and [Case 2](#case-2) show $D_3$ approaching $f'$ as $h$ falls to $0.001$.
 The table follows $x = 1$ down to $h = 10^{-8}$; its entries are the errors $f'(1) - D$ for each first-derivative formula $D$, and $f''(1) - D_3^{(2)}$, in double precision:
 
@@ -73,7 +73,7 @@ Errors in measured data are magnified in the same way.
 
 Each animation below shows finite-difference derivative behavior for $f(x)=e^{-x}\sin(x)$ on legacy interval settings from the source module.
 
-Case 1 extends Example 2(c) of Mathews' module, the plot of $D_3(x,h)$ against $f'(x)$ on $[0,\pi]$, from the single step $h=0.01$ to a sequence of steps, and Case 2 follows Examples 11 and 14, the central difference at $x_0=1$. The module's other examples are not animated here: in Project I, the graph of $f'''$ used to bound the error (Example 1), the tables of approximations (Examples 2(a) and 2(b)), the plot of the absolute error against the error bound (Example 3) and the study of how the bound shrinks with $h$ (Example 4); the forward- and backward-difference formulas for the first derivative (Examples 9, 10, 12 and 13); and the formulas for the second derivative (Project II, Examples 5–8, and Examples 15–17).
+Case 1 extends Example 2(c) of Mathews' module, the plot of $D_3(x,h)$ against $f'(x)$ on $[0,\pi]$, from the single step $h=0.01$ to a sequence of steps, and Case 2 follows Examples 11 and 14, the central difference at $x_0=1$. Cases 3–6 rebuild Mathews' animations for Examples 9, 12, 10 and 13, the forward differences $D_2^+$ and $D_3^+$ and the backward differences $D_2^-$ and $D_3^-$ at $x_0=1$, with his steps $h$ and his window $0 \le x \le 2.1$; the true tangent, also drawn in Case 2, is added to his picture, and every value of $f'(1)$ his frames print is reproduced to his six decimals. His last frame prints $h=0.001$ to three decimals, but in the $O(h)$ animations its printed value is that of $h=0.0005$, which ends all four cases here. The module's other examples are not animated here: in Project I, the graph of $f'''$ used to bound the error (Example 1), the tables of approximations (Examples 2(a) and 2(b)), the plot of the absolute error against the error bound (Example 3) and the study of how the bound shrinks with $h$ (Example 4); and the formulas for the second derivative (Project II, Examples 5–8, and Examples 15–17).
 
 ### Case 1 - central derivative profile, $D_3(x,h)$ on $[0,\pi]$ {#case-1}
 
@@ -90,6 +90,38 @@ Case 1 extends Example 2(c) of Mathews' module, the plot of $D_3(x,h)$ against $
 [Julia source](numdiffab.jl)
 
 ![Animation showing central secant lines through the points at x0 minus h and x0 plus h, and parallel lines through the point at x0, collapsing to the tangent line at x0 equals 1 for f of x equals e to the minus x times sine x, with the parabola through the three stencil points drawn in each frame.](numdiffab.gif)
+
+### Case 3 - forward difference $D_2^+$, $O(h)$, at $x_0=1$ {#case-3}
+
+**Behavior:** As $h$ falls from $1$ to $0.0005$, $D_2^+$ stays below $f'(1) \approx -0.110794$: the error $f'(1)-D_2^+$ is positive in every frame. It grows from $0.07571$ at $h=1$ to $0.07594$ at $h=0.95$, then shrinks in every frame, so from there on the chord turns toward the tangent. Halving $h$ divides the error by $1.20$ from $h=1$ to $0.5$, by $1.92$ from $0.1$ to $0.05$ and by $2.00$ from $0.001$ to $0.0005$, approaching the factor $2$ of an $O(h)$ error; the last error is $0.1987h$, close to $-\tfrac12 f''(1)\,h \approx 0.1988h$.
+
+[Julia source](numdiffac.jl)
+
+![Animation of the forward secant through the points at x0 equals 1 and x0 plus h on the graph of f of x equals e to the minus x times sine x, approaching the tangent line at x0 as h falls from 1 to 0.0005, with the forward-difference slope, the true slope and their difference printed above the plot.](numdiffac.gif)
+
+### Case 4 - forward difference $D_3^+$, $O(h^2)$, with the parabola {#case-4}
+
+**Behavior:** $D_3^+$ is the slope at $x_0$ of the parabola through the stencil points $x_0$, $x_0+h$ and $x_0+2h$, so the dotted line with that slope touches the parabola at $x_0$, as in Example 12. As $h$ falls from $0.5$ to $0.0005$, the error $f'(1)-D_3^+$ is positive and shrinks in every frame, from $0.05066$ to $8.468 \times 10^{-8}$. Halving $h$ divides it by $3.05$ from $h=0.5$ to $0.25$, by $3.81$ from $0.1$ to $0.05$ and by $4.00$ from $0.001$ to $0.0005$, approaching the factor $4$ of an $O(h^2)$ error; the last error is $0.3387h^2$, close to $\tfrac13 f'''(1)\,h^2 \approx 0.3389h^2$.
+
+[Julia source](numdiffad.jl)
+
+![Animation of the parabola through the points at x0 equals 1, x0 plus h and x0 plus 2h on the graph of f of x equals e to the minus x times sine x, with the line through the point at x0 whose slope is the three-point forward difference touching the parabola at x0 and approaching the true tangent line as h falls from 0.5 to 0.0005.](numdiffad.gif)
+
+### Case 5 - backward difference $D_2^-$, $O(h)$, at $x_0=1$ {#case-5}
+
+**Behavior:** For $h \ge 0.45$ the chord rises from $(x_0-h, f(x_0-h))$ to $(x_0, f(x_0))$, so $D_2^-$ is positive although $f'(1)<0$: the left point lies on the rising side of $f$, below $f(x_0)$ (at $h=1$ it is the origin). From $h=0.4$ on, $D_2^-$ is negative. It stays above $f'(1)$ in every frame, and the size of the error $f'(1)-D_2^-$ shrinks in every frame. Halving $h$ divides the error by $2.83$ from $h=1$ to $0.5$, by $2.09$ from $0.1$ to $0.05$ and by $2.00$ from $0.001$ to $0.0005$, approaching $2$ from above where Case 3 approaches it from below; the last error is $-0.1989h$, close to $\tfrac12 f''(1)\,h \approx -0.1988h$.
+
+[Julia source](numdiffae.jl)
+
+![Animation of the backward secant through the points at x0 minus h and x0 equals 1 on the graph of f of x equals e to the minus x times sine x; the secant rises while h is large and approaches the tangent line at x0 as h falls from 1 to 0.0005, with the backward-difference slope, the true slope and their difference printed above the plot.](numdiffae.gif)
+
+### Case 6 - backward difference $D_3^-$, $O(h^2)$, with the parabola {#case-6}
+
+**Behavior:** $D_3^-$ is the slope at $x_0$ of the parabola through $x_0-2h$, $x_0-h$ and $x_0$, so the dotted line touches the parabola at $x_0$. As $h$ falls from $0.5$ to $0.0005$, the error $f'(1)-D_3^-$ is positive and shrinks in every frame, from $0.1237$ to $8.476 \times 10^{-8}$. Halving $h$ divides it by $4.73$ from $h=0.5$ to $0.25$, by $4.18$ from $0.1$ to $0.05$ and by $4.00$ from $0.001$ to $0.0005$, approaching $4$ from above where Case 4 approaches it from below; the last error is $0.3390h^2$, close to the same $\tfrac13 f'''(1)\,h^2$. Example 13's worked solution is lost from the archive, but its animation survives, and every value it prints is $D_3^-$ to six decimals.
+
+[Julia source](numdiffaf.jl)
+
+![Animation of the parabola through the points at x0 minus 2h, x0 minus h and x0 equals 1 on the graph of f of x equals e to the minus x times sine x, with the line through the point at x0 whose slope is the three-point backward difference touching the parabola at x0 and approaching the true tangent line as h falls from 0.5 to 0.0005.](numdiffaf.gif)
 
 ## Derivation Notes
 
