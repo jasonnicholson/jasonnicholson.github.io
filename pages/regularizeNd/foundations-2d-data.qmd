@@ -1,0 +1,587 @@
+---
+title: "Foundations: Regularizing Data with One Input"
+bibliography: ../../references.bib
+code-fold: true
+code-summary: "Show the MATLAB code"
+---
+
+[Back to regularizeNd series home](index.qmd)
+
+**Prerequisites:** none beyond matrix-vector products and least squares. [Part 1: Introduction and Intuition](part-01-introduction-and-intuition.qmd) is optional background on what regularizeNd is for.
+
+**Learning goals**
+
+- Turn scattered samples into fidelity equations on a nonuniform output grid, using linear interpolation.
+- Build scaled second-difference smoothness rows and stack them under the fidelity rows.
+- Solve the stacked least-squares problem through its normal equations, read the residuals, and explain why the row-count factor keeps the fit from drifting as the grid is refined.
+
+::: {.callout-note title="Source and attribution"}
+This page is adapted from three articles published on *Math for Mere Mortals*:
+
+- "Introduction to Regularizing with 2D Data – Part 1 of 3", published January 29, 2013: <https://mathformeremortals.wordpress.com/2013/01/29/introduction-to-regularizing-with-2d-data-part-1-of-3/> [@mfmm2013regularizing2dPart1]
+- "Introduction to Regularizing with 2D Data – Part 2 of 3", published January 31, 2013: <https://mathformeremortals.wordpress.com/2013/01/31/introduction-to-regularizing-with-2d-data-part-2-of-3/> [@mfmm2013regularizing2dPart2]
+- "Introduction to Regularizing with 2D Data – Part 3 of 3", published January 31, 2013: <https://mathformeremortals.wordpress.com/2013/01/31/introduction-to-regularizing-with-2d-data-part-3-of-3/> [@mfmm2013regularizing2dPart3]
+
+This page is an independent rewrite of those articles' ideas for regularizeNd. Its text, equations, examples, numbers, and figures were written and computed for this site. The articles call data with one input and one output "2D data"; this site calls it **1D input**.
+:::
+
+```{matlab}
+%| include: false
+% Match the site's light figures regardless of the MATLAB desktop theme.
+thm = settings;
+thm.matlab.appearance.figure.GraphicsTheme.TemporaryValue = "light";
+```
+
+```{matlab}
+%| include: false
+addpath('fixtures');
+r = regularizeNdFoundationsFixtures(Verbose=false);
+fx = r.oneD;                 % 1D example from the example file
+x = fx.x; y = fx.y;          % sample locations and values
+g = fx.grid;                 % output-grid nodes
+smoothness = fx.smoothness;  % 0.01
+m = numel(x); N = numel(g);
+cmap = [linspace(0.13,1,128)', linspace(0.4,1,128)', ones(128,1); ...
+        ones(128,1), linspace(1,0.25,128)', linspace(1,0.15,128)'];   % blue-white-red
+```
+
+## The problem: scattered samples, one output table
+
+You have measurements $(x_i, y_i)$, $i = 1,\dots,m$. The $x_i$ fall wherever the experiment put them, and the $y_i$ carry noise. What you want is a table $z_j$ at the nodes $g_j$ of an output grid that you choose. Between nodes, the table is read by interpolation. That lets you resample the data and smooth it in one step.
+
+The unknowns are the table entries $z = (z_1,\dots,z_N)^T$. No formula with a few coefficients is fitted. Every node value is free. The task is to choose them so the table agrees with the samples and behaves sensibly between them.
+
+This page follows one small example throughout. It has five samples and a six-node grid:
+
+| Sample $i$ | $x_i$ | $y_i$ |
+|---:|---:|---:|
+| 1 | 0.35 | 1.0 |
+| 2 | 1.00 | 1.4 |
+| 3 | 1.80 | 0.4 |
+| 4 | 2.70 | 1.2 |
+| 5 | 3.65 | 0.2 |
+
+The output grid is $g = [0,\ 1,\ 2,\ 2.5,\ 3,\ 4]$. It is nonuniform. The spacing is 1, then 0.5 between $x=2$ and $x=3$, then 1 again. The samples are irregular too, and sample 2 lands exactly on node 2. @fig-setup shows the layout.
+
+```{matlab}
+%| label: fig-setup
+%| fig-cap: "The five samples (circles) and the six output-grid nodes (dashed lines). The grid is nonuniform. The spacing is 1, then 0.5 between x = 2 and x = 3, then 1."
+close all
+figure
+hold on
+for k = 1:N
+  plot([g(k) g(k)], [-0.45 1.7], '--', 'Color', [0.65 0.65 0.65], 'HandleVisibility', 'off');
+end
+plot(x, y, 'o', 'MarkerSize', 8, 'MarkerFaceColor', [0.85 0.33 0.1], ...
+  'MarkerEdgeColor', 'k', 'DisplayName', 'samples (x_i, y_i)');
+for i = 1:m
+  text(x(i), y(i) + 0.08, sprintf('%d', i), 'HorizontalAlignment', 'center');
+end
+plot(g, -0.2*ones(N, 1), '^', 'MarkerSize', 7, 'MarkerFaceColor', [0.4 0.4 0.4], ...
+  'MarkerEdgeColor', [0.4 0.4 0.4], 'DisplayName', 'output-grid nodes g_j');
+text(g, -0.3*ones(N, 1), cellstr(compose('g_%d', 1:N)'), 'HorizontalAlignment', 'center');
+xlabel('x'); ylabel('y');
+xlim([-0.2 4.2]); ylim([-0.45 1.7]);
+title('Samples and output-grid nodes');
+legend('Location', 'northeast');
+```
+
+## Interpolation: each sample becomes a row of weights
+
+Suppose sample $i$ lies in the grid interval $[g_j, g_{j+1}]$. Its position in that interval is
+
+$$
+t_i = \frac{x_i - g_j}{g_{j+1} - g_j}, \qquad 0 \le t_i \le 1 .
+$$
+
+Linear interpolation reads the table at $x_i$ as a weighted average of the two neighboring nodes:
+
+$$
+\hat z(x_i) = (1 - t_i)\, z_j + t_i\, z_{j+1}.
+$$
+
+The weights are nonnegative and sum to one. A constant table is therefore read as that constant everywhere. The same weights also reproduce $x_i$ from the node coordinates, so a table whose values are linear in the node positions is read exactly.
+
+Asking the table to agree with sample $i$ gives one linear equation:
+
+$$
+(1 - t_i)\, z_j + t_i\, z_{j+1} \approx y_i .
+$$
+
+This is a **fidelity equation**. The $\approx$ is there on purpose. The samples are noisy, so the equation is not required to hold exactly.
+
+For sample 3, $x_3 = 1.8$ lies in $[g_2, g_3] = [1, 2]$. Then $t_3 = 0.8$, so the weights are $0.2$ on node 2 and $0.8$ on node 3:
+
+$$
+0.2\, z_2 + 0.8\, z_3 \approx 0.4 .
+$$
+
+For sample 4, $x_4 = 2.7$ lies in $[2.5, 3]$, an interval of width $0.5$. So $t_4 = (2.7 - 2.5)/0.5 = 0.4$, and the weights are $0.6$ on node 4 and $0.4$ on node 5. The interval width is in the denominator. That is how the nonuniform spacing enters the weights.
+
+For sample 2, $x_2 = 1.00$ equals $g_2$. So $t_2 = 0$, and its row has a single weight of 1 on node 2:
+
+$$
+z_2 \approx 1.4 .
+$$
+
+The code below builds all five rows the same way. `discretize` finds the interval for each sample, and `sparse` stores only the nonzero weights, so the zero weight in the exact-node row is never stored.
+
+```{matlab}
+j = discretize(x, g);                   % interval index: g(j) <= x < g(j+1)
+t = (x - g(j)) ./ (g(j+1) - g(j));      % position inside that interval
+Af = sparse([(1:m)'; (1:m)'], [j; j+1], [1 - t; t], m, N);
+
+assert(max(abs(full(Af - fx.system.fidelity)), [], 'all') < 1e-14)
+assert(max(abs(sum(Af, 2) - 1)) < 1e-14)            % each row sums to one
+assert(abs(t(3) - 0.8) < 1e-14 && abs(t(4) - 0.4) < 1e-14 && t(2) == 0)
+assert(nnz(Af(2, :)) == 1)                          % the on-node row
+```
+
+Each output node gets a weight from each sample. As a function of the sample's x position, the weight from node $j$ is a tent. It equals 1 at $g_j$ and falls in a straight line to zero at the neighboring nodes. @fig-hat plots these tents. Each column of $A_f$ is one tent, read at the five sample positions. Each row of $A_f$ collects the weights that one sample gives the nodes.
+
+@fig-hat marks the samples with dashed lines. At each dashed line, the dots are that sample's weights, and they add up to 1.
+
+```{matlab}
+%| label: fig-hat
+%| fig-cap: "Weight curves of the six output nodes. Each curve gives one node's weight as a function of the sample's x position: a tent that peaks at its node and falls to zero at the neighboring nodes. The dashed lines mark the five samples. The dots on each dashed line are that sample's weights, labeled with their values, and they sum to 1."
+close all
+xq = linspace(0, 4, 801)';
+H = interp1(g, eye(N), xq, 'linear');   % weight curve of each node on a fine axis
+nodeColor = lines(N);
+figure
+hold on
+for j = 1:N
+  plot(xq, H(:, j), '-', 'Color', nodeColor(j, :), 'LineWidth', 1.5, 'DisplayName', sprintf('node %d', j));
+end
+for i = 1:m
+  plot([x(i) x(i)], [-0.05 1.2], '--', 'Color', [0.35 0.35 0.35], 'HandleVisibility', 'off');
+  text(x(i), 1.12, 'sum = 1', 'HorizontalAlignment', 'center', 'FontSize', 9);
+end
+[rr, cc, vv] = find(full(Af));
+for k = 1:numel(vv)
+  plot(x(rr(k)), vv(k), 'o', 'MarkerSize', 6, 'MarkerFaceColor', nodeColor(cc(k), :), ...
+    'MarkerEdgeColor', 'k', 'HandleVisibility', 'off');
+  text(x(rr(k)) + 0.06, vv(k), sprintf('%.2f', vv(k)), 'FontSize', 9, ...
+    'BackgroundColor', 'w', 'Margin', 1);
+end
+xlabel('x'); ylabel('weight');
+xlim([0 4]); ylim([-0.05 1.2]);
+title('Weight curves of the output nodes, with each sample''s weights');
+legend('Location', 'eastoutside');
+```
+
+## The fidelity matrix
+
+Stacking one row per sample gives the $5 \times 6$ fidelity system $A_f z \approx y$. Columns are the output-grid nodes in order. @fig-fidelity shows the matrix with its values.
+
+```{matlab}
+%| label: fig-fidelity
+%| fig-cap: "The fidelity matrix $A_f$. Rows are samples, columns are output-grid nodes, and blank cells are structural zeros. Each row has at most two nonzeros, in adjacent columns."
+close all
+M = full(Af);
+figure
+imagesc(M); axis image; colormap(cmap); clim([-1 1]);
+[rr, cc, vv] = find(M);
+text(cc, rr, cellstr(compose('%.3g', vv)), 'HorizontalAlignment', 'center');
+xticks(1:N); xticklabels(compose('g_%d', 1:N));
+yticks(1:m); yticklabels(compose('sample %d', 1:m));
+title('Fidelity matrix A_f');
+```
+
+Five equations in six unknowns do not determine the table. The matrix has rank 5, so $A_f$ has a one-dimensional null space:
+
+$$
+A_f\,n = 0, \qquad n = (0,\ 0,\ 0,\ 26,\ -39,\ 21)^T .
+$$
+
+Adding any multiple of $n$ to a table leaves all five fidelity equations exactly satisfied. The null vector is supported on nodes 4 to 6, which are the nodes that samples 4 and 5 touch. Fidelity alone cannot choose a table. The smoothness rows make that choice.
+
+```{matlab}
+assert(rank(full(Af)) == 5)
+nullDir = [0; 0; 0; 26; -39; 21];
+assert(norm(Af * nullDir) < 1e-12)
+```
+
+## Second differences: the smoothness rows
+
+The smoothness rows penalize a table whose slope changes quickly. Take three consecutive nodes. The table rises or falls across the first interval at one rate and across the second at another. The more those two rates disagree, the more the table bends and the larger the penalty. A straight line keeps one slope, so its penalty is zero. The penalty grows only when the slope jumps. For a triple of nodes $g_a, g_b, g_c$ with values $z_a, z_b, z_c$, the penalty is a linear combination of the three values, with weights set by the node spacing:
+
+$$
+f'' \approx \sum_{q \in \{a,b,c\}} \frac{2\, z_q}{\prod_{p \in \{a,b,c\},\, p \ne q}(g_q - g_p)} ,
+$$
+
+where the product runs over the other two nodes of the triple. The weights change wherever the spacing changes.
+
+Three nodes give one row, so $N = 6$ nodes give $N - 2 = 4$ rows. The matrix $D$ collects them:
+
+- Rows 1 and 2 are the first two triples. Row 1 covers nodes 1–3, which are evenly spaced, and has weights $[1, -2, 1]$. Row 2 covers nodes 2–4, at positions $1$, $2$, and $2.5$, and has weights $[\tfrac{4}{3}, -4, \tfrac{8}{3}]$. The weights change because the spacing changes.
+- Row 3 covers nodes 3–5, at positions $2$, $2.5$, and $3$, and has weights $[4, -8, 4]$.
+- Row 4 covers nodes 4–6, at positions $2.5$, $3$, and $4$, and has weights $[\tfrac{8}{3}, -4, \tfrac{4}{3}]$.
+
+A straight line has zero second derivative, so every row gives zero when applied to linear data. The example file, `fixtures/regularizeNdFoundationsFixtures.m`, builds this page's numbers from the equations and checks them. The code below builds $D$ from that formula and checks it against the example file.
+
+```{matlab}
+a = g(1:N-2); b = g(2:N-1); c = g(3:N);        % left, centre, right node of each triple
+w1 = 2 ./ ((a - b) .* (a - c));                % Lagrange second-derivative weights
+w2 = 2 ./ ((b - a) .* (b - c));
+w3 = 2 ./ ((c - a) .* (c - b));
+rr = (1:N-2)';
+D = sparse([rr; rr; rr], [rr; rr+1; rr+2], [w1; w2; w3], N-2, N);
+
+assert(max(abs(full(D - fx.system.d2)), [], 'all') < 1e-14)
+assert(max(abs(D * g)) < 1e-12)                % zero for a straight line
+assert(max(abs(D * ones(N, 1))) < 1e-12)       % zero for a constant
+```
+
+@fig-d2 shows $D$ with its values. Blank cells are zeros, so the band of three weights per row is visible.
+
+```{matlab}
+%| label: fig-d2
+%| fig-cap: "The unscaled second-difference matrix $D$. Each row has three weights on consecutive nodes. Rows 2 and 4 are the ones whose coefficients change where the spacing changes."
+close all
+M = full(D);
+vmax = max(abs(M), [], 'all');
+figure
+imagesc(M); axis image; colormap(cmap); clim([-vmax vmax]);
+[rr, cc, vv] = find(M);
+text(cc, rr, cellstr(compose('%.3g', vv)), 'HorizontalAlignment', 'center');
+xticks(1:N); xticklabels(compose('g_%d', 1:N));
+yticks(1:N-2); yticklabels(compose('row %d', 1:N-2));
+title('Second-difference matrix D (unscaled)');
+```
+
+### Scaling the smoothness rows
+
+The smoothness rows are scaled before they are stacked:
+
+$$
+\mu = s\,\sqrt{\frac{m}{N-2}}\,(g_N - g_1)^2 .
+$$
+
+Here $s = 0.01$ is the smoothness value, $m$ is the number of samples, and $N - 2$ is the number of smoothness rows. The square root of the ratio of equation counts keeps the two kinds of equation in balance as the grid is refined; @sec-resolution returns to this. The factor $(g_N - g_1)^2$ converts second differences, which carry units of $z$ per $x^2$, into the units of $z$. The smoothness rows and the fidelity rows are then measured in the same units.
+
+For this example,
+
+$$
+\mu = 0.01 \cdot \sqrt{5/4}\cdot 4^2 = 0.1788854382 .
+$$
+
+## Stacking and the normal equations
+
+Put the fidelity rows above the scaled smoothness rows:
+
+$$
+A = \begin{bmatrix} A_f \\ \mu D \end{bmatrix}, \qquad
+b = \begin{bmatrix} y \\ 0 \end{bmatrix}.
+$$
+
+$A$ has $5 + 4 = 9$ rows and 6 unknowns, so it is overdetermined and has no exact solution here. We take the $z$ that minimizes the sum of squared residuals,
+
+$$
+\|Az - b\|^2 = \underbrace{\|A_f z - y\|^2}_{\text{fidelity SSE}} + \underbrace{\|\mu D z\|^2}_{\text{smoothness SSE}} .
+$$
+
+The minimizer trades the two terms off. @fig-stacked shows the stacked matrix.
+
+```{matlab}
+%| label: fig-stacked
+%| fig-cap: "The stacked system $A = [A_f;\\ \\mu D]$. The top block holds the fidelity rows and the bottom block holds the scaled smoothness rows. The line separates the two."
+close all
+mult = smoothness * sqrt(m / (N-2)) * (g(end) - g(1))^2;   % row-count and range factors
+A = [Af; mult * D];
+b = [y; zeros(N-2, 1)];
+assert(max(abs(full(A - fx.system.system)), [], 'all') < 1e-14)
+assert(size(A, 1) == m + N - 2 && size(A, 2) == N)
+M = full(A);
+vmax = max(abs(M), [], 'all');
+figure
+imagesc(M); axis image; colormap(cmap); clim([-vmax vmax]);
+hold on
+yline(m + 0.5, '-', 'Color', 'k', 'LineWidth', 1.5);
+[rr, cc, vv] = find(M);
+text(cc, rr, cellstr(compose('%.2g', vv)), 'HorizontalAlignment', 'center', 'FontSize', 9);
+xticks(1:N); xticklabels(compose('g_%d', 1:N));
+yticks(1:m+N-2); yticklabels([compose('fidelity %d', 1:m), compose('smooth %d', 1:N-2)]);
+title('Stacked system A');
+```
+
+The normal equations $(A^TA)z = A^Tb$ are the least-squares optimality conditions. Each entry of $A^TA$ is a dot product of two columns of $A$, so only nodes within two positions of each other interact. The result is symmetric and pentadiagonal. It has five nonzero diagonals and bandwidth 2. @fig-normal shows the pattern. Its right-hand side is $A^Tb = A_f^Ty$, because the smoothness block has zero data.
+
+```{matlab}
+%| label: fig-normal
+%| fig-cap: "The normal matrix $A^TA$ for the example. It is symmetric and pentadiagonal. Entries more than two positions from the diagonal are zero."
+close all
+NE = A' * A;
+rhs = A' * b;
+assert(max(abs(full(NE - fx.projection.normalMatrix)), [], 'all') < 1e-14)
+assert(max(abs(rhs - fx.projection.AfTy)) < 1e-14)
+[ii, jj] = find(NE);
+assert(max(abs(ii - jj)) == 2)                 % bandwidth 2
+M = full(NE);
+vmax = max(abs(M), [], 'all');
+figure
+imagesc(M); axis image; colormap(cmap); clim([-vmax vmax]);
+[rr, cc, vv] = find(M);
+text(cc, rr, cellstr(compose('%.2f', vv)), 'HorizontalAlignment', 'center', 'FontSize', 9);
+xticks(1:N); xticklabels(compose('g_%d', 1:N));
+yticks(1:N); yticklabels(compose('g_%d', 1:N));
+title('Normal matrix A^{T}A');
+```
+
+Solving the six-by-six system gives the table. The matrix is banded, so elimination touches only entries near the diagonal, and no inverse is needed. The stacked least-squares solve `A\b` gives the same answer here.
+
+```{matlab}
+z = NE \ rhs;
+assert(max(abs(z - fx.system.solution)) < 1e-12)
+```
+
+## The solution and the fit
+
+The same assembly on finer grids gives the fit as a curve. Each grid interval is split into $f$ equal pieces, and the smoothness value stays the same. The 1281-node grid ($f = 256$) is plotted below. The 5121-node grid ($f = 1024$) is the reference for the resolution study. The 10,001-node grid ($f = 2000$) is used by the conditioning check.
+
+```{matlab}
+refine = @(g0, f) [reshape(g0(1:end-1)' + diff(g0)' .* ((0:f-1)'/f), [], 1); g0(end)];
+grids = {g, refine(g, 256), refine(g, 1024), refine(g, 2000)};
+As = cell(1, 4); bs = cell(1, 4); Zs = cell(1, 4);
+for q = 1:4
+  Gq = grids{q}; Nq = numel(Gq);
+  jq = discretize(x, Gq);
+  tq = (x - Gq(jq)) ./ (Gq(jq+1) - Gq(jq));
+  Fq = sparse([(1:m)'; (1:m)'], [jq; jq+1], [1 - tq; tq], m, Nq);
+  aq = Gq(1:Nq-2); bq = Gq(2:Nq-1); cq = Gq(3:Nq);
+  rq = (1:Nq-2)';
+  Dq = sparse([rq; rq; rq], [rq; rq+1; rq+2], ...
+    [2./((aq-bq).*(aq-cq)); 2./((bq-aq).*(bq-cq)); 2./((cq-aq).*(cq-bq))], Nq-2, Nq);
+  mq = smoothness * sqrt(m / (Nq-2)) * (Gq(end) - Gq(1))^2;
+  As{q} = [Fq; mq * Dq];
+  bs{q} = [y; zeros(Nq-2, 1)];
+  Zs{q} = As{q} \ bs{q};
+end
+devFine = max(abs(Zs{2} - interp1(grids{3}, Zs{3}, grids{2})));
+assert(max(abs(Zs{1} - fx.system.solution)) < 1e-12)
+assert(abs(devFine - fx.resolution.normalized(5, 3)) < 1e-12)
+```
+
+@fig-solution plots the result. Samples are blue circles, the six-node table is red, and the 1281-node fit is gray.
+
+```{matlab}
+%| label: fig-solution
+%| fig-cap: "Samples (blue) and the fitted table on the six-node output grid, shown in red and read by linear interpolation. The gray curve is the same fit on a 1281-node grid. The fit is a compromise. At x = 1, sample 2 has y = 1.4, but the fitted table is 1.2046."
+close all
+figure
+hold on
+plot(grids{2}, Zs{2}, '-', 'Color', [0.45 0.45 0.45], 'LineWidth', 1.5, ...
+  'DisplayName', 'same fit, 1281 nodes');
+plot(g, Zs{1}, 'o-', 'Color', [0.8 0.2 0.2], 'MarkerFaceColor', [0.8 0.2 0.2], ...
+  'DisplayName', 'output table, 6 nodes');
+plot(x, y, 'o', 'MarkerSize', 8, 'MarkerFaceColor', [0.2 0.45 0.8], ...
+  'MarkerEdgeColor', 'k', 'DisplayName', 'samples');
+xlabel('x'); ylabel('y');
+xlim([0 4]);
+title('Regularized table for the five-sample example');
+legend('Location', 'southwest');
+```
+
+The fit does not interpolate. It passes near the samples without passing through them, because the smoothness rows pull against the fidelity rows. Sample 2 sits on node 2, yet the table there is $z_2 = 1.204629$ against $y_2 = 1.4$. Only in the limit of a vanishing smoothness weight would the fit reach the samples. The table also dips below zero at node 6 ($x = 4$), beyond the last sample at $x = 3.65$. Node 6 is touched only by sample 5, with weight 0.65, and the smoothness rows let the table fall below that sample's value there.
+
+The solution vector is
+
+$$
+z \approx (0.950780,\ 1.204629,\ 0.653552,\ 0.881039,\ 0.925797,\ -0.047683)^T .
+$$
+
+## Residuals
+
+The residuals show how the compromise is split. The fitted values at the samples are $A_f z$, the fidelity residuals are $A_f z - y$, and the smoothness residuals are $\mu D z$.
+
+```{matlab}
+%| label: fig-residuals
+%| fig-cap: "Residuals of the solved system. The first five bars are fidelity residuals $A_f z - y$; the last four are the scaled smoothness residuals $\\mu D z$."
+close all
+zSol = Zs{1};
+fitted = Af * zSol;
+rf = fitted - y;
+rs = mult * (D * zSol);
+sseF = sum(rf.^2); sseS = sum(rs.^2);
+assert(max(abs(fitted - fx.system.fittedAtSamples)) < 1e-12)
+assert(max(abs(rf - fx.system.fidelityResidual)) < 1e-12)
+assert(max(abs(rs - fx.system.regularizationResidual)) < 1e-12)
+assert(abs(sseF - fx.system.fidelitySSE) < 1e-12)
+assert(abs(sseS - fx.system.regularizationSSE) < 1e-12)
+
+figure
+hold on
+bar(1:m, rf, 'FaceColor', [0.2 0.45 0.8]);
+bar(m+1:m+N-2, rs, 'FaceColor', [0.85 0.33 0.1]);
+xline(m + 0.5, ':');
+xticks(1:m+N-2);
+xticklabels([compose('f%d', 1:m), compose('s%d', 1:N-2)]);
+ylabel('residual');
+title('Fidelity residuals (blue) and scaled smoothness residuals (orange)');
+```
+
+The sums of squared residuals (SSE) are:
+
+| Term | Value |
+|---|---:|
+| Fidelity SSE, $\lVert A_f z - y\rVert^2$ | 0.271358 |
+| Smoothness SSE, $\lVert \mu D z\rVert^2$ | 0.159690 |
+| Total, the minimized objective | 0.431048 |
+
+The fitted values at the samples are $[1.039627,\ 1.204629,\ 0.763767,\ 0.898942,\ 0.293035]$. The largest fidelity residual is at sample 3, where the fit sits $0.363767$ above the data. The smoothness rows resist the steep drop from sample 2 ($y = 1.4$) to sample 3 ($y = 0.4$), so the table flattens instead of following it. Every residual enters the objective. The smoothness value sets how they trade off.
+
+## Grid resolution and the row-count factor {#sec-resolution}
+
+The original articles make a claim about resolution. Adding output points should not change the fit, because the scale factor compensates for the extra smoothness rows. Refining the grid adds rows. Each second-difference row measures local curvature, and that curvature does not shrink as the grid is refined. Without a correction, the penalty sum for a fixed curve grows with the number of rows, so the fit is pushed toward a straight line. The factor $\sqrt{m/(N-2)}$ divides each row's weight by the square root of the row count, up to the fixed constant $\sqrt{m}$. That keeps the total penalty comparable across resolutions.
+
+The example file computes the same study with and without the factor, refining each interval by $1, 4, 16, 64, 256$. The reference is the 5121-node fit with the factor. @fig-resolution and the table below show the results.
+
+| Nodes | With factor: fidelity SSE | smoothness SSE | max deviation | Without factor: fidelity SSE | smoothness SSE | max deviation |
+|---:|---:|---:|---:|---:|---:|---:|
+| 6 | 0.271358 | 0.159690 | 0.094850 | 0.227757 | 0.166802 | 0.136157 |
+| 21 | 0.249744 | 0.167736 | 0.012627 | 0.501818 | 0.095076 | 0.226449 |
+| 81 | 0.245067 | 0.168214 | 0.003248 | 0.647191 | 0.036544 | 0.367705 |
+| 321 | 0.242977 | 0.168477 | 0.000782 | 0.702641 | 0.012728 | 0.443349 |
+| 1281 | 0.242395 | 0.168553 | 0.000161 | 0.721934 | 0.003735 | 0.473571 |
+
+The "max deviation" column is the largest difference between a fit and the 5121-node reference, measured at that fit's nodes. With the factor, the fit approaches the reference. The deviation drops by a factor of about 3.9 to 7.5 at each fourfold refinement. Without the factor, the fidelity SSE climbs toward the straight-line value, $0.729531$, while the smoothness SSE falls toward zero. The fit turns into a straight line, and its deviation from the reference grows.
+
+```{matlab}
+%| label: fig-resolution
+%| fig-cap: "Left: the fidelity SSE against the number of output nodes, with and without the row-count factor. The dotted line is the least-squares straight-line SSE. Right: the largest deviation of each fit from the 5121-node reference, on log-log axes. Values come from the example file."
+close all
+res = fx.resolution;
+figure
+tiledlayout(1, 2);
+nexttile
+semilogx(res.nodes, res.normalized(:, 1), 'o-', 'LineWidth', 1.3, 'DisplayName', 'with row-count factor');
+hold on
+semilogx(res.nodes, res.withoutRowFactor(:, 1), 's--', 'LineWidth', 1.3, 'DisplayName', 'without factor');
+semilogx(res.nodes([1 end]), res.straightLineSSE * [1 1], 'k:', 'HandleVisibility', 'off');
+text(res.nodes(2), res.straightLineSSE + 0.02, 'straight-line SSE', 'FontSize', 9);
+xticks(res.nodes);
+xlabel('output nodes'); ylabel('fidelity SSE');
+title('Fidelity SSE'); legend('Location', 'southeast');
+nexttile
+loglog(res.nodes, res.normalized(:, 3), 'o-', 'LineWidth', 1.3, 'DisplayName', 'with row-count factor');
+hold on
+loglog(res.nodes, res.withoutRowFactor(:, 3), 's--', 'LineWidth', 1.3, 'DisplayName', 'without factor');
+xticks(res.nodes);
+xlabel('output nodes'); ylabel('max deviation from reference');
+title('Deviation from the 5121-node fit'); legend('Location', 'southwest');
+```
+
+The data support a narrower claim than the original article makes. With the factor, the fitted curves converge, and their deviation from the reference shrinks at each refinement. They are not identical. The fidelity SSE falls by about 11 percent between 6 and 1281 nodes, from 0.271358 to 0.242395. The discrete second differences are not exactly the continuous derivative, and that accounts for the change in SSE. The remaining differences come from discretization, and they shrink as the grid is refined.
+
+## Connection to regularizeNd
+
+regularizeNd builds the same two blocks. Its fidelity block is the interpolation matrix for the chosen method. Its smoothness block is the second-difference matrix scaled by the row-count and range factors derived above. The table maps this page's symbols to the package's outputs and inputs.
+
+| This page | regularizeNd |
+|---|---|
+| $A_f$ (fidelity rows) | first output of `regularizeNdMatrices` |
+| $\mu D$ (scaled smoothness rows) | `L{1}` |
+| output grid $g$ | `{g}`, one vector per input |
+| smoothness $s$ | `smoothness` (one value for 1D input) |
+| solved table $z$ | output of `regularizeNd` |
+
+The check below runs when this page renders. It calls `regularizeNdMatrices` and `regularizeNd` on this page's samples, grid, smoothness value, and linear interpolation. It compares the fidelity block, the scaled smoothness block, and the solved table with the values in the example file, and it prints the largest difference it measures. Before the check runs, the hidden setup cell adds the regularizeNd source folder to the MATLAB path. If that folder is not present, the check is skipped with a message.
+
+```{matlab}
+%| include: false
+% Add the regularizeNd source when it is checked out next to this site.
+regSource = fullfile(getenv('HOME'), 'workspaces', 'regularizeNd', 'source');
+if isfolder(regSource)
+  addpath(regSource);
+end
+haveRegularizeNd = exist('regularizeNd', 'file') == 2 && exist('regularizeNdMatrices', 'file') == 2;
+```
+
+```{matlab}
+%| label: regularizeNd-package-check
+if ~haveRegularizeNd
+  fprintf('regularizeNd is not on the MATLAB path, so the package checks were skipped.\n');
+else
+  [Ap, Lp] = regularizeNdMatrices(x, {g}, smoothness, 'linear');
+  zp = regularizeNd(x, y, {g}, smoothness, 'linear', '\');
+  dF = max(abs(full(Ap - fx.system.fidelity)), [], 'all');              % fidelity block
+  dL = max(abs(full(Lp{1} - fx.system.regularization)), [], 'all');     % scaled smoothness block
+  dZ = max(abs(zp - fx.system.solution));                               % solved table
+  fprintf('Largest difference from the example file: fidelity %.2g, smoothness %.2g, solution %.2g.\n', dF, dL, dZ);
+  assert(dF < 1e-12, 'fidelity block differs from the example file')
+  assert(dL < 1e-12, 'scaled smoothness block differs from the example file')
+  assert(dZ < 1e-12, 'solved table differs from the example file')
+end
+```
+
+The reference in the example file solves the stacked system with `\`. The normal-equation solve above agrees with it at 6 nodes to within $10^{-12}$. Forming $A^TA$ squares the condition number. At 6 nodes, $\kappa(A) = 3.19$ and $\kappa(A^TA) = 10.2$. At 10,001 nodes, the condition estimate of the normal matrix (`condest`) is $1.8\times10^{14}$. The normal-equation solution differs from the stacked solution by up to $8.0\times10^{-4}$.
+
+```{matlab}
+%| include: false
+% Conditioning checks at 6 and 10,001 nodes (not shown as a figure).
+kap6 = cond(full(As{1}));
+kapNE6 = cond(full(As{1}' * As{1}));
+est6 = condest(As{1}' * As{1});
+est10k = condest(As{4}' * As{4});
+zQR = As{4} \ bs{4};
+zNE = (As{4}' * As{4}) \ (As{4}' * bs{4});
+gap10k = max(abs(zNE - zQR));
+resQR = norm(As{4} * zQR - bs{4});
+resNE = norm(As{4} * zNE - bs{4});
+assert(abs(kap6 - 3.19) < 5e-3 && abs(kapNE6 - 10.2) < 5e-2 && abs(est6 - 15.7) < 5e-2)
+assert(abs(log10(est10k) - log10(1.8e14)) < 0.01)
+assert(abs(gap10k - 8.0e-4) < 1e-5)
+assert(abs(resQR - 0.6409343) < 1e-7 && abs(resNE - 0.6409350) < 1e-7 && resQR < resNE)
+```
+
+At 10,001 nodes, the stacked solve has the smaller residual norm. Its norm is 0.6409343, against 0.6409350 for the normal equations. For fine grids, solve the stacked least-squares system directly, or use the QR and iterative options described in the deep dive's Solve stage and in [Part 7](part-07-iterative-solvers-and-memory-strategy.qmd). The [deep dive](deep-dive-regularizeNd-design.qmd#why-range-scaling-matters) covers the range factor in more depth. The [smoothness-count discussion](deep-dive-regularizeNd-design.qmd#why-smoothness-count-normalization-matters) covers the row-count factor.
+
+## How this differs from the original
+
+- **Terminology.** The articles say "2D data" for one input and one output. regularizeNd calls this 1D input. The articles speak of an output dataset; this site calls it the output grid or table.
+- **Smoothness scale.** The articles scale the derivative rows by $S = K\sqrt{N_f/N_d}$, with $K$ the smoothness constant. regularizeNd also multiplies by the squared range $(g_N - g_1)^2$. The same numerical smoothness value therefore gives a different penalty weight in the two schemes.
+- **Normalization with one axis.** With one input there is one set of derivative rows, so the articles' combined count and regularizeNd's per-axis count coincide. The difference appears only with two inputs, which the later pages cover.
+- **Resolution claim.** The articles state that the output does not change with resolution. The calculation shows convergence with the factor. The fits are not identical: the fidelity SSE changes by about 11 percent over the study, and the deviation falls by 3.9 to 7.5 times per fourfold refinement. Without the factor, the fit drifts toward a straight line.
+- **Solver.** The articles note that the pentadiagonal normal matrix suits elimination. This page solves the normal equations once as a check. The reference in the example file solves the stacked system directly. The conditioning numbers in the regularizeNd section above show why the stacked solve is the safer choice on fine grids.
+- **Interpolation.** The articles choose linear interpolation as the simplest option among several, and use it throughout. This page does too. regularizeNd also offers other fidelity methods, covered in the [deep dive's fidelity section](deep-dive-regularizeNd-design.qmd#fidelity-block).
+- **Example.** This page uses its own five-sample example and six-node grid. None of the original example values appears here. Every number is computed by the example file or by the code on this page.
+
+The next page applies this system to RegularizeData2D, the spreadsheet function that the original series built on the same equations.
+
+```{matlab}
+%| include: false
+% Guard: every number typed into the prose, tables, and equations above must match the computation.
+chk = @(v, T, d) assert(all(abs(v - T) <= 0.5*10^(-d) + 1e-12), ...
+  'typed value %s disagrees with computed %s', mat2str(T), mat2str(v, 8));
+chk(x', [0.35 1.00 1.80 2.70 3.65], 2);
+chk(y', [1.0 1.4 0.4 1.2 0.2], 1);
+chk(g', [0 1 2 2.5 3 4], 2);
+chk(t([3 4])', [0.8 0.4], 1);
+chk(mult, 0.1788854382, 9);
+chk(zSol', [0.950780 1.204629 0.653552 0.881039 0.925797 -0.047683], 6);
+chk(fitted', [1.039627 1.204629 0.763767 0.898942 0.293035], 6);
+chk(rf', [0.039627 -0.195371 0.363767 -0.301058 0.093035], 6);
+chk(rs', [-0.143989 0.239957 -0.130750 -0.253539], 6);
+chk(sseF, 0.271358, 6);
+chk(sseS, 0.159690, 6);
+chk(sseF + sseS, 0.431048, 6);
+chk(fx.resolution.straightLineSSE, 0.729531, 6);
+chk(fx.resolution.normalized(:, 1)', [0.271358 0.249744 0.245067 0.242977 0.242395], 6);
+chk(fx.resolution.normalized(:, 2)', [0.159690 0.167736 0.168214 0.168477 0.168553], 6);
+chk(fx.resolution.normalized(:, 3)', [0.094850 0.012627 0.003248 0.000782 0.000161], 6);
+chk(fx.resolution.withoutRowFactor(:, 1)', [0.227757 0.501818 0.647191 0.702641 0.721934], 6);
+chk(fx.resolution.withoutRowFactor(:, 2)', [0.166802 0.095076 0.036544 0.012728 0.003735], 6);
+chk(fx.resolution.withoutRowFactor(:, 3)', [0.136157 0.226449 0.367705 0.443349 0.473571], 6);
+ratios = fx.resolution.normalized(1:4, 3) ./ fx.resolution.normalized(2:5, 3);
+chk(min(ratios), 3.9, 1);
+chk(max(ratios), 7.5, 1);
+chk((sseF - 0.242395)/sseF, 0.107, 3);     % about 11 percent change in fidelity SSE
+assert(abs(fx.resolution.normalized(5,3) - 0.000161) < 5e-7)
+assert(isequal(fx.resolution.nodes, [6 21 81 321 1281]))
+```
+
+## Next
+
+[Back to regularizeNd series home](index.qmd)
+
+[Next: Foundations: From Equations to an Efficient Solve](foundations-regularizedata2d-spreadsheet.qmd)
