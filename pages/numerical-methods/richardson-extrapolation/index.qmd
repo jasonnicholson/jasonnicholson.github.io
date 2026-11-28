@@ -9,21 +9,44 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Richardson extrapolation combines two finite-difference estimates with different step sizes so that the leading truncation term cancels. In the legacy module, this is presented as a refinement of the central three-point derivative for $f(x)=e^{-x}\sin(x)$ over $[0,\pi]$.
+Richardson extrapolation improves an approximation that depends on a step size $h$ by combining its values at two step sizes so that the leading term of its error cancels.
+Mathews applies it to numerical differentiation, where it turns the three-point central difference for $f'(x)$ into a five-point formula; this page animates that step for $f(x)=e^{-x}\sin(x)$ over $[0,\pi]$.
 
-Using
-
-$$
-D_3(x,h)=\frac{f(x+h)-f(x-h)}{2h},
-$$
-
-the Richardson-improved estimate is
+The three-point central difference is
 
 $$
-D_5(x,h)=\frac{4D_3(x,h/2)-D_3(x,h)}{3},
+D_3(x,h)=\frac{f(x+h)-f(x-h)}{2h}.
 $$
 
-which upgrades the local truncation behavior from $O(h^2)$ to $O(h^4)$ for smooth functions.
+For smooth $f$, Taylor expansion gives $D_3(x,h)=f'(x)+\tfrac{f'''(x)}{6}h^2+\tfrac{f^{(5)}(x)}{120}h^4+\cdots$, with only even powers of $h$.
+Halving $h$ divides the $h^2$ term by 4, so the combination
+
+$$
+D_5(x,h)=\frac{4D_3(x,h/2)-D_3(x,h)}{3}=\frac{f(x-h)-8f(x-h/2)+8f(x+h/2)-f(x+h)}{6h}
+$$
+
+removes it.
+This is Mathews' five-point central difference with spacing $h/2$.
+In general, if $A(h)=A+c\,h^p+O(h^q)$ with $q>p$, then $\bigl(2^pA(h/2)-A(h)\bigr)/(2^p-1)=A+O(h^q)$.
+
+The method assumes that the exponent $p$ of the leading error term is known and that this term dominates, which needs $f$ smooth enough.
+As a general result, if $f\in C^3[x-h,x+h]$ then $f'(x)-D_3(x,h)=-\tfrac{f'''(c)}{6}h^2$, and if $f\in C^5[x-h,x+h]$ then
+
+$$
+f'(x)-D_5(x,h)=\frac{f^{(5)}(c)}{480}\,h^4
+$$
+
+for some $c$ in that interval, which is Mathews' five-point remainder $\tfrac{f^{(5)}(c)}{30}k^4$ with $k=h/2$.
+So halving $h$ divides the error of $D_3$ by about 4 and that of $D_5$ by about 16.
+In [Case 1](#case-1), going from $h=0.02$ to $h=0.01$ takes the maximum error over $[0,\pi]$ from $1.33\times10^{-4}$ to $3.33\times10^{-5}$ for $D_3$ and from $1.33\times10^{-9}$ to $8.33\times10^{-11}$ for $D_5$.
+In [Case 2](#case-2), at $x=1$, the log-log slopes between successive step sizes are 2.000 to 2.007 for $D_3$ and 3.905 to 4.005 for $D_5$, from $h=0.5$ down to $h=0.006$.
+
+Rounding error eventually wins.
+Both formulas subtract nearly equal values of $f$ and divide by $h$, so rounding errors grow as $h$ shrinks while the truncation error of $D_5$ falls like $h^4$.
+The last two points of Case 2 leave the $h^4$ line: at $h=0.0015$ the computed error of $D_5$ is $1.29\times10^{-14}$, about 2.8 times the truncation error $4.67\times10^{-15}$ found in 50-digit arithmetic.
+Wrong weights also mislead: a one-sided difference $A(h)=\bigl(f(x+h)-f(x)\bigr)/h$ has an error starting with an $h$ term, so the weights 4 and $-1$ leave an $O(h)$ error, and the right combination is $2A(h/2)-A(h)$.
+
+The difference formulas themselves are on [Numerical Differentiation](../numerical-differentiation/) and [Derive Numerical Differentiation Formulae](../derive-numerical-differentiation-formulae/), the $O(h^p)$ notation is on [Big "O" Truncation Error](../big-o-truncation-error/), [Romberg Integration](../romberg-integration/) applies the same step repeatedly to the trapezoidal rule, and [Aitken's Method](../aitken-method-and-steffensen-acceleration/) accelerates a sequence without a step size.
 
 ## Animations
 
@@ -34,7 +57,7 @@ Nor are the module's truncation-error-bound examples: Examples 1, 3, 4 and 5 est
 Example 7, the module's worked extrapolation, combines $D_3(1,0.02)$ and $D_3(1,0.01)$ into the five-point value at spacing $0.01$, which is $D_5(1,0.02)$; its error is the $h=0.02$ point of Case 2 and is not shown separately, and Example 2(b)'s plot of the five-point formula at spacing $0.01$ over $[0,\pi]$ is the $h=0.02$ frame of Case 1.
 Example 2(a)'s table at $x=0,1,2,3$ and Example 6's proof that the five-point formula at spacing $h$ equals $\frac{4D_3(x,h)-D_3(x,2h)}{3}$ are not animated either.
 
-### Case 1 - profile comparison, $D_3(x,h)$ vs. $D_5(x,h)$
+### Case 1 - profile comparison, $D_3(x,h)$ vs. $D_5(x,h)$ {#case-1}
 
 **Behavior:** Both approximations converge as $h$ shrinks, but the Richardson curve tracks $f'(x)$ much more closely because the dominant $h^2$ error term is canceled.
 
@@ -42,7 +65,7 @@ Example 2(a)'s table at $x=0,1,2,3$ and Example 6's proof that the five-point fo
 
 ![Animation comparing D3 and Richardson D5 derivative curves against the true derivative over 0 to pi for decreasing h.](richexaa.gif)
 
-### Case 2 - pointwise convergence at $x_0=1$ on log-log axes
+### Case 2 - pointwise convergence at $x_0=1$ on log-log axes {#case-2}
 
 **Behavior:** The error slope for the three-point formula follows approximately $O(h^2)$, while Richardson extrapolation follows approximately $O(h^4)$ before roundoff effects appear.
 
