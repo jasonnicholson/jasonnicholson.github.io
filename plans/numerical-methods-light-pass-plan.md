@@ -139,4 +139,12 @@ After batch 22:
   - Lin-Bairstow Method (new): Description (374 words, Example 4 table); two new cases (Example 4 convergence, quintic deflation), no Mathews original. Done.
   - Big "O" Truncation Error (new): Description (390 words, adapted standard); one new case (Taylor polynomials of e^h, |E|/hᵖ bounded); the page is animated, not flat. Done.
   - Numerical Differentiation (extend, plus 4 new animations): Description extended (392 words); Cases 3–6 rebuild the four forward/backward legacy GIFs. Their h starts at 1 (O(h)) and 0.5 (O(h²)), not 0.6 as this plan said, and Mathews' last frame is h = 0.0005. Done.
-- Batches 16–22: not started.
+- Batch 16 (root finding I): run 2026-11-28 on branch `batch-16` (stacked under `batch-17` … `batch-22`), review in `reviews/batch-16` and `reviews/batch-16-r2`. Round 1: 2 Error, 0 Misleading, 7 Minor; round 2 (the five changed pages): 0 Error, 0 Misleading, 7 Minor. All fixed and independently checked, except the Aitken–Steffensen word count (decision for Jason). Newton-Raphson was done in the pilot.
+  - Bisection Method (write): Description 398 words; Case 1 error bound and non-monotone error, Case 2 broken hypotheses, exact-hit caveat. Done.
+  - False Position (write): 398 words; linear rate with constant C checked on both cases, fixed endpoint, x¹⁰ − 1 example. Done.
+  - Fixed Point Iteration (write): 396 words; 6-row table of Cases 2–3, repelling fixed points in Cases 4–6. Done.
+  - Secant Method (write): 398 words; 6-row table of Case 1 (extended precision), f″ = 0 and double-root rates. Done.
+  - Muller's Method (write): 397 words; order 1.84 when f‴(p) ≠ 0, 1.23 at the double roots, complex step in Case 1. Done.
+  - Aitken's Method and Steffensen's Acceleration (check): missing points added; 464 words, over 400 (not trimmed: reviewed text). Done.
+  - Accelerated and Modified Newton-Raphson (extend): 399 words; 4-row error table, wrong-multiplier range 0 < μ < 2m. Done.
+- Batches 17–22: in progress on stacked branches (see their entries).
