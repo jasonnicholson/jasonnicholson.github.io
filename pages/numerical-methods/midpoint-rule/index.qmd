@@ -9,13 +9,46 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-The midpoint rule is a Riemann-style quadrature method that evaluates $f$ at subinterval midpoints instead of endpoints. For a uniform partition of $[a,b]$ into $n$ pieces with $\Delta x=(b-a)/n$, the composite midpoint approximation is
+The midpoint rule approximates a definite integral $\int_a^b f(x)\,dx$ by a sum of rectangles, like a [Riemann sum](../riemann-sums/), but it takes each rectangle's height from $f$ at the midpoint of its subinterval instead of at an endpoint.
+For a uniform partition of $[a,b]$ into $n$ pieces with $\Delta x=(b-a)/n$, the composite midpoint approximation is
 
 $$
 M_n = \Delta x \sum_{i=0}^{n-1} f\!\left(a + \left(i+\tfrac12\right)\Delta x\right).
 $$
 
-Geometrically, each subinterval contributes a rectangle centered at its midpoint sample. The method is often much more accurate than left/right endpoint sums at the same $n$.
+Each subinterval contributes a rectangle centered at its midpoint sample, the red dots in the animation.
+
+As Riemann sums, the $M_n$ converge to the integral for every $f$ Riemann integrable on $[a,b]$.
+The error formula below needs more: $f$ must be twice continuously differentiable on $[a,b]$, $f\in C^2[a,b]$.
+
+Each rectangle has the same area as the region under the tangent line to $f$ at its midpoint, so the rule is exact for every linear $f$, and the first term it misses involves $f''$.
+The general result, as Mathews states it: if $f\in C^2[a,b]$, there is a $c$ with $a<c<b$ such that
+
+$$
+\int_a^b f(x)\,dx - M_n = \frac{(b-a)\,f''(c)}{24}\,\Delta x^2 .
+$$
+
+The error is therefore $O(\Delta x^2)$, and halving $\Delta x$ typically divides it by about 4.
+Under the same hypothesis the [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/)'s error is $-(b-a)f''(c)\,\Delta x^2/12$, with its own $c$, so for smooth $f$ the midpoint error is about half the trapezoidal error and of opposite sign.
+Left- and right-endpoint sums are in general only first order, $O(\Delta x)$.
+
+[Case 1](#case-1) shows what happens when the hypothesis fails.
+Its integrand $f(x)=e^{-x}\sin(8x^{2/3})+1$ has $f'$ unbounded at $x=0$, so $f\notin C^2[0,2]$, and the error shrinks only like $\Delta x^{5/3}$: in the table below, halving $\Delta x$ divides it by 2.86, 3.09 and then 3.14, approaching $2^{5/3}\approx 3.17$, not 4.
+For $n$ from 40 to 120 the midpoint error is also about $-0.37$ times the trapezoidal error, not $-1/2$.
+
+| $n$ | $\Delta x$ | $M_n$ | $M_n-I$ | ratio |
+|---:|---:|---:|---:|---:|
+| 10 | $1/5$ | 2.043030 | $0.02675$ | |
+| 20 | $1/10$ | 2.025636 | $0.009357$ | 2.86 |
+| 40 | $1/20$ | 2.019305 | $0.003026$ | 3.09 |
+| 80 | $1/40$ | 2.017243 | $0.0009630$ | 3.14 |
+
+The rows are frames of Case 1, each halving $\Delta x$, against $I=\int_0^2 f(x)\,dx\approx 2.016280$; the ratio is the previous row's error divided by this row's.
+
+A coarse partition can also miss the shape of $f$, and a single estimate says nothing about its own error.
+In Case 1, with two subintervals both samples, at $x=0.5$ and $x=1.5$, fall near the two dips of $f$, and $M_2\approx 1.231$ is 0.79 below $I$; with four, $M_4\approx 2.0111$ happens to be closer to $I$ than every frame from 6 to 28 sample points.
+
+The midpoint rule is the one-point [Gauss-Legendre](../gauss-legendre-quadrature/) rule applied on each subinterval and the simplest open [Newton-Cotes](../newton-cotes-integration/) formula; with $T_n$ the trapezoidal sum, $S_{2n}=(2M_n+T_n)/3$ is [Simpson's Rule](../simpsons-rule-for-numerical-integration/) on $2n$ subintervals, the combination in which the two leading errors cancel for smooth $f$.
 
 ## Animations
 
@@ -24,7 +57,7 @@ $y = e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$. Each frame increases sample-point densi
 
 This follows Mathews' midpoint animation: the same function, interval and sequence of sample counts (1 to 120), with each midpoint sample marked by a red dot.
 
-### Case 1 — Midpoint Rule, $y = e^{-x}\sin(8x^{2/3})+1$
+### Case 1 — Midpoint Rule, $y = e^{-x}\sin(8x^{2/3})+1$ {#case-1}
 
 **Behavior:** Over the first few frames the estimate jumps above and below the integral; from 6 sample points on it stays above $\int_0^2 f(x)\,dx \approx 2.016280$ and decreases toward it in every frame, but slowly: the last frame (120 sample points) gives 2.016771, still about 0.00049 high. In every frame from 4 sample points on, the midpoint estimate is closer to the integral than the left- or right-endpoint sum with the same number of subintervals. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error shrinks like $O(\Delta x^{5/3})$ rather than $O(\Delta x^2)$: halving $\Delta x$ divides it by about 3.11 (from 24 to 48 subintervals), tending to $2^{5/3}\approx 3.17$, instead of 4.
 
