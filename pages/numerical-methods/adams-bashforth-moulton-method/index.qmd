@@ -9,14 +9,34 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-The Adams-Bashforth-Moulton (ABM) method is a predictor-corrector multistep scheme
-for initial value problems $y' = f(t,y)$. In the 4-step form, an explicit
-Adams-Bashforth predictor estimates $y_{n+1}$ from recent history, and an implicit
-Adams-Moulton corrector immediately refines it.
+The Adams-Bashforth-Moulton (ABM) method is a predictor-corrector multistep scheme for the initial value problem $y' = f(t,y)$, $y(t_0) = y_0$, on a grid $t_n = t_0 + nh$.
+One-step methods such as [Euler's](../eulers-method-for-odes/), [Heun's](../heuns-method/) and Runge-Kutta use only the current point to take the next step; ABM reuses the slopes $f_k = f(t_k, y_k)$ at the four latest points.
+In the 4-step form, an explicit Adams-Bashforth predictor estimates $y_{n+1}$ from this history, and an implicit Adams-Moulton corrector immediately refines it:
 
-Because ABM is not self-starting, initial points are generated with a one-step method
-(such as RK4). After startup, each new value uses prior function evaluations, giving
-high accuracy with low per-step cost.
+$$
+p_{n+1} = y_n + \frac{h}{24}\bigl(55 f_n - 59 f_{n-1} + 37 f_{n-2} - 9 f_{n-3}\bigr),
+$$
+
+$$
+y_{n+1} = y_n + \frac{h}{24}\bigl(9 f(t_{n+1}, p_{n+1}) + 19 f_n - 5 f_{n-1} + f_{n-2}\bigr).
+$$
+
+Both formulas integrate a cubic that interpolates the slopes over $[t_n, t_{n+1}]$: the predictor's cubic passes through the four past slopes, the corrector's through three past slopes and the predicted one.
+With the past slopes stored, a step needs only two new evaluations of $f$, at $p_{n+1}$ and at $y_{n+1}$.
+
+Mathews' theorem assumes that $f$ is continuous and satisfies a Lipschitz condition in $y$, and the coefficients assume a fixed step $h$.
+Because ABM is not self-starting, the three starting values $y_1$, $y_2$, $y_3$ must come from a one-step method, usually Runge-Kutta.
+
+As a general result (Mathews' precision theorem), if the solution satisfies $y \in C^5[t_0, b]$, the local truncation error is $O(h^5)$ and the global error $|y(t_n) - y_n|$ is $O(h^4)$, so for small enough $h$, halving $h$ typically divides the error by about 16.
+In general, because the predictor and corrector have the same order, their difference estimates the local error, $y(t_{n+1}) - y_{n+1} \approx -\tfrac{19}{270}(y_{n+1} - p_{n+1})$ when $y^{(5)}$ changes little over the step, and this estimate can steer the choice of $h$.
+[Case 1](#case-1) does not show the $h^4$ rate: on its frames stability, not truncation, sets the error, and the error in $y(5)$ falls by a factor of 190 from $m = 70$ to $m = 80$, where $h^4$ falls by only 1.7.
+
+The pair is only conditionally stable: on $y' = \lambda y$ with real $\lambda < 0$ it damps errors only while $h|\lambda| \le 1.285$.
+In Case 1, $y' = 1 - t\sqrt[3]{y}$, $y(0) = 1$, the solution decays to $y(5) = 0.0081199$, and $\partial f/\partial y = -t/(3y^{2/3})$ reaches $-41.3$ at $t = 5$, so by a frozen-coefficient analysis $h\,|\partial f/\partial y|$ passes $1.285$ before $t = 5$ in every frame.
+For $m = 12$ to $60$ the run leaves the reference in the tail, its largest error is between $0.096$ and $0.74$, and $y(5)$ jumps between $-0.363$ and $0.632$.
+The end value alone can also mislead: at $m = 12$, $y(5)$ is off by only $0.013$, while the run is off by $0.74$ at $t \approx 4.17$.
+
+[Predictor-Corrector Methods](../predictor-corrector-methods/) sets out the general framework, [Milne-Simpson's Method](../milne-simpsons-method/) is the other fourth-order predictor-corrector pair, the [Runge-Kutta Method](../runge-kutta-method/) supplies the starting values, and [Runge-Kutta-Fehlberg](../runge-kutta-fehlberg-method/) is a one-step alternative with an adaptive step.
 
 ## Animations
 
@@ -29,7 +49,7 @@ labelled with the computed $y(5)$ and its error.
 The thick gray curve is a high-accuracy reference trajectory computed with fixed-step
 RK4 at $h=10^{-4}$, since no closed-form exact solution is used for this case.
 
-### Case 1 - ABM4 predictor-corrector step-refinement sweep, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $m = 12$ to $150$ subintervals
+### Case 1 - ABM4 predictor-corrector step-refinement sweep, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $m = 12$ to $150$ subintervals {#case-1}
 
 **Behavior:** The reference solution rises from $y(0)=1$ to about $1.4498$ near $t=0.88$, then
 decays to $y(5)=0.0081199$. For $m=12$ through $52$ the computed curve visibly breaks away from
