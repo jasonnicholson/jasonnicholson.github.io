@@ -9,14 +9,35 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Lagrange interpolation builds a unique polynomial of degree at most $n$ through $n+1$ data points. The animations evaluate it in the first barycentric form, $P_n(x)=\ell(x)\sum_{i=0}^{n} \frac{w_i y_i}{x-x_i}$ with $\ell(x)=\prod_{j=0}^{n}(x-x_j)$ and $w_i=1/\prod_{j\ne i}(x_i-x_j)$. This is the same interpolant, and it stays accurate far outside the nodes, where the second barycentric form (a ratio of two such sums) gives values of the wrong sign in Cases 04 and 29.
-
+Lagrange interpolation solves this problem: given $n+1$ points $(x_i, y_i)$ with distinct nodes $x_i$, find the polynomial of degree at most $n$ that passes through all of them.
+That polynomial exists and is unique, and when $y_i = f(x_i)$ it is used to approximate $f$.
 Given nodes $(x_i, y_i)$, the interpolation polynomial is
 
 $$
 P_n(x)=\sum_{i=0}^{n} y_i L_i(x), \qquad
 L_i(x)=\prod_{j\ne i} \frac{x-x_j}{x_i-x_j}.
 $$
+
+Each $L_i$ is 1 at $x_i$ and 0 at the other nodes, so $P_n(x_j) = y_j$.
+The animations evaluate it in the first barycentric form, $P_n(x)=\ell(x)\sum_{i=0}^{n} \frac{w_i y_i}{x-x_i}$ with $\ell(x)=\prod_{j=0}^{n}(x-x_j)$ and $w_i=1/\prod_{j\ne i}(x_i-x_j)$.
+This is the same interpolant, and it stays accurate far outside the nodes, where the second barycentric form (a ratio of two such sums) gives values of the wrong sign in Cases 04 and 29.
+
+Building $P_n$ needs only distinct nodes; bounding its error needs a smooth $f$.
+Mathews' theorem: if $f \in C^{n+1}[a, b]$ and the nodes lie in $[a, b]$, then for each $x \in [a, b]$ there is a $c$ in $[a, b]$ with
+
+$$
+f(x) - P_n(x) = \frac{f^{(n+1)}(c)}{(n+1)!}\,(x-x_0)(x-x_1)\cdots(x-x_n).
+$$
+
+In general, for fixed $n$ and equally spaced nodes with spacing $h$, the error on $[x_0, x_n]$ is therefore $O(h^{n+1})$; for $n = 1$ it is at most $h^2 \max|f''|/8$.
+Raising $n$ on a fixed interval need not help.
+For $e^x$ on $[-2, 3]$ ([Case 15](#case-15)) it does: the largest error on the node interval falls from $9.65$ at degree 1 to $3.05 \times 10^{-10}$ at degree 15.
+
+For $1/(1+10x^2)$ on $[-1, 1]$ ([Case 08](#case-8)), smooth on the whole real line, the error falls to $0.135$ at degree 7 and then grows, to $0.485$ in the frame titled degree 15, in oscillations next to the end nodes: Runge's phenomenon.
+In [Case 04](#case-4), $\sqrt{x}$ is not in $C^1[0, 2]$, and the largest error on $[0, 2]$ falls only to $0.0485$ at degree 15, next to $x = 0$.
+Outside $[a, b]$ the theorem says nothing: in Case 04 at degree 15 the interpolant is about $64.5$ at $x = 2.5$, where $\sqrt{2.5} \approx 1.58$.
+
+[Newton Interpolation](../newton-interpolation-polynomial/) builds the same polynomial from divided differences, [Neville's algorithm](../aitkens-and-nevilles-interpolation/) evaluates it at a point, [Hermite Interpolation](../hermite-polynomial-interpolation/) also matches slopes, [Chebyshev nodes](../chebyshev-approximation-polynomial/) avoid Runge's phenomenon, and [Cubic Splines](../cubic-splines/) use cubic pieces instead of one high-degree polynomial.
 
 The 29 animations below follow the legacy Mathews case ordering. Each case heading gives the function and the node interval $[a, b]$; the nodes are equally spaced from $a$ to $b$, endpoints included. Where the plot window is wider than $[a, b]$ (Cases 01–11, 14, 18–20 and 24–29), the interpolant beyond the nodes is extrapolation. In Case 19, $\arcsin x$ is undefined outside $[-1, 1]$, so there only the interpolant is drawn.
 
@@ -38,7 +59,7 @@ Each animation raises the polynomial degree through 1, 2, 3, 4, 5, 7, 9, 11, 13 
 
 ![Lagrange interpolants of f(x) = 1/(1−x)² through equally spaced nodes on [−1.5, 0.9], degree rising from 1 to 15, in the window [−1.6, 1.5], which includes the pole of f at x = 1.](lagnewt03.gif)
 
-### Case 04: $f(x)=\sqrt{x}$, nodes on $[0, 2]$
+### Case 04: $f(x)=\sqrt{x}$, nodes on $[0, 2]$ {#case-4}
 
 ![Lagrange interpolants of f(x) = √x through equally spaced nodes on [0, 2], degree rising from 1 to 15, drawn with f on [0, 10.5].](lagnewt04.gif)
 
@@ -54,7 +75,7 @@ Each animation raises the polynomial degree through 1, 2, 3, 4, 5, 7, 9, 11, 13 
 
 ![Lagrange interpolants of f(x) = 1/√(1−x) through equally spaced nodes on [−1.5, 0.95], degree rising from 1 to 15, in the window [−1.6, 1.5], with f drawn for x < 1, where it is defined.](lagnewt07.gif)
 
-### Case 08: $f(x)=1/(1+10x^2)$, nodes on $[-1, 1]$
+### Case 08: $f(x)=1/(1+10x^2)$, nodes on $[-1, 1]$ {#case-8}
 
 ![Lagrange interpolants of f(x) = 1/(1+10x²) through equally spaced nodes on [−1, 1], degree rising from 1 to 15, drawn with f on [−1.5, 1.5].](lagnewt08.gif)
 
@@ -88,7 +109,7 @@ $\tan x$ is odd and the nodes are symmetric about 0, so the middle of three node
 
 ![Lagrange interpolants of f(x) = tan x through equally spaced nodes on [−1.45, 1.45], between the poles of f at x = ±π/2, degree rising from 1 to 15, drawn with f on [−π, π] and broken at its poles; the frames at degrees 1 and 2 show the same straight line.](lagnewt14.gif)
 
-### Case 15: $f(x)=e^x$, nodes on $[-2, 3]$
+### Case 15: $f(x)=e^x$, nodes on $[-2, 3]$ {#case-15}
 
 ![Lagrange interpolants of f(x) = eˣ through equally spaced nodes on [−2, 3], degree rising from 1 to 15, drawn with f on the same interval.](lagnewt15.gif)
 
