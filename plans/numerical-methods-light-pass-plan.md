@@ -147,4 +147,12 @@ After batch 22:
   - Muller's Method (write): 397 words; order 1.84 when f‴(p) ≠ 0, 1.23 at the double roots, complex step in Case 1. Done.
   - Aitken's Method and Steffensen's Acceleration (check): missing points added; 464 words, over 400 (not trimmed: reviewed text). Done.
   - Accelerated and Modified Newton-Raphson (extend): 399 words; 4-row error table, wrong-multiplier range 0 < μ < 2m. Done.
-- Batches 17–22: in progress on stacked branches (see their entries).
+- Batch 17 (root finding II): run 2026-11-28 on branch `batch-17`, review in `reviews/batch-17`. Round 1: 0 Error, 0 Misleading, 10 Minor; five fixed and independently checked, five are word counts of *check* pages (not trimmed, for Jason). No round 2 needed.
+  - Improved Newton Method (extend): 389 words; linear (m−1)/m and Method A's limit h′/(mh) checked on Cases 1–4, wrong-multiplicity and Case 5 failures. Done.
+  - Halley's Method (check): hypotheses, case pointers (C = 1/8, 1/3) and links added; 400 words. Done.
+  - Brent's Method (check): case pointers and links added; 500 words (over 400). Done.
+  - Graeffe's Method (check): case pointers, double-root rate and links added; 417 words (over 400). Done.
+  - Nonlinear Systems (check): rate pointers, smoothness hypothesis and links added; 441 words (over 400). Done.
+  - Broyden's Method (check): hypotheses and Case A ratios added; 539 words (over 400). Done.
+  - Damped Newton with Acceleration (Madsen-Reid) (check): core-formula display, simple-root rate and links added; 1167 words (over 400). Done.
+- Batches 18–22: in progress on stacked branches (see their entries).

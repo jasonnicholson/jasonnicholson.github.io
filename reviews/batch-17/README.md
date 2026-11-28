@@ -34,3 +34,10 @@ The *check* action adds text to Descriptions that are already near or over 400 w
 - Calibration: one reviewer got a scratch copy of the Halley's Method page with two planted errors in the new text (Case 1b's error after two steps given as 3.67e-7 for 3.64e-7; and a claim that Case 2 needs nine steps to reach 1e-15, as many as Newton, when it needs three). It found both, with independent numbers. That report was discarded and the real page reviewed afresh.
 - Reviewers returned their reports as text; the director saved them unchanged.
 - Mechanical checks found nothing beyond the word counts.
+
+## Batch close-out (director)
+
+- **Pages built:** seven overview Descriptions (one *extend*, six *check*) with claim ledgers; the director spot-checked Broyden's Case A error ratios (0.023–0.039, then 7.7e-4), Halley's constants (1/8 and 1/3 from the standard error constant), and others before committing. No script or GIF changed. Final prose counts: Improved Newton 389, Halley 400, Brent 500, Graeffe 417, Nonlinear Systems 441, Broyden 539, Madsen-Reid 1167.
+- **Findings:** round 1 only (0 Error, 0 Misleading, 10 Minor). The five substantive Minor findings (Brent F2, Graeffe F2, Nonlinear Systems F2, Broyden F2, Madsen-Reid F2) were reproduced, fixed word-neutrally with a ledger, and confirmed resolved by one checker covering the five pages who saw only the findings and the diffs. Round 1 had no Error or Misleading finding, so no round 2 was run.
+- **Open, for Jason:** the five F1 word counts (see the batch 16 README's decision on *check* pages). Madsen-Reid at 1167 words is the extreme case; Graeffe's fixer also noted that the Madsen-Reid page's own title still says "Damped Newton", which is accurate for its halving branch only.
+- **Commits:** `17b09ab`, `1d42cb7`, `5a2d4cf`, `22d447b`, `f1d7b17`, `7feba65`, `7693ee6` overviews; `fc38a61` review; `d452458`, `524cbc1`, `efa437f`, `ee33899`, `efdb5db` fixes; the close-out commit.
