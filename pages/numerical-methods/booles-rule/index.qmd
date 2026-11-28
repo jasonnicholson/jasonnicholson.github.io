@@ -9,12 +9,41 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Composite Boole's rule applies a quartic interpolant on each block of four subintervals (five nodes). For spacing $h=(b-a)/n$ with $n$ divisible by 4,
+Boole's rule approximates a definite integral $\int_a^b f(x)\,dx$ from values of $f$ at equally spaced points.
+It splits $[a,b]$ into $n$ subintervals of width $h=(b-a)/n$, with sample points $x_i=a+ih$ and values $f_i=f(x_i)$ for $i=0,1,\dots,n$, and on each block of four subintervals $[x_{4k},x_{4k+4}]$ it replaces $f$ by the quartic through the five nodes.
+Adding the areas under the quartics gives the composite rule
 $$
 B_n = \frac{2h}{45}\sum_{k=0}^{n/4-1}\left(7f_{4k}+32f_{4k+1}+12f_{4k+2}+32f_{4k+3}+7f_{4k+4}\right).
 $$
 
-The method is exact for polynomials up to degree 5 and, for smooth $f$ (six times continuously differentiable on $[a,b]$), has global error $O(h^6)$, making it the highest-order of the four closed Newton-Cotes rules on this site (trapezoidal, Simpson's 1/3, Simpson's 3/8 and Boole). Closed rules with seven or more nodes per panel are exact to higher degree (the seven-node rule to degree 7).
+Each quartic spans four subintervals, so $n$ must be a multiple of 4.
+The sums $B_n$ converge to the integral for any continuous $f$, but the error formula below needs more: $f$ must be six times continuously differentiable on $[a,b]$, $f\in C^6[a,b]$.
+
+Although each panel uses a quartic, the rule is exact for every polynomial of degree 5, because the fifth-degree term's error cancels by symmetry about the panel's midpoint; the first term it misses involves $f^{(6)}$.
+The general result, as Mathews states it: if $f\in C^6[a,b]$, there is a $c$ with $a<c<b$ such that
+$$
+\int_a^b f(x)\,dx - B_n = -\frac{2(b-a)\,f^{(6)}(c)}{945}\,h^6 .
+$$
+The error is therefore $O(h^6)$, the highest order of the four closed Newton-Cotes rules on this site, and halving $h$ typically divides it by about 64.
+Closed rules with seven or more nodes per panel are exact to higher degree (the seven-node rule to degree 7).
+The animation on this page does not show the $O(h^6)$ rate, because its integrand is not in $C^6[0,2]$.
+
+[Case 1](#case-1) shows what happens when that hypothesis fails.
+Its integrand $f(x)=1+e^{-x}\sin(8x^{2/3})$ has $f'$ unbounded at $x=0$, and the error shrinks only like $h^{5/3}$: in the last two rows of the table below, halving $h$ divides it by 3.10 and then 3.17, close to $2^{5/3}\approx 3.17$, not 64.
+The higher order then buys little: for $n$ from 48 to 120, Boole's error is about 0.85 times that of [Simpson's Rule](../simpsons-rule-for-numerical-integration/) at the same $n$.
+A coarse partition misleads too: on the first frame ($n=4$) the single quartic misses the peak $f\approx 1.92$ near $x\approx 0.08$, and its error, $-0.463$, is more than twice the [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/)'s $-0.214$ on the same five points.
+
+| $n$ | $h$ | $B_n$ | $B_n-I$ | ratio |
+|---:|---:|---:|---:|---:|
+| 4 | $1/2$ | 1.553155 | $-0.4631$ | |
+| 8 | $1/4$ | 1.963413 | $-0.05287$ | 8.76 |
+| 16 | $1/8$ | 2.007328 | $-0.008952$ | 5.91 |
+| 32 | $1/16$ | 2.013393 | $-0.002887$ | 3.10 |
+| 64 | $1/32$ | 2.015370 | $-0.0009100$ | 3.17 |
+
+The rows are frames of Case 1, each halving $h$, against $I=\int_0^2 f(x)\,dx\approx 2.016280$; the ratio is the previous row's error divided by this row's.
+
+Boole's rule is the degree-4 member of the [Newton-Cotes](../newton-cotes-integration/) family, after the trapezoidal rule, Simpson's rule and [Simpson's 3/8 Rule](../simpsons-3-8-rule-for-numerical-integration/); with $S_n$ the Simpson sum, $B_{2n}=(16S_{2n}-S_n)/15$ is one [Richardson Extrapolation](../richardson-extrapolation/) step and forms the third column of [Romberg Integration](../romberg-integration/).
 
 ## Animations
 
@@ -23,7 +52,7 @@ $f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$. After an opening frame showing only $f
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Composite Boole's Rule, $f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$
+### Case 1 — Composite Boole's Rule, $f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$ {#case-1}
 
 **Behavior:** Piecewise quartic panels are rebuilt at increasing density, and the approximation increases from frame to frame toward the true integral $\int_0^2 f(x)\,dx \approx 2.016280$, staying below it; the last frame (121 sample points) gives 2.015961, about $3.2\times10^{-4}$ low. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error shrinks like $O(h^{5/3})$ rather than $O(h^6)$: halving $h$ divides it by about 3.18 (from 60 to 120 subintervals), tending to $2^{5/3}\approx 3.17$, instead of $2^6=64$.
 
