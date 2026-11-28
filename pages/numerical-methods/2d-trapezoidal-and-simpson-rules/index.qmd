@@ -9,36 +9,53 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-This page studies numerical approximation of a rectangular double integral with the
-composite 2D Trapezoidal and 2D Simpson rules. Examples 1–6 of the archived module use
-
+The 2D Trapezoidal and 2D Simpson rules approximate a double integral over a rectangle, $\int_a^b\int_c^d f(x,y)\,dy\,dx$, from values of $f$ on a grid.
+Examples 1–6 of the archived module, and both animations, use
 $$
 I = \int_0^1 \int_0^1 8e^{-x^2-y^4}\,dy\,dx,
 $$
+the volume under the surface $z=8e^{-x^2-y^4}$ over $R=\{(x,y):0\le x\le 1,\ 0\le y\le 1\}$.
 
-with surface $z=8e^{-x^2-y^4}$ over $R=\{(x,y):0\le x\le 1,\ 0\le y\le 1\}$.
-
-For a tensor-product grid, the 2D Trapezoidal rule applies endpoint/interior weights
-along each axis and sums weighted samples:
-
+The rectangle $[a,b]\times[c,d]$ is divided into $m$ panels of width $h=(b-a)/m$ in $x$ and $n$ panels of width $k=(d-c)/n$ in $y$, with nodes $x_i=a+ih$ and $y_j=c+jk$.
+Each rule applies the 1D rule along $y$ at every $x_i$ and then along $x$, so the weight of a node is the product of the 1D weights.
+The 2D Trapezoidal rule is
 $$
 I_{T} = hk\sum_{i=0}^{m}\sum_{j=0}^{n} w_i w_j f(x_i,y_j),
 \qquad
 w_0=w_m=\tfrac{1}{2},\ w_i=1\ (1\le i\le m-1),
 $$
-
-and the 2D Simpson rule uses the product Simpson weights:
-
+and the 2D Simpson rule is
 $$
 I_{S} = \frac{hk}{9}\sum_{i=0}^{m}\sum_{j=0}^{n} a_i a_j f(x_i,y_j),
 \qquad
 a_0=a_m=1,\ a_i=4\ \text{(odd } i\text{)},\ a_i=2\ \text{(even } i,\ 0<i<m\text{)}.
 $$
+The weights $w_j$ and $a_j$ are defined in the same way with $n$ in place of $m$.
+For Simpson's rule $m$ and $n$ must be even.
+The general error results, as Mathews states them, are
+$$
+\int_a^b\!\int_c^d f(x,y)\,dy\,dx = I_T + O(h^2) + O(k^2) = I_S + O(h^4) + O(k^4).
+$$
+They hold when $f_{xx}$ and $f_{yy}$ (for $I_T$), or $f_{xxxx}$ and $f_{yyyy}$ (for $I_S$), are continuous on $R$.
+Halving both $h$ and $k$ then typically divides the error by about 4 for $I_T$ and 16 for $I_S$.
 
-Here the rectangle $[a,b]\times[c,d]$ is divided into $m$ panels of width $h=(b-a)/m$
-in $x$ and $n$ panels of width $k=(d-c)/n$ in $y$, with nodes $x_i=a+ih$ and
-$y_j=c+jk$; the weights $w_j$ and $a_j$ are defined in the same way with $n$ in place
-of $m$. For Simpson's rule $m$ and $n$ must be even.
+The animations use square meshes, $m=n$ and $h=k=1/n$.
+The table gives the frames that double $n$; the ratio is the previous row's error divided by this row's.
+
+| $n$ | $I_T-I$ | ratio | $I_S-I$ | ratio |
+|---:|---:|---:|---:|---:|
+| 2 | $-0.2985$ | | $0.05870$ | |
+| 4 | $-0.07222$ | 4.13 | $0.004245$ | 13.8 |
+| 8 | $-0.01795$ | 4.02 | $1.960\times10^{-4}$ | 21.7 |
+| 16 | $-0.004482$ | 4.01 | $1.150\times10^{-5}$ | 17.0 |
+
+The trapezoidal ratios in [Case 1](#case-1) are close to 4 from the start.
+The Simpson ratios in [Case 2](#case-2) swing between 13.8 and 21.7 on the coarse meshes and settle near 16 only on the fine ones (16.6 from $n=10$ to $n=20$), so the rate cannot be read off two coarse frames.
+The coarse Simpson mesh also misleads visually: on the $2\times2$ frame the quadratic along $x=0$ peaks at about 8.30, above the largest value of $f$, which is 8.
+Simpson's higher order pays off quickly: its $6\times6$ mesh, with 49 nodes, has error $6.7\times10^{-4}$, smaller than the trapezoidal error $0.0029$ on the $20\times20$ mesh with 441 nodes.
+Both rules need a rectangle; when the inner limits depend on $x$, as in the module's Example 7, Simpson's rule is applied in $y$ at each $x$ and then in $x$.
+
+These are the tensor-product forms of the 1D [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/) and [Simpson's Rule](../simpsons-rule-for-numerical-integration/); [Gauss-Legendre Quadrature](../gauss-legendre-quadrature/) chooses the nodes as well as the weights, and [Monte Carlo Integration](../monte-carlo-integration/) avoids the grid, which needs $(m+1)^d$ nodes in $d$ dimensions with $m$ panels per axis.
 
 ## Animations
 
@@ -54,7 +71,7 @@ The module's Example 7, which applies the composite Simpson's rule to a double i
 whose inner limits of integration are functions of $x$ (a non-rectangular region), is
 not animated here.
 
-### Case 1 - 2D Trapezoidal Rule, $f(x,y)=8e^{-x^2-y^4}$
+### Case 1 - 2D Trapezoidal Rule, $f(x,y)=8e^{-x^2-y^4}$ {#case-1}
 
 **Behavior:** The coarse-to-fine tensor grid updates over the whole square each frame.
 The approximation converges toward the archived reference value, with visible
@@ -66,7 +83,7 @@ whose integral is the trapezoidal value $I_T$.
 
 ![2D Trapezoidal animation: coloured surface of f over [0,1]x[0,1] with straight black grid lines through the sample nodes (the bilinear interpolant), full-grid refinement from 2x2 to 20x20, and convergence to the archived benchmark integral](trapezoidal2daa.gif)
 
-### Case 2 - 2D Simpson Rule, $f(x,y)=8e^{-x^2-y^4}$
+### Case 2 - 2D Simpson Rule, $f(x,y)=8e^{-x^2-y^4}$ {#case-2}
 
 **Behavior:** Simpson tensor-product weights are recomputed on each refined mesh.
 Compared with trapezoidal refinement, the Simpson estimate reaches high accuracy
