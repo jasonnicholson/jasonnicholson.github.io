@@ -9,19 +9,53 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Gauss-Legendre quadrature approximates
-$\int_a^b f(x)\,dx$ by evaluating $f$ at optimally chosen interior nodes and weighting those values.
-For the transformed interval $[-1,1]$, the $n$-point rule has the form
+Gauss-Legendre quadrature approximates $\int_a^b f(x)\,dx$ from $n$ values of $f$.
+Unlike the equally spaced [Newton-Cotes](../newton-cotes-integration/) rules, it chooses both the nodes and the weights, so that the rule is exact for polynomials of the highest possible degree.
+On $[-1,1]$ the $n$-point rule is
 $$
-\int_{-1}^{1} g(t)\,dt \approx \sum_{i=1}^{n} w_i\,g(t_i),
+\int_{-1}^{1} g(t)\,dt \approx \sum_{i=1}^{n} \omega_i\,g(t_i),
+\qquad
+\omega_i=\frac{2}{(1-t_i^2)\,[P_n'(t_i)]^2},
 $$
-where $t_i$ are roots of the Legendre polynomial $P_n(t)$ and $w_i$ are associated weights.
+where the nodes $t_i$ are the $n$ roots of the [Legendre polynomial](../legendre-polynomials/) $P_n(t)$.
+The roots all lie inside $(-1,1)$ and the weights $\omega_i$ are positive.
+For a general interval $[a,b]$, the change of variable $x=\tfrac{a+b}{2}+\tfrac{b-a}{2}t$ gives the rule the animation draws:
+$$
+\int_a^b f(x)\,dx \approx I_n=\sum_{i=1}^{n} w_i\,f(x_i),
+\qquad
+x_i=\frac{a+b}{2}+\frac{b-a}{2}\,t_i,
+\qquad
+w_i=\frac{b-a}{2}\,\omega_i .
+$$
 
-For a general interval $[a,b]$ with $x=\tfrac{a+b}{2}+\tfrac{b-a}{2}t$,
+The rule needs only a finite interval and the values of $f$ at the interior nodes; it never evaluates $f$ at $a$ or $b$.
+Its error formula needs much more: $f$ must have $2n$ continuous derivatives, $f\in C^{2n}[a,b]$.
+
+As a general result, the $n$-point rule is exact for every polynomial of degree at most $2n-1$, and no rule with $n$ nodes is exact for all polynomials of degree $2n$.
+If $f\in C^{2n}[a,b]$, there is a $c$ with $a<c<b$ such that
 $$
-\int_a^b f(x)\,dx \approx \frac{b-a}{2}\sum_{i=1}^{n} w_i\,f\!\left(\frac{a+b}{2}+\frac{b-a}{2}t_i\right).
+\int_a^b f(x)\,dx - I_n = \frac{(b-a)^{2n+1}\,(n!)^4}{(2n+1)\,[(2n)!]^3}\,f^{(2n)}(c),
 $$
-The rule is exact for polynomials up to degree $2n-1$.
+which for $n=2$ on $[-1,1]$ is Mathews' error term $f^{(4)}(c)/135$.
+For an $f$ that is analytic on a neighbourhood of $[a,b]$, the error falls at least geometrically as $n$ grows; [Case 1](#case-1) quotes this for the smooth integrand $1+e^{-x}\sin 8x$.
+
+[Case 1](#case-1) itself shows what happens when the smoothness hypothesis fails.
+Its integrand $f(x)=1+e^{-x}\sin(8x^{2/3})$ has $f'$ unbounded at $x=0$, so $f$ is not even in $C^1[0,2]$, and the error shrinks only algebraically: in the table below, doubling $n$ divides it by about 9.2, 9.6 and then 9.8, approaching $2^{10/3}\approx 10.08$.
+Few nodes can also miss the shape of $f$.
+At $n=2$ the nodes $x\approx0.423$ and $1.577$ sit near the two troughs of $f$, and $I_2=1.154628$ is about 43% low.
+Nor does the error always fall as $n$ grows: $|I_5-I|\approx1.7\times10^{-3}$, but $|I_6-I|\approx3.2\times10^{-3}$.
+
+| $n$ | $I_n$ | $I_n-I$ | ratio |
+|---:|---:|---:|---:|
+| 4 | 2.106664 | $9.04\times10^{-2}$ | |
+| 8 | 2.017912 | $1.63\times10^{-3}$ | 55.4 |
+| 16 | 2.016457 | $1.77\times10^{-4}$ | 9.22 |
+| 32 | 2.016298 | $1.83\times10^{-5}$ | 9.65 |
+| 64 | 2.016282 | $1.86\times10^{-6}$ | 9.84 |
+
+The rows are frames of Case 1, each doubling $n$, against $I=\int_0^2 f(x)\,dx\approx 2.016280$; the ratio is the previous row's error divided by this row's.
+
+Gauss-Legendre quadrature gains accuracy by raising $n$ on the whole interval, while the [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/) and [Simpson's Rule](../simpsons-rule-for-numerical-integration/) gain it by shrinking $h$, which [Romberg Integration](../romberg-integration/) speeds up by extrapolation and [Adaptive Simpson's Rule](../adaptive-simpsons-rule/) concentrates where $f$ needs it.
 
 ## Animations
 
@@ -30,7 +64,7 @@ $f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$. It opens with three frames of the inte
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Increasing-Order Gauss-Legendre Rule, $f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$
+### Case 1 — Increasing-Order Gauss-Legendre Rule, $f(x)=1+e^{-x}\sin(8x^{2/3})$ on $[0,2]$ {#case-1}
 
 **Behavior:** Each shaded bar has width $w_i$ and height $f(x_i)$, marked by a red dot at the node $x_i$, so its area is the term $w_i f(x_i)$ of the sum. The bars are laid end to end across $[0,2]$, and each node lies inside its own bar. As $n$ grows, the nodes become denser and the estimate settles toward $I\approx2.016280$: from $n=6$ on it decreases in every frame, and the last frame ($n=64$) gives 2.016282, still about $1.9\times10^{-6}$ high. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error shrinks only algebraically, like $O(n^{-10/3})$: doubling $n$ divides it by about 9.8 (from 32 to 64 nodes), tending to $2^{10/3}\approx 10.08$. For contrast, the smooth integrand $1+e^{-x}\sin 8x$ on $[0,2]$ already has error about $1.8\times10^{-13}$ at $n=14$ and reaches double-precision round-off level (about $10^{-15}$ or less) by $n=16$.
 
