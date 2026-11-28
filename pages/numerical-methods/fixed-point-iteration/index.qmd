@@ -7,16 +7,59 @@ bibliography: ../../../references.bib
 
 Source inspiration:  [@mathewsSite].
 
+## Description
+
+Fixed point iteration solves an equation written in the form $x = g(x)$.
+A solution $x^*$, with $g(x^*) = x^*$, is a fixed point of $g$, where the curve $y = g(x)$ meets the line $y = x$.
+An equation $f(x) = 0$ can be rewritten in this form in many ways, and the choice of $g$ decides whether the method works.
+Starting from $x_0$, apply $g$ repeatedly:
+
+$$
+x_{n+1} = g(x_n), \qquad n = 0, 1, 2, \ldots
+$$
+
+If $g$ is continuous and the iterates converge, their limit is a fixed point of $g$.
+Mathews' fixed point theorems give conditions that guarantee convergence: if $g$ and $g'$ are continuous on $[a, b]$, $g$ maps $[a, b]$ into itself, and $|g'(x)| \le K < 1$ for all $x \in [a, b]$, then $g$ has a unique fixed point $x^*$ in $[a, b]$, the iterates converge to it from every $x_0 \in (a, b)$, and $|x^* - x_n| \le K^n\,|x^* - x_0|$.
+The theorem's conditions are sufficient, not necessary: [Case 1](#case-1) starts at $x_0 = 0.1$, where $g'(x_0) \approx 2.24$, and still converges to $x^* = 2$.
+For continuously differentiable $g$: if $|g'(x^*)| < 1$, the iteration converges to $x^*$ for every starting value close enough to $x^*$; if $|g'(x^*)| > 1$, iterates near $x^*$ (other than $x^*$ itself) move away from it.
+
+In general, write $e_n = x_n - x^*$.
+If $g$ is continuously differentiable near $x^*$ and the iterates converge to $x^*$ without reaching it, the mean value theorem gives $e_{n+1} = g'(c_n)\,e_n$ for some $c_n$ between $x_n$ and $x^*$, so
+
+$$
+\frac{e_{n+1}}{e_n} \to g'(x^*).
+$$
+
+Convergence is therefore linear when $0 < |g'(x^*)| < 1$: each step multiplies the error by about $|g'(x^*)|$, and the closer that factor is to 1, the slower the iteration.
+If $g'(x^*) > 0$ the iterates eventually stay on one side of $x^*$ (monotone); if $g'(x^*) < 0$ they eventually alternate sides (oscillating).
+If $g'(x^*) = 0$ the convergence is faster than linear.
+[Case 2](#case-2), with $g'(2) = \tfrac{1}{2}$, and [Case 3](#case-3), with $g'(2) = -\tfrac{1}{2}$, show the two patterns; the table gives their error ratios.
+
+| $n$ | Case 2: $x_n$ | $e_n / e_{n-1}$ | Case 3: $x_n$ | $e_n / e_{n-1}$ |
+|---|---|---|---|---|
+| 0 | 4 | — | 4 | — |
+| 1 | 2.828427 | 0.4142 | 1.333333 | −0.3333 |
+| 2 | 2.378414 | 0.4568 | 2.400000 | −0.6000 |
+| 4 | 2.088548 | 0.4892 | 2.095238 | −0.5238 |
+| 8 | 2.005423 | 0.4993 | 2.005865 | −0.5015 |
+| 12 | 2.000338 | 0.5000 | 2.000366 | −0.5001 |
+
+When $|g'(x^*)| > 1$ the fixed point repels, and where the iterates go depends on the rest of $g$.
+For $g(x) = \tfrac{x^2}{4} + \tfrac{x}{2}$, with $g'(2) = \tfrac{3}{2}$, iterates starting just below $x^* = 2$ converge, but to the other fixed point $x = 0$ ([Case 4](#case-4)), while those starting just above grow without bound ([Case 5](#case-5)).
+For $g(x) = -\tfrac{x^2}{4} - \tfrac{x}{2} + 4$, with $g'(2) = -\tfrac{3}{2}$, they alternate sides of $x^* = 2$ and settle onto a 4-cycle instead of converging ([Case 6](#case-6)).
+
+[Newton-Raphson](../newton-raphson-method/) is fixed point iteration with $g(x) = x - f(x)/f'(x)$, for which $g'(x^*) = 0$ at a simple root if $f$ is twice differentiable; [Aitken's Method and Steffensen's Acceleration](../aitken-method-and-steffensen-acceleration/) speed up linearly convergent sequences such as these; [Nonlinear Systems](../nonlinear-systems/) and [Jacobi and Gauss-Seidel Iteration](../jacobi-and-gauss-seidel-iteration/) apply the same idea to systems of equations, and [Picard Iteration](../picard-iteration/) to differential equations.
+
 ## Animations
 
 Each animation below shows the **cobweb (staircase) diagram** for fixed point iteration. The diagram
 plots two curves — the identity line $y = x$ and the iteration function $y = g(x)$ — then traces
 the staircase path: from the current iterate $x_n$ on the diagonal, vertical to the curve to get
-$g(x_n) = x_{n+1}$, then horizontal back to the diagonal. For continuously differentiable $g$: if $|g'(x^*)| < 1$, the iteration converges to $x^*$ for every starting value close enough to $x^*$; if $|g'(x^*)| > 1$, iterates near $x^*$ (other than $x^*$ itself) move away from it.
+$g(x_n) = x_{n+1}$, then horizontal back to the diagonal.
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Convergent staircase, $g(x) = \sqrt{2x}$, $x_0 = 0.1$
+### Case 1 — Convergent staircase, $g(x) = \sqrt{2x}$, $x_0 = 0.1$ {#case-1}
 
 **Behavior:** The curve $g(x) = \sqrt{2x}$ meets $y = x$ at $x = 0$ and at $x^* = 2$.
 On $(0, 2)$ it is increasing and lies between $y = x$ and $y = 2$, so the iterates climb monotonically to $x^* = 2$, even though $g'(x) > 1$ for $0 < x < \tfrac{1}{2}$, which includes $x_0 = 0.1$.
@@ -26,7 +69,7 @@ Near $x^*$ the error is roughly halved at each step, since $g'(2) = \tfrac{1}{2}
 
 ![Cobweb diagram: convergent fixed point iteration with g(x)=sqrt(2x), starting below the fixed point at x₀ = 0.1](fixpointaa.gif)
 
-### Case 2 — Convergent staircase, $g(x) = \sqrt{2x}$, $x_0 = 4.0$
+### Case 2 — Convergent staircase, $g(x) = \sqrt{2x}$, $x_0 = 4.0$ {#case-2}
 
 **Behavior:** Same function as Case 1 but starting above the fixed point.
 The staircase descends monotonically to $x^* = 2$, confirming convergence from both sides.
@@ -35,7 +78,7 @@ The staircase descends monotonically to $x^* = 2$, confirming convergence from b
 
 ![Cobweb diagram: convergent fixed point iteration with g(x)=sqrt(2x), starting above the fixed point at x₀ = 4.0](fixpointbb.gif)
 
-### Case 3 — Oscillating convergent, $g(x) = \tfrac{8}{x+2}$, $x_0 = 4.0$
+### Case 3 — Oscillating convergent, $g(x) = \tfrac{8}{x+2}$, $x_0 = 4.0$ {#case-3}
 
 **Behavior:** The curve $g(x) = \tfrac{8}{x+2}$ is strictly decreasing, with $g'(x) = -\tfrac{8}{(x+2)^2}$, so $g'(2) = -\tfrac{1}{2}$.
 Since $|g'(2)| = \tfrac{1}{2} < 1$, iteration converges, but the staircase alternates sides of $x^*$ on each step.
@@ -44,7 +87,7 @@ Since $|g'(2)| = \tfrac{1}{2} < 1$, iteration converges, but the staircase alter
 
 ![Cobweb diagram: oscillating convergent fixed point iteration with g(x)=8/(x+2), starting at x₀ = 4.0](fixpointcc.gif)
 
-### Case 4 — Repelled from $x^* = 2$, converges to $x = 0$, $g(x) = \tfrac{x^2}{4} + \tfrac{x}{2}$, $x_0 = 1.95$
+### Case 4 — Repelled from $x^* = 2$, converges to $x = 0$, $g(x) = \tfrac{x^2}{4} + \tfrac{x}{2}$, $x_0 = 1.95$ {#case-4}
 
 **Behavior:** The curve $g(x) = \tfrac{x^2}{4} + \tfrac{x}{2}$ crosses $y = x$ at $x^* = 2$ (and again at $x = 0$); it lies below the diagonal for $0 < x < 2$.
 Since $g'(2) = \tfrac{3}{2} > 1$, the staircase walks away from $x^* = 2$ toward the left and converges monotonically to the other fixed point $x = 0$, where $g'(0) = \tfrac{1}{2}$.
@@ -53,7 +96,7 @@ Since $g'(2) = \tfrac{3}{2} > 1$, the staircase walks away from $x^* = 2$ toward
 
 ![Cobweb diagram: fixed point iteration with g(x)=x²/4+x/2, starting at x₀ = 1.95 just below the repelling fixed point x* = 2; the staircase walks left and converges to the fixed point x = 0](fixpointdd.gif)
 
-### Case 5 — Divergent, $g(x) = \tfrac{x^2}{4} + \tfrac{x}{2}$, $x_0 = 2.03$
+### Case 5 — Divergent, $g(x) = \tfrac{x^2}{4} + \tfrac{x}{2}$, $x_0 = 2.03$ {#case-5}
 
 **Behavior:** Same function as Case 4 but starting above the fixed point.
 The staircase moves monotonically rightward and diverges, showing instability from both sides.
@@ -63,7 +106,7 @@ The animation stops at $x_9 \approx 3.753$, the last iterate inside the window; 
 
 ![Cobweb diagram: divergent fixed point iteration with g(x)=x²/4+x/2, starting just above the fixed point at x₀ = 2.03; the staircase climbs away from x* = 2 and reaches x₉ ≈ 3.753 at the right of the window](fixpointee.gif)
 
-### Case 6 — Oscillating, does not converge, $g(x) = -\tfrac{x^2}{4} - \tfrac{x}{2} + 4$, $x_0 = 1.97$
+### Case 6 — Oscillating, does not converge, $g(x) = -\tfrac{x^2}{4} - \tfrac{x}{2} + 4$, $x_0 = 1.97$ {#case-6}
 
 **Behavior:** The curve $g(x) = -\tfrac{x^2}{4} - \tfrac{x}{2} + 4$ is steeply decreasing at $x^* = 2$.
 Since $g'(2) = -\tfrac{3}{2}$ and $|g'(2)| = \tfrac{3}{2} > 1$, the iteration does not converge to $x^*$: the staircase moves away from $x^* = 2$, alternating sides at every step, and settles onto a stable 4-cycle (≈ 4.25, −2.64, 3.58, −0.99).
