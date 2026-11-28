@@ -155,4 +155,13 @@ After batch 22:
   - Nonlinear Systems (check): rate pointers, smoothness hypothesis and links added; 441 words (over 400). Done.
   - Broyden's Method (check): hypotheses and Case A ratios added; 539 words (over 400). Done.
   - Damped Newton with Acceleration (Madsen-Reid) (check): core-formula display, simple-root rate and links added; 1167 words (over 400). Done.
-- Batches 18–22: in progress on stacked branches (see their entries).
+- Batch 18 (series and interpolation I): run 2026-11-28 on branch `batch-18`, review in `reviews/batch-18`. Round 1: 0 Error, 0 Misleading, 4 Minor; all fixed and independently checked. No round 2 needed.
+  - Maclaurin and Taylor Series (check): remainder, hypothesis, case links added; 400 words. Done.
+  - Padé Approximation (check): hypothesis, Case 16 contrast, links added; 399 words. Done.
+  - Laurent series (extend): 400 words; geometric rate (Case 02), divergence and slow convergence near the circles. Done.
+  - Lagrange Polynomial Interpolation (extend): 394 words; error theorem, Runge (Case 08), extrapolation (Case 04). Done.
+  - Newton Interpolation Polynomial (extend): 388 words; divided differences, Mathews' equal-spacing bounds checked on the dd case. Done.
+  - Hermite Polynomial Interpolation (extend): 396 words; h⁴/384 bound, pre-asymptotic ratios, overshoot. Done.
+  - Aitken's and Neville's Interpolation (extend): 399 words; Aitken's recursion, remainder bounds on Case 2, convergence-test trap in Case 1. Done.
+  - The Tangent Parabola (write): 376 words; 4-row coefficient table (Mathews' Table 1), O(h²) rate, |x| and round-off failures. Done.
+- Batches 19–22: in progress on stacked branches (see their entries).

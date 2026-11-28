@@ -32,3 +32,10 @@ All four are wording precision; every number on all eight pages matched the revi
 - Calibration: one reviewer got a scratch copy of the Hermite page with two planted errors in the new text (the n = 8 maximum error given as 0.000936 for 0.000906; and a claim that the O(h⁴) rate shows from the first frame, each doubling dividing the error by about 16, when the ratios are 2.0, 19.9 and 11.9). It found both, with independent numbers. That report was discarded and the real page reviewed afresh.
 - Reviewers returned their reports as text; the director saved them unchanged.
 - Mechanical checks found nothing.
+
+## Batch close-out (director)
+
+- **Pages built:** eight overview Descriptions with claim ledgers (two *check*, five *extend*, one *write*). No script or GIF changed. Final prose counts: Maclaurin/Taylor 400, Padé 399, Laurent 400, Lagrange 394, Newton 388, Hermite 396, Aitken/Neville 399, Tangent Parabola 376.
+- **Findings:** round 1 only (0 Error, 0 Misleading, 4 Minor). All four were reproduced and fixed by one fixer with a ledger (Lagrange and Newton with the same wording, since both pages share one script), and confirmed resolved by a separate checker who saw only the findings and the diffs. No round 2 was needed.
+- **Open:** nothing. Optional note from the checker: Hermite's "Bézier curves describe cubic Hermite pieces" could say "cubic Bézier curves", since that page also covers degree n.
+- **Commits:** `7967e0b`, `3f97ea1`, `7b4a413`, `de2ab0b`, `9507911`, `2c995ba`, `8cda3be`, `f01ee0b` overviews; `2fdc0b8` review; the four fix commits; the close-out commit.
