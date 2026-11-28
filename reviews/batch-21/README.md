@@ -30,3 +30,10 @@ All three are wording; every number on all seven pages matched the reviewers' in
 - Calibration: one reviewer got a scratch copy of the Romberg page with two planted errors in the new text (halving ratios "3.46 to 3.50" for 3.16 to 3.20; and a claim that $R_{8,8}$ keeps its column's high order and is about $10^6$ times closer to $I$ than $R_{8,1}$, when it is 4.4 times). It found both. That report was discarded and the real page reviewed afresh.
 - Reviewers returned their reports as text; the director saved them unchanged.
 - Mechanical checks found nothing.
+
+## Batch close-out (director)
+
+- **Pages built:** seven overview Descriptions with claim ledgers (all *extend*). No script or GIF changed. Final prose counts: Newton-Cotes 391, Romberg 329, Adaptive Simpson 400, Gauss-Legendre 354, Cubic Spline Quadrature 370, Monte Carlo Pi 400, 2D rules 385.
+- **Findings:** round 1 only (0 Error, 0 Misleading, 3 Minor). All three were reproduced and fixed by one fixer with a ledger, and confirmed by a separate checker who saw only the findings and the fix-only diffs. No round 2 was needed.
+- **Open:** nothing (the 2D table's truncated last digit is optional and was left).
+- **Commits:** `1360dff`…`8649c50` overviews; the review commit; three fix commits; the close-out commit.

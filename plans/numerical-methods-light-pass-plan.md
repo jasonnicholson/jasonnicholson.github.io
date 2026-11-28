@@ -182,4 +182,12 @@ After batch 22:
   - Trapezoidal Rule (extend): 295 words; error term and sign rule, 5-row table, h^{5/3} on Case 1. Done.
   - Simpson's 3/8 Rule (extend): 342 words; error term, 9/4 of Simpson's constant, 4-row table. Done.
   - Boole's Rule (extend): 390 words; error term, O(h⁶), 5-row table, Romberg's third column. Done.
-- Batches 21–22: in progress on stacked branches (see their entries).
+- Batch 21 (integration II): run 2026-11-28 on branch `batch-21`, review in `reviews/batch-21`. Round 1: 0 Error, 0 Misleading, 3 Minor; all fixed and independently checked. No round 2 needed.
+  - Newton-Cotes Integration (extend): 391 words; four panel rules with error terms, h^{5/3} on the page's integrand, negative weights at M = 8. Done.
+  - Romberg Integration (extend): 329 words; O(h^{2j}) columns, Case 1 failure and the x = t³ cure. Done.
+  - Adaptive Simpson's Rule (extend): 400 words; /15 estimate, sin²(4πx) and step-function failures. Done.
+  - Gauss-Legendre Quadrature (extend): 354 words; degree 2n−1, error constant, 5-row table (ratios → 2^{10/3}). Done.
+  - Cubic Spline Quadrature (extend): 370 words; O(h³) natural-spline result, 5-row table. Done.
+  - Monte Carlo Pi (extend): 400 words; σ_n, CLT band, non-monotone single-run error. Done.
+  - 2D Trapezoidal and Simpson Rules (extend): 385 words; tensor-product rules, 4-row table, 2×2 overshoot. Done.
+- Batch 22: in progress (see its entry).
