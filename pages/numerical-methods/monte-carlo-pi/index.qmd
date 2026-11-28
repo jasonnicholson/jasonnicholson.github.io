@@ -9,15 +9,33 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Monte Carlo estimation of $\pi$ samples random points uniformly in the unit square
-$[0,1]\times[0,1]$ and counts how many lie inside the quarter unit disk
-$x^2+y^2\le 1$.
+Monte Carlo estimation of $\pi$ measures an area by random sampling.
+The quarter unit disk $x^2+y^2\le 1$, $x,y\ge 0$, has area $\pi/4$ and lies inside the unit square $[0,1]\times[0,1]$, which has area 1.
+The method samples random points uniformly in the unit square and counts how many lie inside the quarter unit disk.
 If $n$ points are sampled and $m$ of them satisfy the disk test, then
 $$
 \hat\pi_n = 4\frac{m}{n}.
 $$
 
-The stochastic error decreases on the order of $1/\sqrt{n}$, so convergence is slower than high-order deterministic quadrature but robust in higher-dimensional settings.
+The points must be independent and uniformly distributed over the square, so that each one lands in the quarter disk with probability $p=\pi/4$, the ratio of the two areas.
+[Case 1](#case-1) draws them from a pseudorandom generator with a fixed seed, so its run is reproducible, but another seed gives a different estimate.
+
+Under these hypotheses, as a general result, $m$ is a binomial count with mean $np$, so $\hat\pi_n$ is an unbiased estimate of $\pi$, and by the law of large numbers it converges to $\pi$ with probability 1.
+Its standard deviation, the standard error, is
+$$
+\sigma_n = 4\sqrt{\frac{p(1-p)}{n}} \approx \frac{1.642}{\sqrt n}, \qquad p=\frac{\pi}{4}.
+$$
+Mathews notes that the estimates converge very slowly, of the order $O(n^{-1/2})$, as a consequence of the Central Limit Theorem.
+By that theorem, for large $n$, $\hat\pi_n$ is approximately normal, so about 95% of runs land within $1.96\,\sigma_n$ of $\pi$.
+The rate does not depend on the dimension, which is why Monte Carlo methods stay useful for integrals in many dimensions.
+In [Case 1](#case-1) the first four frames quadruple $n$ each time, from 100 to 6400, and the printed standard error halves each time, from 0.1642 to 0.0205.
+
+The error of a single run is random and need not shrink as $n$ grows.
+In [Case 1](#case-1), $|\pi-\hat\pi_n|$ is 0.0140 at $n=6400$ but 0.0204 at $n=10\,000$, although the larger sample contains the smaller one.
+A run gives no guaranteed error bound, only a probable one, and the rate is slow: each extra correct decimal needs 100 times as many points, so an error below 0.0005 with 95% confidence needs about $(1.96\cdot 1.642/0.0005)^2\approx 4.1\times 10^{7}$ points.
+In general, points that are not uniform or not independent, such as those from a poor generator, can bias the estimate, and $\sigma_n$ then no longer describes its error.
+
+[Monte Carlo Integration](../monte-carlo-integration/) applies the same random sampling to definite integrals with the sample-mean estimator instead of counting hits, while deterministic rules such as [Simpson's Rule](../simpsons-rule-for-numerical-integration/) and the [2D Trapezoidal and Simpson Rules](../2d-trapezoidal-and-simpson-rules/) converge much faster in one or two dimensions when the integrand is smooth.
 
 ## Animations
 
@@ -30,7 +48,7 @@ Julia source scripts that generated these animations are linked under each case.
 No archived animation GIF is available for this topic in the current snapshot, so the animation below is reconstructed from Example 1 of Mathews' Monte Carlo Pi module.
 The module's Examples 2–7, which use the same hit-or-miss method of counting the random points that land in the region to estimate areas under curves (Examples 2–5), the area of a cardioid (Example 6) and the area of a region bounded by inequalities (Example 7), are not animated here.
 
-### Case 1 — Monte Carlo $\pi$ Estimation, Quarter Unit Disk in $[0,1]^2$
+### Case 1 — Monte Carlo $\pi$ Estimation, Quarter Unit Disk in $[0,1]^2$ {#case-1}
 
 **Behavior:** After the opening frame (quarter circle only, no points), each frame adds points, green inside $x^2+y^2\le 1$ and orange outside, and prints the estimate $\hat\pi_n$, which fluctuates but trends toward $\pi$ as $n$ increases. Each of these five frames also prints the standard error $4\sqrt{p(1-p)/n}$ with $p=\pi/4$ (about $1.642/\sqrt{n}$), the standard deviation of $\hat\pi_n$; in this seeded run $|\pi-\hat\pi_n|$ is between 0.68 and 1.35 standard errors in each of them.
 
