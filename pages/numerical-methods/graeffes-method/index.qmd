@@ -38,10 +38,14 @@ For real roots, the sign of each root is chosen by checking which of $p(+|r_k|)$
 ### Convergence and Limitations
 
 For polynomials with **real roots of distinct magnitudes**, the approximation error decreases quadratically with each root-squaring step — the number of accurate digits roughly doubles per iteration (similar to Newton-Raphson).
+[Case 1](#case-1) shows this from $m = 3$ on.
 
 However, the method has a serious practical limitation: the coefficients of $p_m$ grow doubly exponentially in $m$ (for separated roots, $|c_{n-k}/c_n| \approx (|r_1| \cdots |r_k|)^{2^m}$), rapidly exceeding the range of standard floating-point arithmetic. Most software cannot apply more than a handful of iterations before overflow. The method was popular in the 19th and early 20th centuries when it was implemented with extended-precision hand calculation or symbolic algebra systems; today it is primarily of historical and educational interest.
 
 Special cases — double roots, complex conjugate root pairs, roots equal in magnitude — require modified formulas and careful coefficient analysis.
+[Case 2](#case-2) shows one of these, a double root: as with Newton-Raphson at a multiple root, its two estimates converge only linearly, their error roughly halving at each step from $m = 2$ on, while the two simple roots still converge quadratically.
+
+Among the other root finders on this site, [Newton-Raphson](../newton-raphson-method/) refines one root from a starting guess, [Lin-Bairstow](../lin-bairstow-method/) finds real quadratic factors, and so complex-conjugate pairs, in real arithmetic, and the [Madsen-Reid method](../madsen-reid-method/) finds the roots one at a time by damped Newton steps and deflation.
 
 ## Animations
 
@@ -49,7 +53,7 @@ Each animation below shows how the **Separated Root Theorem estimates** of each 
 
 Julia source scripts that generated these animations are linked under each case. The scripts carry out the root-squaring step on the coefficients in exact integer arithmetic, because in double precision the coefficients overflow at $m = 8$: the largest coefficient of $p_8$ is about $2.2 \times 10^{353}$ in Case 1 and $8.6 \times 10^{434}$ in Case 2.
 
-### Case 1 — Distinct real roots, $f(x) = (x+1)(x-2)(x+3)(x-4)$, true $|r_k| \in \{1,2,3,4\}$
+### Case 1 — Distinct real roots, $f(x) = (x+1)(x-2)(x+3)(x-4)$, true $|r_k| \in \{1,2,3,4\}$ {#case-1}
 
 **Behavior:** All four estimates converge **quadratically**: from $m = 3$ on, the number of correct digits in each estimate roughly doubles at every step, because $|r_k/r_{k+1}|^{2^m} \to \infty$ doubly exponentially, pushing the coefficient ratios cleanly toward the individual root magnitudes. The first steps are irregular: the $r_2$ estimate is accidentally close at $m = 1$ (3.017) and moves away to 2.941 at $m = 2$ before converging. Even though the roots are initially close ($|r_1|/|r_2| = 4/3$), a few squaring steps are enough to separate them.
 
@@ -57,7 +61,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 ![Graeffe convergence animation for a degree-4 polynomial with four distinct real roots −3, −1, 2, 4. Each colored trace shows one root-magnitude estimate moving from its initial poor approximation onto the dashed true-value line as the squaring iteration count increases.](graeffesaa.gif)
 
-### Case 2 — Repeated real root at $x = 5$, $f(x) = (x-1)(x+2)(x-5)^2$, true $|r_k| \in \{1,2,5,5\}$
+### Case 2 — Repeated real root at $x = 5$, $f(x) = (x-1)(x+2)(x-5)^2$, true $|r_k| \in \{1,2,5,5\}$ {#case-2}
 
 **Behavior:** The two estimates for the double root (both targeting $|r| = 5$) converge **linearly** — from $m = 2$ on, the error is roughly halved each iteration rather than squared — because the separated-root condition $|r_k|^{2^m} \gg |r_{k+1}|^{2^m}$ is never satisfied when two roots share the same magnitude. The two simple roots ($|r| = 1$ and $|r| = 2$) converge quadratically as usual. This contrast in convergence rate is the signature of two real roots of equal magnitude: here a repeated root, and a real pair $\pm r$ behaves the same way because one squaring turns it into a double root. A complex-conjugate pair also has two roots of equal magnitude but does not give this pattern: for roots $3 \pm 4i$, 2 and 1 (magnitudes 5, 5, 2, 1, as here), the top two estimates cross back and forth over 5 and their error does not halve each step; it grows from $m = 4$ to $m = 5$ and from $m = 7$ to $m = 8$.
 
