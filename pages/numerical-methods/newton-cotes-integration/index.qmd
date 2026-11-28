@@ -9,20 +9,40 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Newton-Cotes formulas approximate
-$\int_a^b f(x)\,dx$ by interpolating $f$ on equally spaced nodes and integrating the interpolating polynomial on each panel. Familiar composite rules include trapezoidal (degree 1), Simpson's $1/3$ (degree 2), Simpson's $3/8$ (degree 3), and Boole's rule (degree 4).
+Newton-Cotes formulas approximate $\int_a^b f(x)\,dx$ from values of $f$ at equally spaced nodes.
+On a panel of $M$ subintervals of width $h$, with nodes $x_k=x_0+kh$ and $f_k=f(x_k)$, they integrate the polynomial of degree $M$ through the $M+1$ nodes; the *closed* rules include both endpoints.
+Mathews states the first four with their error terms, for some $c$ in the panel:
 
-For spacing $h$, representative composite forms are:
-$T_n = h\big[\tfrac12 f(x_0)+\sum_{i=1}^{n-1}f(x_i)+\tfrac12 f(x_n)\big]$,
-$S_n = \tfrac{h}{3}\big[f(x_0)+f(x_n)+4\sum_{k=1}^{n/2}f(x_{2k-1})+2\sum_{k=1}^{n/2-1}f(x_{2k})\big]$ for even $n$.
+$$
+\begin{aligned}
+\int_{x_0}^{x_1} f(x)\,dx &= \frac{h}{2}\left(f_0+f_1\right) - \frac{h^3}{12}f^{(2)}(c) &&\text{(trapezoidal)}\\
+\int_{x_0}^{x_2} f(x)\,dx &= \frac{h}{3}\left(f_0+4f_1+f_2\right) - \frac{h^5}{90}f^{(4)}(c) &&\text{(Simpson's 1/3)}\\
+\int_{x_0}^{x_3} f(x)\,dx &= \frac{3h}{8}\left(f_0+3f_1+3f_2+f_3\right) - \frac{3h^5}{80}f^{(4)}(c) &&\text{(Simpson's 3/8)}\\
+\int_{x_0}^{x_4} f(x)\,dx &= \frac{2h}{45}\left(7f_0+32f_1+12f_2+32f_3+7f_4\right) - \frac{8h^7}{945}f^{(6)}(c) &&\text{(Boole)}
+\end{aligned}
+$$
 
-The animations below follow the legacy style by increasing point density over the full interval between frames.
+A composite rule splits $[a,b]$ into $n$ subintervals, $h=(b-a)/n$, and applies the panel rule to each of $n/M$ panels, so $n$ must be a multiple of $M$; Cases [1](#case-1) to [4](#case-4) use $M=1$, 2, 3 and 4.
+
+Each error term needs $f$ smooth on the panel: $f\in C^2$ for the trapezoidal rule, $C^4$ for both Simpson rules and $C^6$ for Boole's rule.
+The rules are exact for polynomials of degree 1, 3, 3 and 5, their degrees of precision; for even $M$ the symmetric panel gains one degree.
+In general, if $f$ has those continuous derivatives on $[a,b]$, the composite errors are $O(h^2)$, $O(h^4)$, $O(h^4)$ and $O(h^6)$.
+
+The animations do not show these orders: every case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$, which is not smooth at $x=0$.
+The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand.
+The measured error of all four rules shrinks like $O(h^{5/3})$ rather than $O(h^2)$, $O(h^4)$, $O(h^4)$ and $O(h^6)$: halving $h$ (from 24 to 48 subintervals) divides it by about 3.14, 3.38, 3.55 and 3.15 for the trapezoidal, Simpson's $1/3$, Simpson's $3/8$ and Boole's rules, tending to $2^{5/3}\approx 3.17$ for each, instead of 4, 16, 16 and 64.
+So at equal $h$ the higher-degree rules gain only a constant factor over the trapezoidal rule here, not extra powers of $h$.
+Nearly all of that error comes from the panel at $x=0$: at 121 sample points it contributes over 99% of the error of Simpson's $3/8$ and Boole's rules ([Case 3](#case-3), [Case 4](#case-4)).
+[Adaptive Simpson's Rule](../adaptive-simpsons-rule/) targets such errors by refining only panels whose error estimate is large.
+Raising $M$ is no cure either: the closed rule on nine nodes ($M=8$) already has negative weights, which can amplify rounding errors in the $f_k$.
+
+Each rule has its own page ([Trapezoidal](../trapezoidal-rule-for-numerical-integration/), [Simpson's](../simpsons-rule-for-numerical-integration/), [Simpson's 3/8](../simpsons-3-8-rule-for-numerical-integration/), [Boole's](../booles-rule/)); the panel polynomials are [Lagrange interpolants](../lagrange-polynomial-interpolation-and-approximation/), [Romberg Integration](../romberg-integration/) recovers Simpson's and Boole's rules from trapezoidal sums, and [Gauss-Legendre Quadrature](../gauss-legendre-quadrature/) drops equal spacing for degree of precision $2N-1$ with $N$ nodes.
 
 ## Animations
 
-Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different closed Newton-Cotes construction while sample density increases frame by frame. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error of all four rules shrinks like $O(h^{5/3})$ rather than $O(h^2)$, $O(h^4)$, $O(h^4)$ and $O(h^6)$: halving $h$ (from 24 to 48 subintervals) divides it by about 3.14, 3.38, 3.55 and 3.15 for the trapezoidal, Simpson's $1/3$, Simpson's $3/8$ and Boole's rules, tending to $2^{5/3}\approx 3.17$ for each, instead of 4, 16, 16 and 64. So at equal $h$ the higher-degree rules gain only a constant factor over the trapezoidal rule here, not extra powers of $h$.
+Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different closed Newton-Cotes construction while sample density increases frame by frame.
 
-### Case 1 — Composite Trapezoidal Rule
+### Case 1 — Composite Trapezoidal Rule {#case-1}
 
 **Behavior:** Linear segments connect adjacent sample points, creating trapezoids that refine as nodes get denser.
 
@@ -30,7 +50,7 @@ Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different cl
 
 ![Trapezoidal rule animation over [0,2]: full-interval point density increases each frame and trapezoid approximation updates](newtoncotesaa.gif)
 
-### Case 2 — Composite Simpson's Rule (1/3)
+### Case 2 — Composite Simpson's Rule (1/3) {#case-2}
 
 **Behavior:** Pairs of subintervals are approximated by quadratics, producing a visibly smoother top boundary than trapezoids. This animation stops at 41 sample points, as Mathews' Simpson's rule animation does, so its last frame is less accurate than the 121-point last frames of the other cases; at 41 points its error ($2.4\times10^{-3}$) is smaller than the trapezoidal rule's ($8.3\times10^{-3}$).
 
@@ -38,7 +58,7 @@ Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different cl
 
 ![Simpson 1/3 animation over [0,2]: after an opening frame showing only f, density increases each frame up to 41 sample points; red dots mark the sample points, vertical red lines mark the boundaries of the pairs of subintervals, and the piecewise quadratic area approximation updates](newtoncotesbb.gif)
 
-### Case 3 — Composite Simpson's 3/8 Rule
+### Case 3 — Composite Simpson's 3/8 Rule {#case-3}
 
 **Behavior:** Triplets of subintervals are approximated by cubics. This is a higher-degree piecewise fit than Simpson's $1/3$ rule, but not a higher-order rule: both have degree of precision 3 (see Derivation Notes). On this integrand its error at the same $h$ is larger, about 1.25 times Simpson's $1/3$ error as $h$ shrinks.
 
@@ -46,7 +66,7 @@ Each case uses $f(x)=e^{-x}\sin(8x^{2/3})+1$ on $[0,2]$ and shows a different cl
 
 ![Simpson 3/8 animation over [0,2]: after an opening frame showing only f, node density increases each frame up to 121 sample points; red dots mark the sample points, vertical red lines mark the boundaries of the triplets of subintervals, and the piecewise cubic area approximation updates](newtoncotescc.gif)
 
-### Case 4 — Composite Boole's Rule
+### Case 4 — Composite Boole's Rule {#case-4}
 
 **Behavior:** Blocks of four subintervals use quartic interpolation. As density rises, the piecewise quartic envelope tracks oscillations closely.
 
