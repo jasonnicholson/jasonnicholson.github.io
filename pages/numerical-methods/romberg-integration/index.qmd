@@ -9,16 +9,31 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Romberg integration accelerates composite trapezoidal approximations with Richardson extrapolation. If
+Romberg integration approximates $\int_a^b f(x)\,dx$ by building a lower triangular table from composite trapezoidal sums and taking a diagonal entry as the answer.
+Row $k$ starts with the trapezoidal sum $T_{2^{k-1}}$ on $2^{k-1}$ subintervals of width $h=(b-a)/2^{k-1}$, which uses $m=2^{k-1}+1$ sample points.
+Halving $h$ keeps every old sample, so a new row costs only the new midpoints.
+Richardson extrapolation then fills in the rest of the row:
 $$
 R_{k,1}=T_{2^{k-1}},
 $$
-then higher columns are formed by
 $$
 R_{k,j}=R_{k,j-1}+\frac{R_{k,j-1}-R_{k-1,j-1}}{4^{j-1}-1}, \qquad j=2,\dots,k.
 $$
+As Mathews runs it, the table grows one row at a time until two successive diagonal entries agree, $|R_{k,k}-R_{k-1,k-1}|<\text{tol}$, and $R_{k,k}$ is the estimate.
 
-For smooth $f$ ($f\in C^{2j}[a,b]$ for column $j$), the trapezoidal error expands in even powers of $h$, $T_n-I=c_1h^2+c_2h^4+\cdots$; each extrapolation removes the leading term, so column $j$ has error $O(h^{2j})$. This builds a triangular table whose diagonal entries converge quickly for smooth integrands, often outperforming raw trapezoidal refinement for the same function evaluations.
+The weights rest on a general result about the trapezoidal rule.
+For smooth $f$ ($f\in C^{2j}[a,b]$ for column $j$), the trapezoidal error expands in even powers of $h$, $T_n-I=c_1h^2+c_2h^4+\cdots$; each extrapolation removes the leading term, so column $j$ has error $O(h^{2j})$, and halving $h$ divides it by about $4^j$.
+The second column is [Simpson's rule](../simpsons-rule-for-numerical-integration/) and the third is [Boole's rule](../booles-rule/), each on $2^{k-1}$ subintervals.
+This builds a triangular table whose diagonal entries converge quickly for smooth integrands, often outperforming raw trapezoidal refinement for the same function evaluations.
+
+The animation on this page shows what happens when the smoothness hypothesis fails.
+In [Case 1](#case-1), $f(x)=1+e^{-x}\sin(8x^{2/3})$ has $f'$ unbounded at $x=0$, the error no longer expands in even powers of $h$, and the extrapolation weights cancel the wrong terms.
+From 64 to 128 subintervals, halving $h$ divides the error of every column by 3.16 to 3.20, close to $2^{5/3}\approx 3.17$, so $R_{8,8}$ is only about 4.4 times closer to $I$ than $R_{8,1}$.
+On the coarse rows extrapolation even hurts: at $m=3$ and $m=5$ the diagonal error is larger than the trapezoidal error.
+The cure is to remove the singularity first.
+After the substitution $x=t^3$, the integrand $3t^2\left(1+e^{-t^3}\sin 8t^2\right)$ on $[0,\sqrt[3]{2}]$ is smooth, and the same 129 sample points give an $R_{8,8}$ within $4\times10^{-10}$ of $I$.
+
+Romberg integration is [Richardson Extrapolation](../richardson-extrapolation/) applied to the [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/); [Gauss-Legendre Quadrature](../gauss-legendre-quadrature/) and [Adaptive Simpson's Rule](../adaptive-simpsons-rule/) are the alternatives on this site that place or refine nodes instead.
 
 ## Animations
 
@@ -28,7 +43,7 @@ $m=2,3,5,9,17,33,65,129$.
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Romberg Table Construction, $f(x)=1+e^{-x}\sin(8x^{2/3})$, $[0,2]$
+### Case 1 — Romberg Table Construction, $f(x)=1+e^{-x}\sin(8x^{2/3})$, $[0,2]$ {#case-1}
 
 **Behavior:** After an opening frame that shows $f$ alone with an empty table, each frame adds one Romberg row from a denser trapezoidal partition and then applies Richardson extrapolation across the row. The diagonal entry $R_{k,k}$ is the table's estimate at each stage; it is the most accurate entry in its row from $m=9$ on, but at $m=3$ and $m=5$ it is the least accurate. Its error is not monotone: $|R_{k,k}-I|$ is $1.6\times10^{-3}$ at $m=2$, then $0.47$, $0.46$, $0.046$, $8.1\times10^{-3}$, $2.8\times10^{-3}$, $8.7\times10^{-4}$, $2.7\times10^{-4}$; the one-panel value at $m=2$, $f(0)+f(2)=2.017925$, is close only by coincidence. The $x^{2/3}$ term makes $f'$ unbounded at $x=0$ ($f'(x)\approx \tfrac{16}{3}x^{-1/3}$ near $0$), so the textbook error order, which assumes smooth $f$, does not hold for this integrand. The measured error of every column, the diagonal included, shrinks like $O(h^{5/3})$ rather than $O(h^{2j})$: halving $h$ divides the diagonal error by about 3.18 (from 64 to 128 subintervals), tending to $2^{5/3}\approx 3.17$, so extrapolation lowers the error only by a constant factor (about 4.4 against the trapezoid column at 129 sample points). The last frame's $R_{8,8}=2.016007$ is still $2.7\times10^{-4}$ below $I\approx 2.016280$.
 
