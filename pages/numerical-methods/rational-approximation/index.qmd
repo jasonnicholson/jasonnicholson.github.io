@@ -9,17 +9,47 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Rational approximation represents a function by a quotient of polynomials,
+Rational approximation represents a function $f$ on an interval $[a,b]$ by a quotient of polynomials,
 
 $$
-R_{m,n}(x)=\frac{P_m(x)}{Q_n(x)},\qquad Q_n(x)\neq 0.
+R_{m,n}(x)=\frac{P_m(x)}{Q_n(x)}=\frac{a_0+a_1x+\cdots+a_mx^m}{1+b_1x+\cdots+b_nx^n},\qquad Q_n(x)\neq 0,
 $$
 
-Mathews compares three constructions over a fixed interval: interpolation with equally spaced nodes, interpolation with Chebyshev nodes, and a MiniMax (MinMax) construction that spreads error more uniformly. For the MinMax procedure, the goal is to minimize the maximum relative error
+written $[m/n]$ in the animation.
+Fixing the constant term of $Q_n$ at 1 leaves $m+n+1$ coefficients to choose.
+
+Mathews compares three constructions over a fixed interval: interpolation with equally spaced nodes, interpolation with Chebyshev nodes, and a MiniMax (MinMax) construction that spreads error more uniformly.
+Interpolation takes $m+n+1$ nodes $x_0,\dots,x_{m+n}$ in $[a,b]$ and asks for $R_{m,n}(x_k)=f(x_k)$.
+Multiplying by $Q_n(x_k)$ turns this into a linear system for the coefficients:
 
 $$
-\max_{x\in[a,b]}\left|\frac{f(x)-R(x)}{f(x)}\right|.
+P_m(x_k)=f(x_k)\,Q_n(x_k),\qquad k=0,1,\dots,m+n.
 $$
+
+For the MinMax procedure, the goal is to minimize the maximum relative error
+
+$$
+\max_{x\in[a,b]}\left|\frac{f(x)-R(x)}{f(x)}\right|,
+$$
+
+which needs $f(x)\neq 0$ on $[a,b]$.
+
+In general, if $f\in C^{m+n+1}[a,b]$ and $Q_n(x)\neq 0$, then $fQ_n-P_m$ vanishes at the nodes, and the polynomial interpolation error formula gives, for some $\xi$ in $(a,b)$,
+
+$$
+f(x)-R_{m,n}(x)=\frac{(fQ_n)^{(m+n+1)}(\xi)}{(m+n+1)!\,Q_n(x)}\prod_{k=0}^{m+n}(x-x_k).
+$$
+
+On $[-1,1]$, Chebyshev nodes make the product's maximum as small as possible, $2^{-(m+n)}$, as in polynomial interpolation.
+In [Case 1](#case-1), $[2/2]$ for $e^x$, that maximum falls from 0.113 for equal nodes to 0.0625 for Chebyshev nodes, and the maximum relative error falls by a similar factor, from $1.59\times10^{-4}$ to $8.94\times10^{-5}$.
+The general result for MinMax is Chebyshev's alternation theorem: for a positive continuous $f$, the best approximation in relative error exists and is unique, and when $P_m/Q_n$ is in lowest terms and $P_m$ or $Q_n$ has full degree, its relative error reaches its maximum with alternating signs at no fewer than $m+n+2$ points.
+The Remez exchange algorithm finds it from that property; the last frame of Case 1 shows its six equal peaks for $[2/2]$, at $x=-1,\pm0.812,\pm0.312,1$.
+
+Interpolation can fail.
+The linear system can be singular, and a rational interpolant need not exist: no $R_{1,1}$ matches $f(x)=x^2$ at $x=-1,0,1$, since $R_{1,1}(0)=0$ forces $a_0=0$, and then $R_{1,1}(\pm1)=1$ needs both $a_1=1+b_1$ and $a_1=b_1-1$.
+Nothing in the construction keeps $Q_n$ from vanishing inside $[a,b]$, which puts a pole in $R_{m,n}$, so $Q_n$ must be checked; in Case 1, $Q_2(x)\geq 0.58$ on $[-1,1]$ for all three approximants.
+
+[Padé Approximation](../pade-approximation/) builds $R_{m,n}$ from the [Maclaurin series](../maclaurin-and-taylor-series/) of $f$ instead of from nodes, so its error grows away from 0: the $[2/2]$ Padé approximant of $e^x$ has maximum relative error $1.47\times10^{-3}$ on $[-1,1]$, about 17 times the MinMax value; the node choices are those of [Lagrange interpolation](../lagrange-polynomial-interpolation-and-approximation/) and the [Chebyshev Approximation Polynomial](../chebyshev-approximation-polynomial/).
 
 ## Animations
 
@@ -30,7 +60,7 @@ Julia source scripts that generated these animations are linked under each case.
 No archived animation GIF is available for this topic, so the animation below is reconstructed from Example 1 of Mathews' Rational Approximation module.
 The module's Example 2, Exercise 3 and Examples 4–5, which build $[4/4]$ rational approximations on $[-1,1]$ for $e^x$ (Example 2, with equally spaced nodes, with Chebyshev nodes and with MiniMax) and for $\cos(\pi x/2)$, $\tan x$ and $\arctan x$ (Exercise 3 and Examples 4–5, with equally spaced nodes and with Chebyshev nodes), are not animated here.
 
-### Case 1 — Rational $[2/2]$ for $e^x$ on $[-1,1]$: equal nodes, Chebyshev nodes, and MinMax
+### Case 1 — Rational $[2/2]$ for $e^x$ on $[-1,1]$: equal nodes, Chebyshev nodes, and MinMax {#case-1}
 
 **Behavior:** Equally spaced interpolation and Chebyshev interpolation are both exact at their nodes, but their maximum relative errors differ: about $1.59\times10^{-4}$ for equal nodes (largest near $x\approx\pm0.82$) and $8.94\times10^{-5}$ for Chebyshev nodes. The minimax approximant has the smallest possible maximum relative error for this form, $8.68\times10^{-5}$, about 3% below the Chebyshev value. Its error reaches this level with alternating sign at six points ($x=-1,\pm0.812,\pm0.312,1$), so the relative-error curve in the last frame is equal-ripple.
 
