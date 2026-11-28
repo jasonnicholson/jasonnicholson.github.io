@@ -2,6 +2,15 @@
 
 Written 2026-11-25. It follows the coverage review in `mathews-coverage-gaps.md` and Jason's decisions on it.
 
+## Finished (2026-11-28)
+
+All batches (15–22) and the pilot are done. Batches 16–22 sit on stacked branches whose tip, `batch-22`, contains them all; they are ready to merge into `main`. The whole section renders without errors.
+
+- **Three new pages** (Heun's Method, Lin-Bairstow Method, Big "O" Truncation Error) and **four new Numerical Differentiation animations** (batch 15). Big "O" opens the new Fundamentals section of the index.
+- **All 53 pages built before batch 1 now have an overview Description** to the standard below: Numerical Differentiation in batch 15, Newton-Raphson and Simpson's Rule in the pilot, and 50 pages in batches 16–22. Every batch's last review round found no Error or Misleading finding.
+- **Open, for Jason:** six *check* pages stay over 400 words because their reviewed text was not trimmed (Aitken–Steffensen 464, Brent 500, Graeffe 417, Nonlinear Systems 441, Broyden 539, Madsen-Reid 1167); see the batch 16 README's decisions. The other notes for Jason are in each batch README's close-out.
+- **The section index status note** was updated on 2026-11-28.
+
 ## Goal
 
 The site's purpose is what is instructive and insightful. That means the animations, plus a short overview of each method. Proofs and the full set of worked examples belong to the course and the book, not to this site. Two kinds of work follow from that:
@@ -190,4 +199,9 @@ After batch 22:
   - Cubic Spline Quadrature (extend): 370 words; O(h³) natural-spline result, 5-row table. Done.
   - Monte Carlo Pi (extend): 400 words; σ_n, CLT band, non-monotone single-run error. Done.
   - 2D Trapezoidal and Simpson Rules (extend): 385 words; tensor-product rules, 4-row table, 2×2 overshoot. Done.
-- Batch 22: in progress (see its entry).
+- Batch 22 (ODEs): run 2026-11-28 on branch `batch-22` (the tip of the stacked branches), review in `reviews/batch-22`, `reviews/batch-22-r2` and `reviews/batch-22-r3`. Round 1: 3 Error, 0 Misleading, 7 Minor; round 2 (all five pages): 0 Error, 1 Misleading, 3 Minor; round 3 (three changed pages): 0 Error, 0 Misleading, 2 Minor. All fixed and independently checked.
+  - Euler's Method for ODE's (extend): 400 words; modified Euler as the explicit midpoint method, 5-row error table (orders 1 and 2), damped y(5) error, stability limit −2 ≤ z ≤ 0. Done.
+  - Taylor Series Method for ODE's (write): 400 words; order-p series, f ∈ C^p hypothesis, node-error ratios 8.8 and 17.9, stability limits 2.513 and 2.785, derivative cost. Done.
+  - Runge-Kutta Method (write): 362 words; RK4 stages, Simpson link, hypothesis on f near the solution (not y ∈ C⁵ alone), observed order, stability and non-Lipschitz failures. Done.
+  - Runge-Kutta-Fehlberg Method (extend): 399 words; RKF45/54 pair and controller, halving ratios 30.7/27.9/65.6, local-not-global tolerance and underestimated steps on Case 1. Done.
+  - Adams-Bashforth-Moulton Method (extend): 398 words; predictor-corrector pair, starting values, −19/270 estimate, conditional stability 1.285, where instability and truncation set Case 1's error. Done.

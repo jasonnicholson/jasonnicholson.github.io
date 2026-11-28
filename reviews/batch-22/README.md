@@ -34,3 +34,22 @@ The two Errors on hypotheses are the same class batch 16 found (a general conver
 - Calibration: one reviewer got a scratch copy of the Runge-Kutta page with two planted errors in the new text (an observed order 4.37 for 4.07; and a claim that the frames already show the $h^4$ factor at each refinement, which their own error labels contradict). It found both. That report was discarded and the real page reviewed afresh.
 - Reviewers returned their reports as text; the director saved them unchanged.
 - Mechanical checks found nothing (the RKF `#animations` link resolves to Quarto's automatic heading id).
+
+## Batch close-out (director)
+
+- **Pages built:** five overview Descriptions with claim ledgers (two *write*, three *extend*). No script or GIF changed. Final prose counts: Euler 400, Taylor Series 400, Runge-Kutta 362, Runge-Kutta-Fehlberg 399, Adams-Bashforth-Moulton 398.
+- **Findings by round:**
+
+  | Round | Pages | Error | Misleading | Minor |
+  |---|---|---|---|---|
+  | 1 (this folder) | 5 | 3 | 0 | 7 |
+  | 2 (`reviews/batch-22-r2`) | 5 | 0 | 1 | 3 |
+  | 3 (`reviews/batch-22-r3`) | 3 | 0 | 0 | 2 |
+
+  Every Error and Misleading finding was confirmed by an independent checker given only the allegation. Every finding was reproduced, fixed with a ledger, and confirmed by a separate checker who saw only the findings and the diff; two fixes (RKF and ABM in round 2) went back to their fixer once for a wording point the checker raised. Round 3 had no Error or Misleading finding, which ends the review.
+- **Pattern across rounds:** round 2's Misleading finding (ABM: "on its frames stability, not truncation, sets the error") was written by a round 1 fix and passed that fix's check; a fresh reviewer caught it because it contradicted the page's own Animations section. Round 2's Taylor finding was the same class as round 1's Runge-Kutta Errors (an order result stated under smoothness of $y$ alone).
+- **Decisions, for Jason to revisit:**
+  - The Runge-Kutta, Runge-Kutta-Fehlberg and Taylor pages state their order results under smoothness of $f$ near the solution, not Mathews' $y \in C^{p+1}$; Mathews' hypothesis is kept as the consequence in parentheses. Mathews' Runge-Kutta precision theorem image may read $y \in C^2$; the page does not attribute its hypothesis to him. The ABM page keeps Mathews' $y \in C^5$, which suffices for a multistep method with $f$ Lipschitz.
+  - The overview commits contain the reviewed text: it was saved before the round 1 fixes and committed from the saved copies.
+- **Whole section:** `quarto render pages/numerical-methods/` completed without errors after the last fix, with all of batches 16–22 in place.
+- **Commits:** `7368633`, `d690653`, `e7b1045`, `ca45dd2`, `5dcd460` overviews; `cb368d4` review; `c1a3c75`, `7928510`, `714b583`, `ed6964c`, `d265e0d` round 1 fixes; `75ad1c8` round 2 review; `fee1c53`, `0e9633b`, `c25aefa` round 2 fixes; `a582aff` round 3 review; `802b2eb` round 3 fix; the close-out commit (this section, the plan status, the plan's Finished section and the index status note).
