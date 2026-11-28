@@ -57,7 +57,7 @@ To bring them back:
 git checkout f25e39c -- plans .github/skills/animation-page .github/skills/content-page .github/skills/review-animations .github/skills/run-animation-batch .claude/skills
 ```
 
-The skills expect the Mathews archive at `/home/jason/Desktop/math-fullerton/` and the GIFs to be built in the global Julia environment. If you bring them back, point them at this project instead.
+The skills expect the Mathews archive at `/home/jason/Desktop/math-fullerton/` (restore it first; see [mathews-archive.md](mathews-archive.md)) and expect the GIFs to be built in the global Julia environment. If you bring them back, point them at this project instead.
 
 ## Decisions it was finished with
 
