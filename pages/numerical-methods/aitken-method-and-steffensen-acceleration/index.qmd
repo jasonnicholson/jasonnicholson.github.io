@@ -51,6 +51,13 @@ Steffensen's method applies Aitken's $\Delta^2$ process *directly* to the Newton
 
 Each outer iteration consumes **two Newton steps** but, once the iterates are close to the root and rounding in $f$ does not dominate, produces a correction far more accurate than either step alone. The combined effect restores roughly **quadratic convergence** at roots where unaided Newton would only converge linearly.
 
+In general, at a root $p$ of multiplicity $m$ the Newton map $g(x) = x - f(x)/f'(x)$ has $g'(p) = (m-1)/m \neq 1$, so if $g$ is smooth enough near $p$, Steffensen's iteration converges quadratically from starting values close enough to $p$.
+[Case 2](#case-2) shows this rate: the errors of its first four Steffensen steps have exponents $-2$, $-4$, $-8$ and $-16$, doubling at each step.
+
+Rounding limits both methods near a double root, where $f$ is tiny and is computed with a large relative error.
+In [Case 1](#case-1) the expanded cubic rounds to exactly 0 at the third Steffensen iterate, so both Newton steps from it return the same point and the $\Delta^2$ denominator is 0.
+In [Case 3](#case-3) the error stops falling after three steps, at a few times $10^{-8}$.
+
 ### Summary Comparison
 
 | Method | Root type | Convergence order | Notes |
@@ -58,6 +65,8 @@ Each outer iteration consumes **two Newton steps** but, once the iterates are cl
 | Newton–Raphson | Simple ($m=1$) | Quadratic ($\approx 2$) | Standard |
 | Newton–Raphson | Double ($m=2$) | Linear (order 1, ratio $\tfrac{1}{2}$) | Very slow |
 | Steffensen | Double ($m=2$) | Superlinear ($\approx 2$) | Two Newton evals per step |
+
+Steffensen's method is Aitken's process applied to a [fixed-point iteration](../fixed-point-iteration/), here the [Newton-Raphson](../newton-raphson-method/) map; [Accelerated and Modified Newton-Raphson](../accelerated-and-modified-newton-raphson/) and the [Improved Newton Method](../improved-newton-method/) restore quadratic convergence at multiple roots in other ways, and the [Power Method](../power-method/) applies Aitken's process to its eigenvalue estimates.
 
 ## Animations
 
@@ -68,7 +77,7 @@ Julia source scripts that generated these animations are linked under each case.
 Cases 1–3 use the functions and Newton-versus-Steffensen comparisons of Examples 2, 4 and 6 of Mathews' Aitken–Steffensen module, with its starting values for Cases 2 and 3; Case 1 starts at $x_0 = 2$ because Example 2's stated starting value $p_0 = 1$ is the root itself, where $f'(1) = 0$ and the Newton step is undefined.
 The module's Examples 1, 3 and 5, which apply Aitken's $\Delta^2$ process to the already-computed Newton sequence for the same three functions, are not animated here.
 
-### Case 1 — $f(x) = x^3 - 3x + 2$, double root $p = 1$, $x_0 = 2.0$
+### Case 1 — $f(x) = x^3 - 3x + 2$, double root $p = 1$, $x_0 = 2.0$ {#case-1}
 
 **Behavior:** Newton–Raphson converges linearly (slowly) to the double root $p = 1$ of $f(x) = (x-1)^2(x+2)$. At a double root the asymptotic error ratio is $\tfrac{1}{2}$, so each step only halves the error. Steffensen's acceleration brings the error to $6.6 \times 10^{-9}$ in 3 steps (errors $1$, $5.7 \times 10^{-2}$, $2.8 \times 10^{-4}$, $6.6 \times 10^{-9}$), while plain Newton is still at $3.1 \times 10^{-7}$ after 22 steps. The sequence cannot continue from $S_3$: there the expanded polynomial $x^3 - 3x + 2$ rounds to exactly 0, so the $\Delta^2$ denominator is 0 and the animation stops. This is a limit of evaluating the expanded form, not of double precision: the factored form $(x-1)^2(x+2)$ takes a fourth step to the root.
 
@@ -76,7 +85,7 @@ The module's Examples 1, 3 and 5, which apply Aitken's $\Delta^2$ process to the
 
 ![Two-panel animation: top shows Newton tangent-line steps on f(x)=x³−3x+2 approaching the double root p=1 from x₀=2; bottom shows log-error convergence of Newton (slow, linear) vs Steffensen (fast, stopping after 3 steps at error 6.6×10⁻⁹).](aitkenab.gif)
 
-### Case 2 — $f(x) = (x^2-2)\sin(x^2-2)$, double root $p = \sqrt{2}$, $x_0 = 1.0$
+### Case 2 — $f(x) = (x^2-2)\sin(x^2-2)$, double root $p = \sqrt{2}$, $x_0 = 1.0$ {#case-2}
 
 **Behavior:** The double root $p = \sqrt{2}$ causes Newton to converge linearly. Steffensen's method (Aitken's formula applied to two Newton steps, restarted from each accelerated value) recovers rapid convergence: its error reaches $6.7 \times 10^{-16}$ after 4 steps (8 Newton steps), three units in the last place of double precision, while plain Newton is still at $4.7 \times 10^{-8}$ after 22. These errors, like those in the bottom panel, are measured from the double-precision value of $\sqrt{2}$; from the exact $\sqrt{2}$ the final error is $5.7 \times 10^{-16}$. The sequence stops at $S_4$ because $|f'(S_4)|$ is below the script's $10^{-14}$ cutoff.
 
@@ -84,7 +93,7 @@ The module's Examples 1, 3 and 5, which apply Aitken's $\Delta^2$ process to the
 
 ![Two-panel animation: top shows Newton tangent-line steps on f(x)=(x²−2)sin(x²−2) approaching double root p=√2 from x₀=1; bottom shows log-error convergence of Newton vs Steffensen, which reaches error 6.7×10⁻¹⁶ from the double-precision √2 (5.7×10⁻¹⁶ from the exact √2) after 4 steps.](aitkencd.gif)
 
-### Case 3 — $f(x) = x^6 - 7x^4 + 15x^2 - 9$, double root $p = \sqrt{3}$, $x_0 = 1.5$
+### Case 3 — $f(x) = x^6 - 7x^4 + 15x^2 - 9$, double root $p = \sqrt{3}$, $x_0 = 1.5$ {#case-3}
 
 **Behavior:** $f(x) = (x^2-1)(x^2-3)^2$ has a double root at $p = \sqrt{3} \approx 1.732$. Newton's linear crawl shows in the gently sloping error curve (in the top panel its tangent steps are shorter than a pixel after the first four); Steffensen reduces the error to $2.8 \times 10^{-8}$ in 3 steps, then stalls: near the double root the polynomial's values (of order $10^{-14}$) are comparable to the rounding error of evaluating $x^6 - 7x^4 + 15x^2 - 9$ in double precision, so steps 4–6 give errors of $5.4 \times 10^{-8}$, $2.1 \times 10^{-8}$ and $1.5 \times 10^{-8}$, about where plain Newton is after 22 steps ($2.4 \times 10^{-8}$). In exact arithmetic step 4 would reach $4.4 \times 10^{-16}$.
 
