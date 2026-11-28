@@ -9,16 +9,53 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-A cubic spline is a piecewise-cubic interpolant built on nodes $x_0<\cdots<x_n$ so that each panel polynomial $S_i(x)$ interpolates endpoint values and the full spline is globally smooth. The construction enforces continuity of
-$S(x)$, $S'(x)$, and $S''(x)$ at interior knots.
+A cubic spline interpolates data $(x_i, y_i)$, $i = 0, \ldots, n$, at nodes $a = x_0 < x_1 < \cdots < x_n = b$ by a separate cubic $S_i(x)$ on each panel $[x_i, x_{i+1}]$, with $y_i = f(x_i)$ when the data sample a function $f$.
+The panels are joined so that $S(x)$, $S'(x)$ and $S''(x)$ are continuous at the interior nodes.
 
+Write $h_i = x_{i+1} - x_i$ and $M_i = S''(x_i)$.
+Because $S''$ is linear on each panel, each cubic is fixed by its end values and end second derivatives,
+
+$$
+S_i(x) = \frac{M_i (x_{i+1} - x)^3 + M_{i+1} (x - x_i)^3}{6 h_i} + \Bigl(\frac{y_i}{h_i} - \frac{M_i h_i}{6}\Bigr)(x_{i+1} - x) + \Bigl(\frac{y_{i+1}}{h_i} - \frac{M_{i+1} h_i}{6}\Bigr)(x - x_i),
+$$
+
+and continuity of $S'$ at the interior nodes gives the tridiagonal system
+
+$$
+h_{i-1} M_{i-1} + 2 (h_{i-1} + h_i) M_i + h_i M_{i+1} = 6 \Bigl(\frac{y_{i+1} - y_i}{h_i} - \frac{y_i - y_{i-1}}{h_{i-1}}\Bigr), \qquad i = 1, \ldots, n-1.
+$$
+
+These are $n-1$ equations in $n+1$ unknowns, so two end conditions close the system.
 For a natural spline, the boundary conditions are
 
 $$
-S''(x_0)=0,\qquad S''(x_n)=0.
+S''(x_0)=0,\qquad S''(x_n)=0,
 $$
 
-The unknown second derivatives are found from a tridiagonal linear system, then each cubic panel is reconstructed. For smooth $f$ with clamped (exact $f'$ at the ends) or not-a-knot end conditions, the maximum error scales like $O(h^4)$ with mesh spacing $h$. With natural end conditions it is only $O(h^2)$ unless $f''(a)=f''(b)=0$; that error sits near an end where $f''\neq 0$, and away from the ends the error is still $O(h^4)$.
+that is, $M_0 = M_n = 0$; a clamped spline instead prescribes the end slopes $S'(a) = f'(a)$ and $S'(b) = f'(b)$.
+Mathews shows that either choice gives a unique spline.
+The system is strictly diagonally dominant, so it is solved without pivoting in $O(n)$ operations, and each cubic panel is then reconstructed.
+
+In general, for $f \in C^4[a, b]$ with clamped (exact $f'$ at the ends) or not-a-knot end conditions, the maximum error scales like $O(h^4)$, where $h$ is the largest $h_i$.
+With natural end conditions it is only $O(h^2)$ unless $f''(a) = f''(b) = 0$; that error sits near an end where $f'' \neq 0$, and away from the ends the error is still $O(h^4)$.
+[Case 1](#case-1) interpolates $f(x) = \sin x$ on $[0, 2\pi]$, where $\sin''(0) = \sin''(2\pi) = 0$, so the natural spline keeps the $O(h^4)$ rate.
+Its frames, 3 to 9 nodes, are too coarse to show that rate cleanly, so the table continues it, beside $f(x) = \cos x$, whose $f''(0) = -1$:
+
+| panels $n$ | $h$ | max error, $\sin x$ | ratio | max error, $\cos x$ | ratio |
+|---:|---:|---:|---:|---:|---:|
+| 8 | $\pi/4$ | $1.066 \times 10^{-3}$ | | $3.280 \times 10^{-2}$ | |
+| 16 | $\pi/8$ | $6.312 \times 10^{-5}$ | 16.89 | $7.724 \times 10^{-3}$ | 4.25 |
+| 32 | $\pi/16$ | $3.889 \times 10^{-6}$ | 16.23 | $1.902 \times 10^{-3}$ | 4.06 |
+| 64 | $\pi/32$ | $2.422 \times 10^{-7}$ | 16.06 | $4.738 \times 10^{-4}$ | 4.02 |
+| 128 | $\pi/64$ | $1.512 \times 10^{-8}$ | 16.01 | $1.183 \times 10^{-4}$ | 4.00 |
+
+Each error is $\max |S(x) - f(x)|$ over $[0, 2\pi]$ for the natural spline, and each ratio is the previous error over this one.
+Halving $h$ divides the error by about 16 for $\sin x$, the $O(h^4)$ rate, but only by about 4 for $\cos x$, the $O(h^2)$ rate.
+
+A spline knows only its data: in the first frame of [Case 1](#case-1) the three nodes $0$, $\pi$ and $2\pi$ are all zeros of $\sin x$, so $S(x) \equiv 0$ and the maximum error is 1.
+The other trap is the natural end condition when $f''(a)$ or $f''(b)$ is not zero: the $\cos x$ error falls only like $h^2$, and its largest value always lies in the first or last panel.
+
+[Lagrange](../lagrange-polynomial-interpolation-and-approximation/) and [Newton](../newton-interpolation-polynomial/) interpolation fit one polynomial whose degree grows with the number of nodes, [Hermite interpolation](../hermite-polynomial-interpolation/) also matches slopes, [B-Splines](../b-splines/) and [Bézier Curves](../bezier-curves/) shape curves from control points, [Tri-Diagonal Matrices](../tri-diagonal-matrices.qmd) solves the system above, and [Cubic Spline Quadrature](../cubic-spline-quadrature/) integrates the natural spline.
 
 ## Animations
 
@@ -29,7 +66,7 @@ Julia source scripts that generated these animations are linked under each case.
 Mathews' Cubic Splines module has no animation, and the $\sin(x)$ example in Case 1 is new to this page rather than taken from that module. It is used because $\sin(x)$ has a closed form, so each frame can report the spline's maximum error; the module's examples interpolate a table of data points with no underlying function.
 The module's Examples 1–3, which construct a natural cubic spline (Examples 1 and 2, the second with Mathematica's SplineFit procedure) and a clamped cubic spline (Example 3) through one shared set of data points, are not animated here.
 
-### Case 1 — Natural cubic spline convergence for $\sin(x)$
+### Case 1 — Natural cubic spline convergence for $\sin(x)$ {#case-1}
 
 **Behavior:** Adding nodes shrinks the maximum error rapidly. For this $f$ the natural end conditions are exact, since $\sin''(0)=\sin''(2\pi)=0$, so the spline converges at $O(h^4)$, where $h$ is the maximum node spacing; for a smooth $f$ with $f''(a)\neq 0$ or $f''(b)\neq 0$ the natural spline's maximum error falls only as $O(h^2)$. The 3 to 9 nodes shown are too few for this rate to show cleanly from frame to frame. Each frame uses a fully recomputed spline (solving the tridiagonal second-derivative system) for the new set of nodes.
 
