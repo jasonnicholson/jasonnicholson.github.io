@@ -7,13 +7,46 @@ bibliography: ../../../references.bib
 
 Source inspiration: [@mathewsSite].
 
+## Description
+
+The Runge-Kutta method of order 4 (RK4) solves the initial value problem $y' = f(t, y)$, $y(t_0) = y_0$ over $[t_0, b]$.
+It computes approximations $y_i \approx y(t_i)$ at the points $t_i = t_0 + ih$, with $m$ subintervals of width $h = (b - t_0)/m$.
+Each step evaluates $f$ four times, once at the start of the step, twice at its midpoint and once at its end, and advances by a weighted average of the four increments:
+
+$$
+\begin{aligned}
+k_1 &= h\,f(t_i,\ y_i), &\qquad k_2 &= h\,f\!\left(t_i + \tfrac{h}{2},\ y_i + \tfrac{k_1}{2}\right),\\
+k_3 &= h\,f\!\left(t_i + \tfrac{h}{2},\ y_i + \tfrac{k_2}{2}\right), &\qquad k_4 &= h\,f(t_i + h,\ y_i + k_3),
+\end{aligned}
+$$
+
+$$
+y_{i+1} = y_i + \frac{k_1 + 2k_2 + 2k_3 + k_4}{6}.
+$$
+
+When $f$ depends on $t$ alone, $k_2 = k_3$ and the step is [Simpson's rule](../simpsons-rule-for-numerical-integration/) on $[t_i, t_i + h]$, which explains the weights $1, 2, 2, 1$.
+
+Mathews' theorem assumes that $f$ is continuous and satisfies a Lipschitz condition in $y$, so that the problem has a unique solution.
+The error result needs more: in general, if the solution is smooth enough, $y \in C^5[t_0, b]$, the local truncation error of a step is $O(h^5)$ and the global error is $|y(t_i) - y_i| = O(h^4)$, so for small enough $h$ halving the step divides the final error by about 16.
+
+[Case 1](#case-1) runs the sweep on $f(t, y) = 1 - t\sqrt[3]{y}$, $y(0) = 1$, over $[0, 5]$.
+The solution stays positive, down to $y(5) = 0.0081199$, so $f$ is smooth along it and the general rate applies, but only for steps smaller than the animation shows.
+The observed order, $\log(e_{\text{prev}}/e)/\log(h_{\text{prev}}/h)$ for the error $e$ in $y(5)$, is still $4.90$ between the last two frames, $m = 120$ and $150$, and $4.07$ between $m = 1200$ and $1600$, runs far finer than any frame.
+
+Large steps fail on this problem in two ways.
+Along the solution, $\partial f/\partial y = -t/(3y^{2/3})$ reaches $-41.3$ at $t = 5$, so for every step longer than about $h = 0.0675$ ($m \le 74$), $h\,|\partial f/\partial y|$ exceeds RK4's general linear stability limit of $2.785$ before $t = 5$.
+And $f$ is not Lipschitz near $y = 0$: in every run from $m = 12$ to $52$ some stage value falls below $0$, where $\sqrt[3]{y}$ has an infinite slope.
+In those same runs the computed curve visibly turns upward in the tail instead of decaying, ending at $y(5) \approx 0.588$ for $m = 12$; the case's Behavior note separates the causes.
+
+[Euler's method](../eulers-method-for-odes/) (order 1), [Heun's method](../heuns-method/) (order 2) and the [Taylor Series Method](../taylor-series-method-for-odes/) animate the same sweep on the same problem, [Runge-Kutta-Fehlberg](../runge-kutta-fehlberg-method/) pairs embedded fourth- and fifth-order formulas to choose $h$ adaptively, and [Adams-Bashforth-Moulton](../adams-bashforth-moulton-method/) takes its starting values from a one-step method such as RK4.
+
 ## Animations
 
 The animation below repeats Mathews' **step-refinement sweep** for the IVP $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$ over $[0,5]$. Each frame is a complete RK4 run with $m$ subintervals ($h=5/m$), for the 21 values of Mathews' animation, $m = 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 70, 80, 90, 100, 120, 150$, drawn over a fine-step reference solution and labelled with the computed $y(5)$ and its error. RK4 computes four increments $k_j = h\,f(\cdot)$ from slope estimates ($k_1, k_2, k_3, k_4$) per step and adds their weighted average $(k_1+2k_2+2k_3+k_4)/6$ to $y_i$ — for smooth $f$ this gives $O(h^5)$ local truncation error and $O(h^4)$ global error. This $f$ is not smooth at $y=0$, where $\partial f/\partial y=-t/(3y^{2/3})$ is unbounded, and the coarser runs below evaluate it at negative $y$.
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — RK4 step-refinement sweep, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $m = 12$ to $150$ subintervals
+### Case 1 — RK4 step-refinement sweep, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $m = 12$ to $150$ subintervals {#case-1}
 
 **Behavior:** The reference solution rises from $y(0)=1$ to about $1.4498$ near $t=0.88$, then decays toward the nullcline $y=1/t^3$ (where $y'=0$) and reaches $y(5)=0.0081199$. For $m=12$ through $52$ the computed curve visibly turns upward before $t=5$ instead of following the decay, ending at $y(5)\approx0.588$ for $m=12$, $0.289$ for $m=20$ and $0.0377$ for $m=52$; at $m=56$ it still turns upward on the last step, but only by $8.1\times10^{-4}$, too little to see, and ends at $y(5)\approx0.0099$. The error in $y(5)$ falls at every refinement in the sweep: $3.4\times10^{-4}$ at $m=60$, $2.8\times10^{-5}$ at $m=70$, $6.8\times10^{-6}$ at $m=80$ and $1.8\times10^{-7}$ at $m=150$, where $y(5)\approx0.0081201$. The stability bound: along the reference solution $\partial f/\partial y=-t/(3y^{2/3})$ reaches $-41.3$ at $t=5$, so for steps longer than about $h=0.0675$ ($m\le74$; here $m=12$ to $70$), $h\,|\partial f/\partial y|$ evaluated along the reference solution exceeds RK4's linear stability limit $2.785$ before $t=5$ (the shaded region in those frames). Just above $h=0.0675$ this affects only the last steps ($m=70$: from $t\approx4.91$), but at $m=12$ it starts at $t\approx3.10$. For $m=80$ to $150$, $h\,|\partial f/\partial y|$ along the reference stays below $2.785$ up to $t=5$. This bound concerns small departures from the reference, not the drawn run: for $m=12$ to $24$ the run's own $h\,|\partial f/\partial y|$ at its grid values stays below $2.42$. What the runs do: for $m=12$ to $18$ the upturn begins with one long step that starts before the shaded region ($t\approx2.92$ to $3.33$ for $m=12$), and $94$ to $100\%$ of the error just after it ($0.168$ for $m=12$) is what that step produces even when started from the exact $y(t_i)$. For $m=20$ to $56$ the first upward step started from the exact $y(t_i)$ would produce only $0.3$ to $20\%$ of the error after it; the rest comes from the error already present at $t_i$, which RK4's step map multiplies by $2.9$ to $18.6$, whereas the exact flow over that step would shrink it to $2$ to $6\%$ of its size. For $m=60$ and $70$ the bound is crossed but the run does not turn upward. The size of the upturns depends on how $\sqrt[3]{y}$ is taken for $y<0$. In every run from $m=12$ to $52$, and in no other, some RK4 stage value falls below $0$ (as low as $-1.15$), first always $y_i+k_3$, where $k_4$ is evaluated: in the first upward step for $m=12$ to $24$ and $36$, and in the step after it for $m=28$, $32$ and $40$ to $52$. The stage has then crossed $y=0$, where $\sqrt[3]{y}$ is not differentiable; the script takes the real cube root there, as Mathews' printed $y(5)$ values show he did, so $f=1+t|y|^{1/3}>1$. With $\sqrt[3]{\max(y,0)}$ instead, the summed upward steps after the peak shrink in each of these runs (from $0.46$ to $0$ for $m=12$, from $0.028$ to $0.012$ for $m=52$), and $y(5)$ becomes $-0.239$ for $m=12$, $0.0054$ for $m=20$ and $0.021$ for $m=52$. The $m=56$ run has no negative stage, so its last-step rise is the same either way.
 
