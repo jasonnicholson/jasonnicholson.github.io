@@ -7,6 +7,53 @@ bibliography: ../../../references.bib
 
 Source inspiration: [@mathewsSite].
 
+## Description
+
+The tangent parabola is the parabola that matches a function $f$ and its first two derivatives at a single point $x_0$, and this page shows where it comes from.
+The secant line through two points on a graph tends to the tangent line as the points merge.
+With three points, $x_0 - h$, $x_0$ and $x_0 + h$, the same idea gives the secant parabola, the Newton interpolating polynomial of degree 2 through them:
+
+$$
+P_h(x) = f(x_0) + \frac{f(x_0+h) - f(x_0-h)}{2h}\,(x - x_0) + \frac{f(x_0+h) - 2f(x_0) + f(x_0-h)}{2h^2}\,(x - x_0)^2 .
+$$
+
+As $h \to 0$ the two difference quotients tend to $f'(x_0)$ and $\tfrac12 f''(x_0)$, so the limit, the tangent parabola, is the Taylor polynomial of degree 2:
+
+$$
+T_2(x) = f(x_0) + f'(x_0)(x-x_0) + \tfrac{1}{2}f''(x_0)(x-x_0)^2 .
+$$
+
+The limit needs only that $f''(x_0)$ exists.
+The error results below need more smoothness, as stated with each.
+
+In general, if $f \in C^3$ on an interval containing $x$ and the three nodes, Mathews gives the interpolation remainder
+
+$$
+f(x) - P_h(x) = \frac{(x-x_0+h)(x-x_0)(x-x_0-h)}{3!}\,f'''(c)
+$$
+
+for some $c$ in that interval.
+Letting $h \to 0$ gives the Taylor remainder $\tfrac{1}{3!}f'''(c)(x-x_0)^3$, so the error of $T_2$ is $O(|x - x_0|^3)$ near $x_0$.
+If $f \in C^4$, the two coefficients of $P_h$ differ from their limits by $\tfrac{1}{6}h^2 f'''(\xi)$ and $\tfrac{1}{24}h^2 f^{(4)}(\eta)$, so they converge at rate $O(h^2)$.
+[Case 1](#case-1), with $f(x) = \sin(x)$ and $x_0 = 1$, shows this: each tenfold cut in $h$ cuts both coefficient errors about a hundredfold.
+
+| $h$ | coefficient of $x - x_0$ | error | coefficient of $(x - x_0)^2$ | error |
+|---:|---:|---:|---:|---:|
+| 1 | 0.454649 | $-8.57 \times 10^{-2}$ | $-0.386822$ | $3.39 \times 10^{-2}$ |
+| 0.1 | 0.539402 | $-9.00 \times 10^{-4}$ | $-0.420385$ | $3.50 \times 10^{-4}$ |
+| 0.01 | 0.540293 | $-9.00 \times 10^{-6}$ | $-0.420732$ | $3.51 \times 10^{-6}$ |
+| $T_2$ | 0.540302 | | $-0.420735$ | |
+
+Each error is the coefficient minus its value in the $T_2$ row; the first three rows are frames of Case 1.
+
+The tangent parabola is accurate near $x_0$, not over a wide interval.
+In Case 1, within $|x - 1| \le 0.3$ its error is at most 0.0027, about ten times smaller than the $h = 1$ secant parabola's 0.026; but over the whole window $[0, \pi]$ its error reaches 0.120 at $x = 0$, against 0.072 for that secant parabola, as the first and last frames show.
+Without enough smoothness the limit may not exist: for $f(x) = |x|$ at $x_0 = 0$ the coefficient of $(x - x_0)^2$ is $1/h$, which grows without bound.
+Computing $P_h$ in floating point with very small $h$ also fails, because $f(x_0+h) - 2f(x_0) + f(x_0-h)$ cancels: for Case 1 in double precision at $h = 10^{-8}$ that coefficient is off by about 0.13.
+The animation stops at $h = 0.01$, far from this.
+
+The secant parabola is a [Newton Interpolation Polynomial](../newton-interpolation-polynomial/) (equivalently a [Lagrange](../lagrange-polynomial-interpolation-and-approximation/) one), its coefficients are the central-difference approximations of $f'(x_0)$ and $\tfrac12 f''(x_0)$ from [Numerical Differentiation](../numerical-differentiation/), its limit is a [Taylor polynomial](../maclaurin-and-taylor-series/), and [Hermite Interpolation](../hermite-polynomial-interpolation/) carries the idea of merged nodes further by interpolating derivative values.
+
 ## Animations
 
 The animation below shows the **secant parabola** (degree-2 Newton polynomial through $x_0 - h$, $x_0$, $x_0 + h$) converging to the **tangent parabola** (degree-2 Taylor polynomial at $x_0$) as $h \to 0$, for $f(x) = \sin(x)$ centered at $x_0 = 1$, the running example of Mathews' module; the frames include its Figure 1 and Figure 2 step sizes $h = 0.1$ and $h = 0.01$.
@@ -15,7 +62,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 The module's Examples 3–5, which extend the construction to Newton polynomials of higher degree through equally spaced points starting at $x_0$ and compare them with the Taylor polynomial of the same degree (the tangent cubic in Examples 3 and 4, a higher-degree tangent polynomial in Example 5), are not animated here.
 
-### Case 1 — Secant parabola $\to$ tangent parabola as $h \to 0$, $f(x) = \sin(x)$, $x_0 = 1$
+### Case 1 — Secant parabola $\to$ tangent parabola as $h \to 0$, $f(x) = \sin(x)$, $x_0 = 1$ {#case-1}
 
 **Behavior:** For large $h$ the secant parabola is determined by three well-separated points. As $h \to 0$ all three nodes collapse to $x_0$, and the secant parabola approaches the Taylor polynomial $T_2(x) = f(x_0) + f'(x_0)(x-x_0) + \tfrac{1}{2}f''(x_0)(x-x_0)^2$ — the tangent parabola. This shows that the Taylor polynomial is the limiting position of the Newton interpolating parabola.
 
