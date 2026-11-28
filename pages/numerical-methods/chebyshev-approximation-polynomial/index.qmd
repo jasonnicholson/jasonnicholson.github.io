@@ -9,13 +9,43 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Chebyshev-node interpolation uses clustered nodes near interval endpoints to reduce oscillation compared with equally spaced interpolation at the same degree. This is why Chebyshev-based polynomial approximation is a standard remedy for Runge-type endpoint blow-up.
+A Chebyshev approximation polynomial approximates a function $f$ on an interval $[a,b]$ by the polynomial $P_{n-1}$ of degree at most $n-1$ that interpolates $f$ at $n$ Chebyshev nodes, $P_{n-1}(x_k)=f(x_k)$.
+Chebyshev-node interpolation uses clustered nodes near interval endpoints to reduce oscillation compared with equally spaced interpolation at the same degree.
+This is why Chebyshev-based polynomial approximation is a standard remedy for Runge-type endpoint blow-up.
 
-On an interval $[a,b]$, $n$ Chebyshev nodes are the mapped roots
+On an interval $[a,b]$, the $n$ Chebyshev nodes are the roots $t_k=\cos\bigl((2k-1)\pi/(2n)\bigr)$ of the Chebyshev polynomial $T_n(t)=\cos(n\arccos t)$, mapped from $[-1,1]$ to $[a,b]$:
 
 $$
 x_k = \frac{a+b}{2} + \frac{b-a}{2}\cos\!\left(\frac{(2k-1)\pi}{2n}\right),\qquad k=1,\ldots,n.
 $$
+
+Mathews writes the interpolant as a sum of Chebyshev polynomials in $t$, where $x=\frac{a+b}{2}+\frac{b-a}{2}t$, with coefficients computed from the node values:
+
+$$
+P_{n-1}(x)=\sum_{j=0}^{n-1}c_j\,T_j(t),\qquad
+c_0=\frac1n\sum_{k=1}^{n}f(x_k),\qquad
+c_j=\frac2n\sum_{k=1}^{n}f(x_k)\cos\!\left(\frac{j(2k-1)\pi}{2n}\right).
+$$
+
+The animations evaluate the same polynomial in barycentric Lagrange form.
+
+Building $P_{n-1}$ needs only the values $f(x_k)$.
+The error bound needs more: in general, Mathews' Lagrange–Chebyshev theorem states that if $f\in C^{n}[a,b]$, then for every $x\in[a,b]$
+
+$$
+|f(x)-P_{n-1}(x)| \le \frac{2\,(b-a)^{n}}{4^{n}\,n!}\max_{a\le x\le b}\bigl|f^{(n)}(x)\bigr|.
+$$
+
+Its factor $2(b-a)^n/4^n$ is the largest value of $\bigl|\prod_{k=1}^{n}(x-x_k)\bigr|$ on $[a,b]$, and no other choice of $n$ nodes in $[a,b]$ makes that largest value smaller; for 16 nodes on $[-1,1]$, equally spaced nodes make it 44 times larger.
+For $e^x$ on $[-2,3]$ ([Case 15](#case-15)), the largest error with 16 nodes is $7.1\times10^{-12}$, within the bound's $6.8\times10^{-11}$.
+For $1/(1+10x^2)$ on $[-1,1]$ ([Case 08](#case-08)), the error falls by a factor of about 3.47 for every four nodes added, from $1.4\times10^{-2}$ at 16 nodes to $9.5\times10^{-5}$ at 32, while 16 equally spaced nodes leave an error of 0.48.
+There the bound misleads: it is about 3050 at 16 nodes and grows with $n$, so it says nothing although the error shrinks.
+
+Two failures matter in the cases below.
+The bound covers only $[a,b]$: beyond it the interpolant is extrapolation and leaves $f$ quickly, as in [Case 04](#case-04), where 16 nodes on $[0,2]$ give $P_{15}(3)\approx 5.0\times10^{4}$ against $\sqrt3\approx1.73$.
+And when $f$ has an infinite derivative at an endpoint, the theorem does not apply and convergence is slow: for $\sqrt{x}$ on $[0,2]$ (Case 04) and $\arcsin x$ on $[-1,1]$ ([Case 19](#case-19)), the largest error sits at an endpoint and only halves when the number of nodes doubles from 8 to 16.
+
+The same interpolation with equally spaced nodes is on the [Lagrange](../lagrange-polynomial-interpolation-and-approximation/) and [Newton](../newton-interpolation-polynomial/) pages, and Newton's [Case 08](../newton-interpolation-polynomial/#case-08) shows the Runge oscillation of $1/(1+10x^2)$; [Rational Approximation](../rational-approximation/) also uses Chebyshev nodes, and [Least-Squares Polynomials](../least-squares-polynomials/) and [Legendre Polynomials](../legendre-polynomials/) fit by least squares instead.
 
 ## Animations
 
@@ -35,7 +65,7 @@ Each animation steps through 2, 3, 4, 5, 6, 8, 10, 12, 14 and 16 Chebyshev nodes
 
 ![Case 03 caption: f(x)=1/(1-x)^2, interval [-1.5, 0.8].](cheby03.gif)
 
-### Case 04
+### Case 04 {#case-04}
 
 ![Case 04 caption: f(x)=sqrt(x), interval [0, 2].](cheby04.gif)
 
@@ -51,7 +81,7 @@ Each animation steps through 2, 3, 4, 5, 6, 8, 10, 12, 14 and 16 Chebyshev nodes
 
 ![Case 07 caption: f(x)=1/sqrt(1-x), interval [-1.5, 0.95].](cheby07.gif)
 
-### Case 08
+### Case 08 {#case-08}
 
 ![Case 08 caption: f(x)=1/(1+10x^2), interval [-1, 1], up to 32 nodes.](cheby08.gif)
 
@@ -79,7 +109,7 @@ Each animation steps through 2, 3, 4, 5, 6, 8, 10, 12, 14 and 16 Chebyshev nodes
 
 ![Case 14 caption: f(x)=tan(x), approximation interval [-1.45, 1.45] inside singularities.](cheby14.gif)
 
-### Case 15
+### Case 15 {#case-15}
 
 ![Case 15 caption: f(x)=exp(x), interval [-2, 3].](cheby15.gif)
 
@@ -95,7 +125,7 @@ Each animation steps through 2, 3, 4, 5, 6, 8, 10, 12, 14 and 16 Chebyshev nodes
 
 ![Case 18 caption: f(x)=atan(x), interval [-2.2, 2.2].](cheby18.gif)
 
-### Case 19
+### Case 19 {#case-19}
 
 ![Case 19 caption: f(x)=asin(x), interval [-1, 1].](cheby19.gif)
 
