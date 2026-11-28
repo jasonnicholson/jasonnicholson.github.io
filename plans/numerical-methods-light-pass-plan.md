@@ -174,4 +174,12 @@ After batch 22:
   - Catenary (write): 392 words; Taylor gap bound checked on Case 1, slack-cable failure, fit equation. Done.
   - Least Squares Lines (extend): 395 words; normal equations, power fit, x-on-y and constraint pitfalls. Done.
   - Least Squares Polynomials (extend): 398 words; normal equations, conditioning, extrapolation. Done.
-- Batches 20–22: in progress on stacked branches (see their entries).
+- Batch 20 (differentiation and integration I): run 2026-11-28 on branch `batch-20`, review in `reviews/batch-20` and `reviews/batch-20-r2`. Round 1: 0 Error, 1 Misleading, 4 Minor; round 2 (four changed pages): 0 Error, 0 Misleading, 1 Minor. All fixed and independently checked. Simpson's Rule was done in the pilot.
+  - Richardson Extrapolation (extend): 367 words; D₅ remainder h⁴/480, Case 2 slopes, rounding. Done.
+  - Derive Numerical Differentiation Formulae (extend): 400 words; derivation recipe now expands to degree n+2 as Mathews does; four formulas with remainders. Done.
+  - Riemann Sums (extend): 380 words; first-order results, bracket width ≤ VΔx, L/R not bounds. Done.
+  - Midpoint Rule (extend): 399 words; error term, ½-of-trapezoidal relation (when f′(a) ≠ f′(b)), h^{5/3} on Case 1. Done.
+  - Trapezoidal Rule (extend): 295 words; error term and sign rule, 5-row table, h^{5/3} on Case 1. Done.
+  - Simpson's 3/8 Rule (extend): 342 words; error term, 9/4 of Simpson's constant, 4-row table. Done.
+  - Boole's Rule (extend): 390 words; error term, O(h⁶), 5-row table, Romberg's third column. Done.
+- Batches 21–22: in progress on stacked branches (see their entries).

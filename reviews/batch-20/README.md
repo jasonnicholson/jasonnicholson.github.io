@@ -32,3 +32,17 @@ Two of the five are hypotheses a general statement leaves implicit (Derive F2, M
 - Calibration: one reviewer got a scratch copy of the Trapezoidal page with two planted errors in the new text (a tabulated error −0.01949 for −0.01919; and a claim that Case 1 keeps the $O(h^2)$ rate, dividing the error by close to 4 per halving, when the ratios are 2.7–3.2). It found both. It also flagged the sentence "Romberg Integration repeats that step on successive trapezoidal sums" as loose (Romberg's later columns use weights $4^k$); the real Trapezoidal reviewer accepted that sentence, so it is noted here for Jason rather than reported as a finding. The calibration report was discarded.
 - Reviewers returned their reports as text; the director saved them unchanged.
 - Mechanical checks found nothing.
+
+## Batch close-out (director)
+
+- **Pages built:** seven overview Descriptions with claim ledgers (all *extend*). No script or GIF changed. Final prose counts: Richardson 367, Derive 400, Riemann 380, Midpoint 399, Trapezoidal 295, Simpson 3/8 342, Boole 390.
+- **Findings by round:**
+
+  | Round | Pages | Error | Misleading | Minor |
+  |---|---|---|---|---|
+  | 1 (this folder) | 7 | 0 | 1 | 4 |
+  | 2 (`reviews/batch-20-r2`) | 4 | 0 | 0 | 1 |
+
+  Every finding was reproduced, fixed with a ledger, and confirmed by a separate checker who saw only the findings and the diff. Round 2 had no Error or Misleading finding, which ends the review.
+- **Open, for Jason:** the calibration reviewer's point that "Romberg Integration repeats that step on successive trapezoidal sums" (Trapezoidal page) is loose, since Romberg's later columns use weights $4^k$; the two real reviewers of that page accepted the sentence, so it was not changed.
+- **Commits:** `1fdad29`…`cc63f76` overviews; `8003dc0` review; `73d1196`, `86676c9`, `cdf51fd`, `7ec4da8` round 1 fixes; `cb5a53e` round 2 review; the round 2 Derive fix; the close-out commit.
