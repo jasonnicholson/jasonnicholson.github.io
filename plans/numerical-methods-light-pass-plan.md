@@ -164,4 +164,14 @@ After batch 22:
   - Hermite Polynomial Interpolation (extend): 396 words; h⁴/384 bound, pre-asymptotic ratios, overshoot. Done.
   - Aitken's and Neville's Interpolation (extend): 399 words; Aitken's recursion, remainder bounds on Case 2, convergence-test trap in Case 1. Done.
   - The Tangent Parabola (write): 376 words; 4-row coefficient table (Mathews' Table 1), O(h²) rate, |x| and round-off failures. Done.
-- Batches 19–22: in progress on stacked branches (see their entries).
+- Batch 19 (interpolation II and curve fitting): run 2026-11-28 on branch `batch-19`, review in `reviews/batch-19`. Round 1: 0 Error, 0 Misleading, 3 Minor; all fixed and independently checked. No round 2 needed.
+  - Cubic Splines (extend): 393 words; 5-row natural-spline error table (sin O(h⁴), cos O(h²)). Done.
+  - B-Splines (extend): 397 words; Cox-de Boor, local support, closed last span. Done.
+  - Bézier Curves (extend): 398 words; Bernstein, power and de Casteljau forms, t = 1/2 levels. Done.
+  - Chebyshev Approximation Polynomial (extend): 386 words; Lagrange–Chebyshev bound, Case 08 geometric rate, endpoint singularities. Done.
+  - Rational Approximation (extend): 383 words; interpolation system, alternation theorem, Padé comparison. Done.
+  - Legendre Polynomials (write): 395 words; recurrence, orthogonality, L² optimality, Gibbs overshoot. Done.
+  - Catenary (write): 392 words; Taylor gap bound checked on Case 1, slack-cable failure, fit equation. Done.
+  - Least Squares Lines (extend): 395 words; normal equations, power fit, x-on-y and constraint pitfalls. Done.
+  - Least Squares Polynomials (extend): 398 words; normal equations, conditioning, extrapolation. Done.
+- Batches 20–22: in progress on stacked branches (see their entries).

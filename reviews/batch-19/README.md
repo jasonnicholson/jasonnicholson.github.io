@@ -33,3 +33,10 @@ All three are precision in a definition or hypothesis; every number on all nine 
 - Reviewers returned their reports as text; the director saved them unchanged.
 - Mechanical checks found nothing.
 - Noted by the Least Squares Polynomials reviewer, outside this batch's diff and not determined: the unchanged Animations introduction's description of Mathews' Example 6 graph.
+
+## Batch close-out (director)
+
+- **Pages built:** nine overview Descriptions with claim ledgers (seven *extend*, two *write*). No script or GIF changed. Final prose counts: Cubic Splines 393, B-Splines 397, Bézier 398, Chebyshev 386, Rational 383, Legendre 395, Catenary 392, LS Lines 395, LS Polynomials 398.
+- **Findings:** round 1 only (0 Error, 0 Misleading, 3 Minor). All three were reproduced and fixed by one fixer with a ledger, and confirmed by a separate checker who saw only the findings and the diffs. The checker raised one new Minor on the Rational fix ("where $Q_n$ cannot vanish" read against line 50); it went back to the fixer once and was reworded to tie the condition to the definition's requirement. No round 2 was needed.
+- **Open:** nothing.
+- **Commits:** `f4d4306`…`ceab030` overviews; `f0b9dbb` review; `3931c34`, `3605f93` and the Rational fix commit; the close-out commit.
