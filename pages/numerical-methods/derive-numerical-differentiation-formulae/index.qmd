@@ -9,15 +9,46 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-This topic focuses on how central finite-difference formulas are derived from Taylor expansions and solved in parallel as small linear systems. The legacy module emphasizes deriving first- and second-derivative formulas together rather than treating each formula as an isolated trick.
+This page derives the central-difference formulas that approximate $f'(x_0)$ and $f''(x_0)$ from values of $f$ at equally spaced points symmetric about $x_0$.
+The legacy module derives the formulas for both derivatives together, in parallel, rather than treating each formula as an isolated trick.
+Each sample is replaced by its Taylor polynomial about $x_0$,
 
-For symmetric stencils, odd and even Taylor terms cancel in predictable ways, producing compact formulas with clear error orders. The resulting three-point and five-point formulas explain why wider stencils can significantly improve accuracy for smooth functions.
+$$
+f(x_0+jh) \approx \sum_{k=0}^{n} \frac{(jh)^k}{k!}\, f^{(k)}(x_0),
+$$
+
+with $j=\pm1$ and $n=2$ for three points, or $j=\pm1,\pm2$ and $n=4$ for five points.
+Treating $f'(x_0),\dots,f^{(n)}(x_0)$ as the unknowns gives a small linear system, and one solve yields all the formulas.
+Keeping the next Taylor term as the remainder, the solutions for the first two derivatives are, as Mathews states them,
+
+$$
+\begin{aligned}
+f'(x_0) &= \frac{f(x_0+h)-f(x_0-h)}{2h} - \frac{h^2}{6}\, f^{(3)}(c), \\
+f''(x_0) &= \frac{f(x_0+h)-2f(x_0)+f(x_0-h)}{h^2} - \frac{h^2}{12}\, f^{(4)}(c), \\
+f'(x_0) &= \frac{f(x_0-2h)-8f(x_0-h)+8f(x_0+h)-f(x_0+2h)}{12h} + \frac{h^4}{30}\, f^{(5)}(c), \\
+f''(x_0) &= \frac{-f(x_0-2h)+16f(x_0-h)-30f(x_0)+16f(x_0+h)-f(x_0+2h)}{12h^2} + \frac{h^4}{90}\, f^{(6)}(c).
+\end{aligned}
+$$
+
+The formulas assume exact samples at equally spaced points.
+In general, each equation holds for some $c$ between the outermost points it uses, provided the derivative in its remainder is continuous there, so $f$ must be in $C^3$, $C^4$, $C^5$ and $C^6$ respectively.
+Because the points are symmetric about $x_0$, each remainder contains only even powers of $h$.
+
+As a general result, the three-point formulas are $O(h^2)$ and the five-point formulas $O(h^4)$, so halving $h$ divides their truncation errors by about 4 and 16.
+In [Case 1](#case-1), the error $f'(1)$ minus the three-point slope, divided by $h^2$, stays between $-0.171$ and $-0.169$, approaching $-f^{(3)}(1)/6 \approx -0.1694$.
+In [Case 2](#case-2), from $h=0.02$ to $h=0.01$ the three-point and five-point errors fall by factors of $4.00$ and $15.99$.
+
+More points do not always give a higher order: the five-point system also yields formulas for $f'''(x_0)$ and $f^{(4)}(x_0)$, and these are only $O(h^2)$.
+Rounding also limits the formulas: each sample carries a rounding error of about $\varepsilon|f|$, with $\varepsilon \approx 2.2\times10^{-16}$, and the formulas for $f'$ and $f''$ divide it by $h$ and $h^2$, so for small enough $h$ it outweighs the truncation error.
+[Case 3](#case-3) reaches that point: at $h=0.005$ the five-point second-derivative error, $5.5\times10^{-11}$, is almost all truncation error, but at $h=0.002$ the truncation error alone is $1.4\times10^{-12}$ while the computed error is $5.9\times10^{-11}$.
+
+[Numerical Differentiation](../numerical-differentiation/) adds one-sided formulas and studies roundoff further, [Richardson Extrapolation](../richardson-extrapolation/) reaches the five-point first-derivative formula as $\bigl(4D(h)-D(2h)\bigr)/3$ with $D(h)$ the three-point formula, [Big "O" Truncation Error](../big-o-truncation-error/) explains the order notation, and [Maclaurin and Taylor Series](../maclaurin-and-taylor-series/) covers the expansions the derivation starts from.
 
 ## Animations
 
 Each animation below applies the derived central-difference stencils to the test function $f(x)=e^{-x}\sin(x)$: Case 1 shows the three-point first-derivative formula, and Cases 2 and 3 compare the three-point and five-point stencils for the first and the second derivative. The legacy module derives the formulas symbolically and has no numerical example, so this function was chosen for this page.
 
-### Case 1 - three-point first derivative, $f'(x_0) \approx \dfrac{f(x_0+h)-f(x_0-h)}{2h}$
+### Case 1 - three-point first derivative, $f'(x_0) \approx \dfrac{f(x_0+h)-f(x_0-h)}{2h}$ {#case-1}
 
 **Behavior:** The symmetric three-point slope converges to the tangent slope as $h$ decreases, reflecting second-order accuracy.
 
@@ -25,7 +56,7 @@ Each animation below applies the derived central-difference stencils to the test
 
 ![Animation of three-point central stencil points and slope line converging to the tangent at x0 equals 1.](diffformaa.gif)
 
-### Case 2 - five-point first derivative, $f'(x_0) \approx \dfrac{f(x_0-2h)-8f(x_0-h)+8f(x_0+h)-f(x_0+2h)}{12h}$
+### Case 2 - five-point first derivative, $f'(x_0) \approx \dfrac{f(x_0-2h)-8f(x_0-h)+8f(x_0+h)-f(x_0+2h)}{12h}$ {#case-2}
 
 **Behavior:** The five-point stencil uses cancellation of lower-order truncation terms, so its error drops faster than the three-point estimate for the same $h$. In the picture the green five-point line already lies on the red true tangent at $h=0.35$, where the two lines differ by about 0.1 pixel at their ends, so the size of the five-point error is read from the $|\text{err5}|$ value printed in each frame.
 
@@ -33,7 +64,7 @@ Each animation below applies the derived central-difference stencils to the test
 
 ![Animation showing five-point stencil samples, the dashed three-point slope line approaching the true tangent, and the five-point slope line lying on the true tangent in every frame as h decreases, with both errors printed.](diffformab.gif)
 
-### Case 3 - second-derivative formulas on $[2h,\pi-2h]$
+### Case 3 - second-derivative formulas on $[2h,\pi-2h]$ {#case-3}
 
 **Behavior:** The curve profiles compare $f''(x)$ against the three-point and five-point second-derivative stencils on $[2h,\pi-2h]$, where both stencils use only points in $[0,\pi]$; the maximum errors in each frame are taken over this window. From $h=0.35$ to $h=0.005$ both maximum errors shrink, and the five-point stencil stays closer in every frame because it cancels lower-order truncation terms. At $h=0.002$ the five-point maximum error rises slightly, from $5.5\times10^{-11}$ to $5.9\times10^{-11}$, because floating-point rounding now outweighs its truncation error.
 
