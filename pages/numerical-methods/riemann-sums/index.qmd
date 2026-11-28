@@ -9,10 +9,33 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Riemann sums approximate a definite integral by partitioning $[a,b]$ into $n$ subintervals and replacing the curve with simple shapes whose areas can be added exactly. As $n$ increases, the partition width $\Delta x = (b-a)/n$ decreases and the approximation converges to the true integral.
+Riemann sums approximate a definite integral $I = \int_a^b f(x)\,dx$ by partitioning $[a,b]$ into $n$ subintervals and replacing the curve with rectangles whose areas can be added exactly.
+With equal widths $\Delta x = (b-a)/n$ and nodes $x_i = a + i\Delta x$, a Riemann sum takes one height $f(t_i)$ from each subinterval:
 
-For a partition with nodes $x_i = a + i\Delta x$, common choices are the left, right, lower, and upper sums:
-$L_n = \sum_{i=0}^{n-1} f(x_i)\Delta x$, $R_n = \sum_{i=1}^{n} f(x_i)\Delta x$, and bounds from interval minima/maxima.
+$$
+S_n = \sum_{i=1}^{n} f(t_i)\,\Delta x, \qquad t_i \in [x_{i-1}, x_i].
+$$
+
+The left and right sums take $t_i$ at the left or right endpoint, and the lower and upper sums use the minimum $m_i$ and the maximum $M_i$ of $f$ on $[x_{i-1}, x_i]$:
+
+$$
+L_n = \Delta x \sum_{i=0}^{n-1} f(x_i), \qquad R_n = \Delta x \sum_{i=1}^{n} f(x_i), \qquad \underline{S}_n = \Delta x \sum_{i=1}^{n} m_i, \qquad \overline{S}_n = \Delta x \sum_{i=1}^{n} M_i .
+$$
+
+Mathews' definition assumes $f$ continuous on $[a,b]$; then every such sum converges to $I$ as $n \to \infty$, whatever sample points $t_i$ are chosen.
+Every Riemann sum lies between the lower and upper sums, so $\underline{S}_n \le I \le \overline{S}_n$ brackets the integral, but $m_i$ and $M_i$ require locating the extrema of $f$ on each subinterval; the scripts for [Case 3](#case-3) and [Case 4](#case-4) find them from the zeros of $f'$.
+
+In general, if $f \in C^1[a,b]$, the left and right sums are first order: $L_n - I \approx \tfrac{\Delta x}{2}\bigl(f(a) - f(b)\bigr)$ and $R_n - I \approx \tfrac{\Delta x}{2}\bigl(f(b) - f(a)\bigr)$, so halving $\Delta x$ roughly halves the error unless $f(a) = f(b)$.
+Also in general, if $f$ has total variation $V$ on $[a,b]$, then $\overline{S}_n - \underline{S}_n \le V\,\Delta x$, so the width of the bracket is $O(\Delta x)$.
+The page's integrand $f(x) = e^{-x}\sin(8x^{2/3}) + 1$ is not in $C^1[0,2]$, since $f'$ is unbounded at $x = 0$, but $V \approx 4.3209$ is finite.
+Cases 3 and 4 show this first-order rate: from $n = 24$ to $n = 48$ the width $\overline{S}_n - \underline{S}_n$ halves, from 0.359366 to 0.179723, and at $n = 120$ it is 0.072000 against $V\Delta x \approx 0.072015$.
+[Case 1](#case-1) and [Case 2](#case-2) do not show it: $f(0) = 1$ and $f(2) \approx 1.0179$ nearly agree, so $R_n - L_n = \Delta x\bigl(f(b) - f(a)\bigr)$ is only 0.0003 at $n = 120$, and from $n = 24$ to $n = 48$ the errors fall by 3.08 and 3.22, close to the trapezoidal rule's $2^{5/3} \approx 3.17$ on this integrand.
+
+A coarse sum can look accurate by chance.
+In Case 1, $L_1 = 2$ is within 0.017 of $I \approx 2.016280$, but $L_2 \approx 2.363965$ is off by 0.348, so the error need not shrink as $n$ grows.
+For a function that is not monotone, $L_n$ and $R_n$ are not bounds: both exceed $I$ at $n = 2$ and both fall below it at $n = 3$.
+
+The [Midpoint Rule](../midpoint-rule/) takes $t_i$ at the midpoint and the [Trapezoidal Rule](../trapezoidal-rule-for-numerical-integration/) averages $L_n$ and $R_n$; both are second order for $f \in C^2[a,b]$, and [Simpson's Rule](../simpsons-rule-for-numerical-integration/) and the other [Newton-Cotes](../newton-cotes-integration/) formulas go further.
 
 The legacy Mathews animations increase sampling density over the entire interval between frames. The animations below follow that same pattern.
 
@@ -23,7 +46,7 @@ $y = e^{-x}\sin(8x^{2/3})+1$. Between frames, the number of subintervals $n$ inc
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Left Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$
+### Case 1 — Left Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$ {#case-1}
 
 **Behavior:** The rectangle height on each subinterval is taken at the **left endpoint**. As sample-point density increases, the approximation settles toward the true integral.
 
@@ -31,7 +54,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 ![Left Riemann Sum animation over [0,2]: each frame increases partition density and updates the left-endpoint area estimate](riemannaa.gif)
 
-### Case 2 — Right Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$
+### Case 2 — Right Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$ {#case-2}
 
 **Behavior:** The rectangle height is taken at the **right endpoint**. Comparing with Case 1 shows how endpoint choice shifts the approximation at finite $n$.
 
@@ -39,7 +62,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 ![Right Riemann Sum animation over [0,2]: each frame increases partition density and updates the right-endpoint area estimate](riemannbb.gif)
 
-### Case 3 — Lower Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$
+### Case 3 — Lower Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$ {#case-3}
 
 **Behavior:** Each rectangle uses the **minimum of $f$ on its subinterval**, so every frame's sum is a lower bound for the integral $I \approx 2.016280$. The sums approach $I$ as $n$ grows, but not monotonically: the lower sum falls from 1.374576 at $n=3$ to 1.192004 at $n=4$, which can happen because the $n=4$ partition is not a refinement of the $n=3$ one.
 
@@ -47,7 +70,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 ![Lower Riemann Sum animation over [0,2]: each frame increases the number of subintervals and uses the minimum of f on each subinterval](riemanncc.gif)
 
-### Case 4 — Upper Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$
+### Case 4 — Upper Riemann Sum, $y = e^{-x}\sin(8x^{2/3})+1$ {#case-4}
 
 **Behavior:** Each rectangle uses the **maximum of $f$ on its subinterval**, so every frame's sum is an upper bound for the integral. Lower and upper sums squeeze the exact value as $n \to \infty$ (at $n=120$, $1.978951 \le I \le 2.050951$), but not monotonically along this sequence of $n$: the upper sum rises from 2.418035 at $n=7$ to 2.427098 at $n=8$.
 
