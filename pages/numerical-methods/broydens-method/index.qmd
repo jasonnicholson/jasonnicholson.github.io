@@ -33,7 +33,7 @@ Broyden's method goes further: instead of recomputing (or re-approximating) the 
 
 $$B_{k+1}\,\mathbf{s}_k = \mathbf{y}_k,$$
 
-where $\mathbf{s}_k = \mathbf{X}^{(k+1)} - \mathbf{X}^{(k)}$ is the step taken and $\mathbf{y}_k = \mathbf{F}(\mathbf{X}^{(k+1)}) - \mathbf{F}(\mathbf{X}^{(k)})$ is the corresponding change in function values. This is the multidimensional analogue of the scalar secant equation $f'(x) \approx (f(x_1) - f(x_0))/(x_1 - x_0)$.
+where $\mathbf{s}_k = \mathbf{X}^{(k+1)} - \mathbf{X}^{(k)}$ is the step taken and $\mathbf{y}_k = \mathbf{F}(\mathbf{X}^{(k+1)}) - \mathbf{F}(\mathbf{X}^{(k)})$ is the corresponding change in function values. This is the multidimensional analogue of the scalar [secant equation](../secant-method/) $f'(x) \approx (f(x_1) - f(x_0))/(x_1 - x_0)$.
 
 The secant condition alone does not uniquely determine $B_{k+1}$ when $n > 1$. Broyden's **rank-1 update** resolves the ambiguity by choosing the matrix closest to $B_k$ (in the Frobenius sense) that satisfies the secant condition:
 
@@ -57,7 +57,10 @@ $$\mathbf{X}^{(1)} = \mathbf{X}^{(0)} - B_0^{-1}\,\mathbf{F}\!\left(\mathbf{X}^{
 
 ### Convergence
 
-Broyden's method converges **superlinearly** near a simple root — faster than linear, but slower than Newton's quadratic rate. Each iteration after the first avoids the $n^2$ derivative evaluations, so when evaluating the Jacobian dominates the cost, Broyden's method can reach a given accuracy in less total work than Newton's method. As written, step 3 still solves a linear system, which costs $O(n^3)$ for a dense matrix, the same order as the solve in Newton's method; the arithmetic per iteration falls to $O(n^2)$ when $B_k^{-1}$ or a factorization of $B_k$ is updated instead, for example with the Sherman–Morrison formula. Convergence can fail if the starting point is far from a root or if the approximate Jacobian becomes ill-conditioned.
+Broyden's method converges **superlinearly** near a simple root — faster than linear, but slower than Newton's quadratic rate.
+As a general result, this needs $\mathbf{F}$ continuously differentiable with a Lipschitz-continuous Jacobian near the root $\mathbf{X}^*$, $J(\mathbf{X}^*)$ nonsingular (a simple root), and $\mathbf{X}^{(0)}$ and $B_0$ close enough to $\mathbf{X}^*$ and $J(\mathbf{X}^*)$; with $B_0 = J(\mathbf{X}^{(0)})$, as here, the second follows from the first.
+The ratio of successive errors $\|\mathbf{X}^{(k+1)} - \mathbf{X}^*\| / \|\mathbf{X}^{(k)} - \mathbf{X}^*\|$ then tends to zero: in [Case A](#case-a) it is between 0.02 and 0.04 for each of the first four steps and about $8\times10^{-4}$ for the fifth, where the log-scale residual plot steepens.
+Each iteration after the first avoids the $n^2$ derivative evaluations, so when evaluating the Jacobian dominates the cost, Broyden's method can reach a given accuracy in less total work than Newton's method. As written, step 3 still solves a linear system, which costs $O(n^3)$ for a dense matrix, the same order as the solve in Newton's method; the arithmetic per iteration falls to $O(n^2)$ when $B_k^{-1}$ or a factorization of $B_k$ is updated instead, for example with the Sherman–Morrison formula. Convergence can fail if the starting point is far from a root or if the approximate Jacobian becomes ill-conditioned.
 
 ## Animations
 
@@ -72,7 +75,7 @@ Julia source scripts that generated these animations are linked under each case.
 The system and both starting points follow Mathews' Broyden's Method module: Example 5 poses this system for Broyden's method, but its archived copy is missing the starting-point, result and graph images, so the starting points are those of the standard Broyden runs in Example 8, whose printed iterates these animations reproduce.
 The module's Newton's-method and pseudo-Newton examples (Examples 1 and 3), its improved Broyden method based on the Sherman–Morrison formula (Example 8), and its exercises in three and four dimensions are not animated here.
 
-### Case A — Convergent, $\mathbf{X}^{(0)} = (0.1,\,0.7)$, root $\approx (0.062,\, 0.724)$
+### Case A — Convergent, $\mathbf{X}^{(0)} = (0.1,\,0.7)$, root $\approx (0.062,\, 0.724)$ {#case-a}
 
 **Behavior:** Starting close to the upper intersection, the initial exact Newton step moves the iterate by about 0.05 and reduces $\|\mathbf{F}\|$ from $2.5\times10^{-1}$ to $7.8\times10^{-3}$. The Broyden steps that follow update the approximate Jacobian by the rank-1 formula, with no new derivative evaluations, and bring $\|\mathbf{F}\|$ down to about $10^{-15}$ (machine precision) at $\mathbf{X}^{(6)}$. From $\mathbf{X}^{(0)}$ to $\mathbf{X}^{(4)}$, $\|\mathbf{F}\|$ shrinks by between 24 and 43 times per step, and over each of the last two steps by more than 1000 times, consistent with the superlinear convergence described above.
 
