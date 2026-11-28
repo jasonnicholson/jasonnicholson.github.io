@@ -7,6 +7,51 @@ bibliography: ../../../references.bib
 
 Source inspiration: [@mathewsSite].
 
+## Description
+
+A catenary is the curve of a flexible cable of uniform weight hanging from two supports.
+With its lowest point at the origin, Mathews writes it as
+
+$$
+y = c\cosh\!\left(\frac{x}{c}\right) - c, \qquad c > 0,
+$$
+
+where $c$ is the ratio of the cable's horizontal tension to its weight per unit length.
+The numerical questions are how well a parabola approximates this curve, how long the cable is, and which $c$ fits a given span and sag.
+
+The curve is even, and its Maclaurin series has only even powers:
+
+$$
+c\cosh\!\left(\frac{x}{c}\right) - c = \frac{x^2}{2c} + \frac{x^4}{24c^3} + \frac{x^6}{720c^5} + \cdots = \sum_{n=1}^{\infty} \frac{x^{2n}}{(2n)!\,c^{2n-1}} .
+$$
+
+Its first term $x^2/(2c)$ is the parabola in the animation.
+Since $1 + \sinh^2 u = \cosh^2 u$, the arc length over $[0, a]$ has a closed form, while the $c$ of the catenary through $(\pm a, b)$ solves a nonlinear equation:
+
+$$
+L = \int_0^a \cosh\!\left(\frac{x}{c}\right) dx = c\sinh\!\left(\frac{a}{c}\right), \qquad c\cosh\!\left(\frac{a}{c}\right) - c = b .
+$$
+
+The model assumes a perfectly flexible cable, uniform in weight per unit length, loaded only by gravity and its supports.
+Balancing forces on a piece of cable gives $y'' = \sqrt{1 + (y')^2}/c$, and the catenary is its solution with $y(0) = y'(0) = 0$.
+
+In general, because the fourth derivative of $\cosh$ is $\cosh$, Taylor's theorem bounds the gap between the curves for every $x \neq 0$:
+
+$$
+\frac{x^4}{24c^3} \le c\cosh\!\left(\frac{x}{c}\right) - c - \frac{x^2}{2c} \le \frac{x^4}{24c^3}\cosh\!\left(\frac{x}{c}\right).
+$$
+
+So the catenary lies above the parabola, the gap is $O(x^4)$ as $x \to 0$, and relative to the parabola it is about $x^2/(12c^2)$, which depends only on $x/c$.
+The parabola is good where $|x|$ is small compared with $c$: a taut cable, or a slack one near its lowest point.
+In the last frame of [Case 1](#case-1), $c = 4$, the gap at the window's edge $x = 4$ is 0.172, between the bounds 0.167 and 0.257; halving $x$ to 2 and then 1 divides it by 16.4 and 16.1, the $x^4$ rate.
+
+For a slack cable the parabola misleads: in the first frame of Case 1, $c = 0.5$, the catenary is already 38% above it at $x = 1$ (1.381 against 1).
+The parabola fits a different load: a cable carrying weight uniform per horizontal distance satisfies $y'' = 1/c$ and hangs exactly in $y = x^2/(2c)$.
+Mathematica cannot solve the fit equation for $c$ analytically, Mathews notes, so $c$ is found numerically.
+In general its left side falls strictly from $\infty$ to 0 as $c$ grows, so it has exactly one root for every $a, b > 0$, which a bracketing method can find.
+
+The series is the [Maclaurin and Taylor Series](../maclaurin-and-taylor-series/) applied to $\cosh$; [Bisection](../bisection-method/) or the [Newton-Raphson Method](../newton-raphson-method/) solves the fit equation for $c$; and [Simpson's Rule](../simpsons-rule-for-numerical-integration/) approximates the arc length integral, as in Mathews' Example 1, with $c\sinh(a/c)$ as a check.
+
 ## Animations
 
 The animation below shows the catenary $y = c\cosh(x/c) - c$, Mathews' form with its lowest point at the origin, alongside its parabolic approximation $y = x^2/(2c)$ as the catenary parameter $c$ (the ratio of horizontal tension to weight per unit length; larger $c$ means a tauter, flatter cable) increases from 0.5 to 4. The catenary is the curve formed by a flexible cable hanging under gravity; the parabola is the first nonzero term of its Maclaurin series.
@@ -16,7 +61,7 @@ Julia source scripts that generated these animations are linked under each case.
 Case 1 follows Exploration 2 ("Approximated by a parabola") of Mathews' Catenary module, which finds the Maclaurin series of the catenary.
 The module's Exploration 1 (catenaries with different $c$ are scaled copies of one shape), its arc-length Exploration 3, its catenary-fit section, and its Examples 1–2 (which solve numerically for the $c$ of the catenary through the origin and two points at equal height on either side of the $y$-axis, compute its arc length with Simpson's rule, and compare the catenary with the parabola through the same three points) are not animated here.
 
-### Case 1 — Catenary vs parabola approximation as $c$ varies
+### Case 1 — Catenary vs parabola approximation as $c$ varies {#case-1}
 
 **Behavior:** For large $c$ (nearly taut cable), the two curves are nearly indistinguishable near $x=0$. For small $c$ (slack cable), the catenary climbs more steeply than the parabola and the two separate well inside the window: at $c=0.5$ the gap passes 0.1 at $|x|\approx0.73$, and the catenary leaves the top of the plot at $|x|\approx1.94$, the parabola at $|x|\approx3.39$. The catenary never lies below the parabola, since their difference $x^4/(24c^3)+x^6/(720c^5)+\cdots$ is positive for every $x\neq0$. The lowest point is always at $(0, 0)$. Every frame shows the same pair of shapes: the curves for parameter $c$ are the $c=1$ curves $y=\cosh x-1$ and $y=x^2/2$ scaled by the factor $c$ about the origin, so the flattening as $c$ grows comes from viewing ever larger copies through a fixed window.
 
