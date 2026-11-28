@@ -9,7 +9,7 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Given data points $(x_i,y_i)$, the least-squares polynomial of degree $m$
+Given $n$ data points $(x_i,y_i)$, the least-squares polynomial of degree $m$
 
 $$p_m(x)=a_0+a_1x+a_2x^2+\cdots+a_mx^m$$
 
@@ -17,19 +17,39 @@ is chosen to minimize the total squared error
 
 $$E(a_0,\ldots,a_m)=\sum_{i=1}^{n}\left(p_m(x_i)-y_i\right)^2.$$
 
-Setting the partial derivatives of $E$ to zero gives the normal equations, which in matrix form are
+Setting the partial derivatives of $E$ to zero gives the normal equations, $m+1$ linear equations that Mathews writes with sums of powers of the data,
+
+$$\sum_{j=0}^{m}\left(\sum_{i=1}^{n}x_i^{\,j+k}\right)a_j=\sum_{i=1}^{n}x_i^{\,k}\,y_i,\qquad k=0,1,\ldots,m,$$
+
+and which in matrix form are
 
 $$\left(V^T V\right)\mathbf{a}=V^T\mathbf{y},$$
 
-where $V$ is the Vandermonde-style design matrix. Once the coefficients are found, the fit quality is often summarized with the root-mean-square error
+where $V$ is the $n\times(m+1)$ Vandermonde-style design matrix with entries $V_{ij}=x_i^{\,j}$ for $j=0,\ldots,m$.
+The fit quality is often summarized with the root-mean-square error
 
 $$\mathrm{RMS}=\sqrt{\frac{1}{n}\sum_{i=1}^{n}\left(p_m(x_i)-y_i\right)^2}.$$
 
+The fit is unique when at least $m+1$ of the $x_i$ are distinct: then the columns of $V$ are independent, $V^TV$ is symmetric positive definite, and the normal equations have exactly one solution.
+The error $E$ is measured only vertically, at the data points.
+
+There is no convergence order; accuracy is the size of the residuals, and two general facts hold for fixed data.
+Raising the degree never increases the minimum of $E$, because every polynomial of degree $m-1$ is also one of degree $m$.
+If $m=n-1$ and the $x_i$ are distinct, the fit interpolates the data and $E=0$.
 The legacy examples on this page use the six data points
 
-$$(-4.5,0.7),\;(-3.2,2.3),\;(-1.4,3.8),\;(0.8,5.0),\;(2.5,5.5),\;(4.1,5.6).$$
+$$(-4.5,0.7),\;(-3.2,2.3),\;(-1.4,3.8),\;(0.8,5.0),\;(2.5,5.5),\;(4.1,5.6),$$
 
-As the degree increases from 2 to 5, RMS decreases, but this does not always mean better behavior outside the data interval. High-degree polynomial fits can exhibit oscillations ("polynomial wiggle") and poor extrapolation.
+and RMS falls from $0.05245$ for the quadratic ([Case 1](#case-1)) to $0.02767$ for the cubic ([Case 2](#case-2)), $0.00734$ for the quartic ([Case 3](#case-3)) and $0$ for the quintic ([Case 4](#case-4)), which passes through all six points.
+Forming $V^TV$ squares the 2-norm condition number of $V$, so in floating point the normal equations lose accuracy as the degree grows.
+For these points the condition number of $V^TV$ is about $382$, $6.6\times10^{3}$, $2.3\times10^{5}$ and $4.7\times10^{6}$ for $m=2$ to $5$; a QR factorization of $V$ solves the same problem without squaring it.
+
+A smaller RMS does not mean a better model.
+The animations plot only the interval $[-5,4.5]$ around the data, where the four fits differ by at most $0.25$, but beyond it they separate.
+At $x=10$ the quadratic, cubic, quartic and quintic give $2.40$, $4.82$, $-2.23$ and $8.08$, so extrapolation with any of them is unreliable.
+When the data are not of polynomial type, high-degree fits can also oscillate between the data points ("polynomial wiggle"), as Mathews' Example 7 shows.
+
+The degree-1 case is the [Least Squares Line](../least-squares-lines/), [Nonlinear Curve Fitting](../nonlinear-curve-fitting/) fits exponential and power models by linearizing the data, with $m=n-1$ the fit becomes the interpolating polynomial of [Lagrange Polynomial Interpolation](../lagrange-polynomial-interpolation-and-approximation/), and the [Chebyshev Approximation Polynomial](../chebyshev-approximation-polynomial/) shows how well-placed nodes reduce the oscillation of high-degree polynomials.
 
 ## Animations
 
@@ -40,7 +60,7 @@ Julia source scripts, which compute the coefficients from the normal equations a
 The four cases animate Examples 2–5 of Mathews' Least Squares Polynomials module, which fit the least-squares quadratic, cubic, quartic and quintic to the six data points above.
 The module's Example 1, which fits a least-squares parabola to a different set of points, the graph in Example 6, which plots the quadratic to quintic fits together on an interval wide enough to show them separating outside the data, Example 7, which fits the same degrees to points sampled from a non-polynomial function to show polynomial wiggle, and Example 8, which recomputes the cubic fit to the same six points from the module's general linear least-squares theorem, are not animated here.
 
-### Case 1 - Quadratic fit, $m=2$
+### Case 1 - Quadratic fit, $m=2$ {#case-1}
 
 **Behavior:** The quadratic captures the main concave-down trend well, with all residuals below $0.1$ in size; the two largest are at the two leftmost points ($x=-4.5$ and $x=-3.2$). This is the baseline smooth fit used in the module.
 
@@ -50,7 +70,7 @@ $$p_2(x)=4.67425 + 0.52861x - 0.07563x^2,\qquad \mathrm{RMS}\approx 0.05245.$$
 
 ![Animation drawing the least-squares quadratic for six data points as partial sums through x^0, x^1 and x^2, ending with the smooth concave-down fitted curve.](leastsqpolyaa.gif)
 
-### Case 2 - Cubic fit, $m=3$
+### Case 2 - Cubic fit, $m=3$ {#case-2}
 
 **Behavior:** Adding the cubic term improves local flexibility and lowers RMS. The fit tracks the left and right tails a bit more closely while remaining stable across the plotted interval.
 
@@ -60,7 +80,7 @@ $$p_3(x)=4.66863 + 0.48939x - 0.07424x^2 + 0.00268x^3,\qquad \mathrm{RMS}\approx
 
 ![Animation drawing the least-squares cubic as partial sums through x^0 to x^3, ending with the fitted cubic, whose RMS is lower than the quadratic's.](leastsqpolyab.gif)
 
-### Case 3 - Quartic fit, $m=4$
+### Case 3 - Quartic fit, $m=4$ {#case-3}
 
 **Behavior:** The quartic noticeably reduces residuals and follows the subtle curvature changes between middle and right-side points. RMS drops by about a factor of four compared with the cubic.
 
@@ -70,7 +90,7 @@ $$p_4(x)=4.62863 + 0.496687x - 0.0582343x^2 + 0.00201395x^3 - 0.000801378x^4,\qq
 
 ![Animation drawing the least-squares quartic as partial sums through x^0 to x^4, ending with a close fit to all six points.](leastsqpolyac.gif)
 
-### Case 4 - Quintic fit, $m=5$
+### Case 4 - Quintic fit, $m=5$ {#case-4}
 
 **Behavior:** With six data points at distinct $x$ values and degree 5, the least-squares polynomial interpolates all six points, so its RMS is exactly 0; the animation's floating-point solve shows roundoff of about $8\times 10^{-15}$. This illustrates why a degree-$n-1$ polynomial can match $n$ distinct points, but it may still be fragile for extrapolation.
 
