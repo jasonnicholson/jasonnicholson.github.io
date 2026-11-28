@@ -9,18 +9,54 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-The Runge-Kutta-Fehlberg method (RKF45) is an adaptive-step one-step solver for
-initial value problems. At each step it computes embedded 4th- and 5th-order
-approximations from the same stage evaluations, estimates local error from their
-difference, and then adjusts step size to meet a tolerance.
+The Runge-Kutta-Fehlberg method (RKF45) is an adaptive-step one-step solver for the initial value problem $y' = f(t, y)$, $y(t_0) = y_0$.
+At each step it computes embedded 4th- and 5th-order approximations from the same stage evaluations, estimates the local error from their difference, and adjusts the step size to meet a tolerance.
+From the current point $(t_j, y_j)$ and a trial step $h$, the six stages are
 
-If $y_4$ and $y_5$ are the embedded updates, then $|y_5 - y_4|$ estimates the
-local error of $y_4$. It shrinks like $h^5$, so $|y_5 - y_4|/h$ is an error per unit
-step that shrinks like $h^4$. A step is accepted when $|y_5 - y_4|/h \le \varepsilon$,
-where $\varepsilon$ is the requested tolerance, and the next step size is
-$h_{new} = s h$ with $s = 0.84\,(\varepsilon h/|y_5 - y_4|)^{1/4}$, clamped to at most
-$h_{max}=0.25$ (the scripts also impose a minimum $h_{min}=10^{-6}$, which neither case
-below reaches).
+$$
+\begin{aligned}
+k_1 &= h\,f(t_j,\ y_j),\\
+k_2 &= h\,f\!\left(t_j + \tfrac{1}{4}h,\ y_j + \tfrac{1}{4}k_1\right),\\
+k_3 &= h\,f\!\left(t_j + \tfrac{3}{8}h,\ y_j + \tfrac{3}{32}k_1 + \tfrac{9}{32}k_2\right),\\
+k_4 &= h\,f\!\left(t_j + \tfrac{12}{13}h,\ y_j + \tfrac{1932}{2197}k_1 - \tfrac{7200}{2197}k_2 + \tfrac{7296}{2197}k_3\right),\\
+k_5 &= h\,f\!\left(t_j + h,\ y_j + \tfrac{439}{216}k_1 - 8k_2 + \tfrac{3680}{513}k_3 - \tfrac{845}{4104}k_4\right),\\
+k_6 &= h\,f\!\left(t_j + \tfrac{1}{2}h,\ y_j - \tfrac{8}{27}k_1 + 2k_2 - \tfrac{3544}{2565}k_3 + \tfrac{1859}{4104}k_4 - \tfrac{11}{40}k_5\right),
+\end{aligned}
+$$
+
+and the 4th- and 5th-order updates are
+
+$$
+\begin{aligned}
+y_4 &= y_j + \tfrac{25}{216}k_1 + \tfrac{1408}{2565}k_3 + \tfrac{2197}{4104}k_4 - \tfrac{1}{5}k_5,\\
+y_5 &= y_j + \tfrac{16}{135}k_1 + \tfrac{6656}{12825}k_3 + \tfrac{28561}{56430}k_4 - \tfrac{9}{50}k_5 + \tfrac{2}{55}k_6.
+\end{aligned}
+$$
+
+The difference $|y_5 - y_4|$ estimates the local error of $y_4$.
+It shrinks like $h^5$, so $|y_5 - y_4|/h$ is an error per unit step that shrinks like $h^4$.
+A step is accepted when $|y_5 - y_4|/h \le \varepsilon$, where $\varepsilon$ is the requested tolerance; RKF45 then carries $y_{j+1} = y_4$ forward, and the variant RKF54 carries $y_5$.
+Accepted or not, the next step size is
+
+$$
+h_{new} = s\,h, \qquad s = 0.84\left(\frac{\varepsilon h}{|y_5 - y_4|}\right)^{1/4},
+$$
+
+clamped to at most $h_{max}=0.25$ (and at least $h_{min}=10^{-6}$, which neither case reaches), and a rejected step is retried from the same point.
+The factor $0.84$ rounds Mathews' $2^{-1/4}$; if $|y_5 - y_4|$ scaled exactly like $h^5$, the new step would bring $|y_5 - y_4|/h$ to about $\varepsilon/2$.
+
+The method needs $f$ continuous and Lipschitz in $y$ near the solution, so that the solution is unique, and the solution smooth enough for the orders below.
+In [Case 2](#case-2), $f = 1 - t\sqrt[3]{y}$ is not differentiable at $y = 0$, but the solution stays above $y(5) \approx 0.00812$.
+
+In general, if the solution has six continuous derivatives, one step of the 4th-order formula has local error $O(h^5)$ and one step of the 5th-order formula $O(h^6)$, so for small $h$ the difference $y_5 - y_4$ is dominated by the error of $y_4$; with fixed steps the global errors are $O(h^4)$ and $O(h^5)$.
+On Case 1's problem, halving the first step from $0.025$ to $0.0125$ divides $|y_5 - y_4|$ by $30.7$ and the errors of $y_4$ and $y_5$ by $27.9$ and $65.4$, near $2^5 = 32$ and $2^6 = 64$.
+The animations show the step-size controller, not these rates.
+
+The tolerance bounds local, not global, error.
+In [Case 1](#case-1) the accepted estimates $|y_5 - y_4|$ add up to $5.6\times10^{-7}$, yet RKF45 ends $4.5\times10^{-3}$ from the exact $y(1.1) = 139.88$: near the pole of $\tan(t + \arctan 0.5)$ at $t \approx 1.1071$, a small error in $y$ at $t = 0$ grows about $1.6\times10^{4}$ times by $t = 1.1$.
+The estimate holds only for small $h$: from $t = 0$ with $h = 0.25$, $|y_5 - y_4| = 1.7\times10^{-7}$, but the true error of $y_4$ is 34 times larger ([Animations](#animations) introduction).
+
+The [Euler](../eulers-method-for-odes/), [Heun](../heuns-method/), [Taylor Series](../taylor-series-method-for-odes/), [Runge-Kutta](../runge-kutta-method/), [Adams-Bashforth-Moulton](../adams-bashforth-moulton-method/) and [Milne-Simpson](../milne-simpsons-method/) pages solve Case 2's problem with fixed steps, and [Adaptive Simpson's Rule](../adaptive-simpsons-rule/) uses the same compare-two-estimates idea for integrals.
 
 ## Animations
 
@@ -55,7 +91,7 @@ reference trajectory from fixed-step RK4 at $h=10^{-4}$.
 This IVP is not one of the module's examples; it is used here so that this page can
 be compared with those pages.
 
-### Case 1 - Adaptive RKF45 vs RKF54, $y' = 1 + y^2$, $y(0)=0.5$, $t \in [0,1.1]$
+### Case 1 - Adaptive RKF45 vs RKF54, $y' = 1 + y^2$, $y(0)=0.5$, $t \in [0,1.1]$ {#case-1}
 
 **Behavior:** Both adaptive traces follow the exact solution to within a relative
 error of $3.3\times10^{-5}$ all the way to $y(1.1)=139.88$, just short of the pole of
@@ -72,7 +108,7 @@ $4.5\times10^{-3}$ at $t=1.1$.
 
 ![Adaptive RKF45 and RKF54 trajectories versus exact solution for y' = 1 + y^2, y(0)=0.5 on [0,1.1], with y on a logarithmic axis](rungekuttafehlbergaa.gif)
 
-### Case 2 - Adaptive RKF45 vs RKF54, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $t \in [0,5]$
+### Case 2 - Adaptive RKF45 vs RKF54, $y' = 1 - t\sqrt[3]{y}$, $y(0)=1$, $t \in [0,5]$ {#case-2}
 
 **Behavior:** RKF45 and RKF54 match the dashed reference to within $7\times10^{-7}$
 at every accepted point. The controller takes the maximum step $h=0.25$ over the hump
