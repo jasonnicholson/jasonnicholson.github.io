@@ -7,13 +7,53 @@ bibliography: ../../../references.bib
 
 Source inspiration: [@mathewsSite].
 
+## Description
+
+The Legendre polynomials $P_n(x)$ are the orthogonal polynomials of the interval $[-1,1]$.
+Their main numerical use is continuous least squares approximation: given $f$ on $[-1,1]$, find the polynomial $S_N$ of degree at most $N$ that makes $\int_{-1}^{1}\bigl(f(x)-S_N(x)\bigr)^2\,dx$ as small as possible.
+Mathews builds them by Gram-Schmidt orthogonalization of $1, x, x^2, \ldots$, normalized so that $P_n(1)=1$; the animations compute them by the equivalent three-term recurrence
+
+$$
+P_0(x)=1, \qquad P_1(x)=x, \qquad (n+1)\,P_{n+1}(x)=(2n+1)\,x\,P_n(x)-n\,P_{n-1}(x).
+$$
+
+They are orthogonal on $[-1,1]$:
+
+$$
+\int_{-1}^{1}P_m(x)\,P_n(x)\,dx=\begin{cases}0, & m\neq n,\\[2pt] \dfrac{2}{2n+1}, & m=n.\end{cases}
+$$
+
+So the least squares problem needs no system of normal equations: each coefficient is a single integral,
+
+$$
+S_N(x)=\sum_{n=0}^{N}c_n\,P_n(x), \qquad c_n=\frac{2n+1}{2}\int_{-1}^{1}f(x)\,P_n(x)\,dx.
+$$
+
+[Case 1](#case-1) draws $P_0$ to $P_5$, and [Case 2](#case-2) adds the terms of this series one per frame.
+
+The coefficients need only $f$ square-integrable on $[-1,1]$, as Mathews assumes.
+On another interval $[a,b]$, Mathews uses the shifted polynomials $P_n\bigl((2x-a-b)/(b-a)\bigr)$.
+The integrals are usually computed numerically; Case 2 uses 20-point Gauss-Legendre quadrature.
+
+In general, $S_N$ is the best polynomial of degree at most $N$ in the integrated squared error, so adding a term never increases that error, and for every square-integrable $f$ the error tends to zero as $N\to\infty$.
+For continuous $f$, the maximum error is bounded by the tail of the series: since $|P_n(x)|\le 1$ on $[-1,1]$, $|f(x)-S_N(x)|\le\sum_{n>N}|c_n|$ whenever that sum converges.
+If $f$ is analytic on a region containing $[-1,1]$, the $c_n$ shrink geometrically, and so does that bound.
+In Case 2 the integrated error $\bigl(\int_{-1}^{1}(f-S_N)^2\,dx\bigr)^{1/2}$ falls at every frame, from 0.560 for $S_0$ to $2.33\times10^{-6}$ for $S_8$.
+
+Least squares is not minimax, so the maximum error need not fall at every step.
+In [Case 2](#case-2) it rises from 0.699 for $S_0$ to 1.09 for $S_1$, while the integrated error falls from 0.560 to 0.461.
+In every frame of Case 2 the largest error sits at an endpoint, $x=-1$ or $x=1$, where each $|P_n|$ reaches 1.
+For a function with a jump, the partial sums converge in the mean but not uniformly: for $\operatorname{sign}(x)$ they overshoot the jump by about 9 % of its height, the same at $N=21$, 41, 81 and 161.
+
+[Gauss-Legendre Quadrature](../gauss-legendre-quadrature/) uses the zeros of $P_n$ as its nodes, [Least Squares Polynomials](../least-squares-polynomials/) is the discrete counterpart that fits data points, the [Chebyshev Approximation Polynomial](../chebyshev-approximation-polynomial/) interpolates at the zeros of the Chebyshev polynomials, which are orthogonal on $[-1,1]$ with weight $1/\sqrt{1-x^2}$, [Fourier Series](../fourier-series/) is the same orthogonal expansion with sines and cosines, and [Maclaurin and Taylor Series](../maclaurin-and-taylor-series/) are accurate near one point rather than across the whole interval.
+
 ## Animations
 
 Each animation below illustrates Legendre polynomials $P_n(x)$ on $[-1,1]$. The first animation reveals $P_0$ through $P_5$ one per frame; the second shows the Legendre series partial sums converging to $f(x) = e^{x}\cos(\pi x/2)$.
 
 Julia source scripts that generated these animations are linked under each case.
 
-### Case 1 — Successive polynomials $P_0, P_1, \ldots, P_5$
+### Case 1 — Successive polynomials $P_0, P_1, \ldots, P_5$ {#case-1}
 
 **Properties:** Each $P_n$ is orthogonal to all lower-degree Legendre polynomials on $[-1,1]$. $P_n(1)=1$, $P_n(-1)=(-1)^n$, and $P_n$ has exactly $n$ zeros in $(-1,1)$. They are computed by the recurrence $(n+1)P_{n+1} = (2n+1)xP_n - nP_{n-1}$.
 
@@ -21,7 +61,7 @@ Julia source scripts that generated these animations are linked under each case.
 
 ![Legendre polynomials P_0 through P_5 added one per frame on the interval [-1, 1], showing their oscillatory character](legendrepolyaa.gif)
 
-### Case 2 — Legendre series for $f(x) = e^{x}\cos(\pi x/2)$
+### Case 2 — Legendre series for $f(x) = e^{x}\cos(\pi x/2)$ {#case-2}
 
 **Behavior:** The partial sum $S_N(x) = \sum_{n=0}^{N} c_n P_n(x)$ with $c_n = \tfrac{2n+1}{2}\int_{-1}^{1} f(x)P_n(x)\,dx$ converges to $f$ as $N\to\infty$. This $f$ is the function of Mathews' Example 8(b); it is neither even nor odd, and every coefficient $c_0, \ldots, c_8$ is nonzero, so each frame adds a new term. Because $S_N$ minimises the integrated squared error rather than the maximum error, the max error need not fall at every step: it rises from 0.699 for $S_0$ to 1.09 for $S_1$, then falls with each added term to $7.74\times 10^{-6}$ for $S_8$.
 
