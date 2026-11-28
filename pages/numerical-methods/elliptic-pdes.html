@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Elliptic PDE’s – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#elliptic-equations" id="toc-elliptic-equations" class="nav-link" data-scroll-target="#elliptic-equations">Elliptic Equations</a></li>
+  <li><a href="#the-laplacian-difference-equation" id="toc-the-laplacian-difference-equation" class="nav-link" data-scroll-target="#the-laplacian-difference-equation">The Laplacian Difference Equation</a>
+  <ul class="collapse">
+  <li><a href="#the-grid" id="toc-the-grid" class="nav-link" data-scroll-target="#the-grid">The grid</a></li>
+  <li><a href="#setting-up-the-linear-system" id="toc-setting-up-the-linear-system" class="nav-link" data-scroll-target="#setting-up-the-linear-system">Setting up the linear system</a></li>
+  <li><a href="#derivative-boundary-conditions" id="toc-derivative-boundary-conditions" class="nav-link" data-scroll-target="#derivative-boundary-conditions">Derivative boundary conditions</a></li>
+  </ul></li>
+  <li><a href="#iterative-solution-by-successive-over-relaxation" id="toc-iterative-solution-by-successive-over-relaxation" class="nav-link" data-scroll-target="#iterative-solution-by-successive-over-relaxation">Iterative Solution by Successive Over-Relaxation</a>
+  <ul class="collapse">
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  <li><a href="#poissons-and-helmholtzs-equations" id="toc-poissons-and-helmholtzs-equations" class="nav-link" data-scroll-target="#poissons-and-helmholtzs-equations">Poisson’s and Helmholtz’s equations</a></li>
+  <li><a href="#improvement-the-nine-point-formula" id="toc-improvement-the-nine-point-formula" class="nav-link" data-scroll-target="#improvement-the-nine-point-formula">Improvement: the nine-point formula</a></li>
+  </ul></li>
+  <li><a href="#example-1-laplaces-equation-on-a-9-times-9-grid" id="toc-example-1-laplaces-equation-on-a-9-times-9-grid" class="nav-link" data-scroll-target="#example-1-laplaces-equation-on-a-9-times-9-grid">Example 1 — Laplace’s equation on a <span class="math inline">\(9 \times 9\)</span> grid</a></li>
+  <li><a href="#example-2-the-same-problem-on-a-21-times-21-grid" id="toc-example-2-the-same-problem-on-a-21-times-21-grid" class="nav-link" data-scroll-target="#example-2-the-same-problem-on-a-21-times-21-grid">Example 2 — The same problem on a <span class="math inline">\(21 \times 21\)</span> grid</a></li>
+  <li><a href="#example-3-an-insulated-bottom-edge-neumann-condition" id="toc-example-3-an-insulated-bottom-edge-neumann-condition" class="nav-link" data-scroll-target="#example-3-an-insulated-bottom-edge-neumann-condition">Example 3 — An insulated bottom edge (Neumann condition)</a></li>
+  <li><a href="#example-4-example-1-on-the-unit-square" id="toc-example-4-example-1-on-the-unit-square" class="nav-link" data-scroll-target="#example-4-example-1-on-the-unit-square">Example 4 — Example 1 on the unit square</a></li>
+  <li><a href="#example-5-the-unit-square-with-the-grid-stored-by-coordinates" id="toc-example-5-the-unit-square-with-the-grid-stored-by-coordinates" class="nav-link" data-scroll-target="#example-5-the-unit-square-with-the-grid-stored-by-coordinates">Example 5 — The unit square with the grid stored by coordinates</a></li>
+  <li><a href="#example-6-continuous-boundary-values" id="toc-example-6-continuous-boundary-values" class="nav-link" data-scroll-target="#example-6-continuous-boundary-values">Example 6 — Continuous boundary values</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Elliptic PDE’s</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Laplace’s equation <span class="math inline">\(u_{xx} + u_{yy} = 0\)</span> describes a steady state, such as the temperature <span class="math inline">\(u(x, y)\)</span> in a thin plate long after the heat has stopped flowing. Here it is solved on a rectangle <span class="math inline">\(R = [0, a] \times [0, b]\)</span> whose edges are held at known values (a Dirichlet problem), or with one edge insulated, <span class="math inline">\(\partial u / \partial N = 0\)</span> (a Neumann condition). The rectangle is covered by a grid of <span class="math inline">\(n \times m\)</span> points with equal spacing <span class="math inline">\(h\)</span> in both directions, and at every interior grid point the Laplacian is replaced by the five-point difference formula. Writing <span class="math inline">\(u_{i,j}\)</span> for the approximation to <span class="math inline">\(u(x_i, y_j)\)</span>, the equation at each interior point says that <span class="math inline">\(u_{i,j}\)</span> is the average of its four neighbours:</p>
+<p><span class="math display">\[
+u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - 4u_{i,j} = 0 .
+\]</span></p>
+<p>These equations form a large, sparse linear system. Mathews solves it by iteration: starting from a guess at every interior point, he sweeps across the grid again and again, and moves each value toward the average of its neighbours by successive over-relaxation (SOR),</p>
+<p><span class="math display">\[
+u_{i,j} \leftarrow u_{i,j} + \omega\, r_{i,j}, \qquad r_{i,j} = \frac{u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - 4u_{i,j}}{4},
+\]</span></p>
+<p>with the relaxation parameter <span class="math inline">\(\omega\)</span> between <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span>. His programs stop once the largest correction <span class="math inline">\(\lvert \omega r_{i,j} \rvert\)</span> in a sweep is below <span class="math inline">\(0.001\)</span>. The sweeps carry the grid from the flat starting guess to the steady state, which on a <span class="math inline">\(9 \times 9\)</span> grid takes <span class="math inline">\(20\)</span> sweeps for the plate whose edges are held at <span class="math inline">\(180\)</span>, <span class="math inline">\(80\)</span>, <span class="math inline">\(20\)</span> and <span class="math inline">\(0\)</span> (Example 1).</p>
+</section>
+<section id="elliptic-equations" class="level2">
+<h2 class="anchored" data-anchor-id="elliptic-equations">Elliptic Equations</h2>
+<p>Recall that the Laplacian of a function <span class="math inline">\(u(x, y)\)</span> is</p>
+<p><span class="math display">\[
+\nabla^2 u = u_{xx} + u_{yy}.
+\tag{1}
+\]</span></p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Laplace, Poisson and Helmholtz equations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> given functions of <span class="math inline">\((x, y)\)</span>, the three model elliptic equations are</p>
+<p><span class="math display">\[
+\begin{aligned}
+\nabla^2 u &amp;= 0 &amp;&amp;\text{(Laplace's equation)}, \\
+\nabla^2 u &amp;= g(x, y) &amp;&amp;\text{(Poisson's equation)}, \\
+\nabla^2 u + f(x, y)\,u &amp;= g(x, y) &amp;&amp;\text{(Helmholtz's equation)}.
+\end{aligned}
+\tag{2}
+\]</span></p>
+</div>
+</div>
+<p>It is often the case that the values of <span class="math inline">\(u(x, y)\)</span> are known at all points on the sides of a rectangle <span class="math inline">\(R\)</span>. Each of these equations can then be solved by the finite-difference method. This page works with Laplace’s equation, which is the subject of all of Mathews’ examples; the formulas for Poisson’s and Helmholtz’s equations are given at the end of the theory.</p>
+</section>
+<section id="the-laplacian-difference-equation" class="level2">
+<h2 class="anchored" data-anchor-id="the-laplacian-difference-equation">The Laplacian Difference Equation</h2>
+<p>For a function with four continuous derivatives, the central-difference formula for the second derivative is</p>
+<p><span class="math display">\[
+f''(x) = \frac{f(x + h) - 2f(x) + f(x - h)}{h^2} + O(h^2).
+\tag{3}
+\]</span></p>
+<p>Applying it to <span class="math inline">\(u_{xx}\)</span> and <span class="math inline">\(u_{yy}\)</span> and adding gives</p>
+<p><span class="math display">\[
+\nabla^2 u = \frac{u(x + h, y) + u(x - h, y) + u(x, y + h) + u(x, y - h) - 4u(x, y)}{h^2} + O(h^2).
+\tag{4}
+\]</span></p>
+<section id="the-grid" class="level3">
+<h3 class="anchored" data-anchor-id="the-grid">The grid</h3>
+<p>The rectangle <span class="math inline">\(R = \{(x, y) : 0 \le x \le a,\ 0 \le y \le b\}\)</span> is covered by the grid points</p>
+<p><span class="math display">\[
+x_i = (i - 1)h, \quad i = 1, \ldots, n, \qquad y_j = (j - 1)h, \quad j = 1, \ldots, m,
+\]</span></p>
+<p>so that <span class="math inline">\(a = (n - 1)h\)</span> and <span class="math inline">\(b = (m - 1)h\)</span>, and <span class="math inline">\(R\)</span> is divided into <span class="math inline">\((n - 1) \times (m - 1)\)</span> squares of side <span class="math inline">\(h\)</span>. (Mathews’ text writes <span class="math inline">\(a = nh\)</span> and <span class="math inline">\(b = mh\)</span>, but with <span class="math inline">\(n\)</span> grid points across there are <span class="math inline">\(n - 1\)</span> intervals, and his own program for Example 5 uses <span class="math inline">\(h = a/(n - 1)\)</span>.) The grid points with <span class="math inline">\(i = 1\)</span> or <span class="math inline">\(n\)</span>, or <span class="math inline">\(j = 1\)</span> or <span class="math inline">\(m\)</span>, lie on the edges of <span class="math inline">\(R\)</span>; the others are interior points.</p>
+<p>Dropping the <span class="math inline">\(O(h^2)\)</span> term in (4), setting the result to zero and multiplying by <span class="math inline">\(h^2\)</span> gives one equation for each interior point.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Laplacian computational formula (five-point formula)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>At each interior grid point, <span class="math inline">\(i = 2, \ldots, n - 1\)</span> and <span class="math inline">\(j = 2, \ldots, m - 1\)</span>,</p>
+<p><span class="math display">\[
+u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - 4u_{i,j} = 0.
+\tag{5}
+\]</span></p>
+<p>Equivalently, <span class="math inline">\(u_{i,j}\)</span> is the average of its four neighbours. The spacing <span class="math inline">\(h\)</span> has dropped out, so on a square the grid values depend only on the number of grid points and the boundary values, not on the side length.</p>
+</div>
+</div>
+<p>The values on the edges are known:</p>
+<p><span class="math display">\[
+\begin{aligned}
+u_{1,j} &amp;= u(0, y_j), &amp; u_{n,j} &amp;= u(a, y_j), &amp;&amp; j = 2, \ldots, m - 1 &amp;&amp; \text{(left and right)}, \\
+u_{i,1} &amp;= u(x_i, 0), &amp; u_{i,m} &amp;= u(x_i, b), &amp;&amp; i = 2, \ldots, n - 1 &amp;&amp; \text{(bottom and top)}.
+\end{aligned}
+\tag{6}
+\]</span></p>
+<p>The four corner values never appear in (5), because the five-point stencil never reaches diagonally. Mathews’ programs set each corner to the average of its two neighbours on the edges, which affects only the plots.</p>
+</section>
+<section id="setting-up-the-linear-system" class="level3">
+<h3 class="anchored" data-anchor-id="setting-up-the-linear-system">Setting up the linear system</h3>
+<p>Applying (5) at each of the <span class="math inline">\((n - 2)(m - 2)\)</span> interior points gives a linear system with one unknown for each interior point. For a small illustration (Example 10.5 of the textbook section that the module accompanies), take the boundary values of Examples 1 to 5 below on a <span class="math inline">\(5 \times 5\)</span> grid: <span class="math inline">\(u = 180\)</span> on the top edge, <span class="math inline">\(80\)</span> on the left, <span class="math inline">\(20\)</span> on the bottom and <span class="math inline">\(0\)</span> on the right. Number the nine interior values row by row from the bottom left:</p>
+<p><span class="math display">\[
+\begin{array}{ccccc}
+&amp; 180 &amp; 180 &amp; 180 &amp; \\
+80 &amp; p_7 &amp; p_8 &amp; p_9 &amp; 0 \\
+80 &amp; p_4 &amp; p_5 &amp; p_6 &amp; 0 \\
+80 &amp; p_1 &amp; p_2 &amp; p_3 &amp; 0 \\
+&amp; 20 &amp; 20 &amp; 20 &amp;
+\end{array}
+\]</span></p>
+<p>Formula (5) at <span class="math inline">\(p_1\)</span> reads <span class="math inline">\(p_2 + p_4 + 20 + 80 - 4p_1 = 0\)</span>, and in the same way at the other eight points, so the system <span class="math inline">\(A P = B\)</span> is</p>
+<p><span class="math display">\[
+\begin{aligned}
+-4p_1 + p_2 + p_4 &amp;= -100 \\
+p_1 - 4p_2 + p_3 + p_5 &amp;= -20 \\
+p_2 - 4p_3 + p_6 &amp;= -20 \\
+p_1 - 4p_4 + p_5 + p_7 &amp;= -80 \\
+p_2 + p_4 - 4p_5 + p_6 + p_8 &amp;= 0 \\
+p_3 + p_5 - 4p_6 + p_9 &amp;= 0 \\
+p_4 - 4p_7 + p_8 &amp;= -260 \\
+p_5 + p_7 - 4p_8 + p_9 &amp;= -180 \\
+p_6 + p_8 - 4p_9 &amp;= -180.
+\end{aligned}
+\]</span></p>
+<p>Gaussian elimination in exact arithmetic gives</p>
+<p><span class="math display">\[
+P = \Bigl(\tfrac{390}{7},\ \tfrac{605}{14},\ \tfrac{190}{7},\ \tfrac{1115}{14},\ 70,\ \tfrac{635}{14},\ \tfrac{790}{7},\ \tfrac{1565}{14},\ \tfrac{590}{7}\Bigr)
+\approx (55.7143,\ 43.2143,\ 27.1429,\ 79.6429,\ 70,\ 45.3571,\ 112.8571,\ 111.7857,\ 84.2857).
+\]</span></p>
+<p><strong>Verification</strong> (exact fractions substituted into each equation):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 40%">
+<col style="width: 42%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Point</th>
+<th>Left-hand side</th>
+<th>Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(p_1\)</span></td>
+<td><span class="math inline">\(-4 \cdot \tfrac{390}{7} + \tfrac{605}{14} + \tfrac{1115}{14} = \tfrac{-3120 + 605 + 1115}{14}\)</span></td>
+<td><span class="math inline">\(-100 \ \checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(p_2\)</span></td>
+<td><span class="math inline">\(\tfrac{390}{7} - 4 \cdot \tfrac{605}{14} + \tfrac{190}{7} + 70 = \tfrac{780 - 2420 + 380 + 980}{14}\)</span></td>
+<td><span class="math inline">\(-20 \ \checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(p_3\)</span></td>
+<td><span class="math inline">\(\tfrac{605}{14} - 4 \cdot \tfrac{190}{7} + \tfrac{635}{14} = \tfrac{605 - 1520 + 635}{14}\)</span></td>
+<td><span class="math inline">\(-20 \ \checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(p_4\)</span></td>
+<td><span class="math inline">\(\tfrac{390}{7} - 4 \cdot \tfrac{1115}{14} + 70 + \tfrac{790}{7} = \tfrac{780 - 4460 + 980 + 1580}{14}\)</span></td>
+<td><span class="math inline">\(-80 \ \checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(p_5\)</span></td>
+<td><span class="math inline">\(\tfrac{605}{14} + \tfrac{1115}{14} - 280 + \tfrac{635}{14} + \tfrac{1565}{14} = \tfrac{3920}{14} - 280\)</span></td>
+<td><span class="math inline">\(0 \ \checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(p_6\)</span></td>
+<td><span class="math inline">\(\tfrac{190}{7} + 70 - 4 \cdot \tfrac{635}{14} + \tfrac{590}{7} = \tfrac{380 + 980 - 2540 + 1180}{14}\)</span></td>
+<td><span class="math inline">\(0 \ \checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(p_7\)</span></td>
+<td><span class="math inline">\(\tfrac{1115}{14} - 4 \cdot \tfrac{790}{7} + \tfrac{1565}{14} = \tfrac{1115 - 6320 + 1565}{14}\)</span></td>
+<td><span class="math inline">\(-260 \ \checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(p_8\)</span></td>
+<td><span class="math inline">\(70 + \tfrac{790}{7} - 4 \cdot \tfrac{1565}{14} + \tfrac{590}{7} = \tfrac{980 + 1580 - 6260 + 1180}{14}\)</span></td>
+<td><span class="math inline">\(-180 \ \checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(p_9\)</span></td>
+<td><span class="math inline">\(\tfrac{635}{14} + \tfrac{1565}{14} - 4 \cdot \tfrac{590}{7} = \tfrac{635 + 1565 - 4720}{14}\)</span></td>
+<td><span class="math inline">\(-180 \ \checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The centre value <span class="math inline">\(p_5 = 70\)</span> is exactly the average of the four edge values, <span class="math inline">\((180 + 80 + 20 + 0)/4\)</span>. This holds on any square grid with an odd number of points per side: rotating the square by quarter turns permutes the four edges, and the four rotated problems add up to the problem with the same value on every edge, whose solution is constant.</p>
+<p>On a finer grid the system grows quickly, <span class="math inline">\((n - 2)(m - 2)\)</span> equations, while an iterative method only has to store the <span class="math inline">\(nm\)</span> grid values. That is the reason for the iteration in the next section.</p>
+</section>
+<section id="derivative-boundary-conditions" class="level3">
+<h3 class="anchored" data-anchor-id="derivative-boundary-conditions">Derivative boundary conditions</h3>
+<p>A Neumann condition prescribes the derivative of <span class="math inline">\(u\)</span> normal to an edge. The zero normal derivative</p>
+<p><span class="math display">\[
+\frac{\partial u}{\partial N} = 0
+\tag{7}
+\]</span></p>
+<p>means, for heat flow, that the edge is insulated. On the right edge <span class="math inline">\(x = a\)</span> this is <span class="math inline">\(u_x(x_n, y_j) = 0\)</span>, and the values <span class="math inline">\(u_{n,j}\)</span> become unknowns. The five-point formula at <span class="math inline">\((x_n, y_j)\)</span> needs the value <span class="math inline">\(u_{n+1,j}\)</span> at a point outside <span class="math inline">\(R\)</span>; the central difference <span class="math inline">\(\bigl(u_{n+1,j} - u_{n-1,j}\bigr)/(2h) \approx u_x(x_n, y_j) = 0\)</span>, which has error <span class="math inline">\(O(h^2)\)</span>, replaces it by <span class="math inline">\(u_{n-1,j}\)</span>. The same argument on each edge gives the Neumann stencils.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Neumann computational formulas for <span class="math inline">\(\partial u / \partial N = 0\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\begin{aligned}
+2u_{i,2} + u_{i-1,1} + u_{i+1,1} - 4u_{i,1} &amp;= 0 &amp;&amp;\text{(bottom edge)}, \\
+2u_{i,m-1} + u_{i-1,m} + u_{i+1,m} - 4u_{i,m} &amp;= 0 &amp;&amp;\text{(top edge)}, \\
+2u_{2,j} + u_{1,j-1} + u_{1,j+1} - 4u_{1,j} &amp;= 0 &amp;&amp;\text{(left edge)}, \\
+2u_{n-1,j} + u_{n,j-1} + u_{n,j+1} - 4u_{n,j} &amp;= 0 &amp;&amp;\text{(right edge)}.
+\end{aligned}
+\tag{8}
+\]</span></p>
+</div>
+</div>
+<p>When the derivative condition holds on part of the boundary and values of <span class="math inline">\(u\)</span> are given on the rest, the problem is called mixed. The equations at the points of an insulated edge use the matching stencil in (8), and the five-point formula (5) is used at the interior points.</p>
+</section>
+</section>
+<section id="iterative-solution-by-successive-over-relaxation" class="level2">
+<h2 class="anchored" data-anchor-id="iterative-solution-by-successive-over-relaxation">Iterative Solution by Successive Over-Relaxation</h2>
+<p>Write the five-point formula (5) in a form suitable for iteration:</p>
+<p><span class="math display">\[
+u_{i,j} \leftarrow u_{i,j} + r_{i,j}, \qquad r_{i,j} = \frac{u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - 4u_{i,j}}{4},
+\tag{9}
+\]</span></p>
+<p>for <span class="math inline">\(i = 2, \ldots, n - 1\)</span> and <span class="math inline">\(j = 2, \ldots, m - 1\)</span>. Each update replaces <span class="math inline">\(u_{i,j}\)</span> by the average of its four neighbours, and the residual <span class="math inline">\(r_{i,j}\)</span> is zero exactly when (5) holds at that point. Starting values must be supplied at every interior point; Mathews’ text suggests the average of the boundary values, and every one of his set-ups that survives starts each interior point at <span class="math inline">\(70\)</span>. One <em>iteration</em>, or <em>sweep</em>, applies (9) once at every interior point, using each new value as soon as it has been computed (this is the Gauss-Seidel method). Over-relaxation moves each value further in the same direction:</p>
+<p><span class="math display">\[
+u_{i,j} \leftarrow u_{i,j} + \omega\, r_{i,j}, \qquad 1 \le \omega &lt; 2.
+\tag{10}
+\]</span></p>
+<p>With <span class="math inline">\(\omega = 1\)</span>, (10) is the Gauss-Seidel sweep (9).</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Optimal relaxation parameter (general result)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For the five-point equations (5) of a Dirichlet problem on an <span class="math inline">\(n \times m\)</span> grid, swept in a row-by-row or column-by-column order, the SOR iteration converges fastest for</p>
+<p><span class="math display">\[
+\omega = \frac{4}{2 + \sqrt{4 - \Bigl(\cos\dfrac{\pi}{n - 1} + \cos\dfrac{\pi}{m - 1}\Bigr)^2}} .
+\tag{11}
+\]</span></p>
+<p>It follows from Young’s theory of the eigenvalues of SOR iteration matrices. For <span class="math inline">\(n = m = 9\)</span>, (11) gives <span class="math inline">\(\omega = 1.446463\)</span>, and for <span class="math inline">\(n = m = 21\)</span> it gives <span class="math inline">\(\omega = 1.729454\)</span>. For both grids, computing the eigenvalues of the SOR iteration matrix in Mathews’ sweep order confirms that (11) minimises its spectral radius, which is then <span class="math inline">\(\omega - 1\)</span>: <span class="math inline">\(0.446463\)</span> against <span class="math inline">\(0.853553\)</span> for Gauss-Seidel on the <span class="math inline">\(9 \times 9\)</span> grid, and <span class="math inline">\(0.729454\)</span> against <span class="math inline">\(0.975528\)</span> on the <span class="math inline">\(21 \times 21\)</span> grid.</p>
+</div>
+</div>
+<p>If the Neumann condition holds on an edge, the stencils (8) are relaxed in the same way; for example, on an insulated bottom edge,</p>
+<p><span class="math display">\[
+u_{i,1} \leftarrow u_{i,1} + \omega\, \frac{2u_{i,2} + u_{i-1,1} + u_{i+1,1} - 4u_{i,1}}{4},
+\tag{12}
+\]</span></p>
+<p>and similarly with the top, left and right stencils of (8). Formula (11) is derived for the Dirichlet problem only; Example 3 shows that it is not the best <span class="math inline">\(\omega\)</span> for a mixed problem.</p>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<p>Mathews’ two programs carry out the following steps.</p>
+<ol type="1">
+<li><strong>Grid and starting values.</strong> Store the <span class="math inline">\(n \times m\)</span> grid values in a table, put the boundary values (6) on the edges, set each corner to the average of its two neighbours on the edges, and set every interior value to <span class="math inline">\(70\)</span>. The Neumann program treats an insulated bottom edge, whose values are then unknowns too; in Example 3 their starting values are interpolated linearly between the two bottom corners.</li>
+<li><strong>Relaxation parameter.</strong> Compute <span class="math inline">\(\omega\)</span> from (11).</li>
+<li><strong>Sweep.</strong> For each column of interior points in turn, and down each column, compute the correction <span class="math inline">\(\omega\, r_{i,j}\)</span> from (10) and add it to <span class="math inline">\(u_{i,j}\)</span> at once. In the Neumann program, then sweep the points of the bottom edge, between the corners, with formula (12).</li>
+<li><strong>Record the change.</strong> Let <span class="math inline">\(E\)</span> be the largest <span class="math inline">\(\lvert \omega\, r_{i,j} \rvert\)</span> of the sweep, each correction computed with the values current at the moment it is made, and print it as the “max grid change”.</li>
+<li><strong>Stop or repeat.</strong> Repeat steps 3 and 4 while <span class="math inline">\(E &gt; 0.001\)</span>, for at most <span class="math inline">\(71\)</span> sweeps.</li>
+</ol>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The stopping rule measures the change, not the error
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A small final correction does not mean the grid values are within <span class="math inline">\(0.001\)</span> of the solution of the linear system. In Example 3 the last sweep changes no value by more than <span class="math inline">\(0.000998\)</span>, but the result still differs from the exact solution of the difference equations by up to <span class="math inline">\(0.0027\)</span>. And for a smooth solution, the solution of the difference equations differs from that of the differential equation by an amount of order <span class="math inline">\(h^2\)</span>, which no number of sweeps removes.</p>
+</div>
+</div>
+</section>
+<section id="poissons-and-helmholtzs-equations" class="level3">
+<h3 class="anchored" data-anchor-id="poissons-and-helmholtzs-equations">Poisson’s and Helmholtz’s equations</h3>
+<p>With <span class="math inline">\(g_{i,j} = g(x_i, y_j)\)</span> and <span class="math inline">\(f_{i,j} = f(x_i, y_j)\)</span>, the same derivation turns Poisson’s equation <span class="math inline">\(\nabla^2 u = g\)</span> into the iteration</p>
+<p><span class="math display">\[
+u_{i,j} \leftarrow u_{i,j} + \frac{u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - 4u_{i,j} - h^2 g_{i,j}}{4},
+\tag{13}
+\]</span></p>
+<p>and Helmholtz’s equation <span class="math inline">\(\nabla^2 u + f u = g\)</span> into</p>
+<p><span class="math display">\[
+u_{i,j} \leftarrow u_{i,j} + \frac{u_{i+1,j} + u_{i-1,j} + u_{i,j+1} + u_{i,j-1} - (4 - h^2 f_{i,j})\, u_{i,j} - h^2 g_{i,j}}{4 - h^2 f_{i,j}} .
+\tag{14}
+\]</span></p>
+<p>In both, the update makes the difference equation hold at <span class="math inline">\((x_i, y_j)\)</span>, and the correction can be multiplied by <span class="math inline">\(\omega\)</span> as in (10). Unlike (5), these equations depend on <span class="math inline">\(h\)</span>.</p>
+</section>
+<section id="improvement-the-nine-point-formula" class="level3">
+<h3 class="anchored" data-anchor-id="improvement-the-nine-point-formula">Improvement: the nine-point formula</h3>
+<p>A more accurate approximation to the Laplacian also uses the four diagonal neighbours:</p>
+<p><span class="math display">\[
+\nabla^2 u_{i,j} \approx \frac{1}{6h^2}\Bigl(u_{i+1,j-1} + u_{i-1,j-1} + u_{i+1,j+1} + u_{i-1,j+1} + 4u_{i+1,j} + 4u_{i-1,j} + 4u_{i,j+1} + 4u_{i,j-1} - 20u_{i,j}\Bigr).
+\tag{15}
+\]</span></p>
+<p>For a function that satisfies Laplace’s equation, Mathews gives the truncation errors of the nine-point and five-point formulas as <span class="math inline">\(O(h^4)\)</span> and <span class="math inline">\(O(h^2)\)</span>. Applied to the harmonic functions <span class="math inline">\(e^x \sin y\)</span>, <span class="math inline">\(\ln\bigl((x + 2)^2 + (y + 1)^2\bigr)\)</span> and <span class="math inline">\(\operatorname{Re}(x + iy)^8\)</span> at the point <span class="math inline">\((0.3, 0.4)\)</span>, the five-point error falls by a factor of <span class="math inline">\(4.0\)</span> each time <span class="math inline">\(h\)</span> is halved, and the nine-point error by a factor of <span class="math inline">\(64.0\)</span>, that is, <span class="math inline">\(O(h^6)\)</span>, which is better still. The advantage depends on <span class="math inline">\(\nabla^2 u = 0\)</span>: for a function that is not harmonic, such as <span class="math inline">\(e^x \sin 2y\)</span>, both formulas are only <span class="math inline">\(O(h^2)\)</span>.</p>
+</section>
+</section>
+<section id="example-1-laplaces-equation-on-a-9-times-9-grid" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-laplaces-equation-on-a-9-times-9-grid">Example 1 — Laplace’s equation on a <span class="math inline">\(9 \times 9\)</span> grid</h2>
+<p>Solve Laplace’s equation on a <span class="math inline">\(9 \times 9\)</span> grid with the boundary values</p>
+<p><span class="math display">\[
+\text{top: } 180, \qquad \text{left: } 80, \qquad \text{bottom: } 20, \qquad \text{right: } 0.
+\]</span></p>
+<p>Mathews gives no side length; by the remark under (5), the grid values are the same for every square. Example 4 takes the unit square, so <span class="math inline">\(h = 1/8\)</span>, and the textbook takes <span class="math inline">\([0, 4] \times [0, 4]\)</span>, so <span class="math inline">\(h = 1/2\)</span>.</p>
+<p><strong>Step 1 — Set up the grid.</strong> Mathews stores the grid as a <span class="math inline">\(9 \times 9\)</span> table laid out like the plate, with row <span class="math inline">\(1\)</span> at the top. The top row is <span class="math inline">\(180\)</span>, the left column <span class="math inline">\(80\)</span>, the bottom row <span class="math inline">\(20\)</span> and the right column <span class="math inline">\(0\)</span>; the corners are the averages <span class="math inline">\(130\)</span> (top left), <span class="math inline">\(90\)</span> (top right), <span class="math inline">\(50\)</span> (bottom left) and <span class="math inline">\(10\)</span> (bottom right), and the <span class="math inline">\(49\)</span> interior values start at <span class="math inline">\(70\)</span>.</p>
+<p><strong>Step 2 — Relaxation parameter.</strong> With <span class="math inline">\(n = m = 9\)</span>, formula (11) gives <span class="math inline">\(\omega = 1.446463\)</span>.</p>
+<p><strong>Step 3 — Sweep.</strong> Each sweep runs through the interior columns from left to right and down each column from the top, applying (10). The printed largest change <span class="math inline">\(E\)</span> decreases at every sweep and drops below <span class="math inline">\(0.001\)</span> at the <span class="math inline">\(20\)</span>th sweep:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 10%">
+<col style="width: 14%">
+<col style="width: 10%">
+<col style="width: 14%">
+<col style="width: 10%">
+<col style="width: 14%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Sweep</th>
+<th style="text-align: right;"><span class="math inline">\(E\)</span></th>
+<th style="text-align: right;">Sweep</th>
+<th style="text-align: right;"><span class="math inline">\(E\)</span></th>
+<th style="text-align: right;">Sweep</th>
+<th style="text-align: right;"><span class="math inline">\(E\)</span></th>
+<th style="text-align: right;">Sweep</th>
+<th style="text-align: right;"><span class="math inline">\(E\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;"><span class="math inline">\(66.0101\)</span></td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;"><span class="math inline">\(4.94244\)</span></td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;"><span class="math inline">\(0.888045\)</span></td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;"><span class="math inline">\(0.0109666\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><span class="math inline">\(34.2392\)</span></td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;"><span class="math inline">\(3.87342\)</span></td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;"><span class="math inline">\(0.42686\)</span></td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;"><span class="math inline">\(0.00809915\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;"><span class="math inline">\(16.1658\)</span></td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;"><span class="math inline">\(2.92477\)</span></td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;"><span class="math inline">\(0.199111\)</span></td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;"><span class="math inline">\(0.00254555\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;"><span class="math inline">\(10.6011\)</span></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;"><span class="math inline">\(2.16123\)</span></td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;"><span class="math inline">\(0.166732\)</span></td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;"><span class="math inline">\(0.00118546\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;"><span class="math inline">\(6.95448\)</span></td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><span class="math inline">\(1.40965\)</span></td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;"><span class="math inline">\(0.0854568\)</span></td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;"><span class="math inline">\(0.000605833\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Our recomputation reproduces each of Mathews’ <span class="math inline">\(20\)</span> printed values to the digits he prints. (The textbook describes the same run as “19 iterations” with residual <span class="math inline">\(\le 0.000606\)</span>; the program prints <span class="math inline">\(20\)</span> sweeps, and <span class="math inline">\(0.000605833\)</span> is the largest correction <span class="math inline">\(\lvert \omega r_{i,j} \rvert\)</span> of the last one.)</p>
+<p><strong>Step 4 — Result.</strong> The grid values after <span class="math inline">\(20\)</span> sweeps, with <span class="math inline">\(y_9\)</span> the top row:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;"><span class="math inline">\(x_1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_5\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_6\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_7\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_8\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_9\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(y_9\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(130\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(90\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(125.8212\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(141.1723\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(145.4140\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(144.0046\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(137.4782\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(122.6424\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(88.6070\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_7\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(102.1122\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.4534\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(116.4787\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.1261\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(103.2656\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84.4844\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(51.7856\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(89.1736\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(94.0499\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(93.9210\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(88.7553\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(77.9737\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(60.2439\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(34.0510\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_5\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80.5319\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(79.6515\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(76.3999\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(70.0003\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(59.6301\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(44.4667\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(24.1744\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(73.3023\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(67.6241\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(62.0267\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(55.2159\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(46.0796\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(33.8184\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(18.1798\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_3\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(65.0528\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(55.5159\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(48.8671\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(42.7568\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(35.6543\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(26.5473\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(14.7266\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(51.3931\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(40.5195\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(35.1691\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(31.2899\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(27.2335\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(21.9900\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(14.1791\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(50\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(20\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(20\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(20\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(20\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(20\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(20\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(20\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>These agree with the table Mathews prints to its four significant figures. (The textbook’s Table 10.6 shows the same run, but its first interior entry reads <span class="math inline">\(124.821\)</span>; the computation, and the module’s own printout of <span class="math inline">\(125.8\)</span>, give <span class="math inline">\(125.821\)</span>.)</p>
+<p><strong>Verification.</strong></p>
+<ul>
+<li><em>Residuals.</em> Substituting the final values into (5), the largest residual is <span class="math inline">\(\lvert r_{i,j} \rvert = 0.000138\)</span>.</li>
+<li><em>Exact solution of the difference equations.</em> Solving the <span class="math inline">\(49\)</span> equations (5) directly by sparse Gaussian elimination gives values whose largest difference from the table is <span class="math inline">\(0.00067\)</span>.</li>
+<li><em>Centre value.</em> By the symmetry argument under the <span class="math inline">\(5 \times 5\)</span> example, the solution of the difference equations at the centre is exactly <span class="math inline">\(70\)</span>, and so is the solution of Laplace’s equation itself. The iteration gives <span class="math inline">\(70.0003\)</span>.</li>
+<li><em>Laplace’s equation.</em> The table after Example 2 compares the grid values with the exact solution of the differential equation, written as a Fourier series.</li>
+</ul>
+<p><strong>Mathews’ plots.</strong> He draws the table as a surface with <code>ListPlot3D</code> of the transposed table (grid values against row and column numbers <span class="math inline">\(1\)</span> to <span class="math inline">\(9\)</span>, axes labelled <span class="math inline">\(y(j)\)</span>, <span class="math inline">\(x(i)\)</span> and <span class="math inline">\(u\)</span>, viewpoint <span class="math inline">\((4, 2, 3)\)</span>, vertical ticks at <span class="math inline">\(0\)</span>, <span class="math inline">\(50\)</span>, <span class="math inline">\(100\)</span>, <span class="math inline">\(150\)</span>), and as a contour plot with the <span class="math inline">\(13\)</span> levels <span class="math inline">\(0, 15, 30, \ldots, 180\)</span>, after reversing the rows so that it has the same orientation as the table. In both, the axes count rows and columns instead of showing <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</p>
+</section>
+<section id="example-2-the-same-problem-on-a-21-times-21-grid" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-the-same-problem-on-a-21-times-21-grid">Example 2 — The same problem on a <span class="math inline">\(21 \times 21\)</span> grid</h2>
+<p>Solve the problem of Example 1 on a <span class="math inline">\(21 \times 21\)</span> grid: <span class="math inline">\(361\)</span> interior unknowns instead of <span class="math inline">\(49\)</span>.</p>
+<p>Mathews’ set-up for this example is among the missing images of the archive; he says only that the boundary values are those of Example 1. This page takes the set-up of Example 1 with <span class="math inline">\(n = m = 21\)</span>: the same edge values, corners <span class="math inline">\(130\)</span>, <span class="math inline">\(90\)</span>, <span class="math inline">\(50\)</span> and <span class="math inline">\(10\)</span>, and every interior value starting at <span class="math inline">\(70\)</span>. Formula (11) now gives <span class="math inline">\(\omega = 1.729454\)</span>. The run needs <span class="math inline">\(47\)</span> sweeps: the largest change falls from <span class="math inline">\(90.8601\)</span> in the first sweep to <span class="math inline">\(0.000752557\)</span> in the <span class="math inline">\(47\)</span>th. It does not fall at every sweep; it rises once, from <span class="math inline">\(0.127639\)</span> in sweep <span class="math inline">\(38\)</span> to <span class="math inline">\(0.138959\)</span> in sweep <span class="math inline">\(39\)</span>. The largest difference between the final values and the exact solution of the difference equations is <span class="math inline">\(0.0023\)</span>, and the centre value is <span class="math inline">\(70.0011\)</span> (exactly <span class="math inline">\(70\)</span> for the difference equations).</p>
+<p>The images with Mathews’ printout and plots for this example are missing from the archive too, so the sweep count and changes here come from our recomputation with his program’s rules.</p>
+<p><strong>How much SOR saves.</strong> With the same starting values and stopping rule, Gauss-Seidel (<span class="math inline">\(\omega = 1\)</span>) needs <span class="math inline">\(53\)</span> sweeps on the <span class="math inline">\(9 \times 9\)</span> grid of Example 1 and <span class="math inline">\(227\)</span> on this <span class="math inline">\(21 \times 21\)</span> grid, against <span class="math inline">\(20\)</span> and <span class="math inline">\(47\)</span> for SOR with the <span class="math inline">\(\omega\)</span> of (11).</p>
+<p><strong>Comparison with Laplace’s equation.</strong> Take the plate to be the unit square. Its exact solution is the sum of four Fourier series, one for each edge; the part due to the value <span class="math inline">\(1\)</span> on the top edge is</p>
+<p><span class="math display">\[
+u_{\text{top}}(x, y) = \sum_{k \text{ odd}} \frac{4}{k\pi}\, \sin(k\pi x)\, \frac{\sinh(k\pi y)}{\sinh(k\pi)},
+\]</span></p>
+<p>and the others follow by rotating the square. The points <span class="math inline">\(x, y \in \{0.25, 0.5, 0.75\}\)</span> lie on both grids:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 30%">
+<col style="width: 33%">
+<col style="width: 23%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\((x, y)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(9 \times 9\)</span> (Example 1)</th>
+<th style="text-align: right;"><span class="math inline">\(21 \times 21\)</span> (Example 2)</th>
+<th style="text-align: right;">Laplace’s equation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((0.25, 0.75)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.4534\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.6506\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.6868\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0.50, 0.75)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.1261\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.6556\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(113.7658\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((0.75, 0.75)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84.4844\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84.5501\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84.5623\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0.25, 0.50)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(79.6515\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(79.6505\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(79.6480\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((0.50, 0.50)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(70.0003\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(70.0011\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(70.0000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0.75, 0.50)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(44.4667\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(44.1140\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(44.0388\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((0.25, 0.25)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(55.5159\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(55.4511\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(55.4377\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0.50, 0.25)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(42.7568\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(42.5839\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(42.5474\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((0.75, 0.25)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(26.5473\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(26.3517\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(26.3132\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>At every one of these points except the centre the <span class="math inline">\(21 \times 21\)</span> value is the closer of the two to the solution of Laplace’s equation, with an error smaller by a factor of <span class="math inline">\(1.4\)</span> to <span class="math inline">\(6.4\)</span>. At the centre both grids have exactly <span class="math inline">\(70\)</span> as the solution of their difference equations, and what remains is the error of stopping the iteration: <span class="math inline">\(0.0003\)</span> on the <span class="math inline">\(9 \times 9\)</span> grid and <span class="math inline">\(0.0011\)</span> on the <span class="math inline">\(21 \times 21\)</span> grid. The boundary values jump at all four corners (from <span class="math inline">\(180\)</span> to <span class="math inline">\(80\)</span> at the top left, for example), which Mathews blames for the difficulty Mathematica has in drawing the contour lines of this example.</p>
+</section>
+<section id="example-3-an-insulated-bottom-edge-neumann-condition" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-an-insulated-bottom-edge-neumann-condition">Example 3 — An insulated bottom edge (Neumann condition)</h2>
+<p>Solve Laplace’s equation on a <span class="math inline">\(9 \times 9\)</span> grid with the boundary conditions</p>
+<p><span class="math display">\[
+\text{top: } 180, \qquad \text{left: } 80, \qquad \text{bottom: } \frac{\partial u}{\partial N} = 0, \qquad \text{right: } 0.
+\]</span></p>
+<p>This is the mixed problem of the textbook’s Example 10.8: on <span class="math inline">\([0, 4] \times [0, 4]\)</span>, <span class="math inline">\(u(x, 4) = 180\)</span> and <span class="math inline">\(u_y(x, 0) = 0\)</span> for <span class="math inline">\(0 &lt; x &lt; 4\)</span>, and <span class="math inline">\(u(0, y) = 80\)</span> and <span class="math inline">\(u(4, y) = 0\)</span> for <span class="math inline">\(0 \le y &lt; 4\)</span>.</p>
+<p><strong>Step 1 — Set up the grid.</strong> As in Example 1, with row <span class="math inline">\(1\)</span> at the top: top row <span class="math inline">\(180\)</span>, left column <span class="math inline">\(80\)</span>, right column <span class="math inline">\(0\)</span>, top corners <span class="math inline">\(130\)</span> and <span class="math inline">\(90\)</span>, interior values <span class="math inline">\(70\)</span>. The bottom row now holds <span class="math inline">\(7\)</span> unknowns. Its end points are the bottom corners, <span class="math inline">\(80\)</span> and <span class="math inline">\(0\)</span>, from the left and right edge conditions, and its starting values are interpolated linearly between them: <span class="math inline">\(80, 70, 60, \ldots, 10, 0\)</span>.</p>
+<p><strong>Step 2 — Sweep.</strong> With <span class="math inline">\(\omega = 1.446463\)</span> from (11), each sweep relaxes the <span class="math inline">\(49\)</span> interior points as in Example 1 and then the <span class="math inline">\(7\)</span> bottom-edge points, from left to right, with the bottom-edge formula (12). The largest change decreases at every sweep, from <span class="math inline">\(68.496\)</span> in the first to <span class="math inline">\(0.000997764\)</span> in the <span class="math inline">\(30\)</span>th, where the run stops. This reproduces Mathews’ printout of <span class="math inline">\(30\)</span> sweeps value for value (the textbook says “29 iterations”).</p>
+<p><strong>Step 3 — Result.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;"><span class="math inline">\(x_1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_5\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_6\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_7\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_8\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_9\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(y_9\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(130\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(180\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(90\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(126.4574\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(142.3114\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(146.8369\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(145.4675\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(138.7624\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(123.5829\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(89.1008\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_7\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(103.5178\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(115.9508\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(119.5681\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(116.2702\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(105.9987\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(86.4683\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(52.8201\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(91.6621\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(98.4053\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(99.2137\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(94.0461\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(82.4936\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(63.4715\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(35.7113\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_5\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84.7247\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(86.7936\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(84.8347\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(78.2063\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(66.4578\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(49.2124\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(26.5538\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80.4424\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(79.2089\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(75.1245\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(67.4860\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(55.9185\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(40.3665\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(21.2915\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_3\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(77.8354\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(74.4742\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(68.9677\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(60.6944\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(49.3635\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(35.0435\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(18.2459\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(76.4244\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(71.8842\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(65.5772\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(56.9600\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(45.7972\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(32.1981\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(16.6485\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(y_1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(80\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(75.9774\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(71.0605\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(64.4964\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(55.7707\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(44.6670\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(31.3032\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(16.1500\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>These are the values of the textbook’s Table 10.7. Insulating the bottom edge raises every interior value above its value in Example 1, where the bottom edge is held at <span class="math inline">\(20\)</span>.</p>
+<p><strong>Verification.</strong> After the last sweep, the largest residual of the five-point formula at the interior points is <span class="math inline">\(0.000198\)</span> in size, and the largest residual of the Neumann formula along the bottom edge is <span class="math inline">\(0.0000798\)</span>. Solving the <span class="math inline">\(56\)</span> difference equations directly gives values whose largest difference from the table is <span class="math inline">\(0.0027\)</span>; that is more than the stopping tolerance <span class="math inline">\(0.001\)</span>, as the warning under the algorithm explains.</p>
+<p><strong>The relaxation parameter.</strong> Formula (11) is the optimum for the Dirichlet problem, not for this one. The eigenvalues of the iteration matrix of this example put its optimum near <span class="math inline">\(\omega = 1.5325\)</span>, with spectral radius <span class="math inline">\(0.5325\)</span>, against <span class="math inline">\(0.7325\)</span> at <span class="math inline">\(\omega = 1.446463\)</span>. With <span class="math inline">\(\omega = 1.5325\)</span> the same run stops after <span class="math inline">\(23\)</span> sweeps instead of <span class="math inline">\(30\)</span>; Gauss-Seidel needs <span class="math inline">\(68\)</span>.</p>
+<p>Mathews plots this example the same two ways as Example 1, as a surface and as a contour plot. The bottom corners now carry the values <span class="math inline">\(80\)</span> and <span class="math inline">\(0\)</span> of the side edges, so the boundary data jump only at the two top corners; Mathews remarks that this problem has smoother contours.</p>
+</section>
+<section id="example-4-example-1-on-the-unit-square" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-example-1-on-the-unit-square">Example 4 — Example 1 on the unit square</h2>
+<p>Solve Laplace’s equation over the square <span class="math inline">\(0 \le x \le 1\)</span>, <span class="math inline">\(0 \le y \le 1\)</span> with the boundary values of Example 1: top <span class="math inline">\(180\)</span>, left <span class="math inline">\(80\)</span>, bottom <span class="math inline">\(20\)</span>, right <span class="math inline">\(0\)</span>.</p>
+<p>Mathews runs exactly the set-up and program of Example 1 (<span class="math inline">\(n = m = 9\)</span>), and its first printed change, <span class="math inline">\(66.0101\)</span>, is that of Example 1, so the grid values are those of the table in Example 1, with <span class="math inline">\(x_i = (i - 1)/8\)</span> and <span class="math inline">\(y_j = (j - 1)/8\)</span>. The only change is in the surface plot: he labels the axes <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> and replaces the row and column numbers <span class="math inline">\(1\)</span>, <span class="math inline">\(5\)</span>, <span class="math inline">\(9\)</span> by the coordinates <span class="math inline">\(0\)</span>, <span class="math inline">\(0.5\)</span>, <span class="math inline">\(1\)</span> (for <span class="math inline">\(y\)</span>, row <span class="math inline">\(1\)</span> is <span class="math inline">\(y = 1\)</span> and row <span class="math inline">\(9\)</span> is <span class="math inline">\(y = 0\)</span>), with vertical ticks <span class="math inline">\(0\)</span>, <span class="math inline">\(50\)</span>, <span class="math inline">\(100\)</span>, <span class="math inline">\(150\)</span> and the viewpoint <span class="math inline">\((4, 2, 3)\)</span> of Example 1.</p>
+</section>
+<section id="example-5-the-unit-square-with-the-grid-stored-by-coordinates" class="level2">
+<h2 class="anchored" data-anchor-id="example-5-the-unit-square-with-the-grid-stored-by-coordinates">Example 5 — The unit square with the grid stored by coordinates</h2>
+<p>Solve the problem of Example 4 again: Laplace’s equation on <span class="math inline">\(0 \le x \le 1\)</span>, <span class="math inline">\(0 \le y \le 1\)</span> with <span class="math inline">\(u(x, 0) = 20\)</span>, <span class="math inline">\(u(x, 1) = 180\)</span>, <span class="math inline">\(u(0, y) = 80\)</span> and <span class="math inline">\(u(1, y) = 0\)</span>.</p>
+<p>This time Mathews gives the boundary as four functions and computes the grid from them, which is the form his program statement uses: <span class="math inline">\(u(x, 0) = f_1(x)\)</span>, <span class="math inline">\(u(x, b) = f_2(x)\)</span> for <span class="math inline">\(0 \le x \le a\)</span>, and <span class="math inline">\(u(0, y) = f_3(y)\)</span>, <span class="math inline">\(u(a, y) = f_4(y)\)</span> for <span class="math inline">\(0 \le y \le b\)</span>.</p>
+<p><strong>Step 1 — Set up the grid.</strong> With <span class="math inline">\(a = b = 1\)</span> and <span class="math inline">\(n = m = 9\)</span>, the spacing is <span class="math inline">\(h = a/(n - 1) = 1/8\)</span> in both directions. Entry <span class="math inline">\((i, j)\)</span> of the table is now <span class="math inline">\(u(x_i, y_j)\)</span> with <span class="math inline">\(x_i = (i - 1)h\)</span> and <span class="math inline">\(y_j = (j - 1)h\)</span>, so the first index runs along <span class="math inline">\(x\)</span> and the second along <span class="math inline">\(y\)</span>, as in the theory above. The edges get <span class="math inline">\(f_1(x_i) = 20\)</span>, <span class="math inline">\(f_2(x_i) = 180\)</span>, <span class="math inline">\(f_3(y_j) = 80\)</span> and <span class="math inline">\(f_4(y_j) = 0\)</span>, the corners are the averages <span class="math inline">\(50\)</span>, <span class="math inline">\(130\)</span>, <span class="math inline">\(10\)</span> and <span class="math inline">\(90\)</span> as before, and the interior starts at <span class="math inline">\(70\)</span>.</p>
+<p><strong>Step 2 — Sweep.</strong> The program is the same, but because the table is stored the other way round, a sweep now runs along the rows of the plate from the bottom up, and from left to right along each row. With <span class="math inline">\(\omega = 1.446463\)</span> the largest change decreases at every sweep, from <span class="math inline">\(61.8766\)</span> in the first to <span class="math inline">\(0.000609839\)</span> in the <span class="math inline">\(19\)</span>th, one sweep fewer than Example 1, the difference being the order of the sweep. Our recomputation reproduces Mathews’ <span class="math inline">\(19\)</span> printed values.</p>
+<p><strong>Step 3 — Result and verification.</strong> The largest difference between the final grid values and those of Example 1 at the same points is <span class="math inline">\(0.00075\)</span>, and between them and the exact solution of the difference equations <span class="math inline">\(0.00048\)</span>; the largest residual is <span class="math inline">\(0.000116\)</span> in size.</p>
+<p><strong>Mathews’ plot.</strong> He plots the triples <span class="math inline">\(\bigl(x_i, y_j, u_{i,j}\bigr)\)</span> as a surface with <code>ListSurfacePlot3D</code>, so the axes carry the true coordinates: axes labelled <span class="math inline">\(x\)</span>, <span class="math inline">\(y\)</span>, <span class="math inline">\(u\)</span>, viewpoint <span class="math inline">\((1, -2, 1)\)</span> and box ratios <span class="math inline">\(1 : 1 : \tfrac12\)</span>.</p>
+</section>
+<section id="example-6-continuous-boundary-values" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-continuous-boundary-values">Example 6 — Continuous boundary values</h2>
+<p>Solve Laplace’s equation over the square <span class="math inline">\(0 \le x \le 1\)</span>, <span class="math inline">\(0 \le y \le 1\)</span> with</p>
+<p><span class="math display">\[
+u(x, 0) = \sin(\pi x), \quad u(x, 1) = 1 \quad \text{for } 0 \le x \le 1, \qquad u(0, y) = y^2, \quad u(1, y) = y^2 \quad \text{for } 0 \le y \le 1.
+\]</span></p>
+<p>At the corners the edge functions agree: <span class="math inline">\(u(0, 0) = u(1, 0) = 0\)</span> and <span class="math inline">\(u(0, 1) = u(1, 1) = 1\)</span>. Unlike Examples 1 to 5, the boundary values are continuous all the way round, and Mathews notes that Mathematica then has no trouble drawing the contour lines.</p>
+<p>The images with Mathews’ set-up (grid and starting values), printout and plots for this example are missing from the archive. This page uses his program with <span class="math inline">\(n = m = 21\)</span>, so <span class="math inline">\(h = 0.05\)</span>, and starts every interior value at <span class="math inline">\(0\)</span>, a better guess than <span class="math inline">\(70\)</span> for boundary values between <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>.</p>
+<p><strong>Step 1 — Set up the grid.</strong> As in Example 5, entry <span class="math inline">\((i, j)\)</span> is <span class="math inline">\(u(x_i, y_j)\)</span> with <span class="math inline">\(x_i = y_i = (i - 1)/20\)</span>, and the edges are <span class="math inline">\(\sin(\pi x_i)\)</span> at the bottom, <span class="math inline">\(1\)</span> at the top and <span class="math inline">\(y_j^2\)</span> on both sides. The program’s corner averages (<span class="math inline">\(0.0795\)</span> at the bottom corners, <span class="math inline">\(0.95125\)</span> at the top corners) differ from the true corner values <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>; the corners are not used by the five-point formula, so a plot can show the true values instead.</p>
+<p><strong>Step 2 — Sweep.</strong> Formula (11) gives <span class="math inline">\(\omega = 1.729454\)</span>. Because the boundary values are of size <span class="math inline">\(1\)</span> instead of <span class="math inline">\(100\)</span>, the fixed tolerance <span class="math inline">\(0.001\)</span> is relatively looser here. The largest change falls from <span class="math inline">\(1.40154\)</span> in the first sweep to <span class="math inline">\(0.000865966\)</span> in the <span class="math inline">\(40\)</span>th, where the run stops; it rises once on the way, from <span class="math inline">\(0.00187047\)</span> in sweep <span class="math inline">\(38\)</span> to <span class="math inline">\(0.00210206\)</span> in sweep <span class="math inline">\(39\)</span>.</p>
+<p><strong>Step 3 — Exact solution.</strong> The function <span class="math inline">\(H(x, y) = y^2 - x^2 + x\)</span> is harmonic (<span class="math inline">\(H_{xx} + H_{yy} = -2 + 2 = 0\)</span>) and equals <span class="math inline">\(y^2\)</span> on both sides, so <span class="math inline">\(u = H + w\)</span>, where <span class="math inline">\(w\)</span> is harmonic, zero on both sides, and equals <span class="math inline">\(\sin(\pi x) - x(1 - x)\)</span> on the bottom and <span class="math inline">\(-x(1 - x)\)</span> on the top. The sine series of <span class="math inline">\(x(1 - x)\)</span> on <span class="math inline">\([0, 1]\)</span> has coefficients <span class="math inline">\(8/(k\pi)^3\)</span> for odd <span class="math inline">\(k\)</span> and <span class="math inline">\(0\)</span> for even <span class="math inline">\(k\)</span>, so</p>
+<p><span class="math display">\[
+u(x, y) = y^2 - x^2 + x + \sum_{k = 1}^{\infty} \sin(k\pi x)\, \frac{A_k \sinh\bigl(k\pi(1 - y)\bigr) + B_k \sinh(k\pi y)}{\sinh(k\pi)},
+\]</span></p>
+<p>with <span class="math inline">\(A_1 = 1 - 8/\pi^3\)</span>, <span class="math inline">\(A_k = B_k = -8/(k\pi)^3\)</span> for the other odd <span class="math inline">\(k\)</span>, <span class="math inline">\(B_1 = -8/\pi^3\)</span>, and <span class="math inline">\(A_k = B_k = 0\)</span> for even <span class="math inline">\(k\)</span>.</p>
+<p><strong>Step 4 — Result and verification.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 23%">
+<col style="width: 37%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\((x, y)\)</span></th>
+<th style="text-align: right;">SOR, <span class="math inline">\(40\)</span> sweeps</th>
+<th style="text-align: right;">Difference equations, exact</th>
+<th style="text-align: right;">Laplace’s equation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((0.25, 0.25)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.473147\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.473462\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.473171\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0.50, 0.25)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.630158\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.630333\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.629857\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((0.50, 0.50)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.596784\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.596911\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.596611\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0.50, 0.75)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.752419\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.752465\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.752388\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((0.75, 0.75)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.706252\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.706269\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.706259\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Over all <span class="math inline">\(361\)</span> interior points, the largest difference between the SOR values and the exact solution of the difference equations is <span class="math inline">\(0.00031\)</span>, and the largest difference between that solution and the solution of Laplace’s equation is <span class="math inline">\(0.00048\)</span>, so with <span class="math inline">\(h = 0.05\)</span> the error left by stopping the iteration is about as large as the discretisation error. The interior values lie between <span class="math inline">\(0.139\)</span> and <span class="math inline">\(0.947\)</span>, inside the range <span class="math inline">\(0\)</span> to <span class="math inline">\(1\)</span> of the boundary values. The largest residual after the last sweep is <span class="math inline">\(0.000124\)</span> in size.</p>
+<p><strong>Order of accuracy.</strong> Solving the difference equations exactly on finer and finer grids shows the <span class="math inline">\(O(h^2)\)</span> error of the five-point formula for this smooth problem: each halving of <span class="math inline">\(h\)</span> divides the largest error at the interior points by about <span class="math inline">\(4\)</span>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(n = m\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(h\)</span></th>
+<th style="text-align: right;">Largest error</th>
+<th style="text-align: right;">Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(5\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.25\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.127 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(9\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.125\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.934 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.84\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(17\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.0625\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.419 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.95\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(33\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.03125\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.860 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.99\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(65\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.015625\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.658 \times 10^{-5}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.99\)</span></td>
+</tr>
+</tbody>
+</table>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

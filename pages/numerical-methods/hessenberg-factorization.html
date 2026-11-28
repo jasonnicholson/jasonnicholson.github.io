@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Hessenberg Factorization – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#hessenberg-matrices-and-similarity" id="toc-hessenberg-matrices-and-similarity" class="nav-link active" data-scroll-target="#hessenberg-matrices-and-similarity">Hessenberg Matrices and Similarity</a></li>
+  <li><a href="#householder-reduction-to-hessenberg-form" id="toc-householder-reduction-to-hessenberg-form" class="nav-link" data-scroll-target="#householder-reduction-to-hessenberg-form">Householder Reduction to Hessenberg Form</a></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">Worked Examples</a>
+  <ul class="collapse">
+  <li><a href="#example-1-a-5-times-5-symmetric-matrix-step-by-step" id="toc-example-1-a-5-times-5-symmetric-matrix-step-by-step" class="nav-link" data-scroll-target="#example-1-a-5-times-5-symmetric-matrix-step-by-step">Example 1 — A <span class="math inline">\(5 \times 5\)</span> symmetric matrix, step by step</a></li>
+  <li><a href="#example-2-the-same-matrix-with-hessenbergdecomposition" id="toc-example-2-the-same-matrix-with-hessenbergdecomposition" class="nav-link" data-scroll-target="#example-2-the-same-matrix-with-hessenbergdecomposition">Example 2 — The same matrix with <em>HessenbergDecomposition</em></a></li>
+  <li><a href="#example-3-eigenvalues-and-eigenvectors-of-mathbfa-and-mathbfh" id="toc-example-3-eigenvalues-and-eigenvectors-of-mathbfa-and-mathbfh" class="nav-link" data-scroll-target="#example-3-eigenvalues-and-eigenvectors-of-mathbfa-and-mathbfh">Example 3 — Eigenvalues and eigenvectors of <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{H}\)</span></a></li>
+  <li><a href="#example-4-a-3-times-3-nonsymmetric-matrix" id="toc-example-4-a-3-times-3-nonsymmetric-matrix" class="nav-link" data-scroll-target="#example-4-a-3-times-3-nonsymmetric-matrix">Example 4 — A <span class="math inline">\(3 \times 3\)</span> nonsymmetric matrix</a></li>
+  <li><a href="#example-5-a-3-times-3-matrix-with-complex-eigenvalues" id="toc-example-5-a-3-times-3-matrix-with-complex-eigenvalues" class="nav-link" data-scroll-target="#example-5-a-3-times-3-matrix-with-complex-eigenvalues">Example 5 — A <span class="math inline">\(3 \times 3\)</span> matrix with complex eigenvalues</a></li>
+  <li><a href="#example-6-a-4-times-4-matrix-whose-hessenberg-form-splits" id="toc-example-6-a-4-times-4-matrix-whose-hessenberg-form-splits" class="nav-link" data-scroll-target="#example-6-a-4-times-4-matrix-whose-hessenberg-form-splits">Example 6 — A <span class="math inline">\(4 \times 4\)</span> matrix whose Hessenberg form splits</a></li>
+  <li><a href="#example-7-a-4-times-4-matrix-with-two-conjugate-pairs" id="toc-example-7-a-4-times-4-matrix-with-two-conjugate-pairs" class="nav-link" data-scroll-target="#example-7-a-4-times-4-matrix-with-two-conjugate-pairs">Example 7 — A <span class="math inline">\(4 \times 4\)</span> matrix with two conjugate pairs</a></li>
+  <li><a href="#example-8-a-5-times-5-nonsymmetric-matrix" id="toc-example-8-a-5-times-5-nonsymmetric-matrix" class="nav-link" data-scroll-target="#example-8-a-5-times-5-nonsymmetric-matrix">Example 8 — A <span class="math inline">\(5 \times 5\)</span> nonsymmetric matrix</a></li>
+  <li><a href="#example-9-mathews-exercise-9-a-5-times-5-nonsymmetric-matrix" id="toc-example-9-mathews-exercise-9-a-5-times-5-nonsymmetric-matrix" class="nav-link" data-scroll-target="#example-9-mathews-exercise-9-a-5-times-5-nonsymmetric-matrix">Example 9 — Mathews’ Exercise 9, a <span class="math inline">\(5 \times 5\)</span> nonsymmetric matrix</a></li>
+  <li><a href="#what-the-examples-show" id="toc-what-the-examples-show" class="nav-link" data-scroll-target="#what-the-examples-show">What the examples show</a></li>
+  </ul></li>
+  <li><a href="#from-hessenberg-form-to-the-eigenvalues" id="toc-from-hessenberg-form-to-the-eigenvalues" class="nav-link" data-scroll-target="#from-hessenberg-form-to-the-eigenvalues">From Hessenberg Form to the Eigenvalues</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Hessenberg Factorization</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<p>A Hessenberg matrix is zero below its first subdiagonal. Every real square matrix <span class="math inline">\(\mathbf{A}\)</span> can be written as <span class="math inline">\(\mathbf{A} = \mathbf{Q}\mathbf{H}\mathbf{Q}^{T}\)</span> with <span class="math inline">\(\mathbf{Q}\)</span> orthogonal and <span class="math inline">\(\mathbf{H}\)</span> upper Hessenberg, and if <span class="math inline">\(\mathbf{A}\)</span> is symmetric, <span class="math inline">\(\mathbf{H}\)</span> is symmetric tridiagonal. Householder’s method finds <span class="math inline">\(\mathbf{Q}\)</span> and <span class="math inline">\(\mathbf{H}\)</span> in <span class="math inline">\(n - 2\)</span> reflection steps. <span class="math inline">\(\mathbf{H}\)</span> is similar to <span class="math inline">\(\mathbf{A}\)</span>, so it has the same eigenvalues. This reduction is the preliminary step before the <a href="qr-method/">QR method</a>, which preserves Hessenberg form and costs much less per step on a Hessenberg matrix than on a full one.</p>
+<p>This page states the factorization, gives Householder’s algorithm in the notation of the QR method page, and works all nine of Mathews’ examples. The QR method page already shows a symmetric <span class="math inline">\(4 \times 4\)</span> matrix reduced to tridiagonal form and then iterated to its eigenvalues (its <a href="qr-method/#animations">Case 2 animation</a> and its Example 4), so that second stage is not repeated here.</p>
+<section id="hessenberg-matrices-and-similarity" class="level2">
+<h2 class="anchored" data-anchor-id="hessenberg-matrices-and-similarity">Hessenberg Matrices and Similarity</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Hessenberg matrix
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <span class="math inline">\(n \times n\)</span> matrix <span class="math inline">\(\mathbf{H} = (h_{ij})\)</span> with <span class="math inline">\(h_{ij} = 0\)</span> for <span class="math inline">\(i &gt; j + 1\)</span> is called an (upper) <strong>Hessenberg matrix</strong>. Its form is</p>
+<p><span class="math display">\[
+\mathbf{H} = \begin{pmatrix}
+h_{11} &amp; h_{12} &amp; h_{13} &amp; \cdots &amp; h_{1,n-1} &amp; h_{1n} \\
+h_{21} &amp; h_{22} &amp; h_{23} &amp; \cdots &amp; h_{2,n-1} &amp; h_{2n} \\
+0 &amp; h_{32} &amp; h_{33} &amp; \cdots &amp; h_{3,n-1} &amp; h_{3n} \\
+\vdots &amp; \ddots &amp; \ddots &amp; \ddots &amp; \vdots &amp; \vdots \\
+0 &amp; \cdots &amp; 0 &amp; h_{n-1,n-2} &amp; h_{n-1,n-1} &amp; h_{n-1,n} \\
+0 &amp; \cdots &amp; 0 &amp; 0 &amp; h_{n,n-1} &amp; h_{nn}
+\end{pmatrix}.
+\]</span></p>
+</div>
+</div>
+<p>A symmetric Hessenberg matrix is tridiagonal, because its zeros below the subdiagonal are mirrored above the superdiagonal (see <a href="../../pages/numerical-methods/tri-diagonal-matrices.html">Tri-Diagonal Matrices</a>).</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Unitary and orthogonal matrices
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>A real matrix <span class="math inline">\(\mathbf{Q}\)</span> with <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span> is called <strong>orthogonal</strong> (Mathews calls it unitary, the name used for the complex case).</p></li>
+<li><p>A complex matrix <span class="math inline">\(\mathbf{U}\)</span> with <span class="math inline">\(\mathbf{U}^{*}\mathbf{U} = \mathbf{I}\)</span>, where <span class="math inline">\(\mathbf{U}^{*}\)</span> is the conjugate transpose, is called <strong>unitary</strong>.</p></li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Hessenberg factorization
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li>For every real <span class="math inline">\(n \times n\)</span> matrix <span class="math inline">\(\mathbf{A}\)</span> there are an orthogonal matrix <span class="math inline">\(\mathbf{Q}\)</span> and a real Hessenberg matrix <span class="math inline">\(\mathbf{H}\)</span> with</li>
+</ol>
+<p><span class="math display">\[
+\mathbf{A} = \mathbf{Q}\mathbf{H}\mathbf{Q}^{T}.
+\tag{1}
+\]</span></p>
+<ol start="2" type="i">
+<li>For every complex <span class="math inline">\(n \times n\)</span> matrix <span class="math inline">\(\mathbf{A}\)</span> there are a unitary matrix <span class="math inline">\(\mathbf{U}\)</span> and a Hessenberg matrix <span class="math inline">\(\mathbf{H}\)</span> with <span class="math inline">\(\mathbf{A} = \mathbf{U}\mathbf{H}\mathbf{U}^{*}\)</span>.</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Symmetric matrices
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\mathbf{A}\)</span> is real and symmetric, the <span class="math inline">\(\mathbf{H}\)</span> in (1) is symmetric tridiagonal, because <span class="math inline">\(\mathbf{H}^{T} = (\mathbf{Q}^{T}\mathbf{A}\mathbf{Q})^{T} = \mathbf{Q}^{T}\mathbf{A}^{T}\mathbf{Q} = \mathbf{H}\)</span>.</p>
+</div>
+</div>
+<p>Mathews remarks that the symmetric case is the easiest to illustrate in a first course; Examples 1–3 below are of that kind.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Similarity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\mathbf{A} = \mathbf{Q}\mathbf{H}\mathbf{Q}^{T}\)</span> with <span class="math inline">\(\mathbf{Q}\)</span> orthogonal, then <span class="math inline">\(\mathbf{H} = \mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{Q}^{-1}\mathbf{A}\mathbf{Q}\)</span> is similar to <span class="math inline">\(\mathbf{A}\)</span>. The two matrices have the same characteristic polynomial,</p>
+<p><span class="math display">\[
+\det(\lambda\mathbf{I} - \mathbf{H}) = \det\!\big(\mathbf{Q}^{T}(\lambda\mathbf{I} - \mathbf{A})\mathbf{Q}\big) = \det(\lambda\mathbf{I} - \mathbf{A}),
+\]</span></p>
+<p>and therefore the same eigenvalues. If <span class="math inline">\(\mathbf{A}\mathbf{v} = \lambda\mathbf{v}\)</span>, then <span class="math inline">\(\mathbf{H}(\mathbf{Q}^{T}\mathbf{v}) = \lambda(\mathbf{Q}^{T}\mathbf{v})\)</span>, so the eigenvectors are related by</p>
+<p><span class="math display">\[
+\mathbf{w} = \mathbf{Q}^{T}\mathbf{v}, \qquad \mathbf{v} = \mathbf{Q}\mathbf{w},
+\tag{2}
+\]</span></p>
+<p>and in general they are different vectors (Example 3).</p>
+</div>
+</div>
+</section>
+<section id="householder-reduction-to-hessenberg-form" class="level2">
+<h2 class="anchored" data-anchor-id="householder-reduction-to-hessenberg-form">Householder Reduction to Hessenberg Form</h2>
+<p>The reduction is the one on the QR method page, section <a href="qr-method/#reduction-to-tridiagonal-hessenberg-form">Reduction to Tridiagonal (Hessenberg) Form</a>, and this page uses its notation; <a href="../../pages/numerical-methods/householder-transformations.html">Householder Transformations</a> treats the reflections themselves. Start with <span class="math inline">\(\mathbf{A}_0 = \mathbf{A}\)</span> and, for <span class="math inline">\(k = 1, 2, \ldots, n - 2\)</span>:</p>
+<ol type="1">
+<li>Let <span class="math inline">\(\mathbf{x} = (a_{k+1,k}, a_{k+2,k}, \ldots, a_{n,k})\)</span> be the part of column <span class="math inline">\(k\)</span> of <span class="math inline">\(\mathbf{A}_{k-1}\)</span> below the diagonal.</li>
+<li>Set <span class="math inline">\(\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert\)</span>, with <span class="math inline">\(\operatorname{sign}(0) = +1\)</span>.</li>
+<li>Let <span class="math inline">\(\mathbf{v}\)</span> be zero in its first <span class="math inline">\(k\)</span> components and equal to <span class="math inline">\(\mathbf{x} - \alpha\mathbf{e}_1\)</span> below them.</li>
+<li>Form the Householder matrix and the next matrix:</li>
+</ol>
+<p><span class="math display">\[
+\mathbf{P}_k = \mathbf{I} - \frac{2\,\mathbf{v}\mathbf{v}^{T}}{\mathbf{v}^{T}\mathbf{v}}, \qquad \mathbf{A}_k = \mathbf{P}_k\mathbf{A}_{k-1}\mathbf{P}_k .
+\tag{3}
+\]</span></p>
+<p><span class="math inline">\(\mathbf{P}_k\)</span> is symmetric and orthogonal, so (3) is a similarity transformation. It maps <span class="math inline">\(\mathbf{x}\)</span> to <span class="math inline">\((\alpha, 0, \ldots, 0)\)</span>, so the new subdiagonal entry is <span class="math inline">\(\alpha\)</span> and the entries below it in column <span class="math inline">\(k\)</span> become zero. Because <span class="math inline">\(\mathbf{P}_k\)</span> leaves rows and columns <span class="math inline">\(1, \ldots, k\)</span> alone, the zeros made in earlier columns stay zero. After <span class="math inline">\(n - 2\)</span> steps</p>
+<p><span class="math display">\[
+\mathbf{H} = \mathbf{A}_{n-2} = \mathbf{Q}^{T}\mathbf{A}\mathbf{Q}, \qquad \mathbf{Q} = \mathbf{P}_1\mathbf{P}_2\cdots\mathbf{P}_{n-2},
+\tag{4}
+\]</span></p>
+<p>which is the factorization (1). No <span class="math inline">\(\mathbf{P}_k\)</span> touches row or column <span class="math inline">\(1\)</span>, so the first row and first column of <span class="math inline">\(\mathbf{Q}\)</span> are those of <span class="math inline">\(\mathbf{I}\)</span>, and <span class="math inline">\(h_{11} = a_{11}\)</span>.</p>
+<p>Mathews’ two <em>Mathematica</em> programs compute exactly these matrices: <em>Hessenberg1</em> prints each <span class="math inline">\(\mathbf{A}_k\)</span> so that you can watch the zeros appear, and <em>Hessenberg</em> returns only <span class="math inline">\(\mathbf{Q}\)</span> and <span class="math inline">\(\mathbf{H}\)</span>. <em>Hessenberg1</em> stores <span class="math inline">\(\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert\)</span>, the opposite sign of the <span class="math inline">\(\alpha\)</span> above, calls the vector <span class="math inline">\(\mathbf{u}\)</span>, and writes <span class="math inline">\(\mathbf{P}_k = \mathbf{I} - \mathbf{u}\mathbf{u}^{T}/\beta\)</span> with <span class="math inline">\(\beta = \tfrac12\mathbf{u}^{T}\mathbf{u}\)</span>; <em>Hessenberg</em> writes the same <span class="math inline">\(\mathbf{P}_k\)</span> as <span class="math inline">\(\mathbf{I} - 2\mathbf{u}\mathbf{u}^{T}/(\mathbf{u}^{T}\mathbf{u})\)</span>. The choice of sign makes <span class="math inline">\(x_1 - \alpha = x_1 + \operatorname{sign}(x_1)\lVert\mathbf{x}\rVert\)</span> a sum of two numbers of the same sign, so it never suffers cancellation.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The case <span class="math inline">\(x_1 = 0\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Mathews warns that his program “may not work for all cases”. One case where it fails is <span class="math inline">\(x_1 = 0\)</span>: <em>Mathematica</em>’s <code>Sign[0]</code> is <span class="math inline">\(0\)</span>, so the program sets <span class="math inline">\(\alpha = 0\)</span> and <span class="math inline">\(\mathbf{v} = \mathbf{x}\)</span>, and <span class="math inline">\(\mathbf{P}_k\)</span> then maps <span class="math inline">\(\mathbf{x}\)</span> to <span class="math inline">\(-\mathbf{x}\)</span> instead of to a multiple of <span class="math inline">\(\mathbf{e}_1\)</span>. For</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 1 &amp; 1 &amp; 1 \\ 0 &amp; 1 &amp; 1 \\ 1 &amp; 1 &amp; 1 \end{pmatrix}, \qquad \mathbf{x} = (0, 1),
+\]</span></p>
+<p>it returns <span class="math inline">\(\begin{pmatrix} 1 &amp; 1 &amp; -1 \\ 0 &amp; 1 &amp; -1 \\ -1 &amp; -1 &amp; 1 \end{pmatrix}\)</span>, which is not Hessenberg. With <span class="math inline">\(\operatorname{sign}(0) = +1\)</span> we get <span class="math inline">\(\alpha = -1\)</span>, <span class="math inline">\(\mathbf{v} = (0, 1, 1)\)</span>, and</p>
+<p><span class="math display">\[
+\mathbf{P}_1 = \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; -1 \\ 0 &amp; -1 &amp; 0 \end{pmatrix}, \qquad
+\mathbf{H} = \mathbf{P}_1\mathbf{A}\mathbf{P}_1 = \begin{pmatrix} 1 &amp; -1 &amp; -1 \\ -1 &amp; 1 &amp; 1 \\ 0 &amp; 1 &amp; 1 \end{pmatrix},
+\]</span></p>
+<p>with the characteristic polynomial <span class="math inline">\(\lambda(\lambda^2 - 3\lambda + 1)\)</span> of <span class="math inline">\(\mathbf{A}\)</span>. (If all of <span class="math inline">\(\mathbf{x}\)</span> is zero, column <span class="math inline">\(k\)</span> is already reduced and the step can be skipped.) None of Mathews’ nine examples meets <span class="math inline">\(x_1 = 0\)</span>.</p>
+</div>
+</div>
+<p><strong>Complex matrices.</strong> Mathews’ program handles real matrices only, and he points to <em>Mathematica</em>’s built-in <em>HessenbergDecomposition</em> for complex ones. The same construction works in the complex case if <span class="math inline">\(\operatorname{sign}(x_1)\)</span> is replaced by <span class="math inline">\(x_1/\lvert x_1\rvert\)</span> and every transpose by a conjugate transpose: <span class="math inline">\(\mathbf{P}_k = \mathbf{I} - 2\mathbf{v}\mathbf{v}^{*}/(\mathbf{v}^{*}\mathbf{v})\)</span> is then unitary and Hermitian, and <span class="math inline">\(\mathbf{H} = \mathbf{U}^{*}\mathbf{A}\mathbf{U}\)</span>.</p>
+<p><strong>Other reductions.</strong> Hessenberg form can also be reached by Gaussian elimination: each step subtracts multiples of row <span class="math inline">\(k+1\)</span> from the rows below it and adds the same multiples of those columns to column <span class="math inline">\(k+1\)</span>, a similarity transformation by an elementary (non-orthogonal) matrix, usually with row and column interchanges for pivoting. It keeps rational matrices rational, but it does not preserve symmetry. On the symmetric matrix of Example 1 it gives a Hessenberg matrix with rational entries and the same characteristic polynomial, but with nonzero entries above the superdiagonal, so not a tridiagonal one. Mathews’ module uses only Householder’s orthogonal reduction, and every example below uses it.</p>
+<p><strong>Cost.</strong> As a general count, the reduction costs on the order of <span class="math inline">\(n^3\)</span> operations and is done once; afterwards each QR step costs on the order of <span class="math inline">\(n^2\)</span> operations on a Hessenberg matrix and of <span class="math inline">\(n\)</span> on a symmetric tridiagonal one (see <a href="qr-method/#why-tridiagonal-and-hessenberg-matrices">Why tridiagonal and Hessenberg matrices</a>).</p>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">Worked Examples</h2>
+<p>All nine examples use Householder’s reduction (3)–(4). Mathews computes Examples 1 and 3 with his programs and Example 2 with <em>Mathematica</em>’s <em>HessenbergDecomposition</em>; in Examples 4–9 he computes <span class="math inline">\(\mathbf{H}\)</span> with <em>HessenbergDecomposition</em> and compares it with his program. Every <span class="math inline">\(\mathbf{H}\)</span> below was recomputed in exact arithmetic (square roots kept symbolic) and in 60-digit arithmetic, and the LAPACK routine behind SciPy’s <code>hessenberg</code> gives the same matrices to within <span class="math inline">\(10^{-14}\)</span>. In each example the exact characteristic polynomials of <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{H}\)</span> agree, <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span> and <span class="math inline">\(\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}\)</span> hold exactly, and the computed <span class="math inline">\(\mathbf{H}\)</span> matches every printed digit of Mathews’ result where his output survives in the archive (Examples 2, 4, 6, 7 and 9); for Examples 1, 3, 5 and 8 the printed results are lost and the page gives the recomputed ones. Decimals are rounded to six places. (The characteristic polynomial itself can be computed by the <a href="../../pages/numerical-methods/faddeev-leverrier-method.html">Faddeev–Leverrier method</a>.)</p>
+<section id="example-1-a-5-times-5-symmetric-matrix-step-by-step" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-a-5-times-5-symmetric-matrix-step-by-step">Example 1 — A <span class="math inline">\(5 \times 5\)</span> symmetric matrix, step by step</h3>
+<p>Find the upper-Hessenberg form of the real symmetric matrix</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 5 &amp; 1 &amp; 2 &amp; 0 &amp; 4 \\ 1 &amp; 4 &amp; 2 &amp; 1 &amp; 3 \\ 2 &amp; 2 &amp; 5 &amp; 4 &amp; 0 \\ 0 &amp; 1 &amp; 4 &amp; 1 &amp; 3 \\ 4 &amp; 3 &amp; 0 &amp; 3 &amp; 4 \end{pmatrix}
+\]</span></p>
+<p>with Mathews’ program <em>Hessenberg1</em>, which prints each step. Since <span class="math inline">\(n = 5\)</span>, there are three steps.</p>
+<p><strong>Step 1</strong>: below the diagonal, column 1 is <span class="math inline">\(\mathbf{x} = (1, 2, 0, 4)\)</span> with <span class="math inline">\(\lVert\mathbf{x}\rVert = \sqrt{21} \approx 4.582576\)</span>, so <span class="math inline">\(\alpha = -\sqrt{21}\)</span>, <span class="math inline">\(\mathbf{v} = (0,\ 1 + \sqrt{21},\ 2,\ 0,\ 4)\)</span> and <span class="math inline">\(\mathbf{v}^{T}\mathbf{v} = 42 + 2\sqrt{21}\)</span>. Then</p>
+<p><span class="math display">\[
+\mathbf{A}_1 = \mathbf{P}_1\mathbf{A}\mathbf{P}_1 \approx \begin{pmatrix}
+5 &amp; -4.582576 &amp; 0 &amp; 0 &amp; 0 \\
+-4.582576 &amp; 5.714286 &amp; 0.992136 &amp; -4.582576 &amp; 3.075361 \\
+0 &amp; 0.992136 &amp; 4.057824 &amp; 2 &amp; -1.135203 \\
+0 &amp; -4.582576 &amp; 2 &amp; 1 &amp; -1 \\
+0 &amp; 3.075361 &amp; -1.135203 &amp; -1 &amp; 3.227890
+\end{pmatrix}.
+\]</span></p>
+<p>Row and column 1 are now reduced. Because <span class="math inline">\(x_3 = 0\)</span>, <span class="math inline">\(\mathbf{P}_1\mathbf{e}_4 = \mathbf{e}_4\)</span>, so the <span class="math inline">\((4, 4)\)</span> entry is unchanged, <span class="math inline">\(a_{44} = 1\)</span>.</p>
+<p><strong>Step 2</strong>: column 2 of <span class="math inline">\(\mathbf{A}_1\)</span> below the diagonal is <span class="math inline">\(\mathbf{x} \approx (0.992136, -4.582576, 3.075361)\)</span>; exactly, <span class="math inline">\(\lVert\mathbf{x}\rVert^2 = 13866/441\)</span>, so <span class="math inline">\(\alpha = -\sqrt{13866}/21 \approx -5.607332\)</span>, and</p>
+<p><span class="math display">\[
+\mathbf{A}_2 = \mathbf{P}_2\mathbf{A}_1\mathbf{P}_2 \approx \begin{pmatrix}
+5 &amp; -4.582576 &amp; 0 &amp; 0 &amp; 0 \\
+-4.582576 &amp; 5.714286 &amp; -5.607332 &amp; 0 &amp; 0 \\
+0 &amp; -5.607332 &amp; 1.863603 &amp; 0.786519 &amp; -2.235531 \\
+0 &amp; 0 &amp; 0.786519 &amp; 3.743239 &amp; -1.511448 \\
+0 &amp; 0 &amp; -2.235531 &amp; -1.511448 &amp; 2.678873
+\end{pmatrix}.
+\]</span></p>
+<p><strong>Step 3</strong>: column 3 of <span class="math inline">\(\mathbf{A}_2\)</span> below the diagonal is <span class="math inline">\(\mathbf{x} \approx (0.786519, -2.235531)\)</span>, with <span class="math inline">\(\lVert\mathbf{x}\rVert \approx 2.369855\)</span>, so <span class="math inline">\(\alpha \approx -2.369855\)</span>, and the result is</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} = \mathbf{A}_3 \approx \begin{pmatrix}
+5 &amp; -4.582576 &amp; 0 &amp; 0 &amp; 0 \\
+-4.582576 &amp; 5.714286 &amp; -5.607332 &amp; 0 &amp; 0 \\
+0 &amp; -5.607332 &amp; 1.863603 &amp; -2.369855 &amp; 0 \\
+0 &amp; 0 &amp; -2.369855 &amp; 3.742499 &amp; -1.511708 \\
+0 &amp; 0 &amp; 0 &amp; -1.511708 &amp; 2.679612
+\end{pmatrix}\ }
+\]</span></p>
+<p>symmetric tridiagonal, as the theorem predicts. Exactly, its diagonal is <span class="math inline">\(\big(5,\ \tfrac{40}{7},\ \tfrac{60295}{32354},\ \tfrac{889443145457}{237660194102},\ \tfrac{137783893}{51419341}\big)\)</span> and its subdiagonal is <span class="math inline">\(\big(-\sqrt{21},\ -\tfrac{\sqrt{13866}}{21},\ -\tfrac{\sqrt{1079806161}}{13866},\ -\tfrac{660114\sqrt{13866}}{51419341}\big)\)</span>. Mathews also displays the orthogonal matrix <span class="math inline">\(\mathbf{Q} = \mathbf{P}_1\mathbf{P}_2\mathbf{P}_3\)</span>:</p>
+<p><span class="math display">\[
+\mathbf{Q} \approx \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; -0.218218 &amp; 0.555950 &amp; -0.158454 &amp; -0.786252 \\
+0 &amp; -0.436436 &amp; 0.022238 &amp; -0.845366 &amp; 0.307221 \\
+0 &amp; 0 &amp; 0.817247 &amp; 0.215707 &amp; 0.534395 \\
+0 &amp; -0.872872 &amp; -0.150107 &amp; 0.462297 &amp; 0.042952
+\end{pmatrix}.
+\]</span></p>
+<p><strong>Verification.</strong> In exact arithmetic <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span> and <span class="math inline">\(\mathbf{Q}\mathbf{H}\mathbf{Q}^{T} = \mathbf{A}\)</span>, and <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{H}\)</span> have the same characteristic polynomial,</p>
+<p><span class="math display">\[
+\lambda^5 - 19\lambda^4 + 79\lambda^3 + 146\lambda^2 - 1153\lambda + 1222 .
+\]</span></p>
+</section>
+<section id="example-2-the-same-matrix-with-hessenbergdecomposition" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-the-same-matrix-with-hessenbergdecomposition">Example 2 — The same matrix with <em>HessenbergDecomposition</em></h3>
+<p>Mathews repeats Example 1 with <em>Mathematica</em>’s built-in <em>HessenbergDecomposition</em>, which returns a pair of matrices, the transformation and the Hessenberg form (he enters <span class="math inline">\(a_{11}\)</span> as <span class="math inline">\(5.0\)</span> so that the routine receives a decimal matrix). Its <span class="math inline">\(\mathbf{H}\)</span> is the one of Example 1: his printout,</p>
+<p><span class="math display">\[
+\mathbf{H} = \begin{pmatrix}
+5. &amp; -4.58258 &amp; 0 &amp; 0 &amp; 0 \\
+-4.58258 &amp; 5.71429 &amp; -5.60733 &amp; 0 &amp; 0 \\
+0 &amp; -5.60733 &amp; 1.8636 &amp; -2.36985 &amp; 0 \\
+0 &amp; 0 &amp; -2.36985 &amp; 3.7425 &amp; -1.51171 \\
+0 &amp; 0 &amp; 0 &amp; -1.51171 &amp; 2.67961
+\end{pmatrix},
+\]</span></p>
+<p>agrees with the boxed <span class="math inline">\(\mathbf{H}\)</span> above in every printed digit, signs included. <strong>Verification:</strong> rounding the exact entries of Example 1 to six significant figures reproduces each printed entry.</p>
+</section>
+<section id="example-3-eigenvalues-and-eigenvectors-of-mathbfa-and-mathbfh" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-eigenvalues-and-eigenvectors-of-mathbfa-and-mathbfh">Example 3 — Eigenvalues and eigenvectors of <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{H}\)</span></h3>
+<p>For the matrix <span class="math inline">\(\mathbf{A}\)</span> of Example 1 and its Hessenberg form <span class="math inline">\(\mathbf{H}\)</span>, compare the eigenvalues and the eigenvectors.</p>
+<p><strong>Eigenvalues.</strong> The characteristic polynomial does not factor over the rationals; its roots, the eigenvalues of both <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{H}\)</span>, are</p>
+<p><span class="math display">\[
+\lambda_1 \approx 12.025754, \quad \lambda_2 \approx 5.672551, \quad \lambda_3 \approx 3.361876, \quad \lambda_4 \approx 1.497658, \quad \lambda_5 \approx -3.557839 .
+\]</span></p>
+<p><strong>Eigenvectors for <span class="math inline">\(\lambda_1\)</span>.</strong> The unit eigenvectors of <span class="math inline">\(\mathbf{A}\)</span> and of <span class="math inline">\(\mathbf{H}\)</span> for <span class="math inline">\(\lambda_1\)</span> (signs chosen so that the first component is positive) are</p>
+<p><span class="math display">\[
+\mathbf{v} \approx \begin{pmatrix} 0.485108 \\ 0.411359 \\ 0.450676 \\ 0.343352 \\ 0.523884 \end{pmatrix}, \qquad
+\mathbf{w} = \mathbf{Q}^{T}\mathbf{v} \approx \begin{pmatrix} 0.485108 \\ -0.743741 \\ 0.440682 \\ -0.129915 \\ 0.021013 \end{pmatrix}.
+\]</span></p>
+<p>They are not the same vector, nor multiples of each other: <span class="math inline">\(\lvert\mathbf{v}\cdot\mathbf{w}\rvert \approx 0.0944\)</span>, far from <span class="math inline">\(1\)</span>. Only their first components agree, because the first row of <span class="math inline">\(\mathbf{Q}\)</span> is <span class="math inline">\((1, 0, 0, 0, 0)\)</span>. The same holds for the other four eigenvalues: the largest value of <span class="math inline">\(\lvert\mathbf{v}\cdot\mathbf{w}\rvert\)</span> among the five pairs is <span class="math inline">\(0.891\)</span>, for <span class="math inline">\(\lambda_4\)</span>. To recover an eigenvector of <span class="math inline">\(\mathbf{A}\)</span> from one of <span class="math inline">\(\mathbf{H}\)</span>, use (2), <span class="math inline">\(\mathbf{v} = \mathbf{Q}\mathbf{w}\)</span>.</p>
+<p><strong>Verification.</strong> In 60-digit arithmetic <span class="math inline">\(\lVert\mathbf{A}\mathbf{v} - \lambda_1\mathbf{v}\rVert\)</span> and <span class="math inline">\(\lVert\mathbf{H}\mathbf{w} - \lambda_1\mathbf{w}\rVert\)</span> are both below <span class="math inline">\(3 \times 10^{-60}\)</span>.</p>
+</section>
+<section id="example-4-a-3-times-3-nonsymmetric-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-a-3-times-3-nonsymmetric-matrix">Example 4 — A <span class="math inline">\(3 \times 3\)</span> nonsymmetric matrix</h3>
+<p>Find the upper-Hessenberg form of</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 2 &amp; -1 &amp; 1 \\ -1 &amp; 2 &amp; 1 \\ 1 &amp; -1 &amp; 2 \end{pmatrix}
+\]</span></p>
+<p>and compare the eigenvalues. For <span class="math inline">\(n = 3\)</span> there is one step.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\(\mathbf{x} = (-1, 1)\)</span>, <span class="math inline">\(\lVert\mathbf{x}\rVert = \sqrt2\)</span>, so <span class="math inline">\(\alpha = \sqrt2\)</span> and <span class="math inline">\(\mathbf{v} = (0,\ -1 - \sqrt2,\ 1)\)</span>. The Householder matrix and the result are</p>
+<p><span class="math display">\[
+\mathbf{Q} = \mathbf{P}_1 = \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; -\tfrac{\sqrt2}{2} &amp; \tfrac{\sqrt2}{2} \\[1mm] 0 &amp; \tfrac{\sqrt2}{2} &amp; \tfrac{\sqrt2}{2} \end{pmatrix}, \qquad
+\boxed{\ \mathbf{H} = \begin{pmatrix} 2 &amp; \sqrt2 &amp; 0 \\ \sqrt2 &amp; 2 &amp; -1 \\ 0 &amp; 1 &amp; 2 \end{pmatrix} \approx \begin{pmatrix} 2 &amp; 1.414214 &amp; 0 \\ 1.414214 &amp; 2 &amp; -1 \\ 0 &amp; 1 &amp; 2 \end{pmatrix}\ }
+\]</span></p>
+<p>Mathews’ program and <em>HessenbergDecomposition</em> both print this <span class="math inline">\(\mathbf{H}\)</span>.</p>
+<p><strong>Eigenvalues.</strong> Both characteristic polynomials equal <span class="math inline">\(\lambda^3 - 6\lambda^2 + 11\lambda - 6 = (\lambda - 1)(\lambda - 2)(\lambda - 3)\)</span>, so the eigenvalues are <span class="math inline">\(3, 2, 1\)</span>, as Mathews prints for both matrices. Mathews’ text for this example says that some eigenvalues are complex; that sentence is shared by Examples 4–9 and does not apply here, since all three are real.</p>
+<p><strong>Verification.</strong> <span class="math inline">\(\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}\)</span> exactly, and <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span>.</p>
+</section>
+<section id="example-5-a-3-times-3-matrix-with-complex-eigenvalues" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-a-3-times-3-matrix-with-complex-eigenvalues">Example 5 — A <span class="math inline">\(3 \times 3\)</span> matrix with complex eigenvalues</h3>
+<p>Find the upper-Hessenberg form of</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 3 &amp; -4 &amp; 4 \\ 1 &amp; -2 &amp; 4 \\ -1 &amp; -1 &amp; 3 \end{pmatrix}
+\]</span></p>
+<p>and compare the eigenvalues.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\(\mathbf{x} = (1, -1)\)</span>, <span class="math inline">\(\lVert\mathbf{x}\rVert = \sqrt2\)</span>, so <span class="math inline">\(\alpha = -\sqrt2\)</span> and <span class="math inline">\(\mathbf{v} = (0,\ 1 + \sqrt2,\ -1)\)</span>. This <span class="math inline">\(\mathbf{P}_1\)</span> is the same matrix as in Example 4 (its <span class="math inline">\(\mathbf{v}\)</span> is the negative of that one), and</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} = \begin{pmatrix} 3 &amp; 4\sqrt2 &amp; 0 \\ -\sqrt2 &amp; -1 &amp; 0 \\ 0 &amp; 5 &amp; 2 \end{pmatrix} \approx \begin{pmatrix} 3 &amp; 5.656854 &amp; 0 \\ -1.414214 &amp; -1 &amp; 0 \\ 0 &amp; 5 &amp; 2 \end{pmatrix}\ }
+\]</span></p>
+<p><strong>Eigenvalues.</strong> Both characteristic polynomials equal <span class="math inline">\(\lambda^3 - 4\lambda^2 + 9\lambda - 10 = (\lambda - 2)(\lambda^2 - 2\lambda + 5)\)</span>, so the eigenvalues are <span class="math inline">\(2\)</span> and the conjugate pair <span class="math inline">\(1 \pm 2i\)</span>. Here <span class="math inline">\(\mathbf{H}\)</span> shows them: its third column is <span class="math inline">\((0, 0, 2)\)</span>, so <span class="math inline">\(\mathbf{H}\mathbf{e}_3 = 2\mathbf{e}_3\)</span>, and the leading <span class="math inline">\(2 \times 2\)</span> block <span class="math inline">\(\begin{pmatrix} 3 &amp; 4\sqrt2 \\ -\sqrt2 &amp; -1 \end{pmatrix}\)</span> has trace <span class="math inline">\(2\)</span> and determinant <span class="math inline">\(5\)</span>, which give <span class="math inline">\(\lambda^2 - 2\lambda + 5\)</span>. By (2) the eigenvector of <span class="math inline">\(\mathbf{A}\)</span> for <span class="math inline">\(\lambda = 2\)</span> is <span class="math inline">\(\mathbf{Q}\mathbf{e}_3 = \tfrac{\sqrt2}{2}(0, 1, 1)\)</span>.</p>
+<p><strong>Verification.</strong> <span class="math inline">\(\mathbf{A}(0, 1, 1)^{T} = (0, 2, 2)^{T} = 2\,(0, 1, 1)^{T}\)</span>, and <span class="math inline">\(\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}\)</span> exactly.</p>
+</section>
+<section id="example-6-a-4-times-4-matrix-whose-hessenberg-form-splits" class="level3">
+<h3 class="anchored" data-anchor-id="example-6-a-4-times-4-matrix-whose-hessenberg-form-splits">Example 6 — A <span class="math inline">\(4 \times 4\)</span> matrix whose Hessenberg form splits</h3>
+<p>Find the upper-Hessenberg form of</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 1 &amp; -4 &amp; 0 &amp; 3 \\ -1 &amp; 3 &amp; 0 &amp; -2 \\ 3 &amp; -7 &amp; -2 &amp; 6 \\ 0 &amp; 4 &amp; 0 &amp; -2 \end{pmatrix}
+\]</span></p>
+<p>and compare the eigenvalues.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\(\mathbf{x} = (-1, 3, 0)\)</span>, <span class="math inline">\(\lVert\mathbf{x}\rVert = \sqrt{10}\)</span>, so <span class="math inline">\(\alpha = \sqrt{10}\)</span> and <span class="math inline">\(\mathbf{v} = (0,\ -1 - \sqrt{10},\ 3,\ 0)\)</span>:</p>
+<p><span class="math display">\[
+\mathbf{A}_1 = \begin{pmatrix}
+1 &amp; \tfrac{2\sqrt{10}}{5} &amp; -\tfrac{6\sqrt{10}}{5} &amp; 3 \\[1mm]
+\sqrt{10} &amp; \tfrac35 &amp; -\tfrac{39}{5} &amp; 2\sqrt{10} \\[1mm]
+0 &amp; -\tfrac45 &amp; \tfrac25 &amp; 0 \\[1mm]
+0 &amp; -\tfrac{2\sqrt{10}}{5} &amp; \tfrac{6\sqrt{10}}{5} &amp; -2
+\end{pmatrix}.
+\]</span></p>
+<p><strong>Step 2</strong>: <span class="math inline">\(\mathbf{x} = \big(-\tfrac45, -\tfrac{2\sqrt{10}}{5}\big)\)</span>, <span class="math inline">\(\lVert\mathbf{x}\rVert^2 = \tfrac{56}{25}\)</span>, so <span class="math inline">\(\alpha = \tfrac{2\sqrt{14}}{5}\)</span>, and</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} = \begin{pmatrix}
+1 &amp; \tfrac{2\sqrt{10}}{5} &amp; -\tfrac{3\sqrt{35}}{35} &amp; \tfrac{9\sqrt{14}}{7} \\[1mm]
+\sqrt{10} &amp; \tfrac35 &amp; -\tfrac{11\sqrt{14}}{35} &amp; \tfrac{59\sqrt{35}}{35} \\[1mm]
+0 &amp; \tfrac{2\sqrt{14}}{5} &amp; \tfrac25 &amp; \tfrac{6\sqrt{10}}{5} \\[1mm]
+0 &amp; 0 &amp; 0 &amp; -2
+\end{pmatrix} \approx \begin{pmatrix}
+1 &amp; 1.264911 &amp; -0.507093 &amp; 4.810702 \\
+3.162278 &amp; 0.6 &amp; -1.175949 &amp; 9.972820 \\
+0 &amp; 1.496663 &amp; 0.4 &amp; 3.794733 \\
+0 &amp; 0 &amp; 0 &amp; -2
+\end{pmatrix}\ }
+\]</span></p>
+<p>as in Mathews’ printout.</p>
+<p><strong>Eigenvalues.</strong> Both characteristic polynomials equal <span class="math inline">\(\lambda^4 - 5\lambda^2 + 4 = (\lambda - 2)(\lambda - 1)(\lambda + 1)(\lambda + 2)\)</span>, so the eigenvalues are <span class="math inline">\(\pm1\)</span> and <span class="math inline">\(\pm2\)</span>, all real; Mathews’ remark about complex eigenvalues does not apply to this example either. The entry <span class="math inline">\(h_{43}\)</span> is exactly zero, so <span class="math inline">\(\mathbf{H}\)</span> is block upper triangular: <span class="math inline">\(h_{44} = -2\)</span> is one eigenvalue, and the leading <span class="math inline">\(3 \times 3\)</span> block has the characteristic polynomial <span class="math inline">\((\lambda - 2)(\lambda - 1)(\lambda + 1)\)</span>. When the QR method meets such a zero on the subdiagonal it can split the problem in two (deflation, see <a href="qr-method/#acceleration-shifts">Acceleration Shifts</a>).</p>
+<p><strong>Verification.</strong> <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span> and <span class="math inline">\(\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}\)</span> exactly, with <span class="math inline">\(\mathbf{Q} = \mathbf{P}_1\mathbf{P}_2\)</span>.</p>
+</section>
+<section id="example-7-a-4-times-4-matrix-with-two-conjugate-pairs" class="level3">
+<h3 class="anchored" data-anchor-id="example-7-a-4-times-4-matrix-with-two-conjugate-pairs">Example 7 — A <span class="math inline">\(4 \times 4\)</span> matrix with two conjugate pairs</h3>
+<p>Find the upper-Hessenberg form of</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 1 &amp; -1 &amp; 0 &amp; 0 \\ 2 &amp; -1 &amp; 0 &amp; 0 \\ 3 &amp; -2 &amp; 3 &amp; 4 \\ -1 &amp; 1 &amp; -2 &amp; -1 \end{pmatrix}
+\]</span></p>
+<p>and compare the eigenvalues.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\(\mathbf{x} = (2, 3, -1)\)</span>, <span class="math inline">\(\lVert\mathbf{x}\rVert = \sqrt{14} \approx 3.741657\)</span>, so <span class="math inline">\(\alpha = -\sqrt{14}\)</span> and <span class="math inline">\(\mathbf{v} = (0,\ 2 + \sqrt{14},\ 3,\ -1)\)</span>.</p>
+<p><strong>Step 2</strong>: column 2 of <span class="math inline">\(\mathbf{A}_1\)</span> below the diagonal is <span class="math inline">\(\mathbf{x} \approx (-0.471905, 0.869998)\)</span>, with <span class="math inline">\(\lVert\mathbf{x}\rVert = \tfrac{4\sqrt3}{7} \approx 0.989743\)</span>, so <span class="math inline">\(\alpha = \tfrac{4\sqrt3}{7}\)</span>. The result simplifies to</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} = \begin{pmatrix}
+1 &amp; \tfrac{\sqrt{14}}{7} &amp; -\tfrac{2\sqrt{42}}{21} &amp; \tfrac{\sqrt3}{3} \\[1mm]
+-\sqrt{14} &amp; \tfrac17 &amp; -\tfrac{3\sqrt3}{7} &amp; -\tfrac{11\sqrt{42}}{14} \\[1mm]
+0 &amp; \tfrac{4\sqrt3}{7} &amp; -\tfrac{10}{21} &amp; -\tfrac{25\sqrt{14}}{42} \\[1mm]
+0 &amp; 0 &amp; \tfrac{\sqrt{14}}{3} &amp; \tfrac43
+\end{pmatrix} \approx \begin{pmatrix}
+1 &amp; 0.534522 &amp; -0.617213 &amp; 0.577350 \\
+-3.741657 &amp; 0.142857 &amp; -0.742307 &amp; -5.092011 \\
+0 &amp; 0.989743 &amp; -0.476190 &amp; -2.227177 \\
+0 &amp; 0 &amp; 1.247219 &amp; 1.333333
+\end{pmatrix}\ }
+\]</span></p>
+<p>as in Mathews’ printout.</p>
+<p><strong>Eigenvalues.</strong> Both characteristic polynomials equal <span class="math inline">\(\lambda^4 - 2\lambda^3 + 6\lambda^2 - 2\lambda + 5 = (\lambda^2 + 1)(\lambda^2 - 2\lambda + 5)\)</span>, so the eigenvalues are the two conjugate pairs <span class="math inline">\(1 \pm 2i\)</span> and <span class="math inline">\(\pm i\)</span>, as Mathews prints. Every subdiagonal entry of <span class="math inline">\(\mathbf{H}\)</span> is nonzero, so, unlike Example 6, <span class="math inline">\(\mathbf{H}\)</span> does not split.</p>
+<p><strong>Verification.</strong> <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span> and <span class="math inline">\(\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}\)</span> exactly.</p>
+</section>
+<section id="example-8-a-5-times-5-nonsymmetric-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="example-8-a-5-times-5-nonsymmetric-matrix">Example 8 — A <span class="math inline">\(5 \times 5\)</span> nonsymmetric matrix</h3>
+<p>Find the upper-Hessenberg form of</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 6 &amp; 1 &amp; -2 &amp; 19 &amp; 4 \\ 1 &amp; 4 &amp; 2 &amp; 1 &amp; 3 \\ 7 &amp; 12 &amp; 5 &amp; 11 &amp; -1 \\ -3 &amp; 21 &amp; 4 &amp; 1 &amp; 3 \\ 4 &amp; 6 &amp; -1 &amp; 3 &amp; 7 \end{pmatrix}
+\]</span></p>
+<p>and compare the eigenvalues.</p>
+<p><strong>Steps.</strong> In step 1, <span class="math inline">\(\mathbf{x} = (1, 7, -3, 4)\)</span> and <span class="math inline">\(\lVert\mathbf{x}\rVert = \sqrt{75} = 5\sqrt3 \approx 8.660254\)</span>, so <span class="math inline">\(\alpha = -5\sqrt3\)</span>. Steps 2 and 3 give the subdiagonal entries <span class="math inline">\(\alpha \approx -7.760298\)</span> and <span class="math inline">\(\alpha \approx -5.877438\)</span>, and</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} \approx \begin{pmatrix}
+6 &amp; 6.235383 &amp; 17.519230 &amp; -3.192879 &amp; 5.099226 \\
+-8.660254 &amp; -0.066667 &amp; -11.767017 &amp; 0.369384 &amp; 1.791580 \\
+0 &amp; -7.760298 &amp; 14.837427 &amp; 13.552189 &amp; -11.852593 \\
+0 &amp; 0 &amp; -5.877438 &amp; -0.089957 &amp; 8.843696 \\
+0 &amp; 0 &amp; 0 &amp; 4.304351 &amp; 2.319197
+\end{pmatrix}\ }
+\]</span></p>
+<p>The exact entries are rational numbers or rational multiples of square roots of squarefree integers with up to 14 digits, with denominators of up to 16 digits, and are not shown.</p>
+<p><strong>Eigenvalues.</strong> Both characteristic polynomials equal</p>
+<p><span class="math display">\[
+\lambda^5 - 23\lambda^4 + 138\lambda^3 - 1716\lambda^2 + 6922\lambda + 42031,
+\]</span></p>
+<p>which does not factor over the rationals. Its roots are</p>
+<p><span class="math display">\[
+19.177813, \quad 7.842531, \quad -0.510403 \pm 9.638777\,i, \quad -2.999538 .
+\]</span></p>
+<p>The last one is close to <span class="math inline">\(-3\)</span> but is not <span class="math inline">\(-3\)</span>: the polynomial has the value <span class="math inline">\(-11\)</span> at <span class="math inline">\(\lambda = -3\)</span>.</p>
+<p><strong>Verification.</strong> The exact characteristic polynomial of the exact <span class="math inline">\(\mathbf{H}\)</span> simplifies to the one above, and <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span>, <span class="math inline">\(\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}\)</span> hold exactly.</p>
+</section>
+<section id="example-9-mathews-exercise-9-a-5-times-5-nonsymmetric-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="example-9-mathews-exercise-9-a-5-times-5-nonsymmetric-matrix">Example 9 — Mathews’ Exercise 9, a <span class="math inline">\(5 \times 5\)</span> nonsymmetric matrix</h3>
+<p>Find the upper-Hessenberg form of</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 5 &amp; 4 &amp; 3 &amp; 2 &amp; 1 \\ 1 &amp; 4 &amp; 0 &amp; 3 &amp; 3 \\ 2 &amp; 0 &amp; 3 &amp; 0 &amp; 0 \\ 3 &amp; 2 &amp; 1 &amp; 2 &amp; 5 \\ 4 &amp; 2 &amp; 1 &amp; 4 &amp; 1 \end{pmatrix}
+\]</span></p>
+<p>and compare the eigenvalues.</p>
+<p><strong>Steps.</strong> In step 1, <span class="math inline">\(\mathbf{x} = (1, 2, 3, 4)\)</span> and <span class="math inline">\(\lVert\mathbf{x}\rVert = \sqrt{30} \approx 5.477226\)</span>, so <span class="math inline">\(\alpha = -\sqrt{30}\)</span>. Steps 2 and 3 give <span class="math inline">\(\alpha \approx -4.213866\)</span> and <span class="math inline">\(\alpha \approx 2.864062\)</span> (in step 3 the leading entry of <span class="math inline">\(\mathbf{x}\)</span> is negative, <span class="math inline">\(x_1 \approx -2.353976\)</span>, so <span class="math inline">\(\alpha\)</span> is positive), and</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} \approx \begin{pmatrix}
+5 &amp; -3.651484 &amp; 2.599620 &amp; -0.237003 &amp; -3.138865 \\
+-5.477226 &amp; 6.9 &amp; -2.291641 &amp; 0.207284 &amp; 0.703858 \\
+0 &amp; -4.213866 &amp; 2.305557 &amp; 2.749359 &amp; 0.857570 \\
+0 &amp; 0 &amp; 2.864062 &amp; -1.115822 &amp; 0.817995 \\
+0 &amp; 0 &amp; 0 &amp; 0.683519 &amp; 1.910266
+\end{pmatrix}\ }
+\]</span></p>
+<p>as in Mathews’ printout.</p>
+<p><strong>Eigenvalues.</strong> Both characteristic polynomials equal</p>
+<p><span class="math display">\[
+\lambda^5 - 15\lambda^4 + 33\lambda^3 + 77\lambda^2 - 320\lambda + 422,
+\]</span></p>
+<p>which does not factor over the rationals. Its roots are</p>
+<p><span class="math display">\[
+11.832831, \quad 3.309775, \quad 1.358725 \pm 1.386126\,i, \quad -2.860056,
+\]</span></p>
+<p>which agree with the values Mathews prints for both <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{H}\)</span> (<span class="math inline">\(11.8328\)</span>, <span class="math inline">\(3.30977\)</span>, <span class="math inline">\(-2.86006\)</span>, <span class="math inline">\(1.35872 \pm 1.38613\,i\)</span>).</p>
+<p><strong>Verification.</strong> As in Example 8, the characteristic polynomials agree exactly, and <span class="math inline">\(\mathbf{Q}^{T}\mathbf{Q} = \mathbf{I}\)</span>, <span class="math inline">\(\mathbf{Q}^{T}\mathbf{A}\mathbf{Q} = \mathbf{H}\)</span> hold exactly.</p>
+</section>
+<section id="what-the-examples-show" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-examples-show">What the examples show</h3>
+<ul>
+<li><strong>The Hessenberg form of a real matrix is real.</strong> Every <span class="math inline">\(\mathbf{H}\)</span> above is real, including those of Examples 5, 7, 8 and 9, whose eigenvalues are complex; the complex eigenvalues come in conjugate pairs, as they must for a real matrix.</li>
+<li><strong>Similarity is exact.</strong> In all nine examples the characteristic polynomials of <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{H}\)</span> are identical, so the eigenvalues agree; the eigenvectors do not (Example 3) and are recovered through (2).</li>
+<li><strong>Symmetric input gives tridiagonal output</strong> (Examples 1–3), the form on which the QR method is cheapest.</li>
+<li><strong>Zeros in <span class="math inline">\(\mathbf{H}\)</span> can expose eigenvalues.</strong> In Example 6 a zero subdiagonal entry splits <span class="math inline">\(\mathbf{H}\)</span> into two blocks, and in Example 5 a column with a single nonzero entry gives an eigenvector at once.</li>
+</ul>
+</section>
+</section>
+<section id="from-hessenberg-form-to-the-eigenvalues" class="level2">
+<h2 class="anchored" data-anchor-id="from-hessenberg-form-to-the-eigenvalues">From Hessenberg Form to the Eigenvalues</h2>
+<p>The reduction produces a matrix similar to <span class="math inline">\(\mathbf{A}\)</span> but does not by itself find its eigenvalues. The <a href="qr-method/">QR method</a> does that, and because each QR step <span class="math inline">\(\mathbf{R}\mathbf{Q}\)</span> of a Hessenberg matrix is again Hessenberg (and symmetric tridiagonal stays symmetric tridiagonal), the reduction needs to be done only once. The QR method page shows the whole sequence on a symmetric <span class="math inline">\(4 \times 4\)</span> matrix: two Householder steps to a tridiagonal <span class="math inline">\(\mathbf{H}\)</span>, then the unshifted QR iteration, in its <a href="qr-method/#animations">Case 2 animation</a> and its Example 4 under <a href="qr-method/#reduction-to-tridiagonal-hessenberg-form">Reduction to Tridiagonal (Hessenberg) Form</a>, and the shifted iteration with deflation on the same <span class="math inline">\(\mathbf{H}\)</span> in its Example 5. Its Householder step uses the same <span class="math inline">\(\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert\)</span> as this page, so the two pages produce the same matrices.</p>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

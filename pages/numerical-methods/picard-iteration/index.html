@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Picard Iteration – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-first-order-equation-example-3-y-y---x-y0-2-y_0-to-y_6-on--3-le-x-le-3" id="toc-case-1-first-order-equation-example-3-y-y---x-y0-2-y_0-to-y_6-on--3-le-x-le-3" class="nav-link" data-scroll-target="#case-1-first-order-equation-example-3-y-y---x-y0-2-y_0-to-y_6-on--3-le-x-le-3">Case 1 — First-order equation (Example 3), <span class="math inline">\(y' = y - x\)</span>, <span class="math inline">\(y(0) = 2\)</span>, <span class="math inline">\(Y_0\)</span> to <span class="math inline">\(Y_6\)</span> on <span class="math inline">\(-3 \le x \le 3\)</span></a></li>
+  <li><a href="#case-2-initial-point-x_0-1-example-4-y--2xy-y1-1-y_0-to-y_6-on--1.7-le-x-le-1.7" id="toc-case-2-initial-point-x_0-1-example-4-y--2xy-y1-1-y_0-to-y_6-on--1.7-le-x-le-1.7" class="nav-link" data-scroll-target="#case-2-initial-point-x_0-1-example-4-y--2xy-y1-1-y_0-to-y_6-on--1.7-le-x-le-1.7">Case 2 — Initial point <span class="math inline">\(x_0 = 1\)</span> (Example 4), <span class="math inline">\(y' = -2xy\)</span>, <span class="math inline">\(y(1) = 1\)</span>, <span class="math inline">\(Y_0\)</span> to <span class="math inline">\(Y_6\)</span> on <span class="math inline">\(-1.7 \le x \le 1.7\)</span></a></li>
+  <li><a href="#case-3-a-system-in-the-phase-plane-example-7-x-x-2y-y--x---y-x0-y0-1-n-0-to-6-on--2-le-t-le-2" id="toc-case-3-a-system-in-the-phase-plane-example-7-x-x-2y-y--x---y-x0-y0-1-n-0-to-6-on--2-le-t-le-2" class="nav-link" data-scroll-target="#case-3-a-system-in-the-phase-plane-example-7-x-x-2y-y--x---y-x0-y0-1-n-0-to-6-on--2-le-t-le-2">Case 3 — A system in the phase plane (Example 7), <span class="math inline">\(x' = x + 2y\)</span>, <span class="math inline">\(y' = -x - y\)</span>, <span class="math inline">\(x(0) = y(0) = 1\)</span>, <span class="math inline">\(n = 0\)</span> to <span class="math inline">\(6\)</span> on <span class="math inline">\(-2 \le t \le 2\)</span></a></li>
+  <li><a href="#case-4-second-order-equation-example-11-y--2y---y-y0-1-y0-2-y_0-to-y_6-on--2-le-x-le-2" id="toc-case-4-second-order-equation-example-11-y--2y---y-y0-1-y0-2-y_0-to-y_6-on--2-le-x-le-2" class="nav-link" data-scroll-target="#case-4-second-order-equation-example-11-y--2y---y-y0-1-y0-2-y_0-to-y_6-on--2-le-x-le-2">Case 4 — Second-order equation (Example 11), <span class="math inline">\(y'' = -2y' - y\)</span>, <span class="math inline">\(y(0) = 1\)</span>, <span class="math inline">\(y'(0) = 2\)</span>, <span class="math inline">\(Y_0\)</span> to <span class="math inline">\(Y_6\)</span> on <span class="math inline">\(-2 \le x \le 2\)</span></a></li>
+  </ul></li>
+  <li><a href="#existence-and-uniqueness" id="toc-existence-and-uniqueness" class="nav-link" data-scroll-target="#existence-and-uniqueness">Existence and Uniqueness</a></li>
+  <li><a href="#picards-method-for-first-order-equations" id="toc-picards-method-for-first-order-equations" class="nav-link" data-scroll-target="#picards-method-for-first-order-equations">Picard’s Method for First-Order Equations</a>
+  <ul class="collapse">
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  </ul></li>
+  <li><a href="#example-1-y-y---x-y0-2" id="toc-example-1-y-y---x-y0-2" class="nav-link" data-scroll-target="#example-1-y-y---x-y0-2">Example 1 — <span class="math inline">\(y' = y - x\)</span>, <span class="math inline">\(y(0) = 2\)</span></a></li>
+  <li><a href="#example-2-y-1-y2-y0-0" id="toc-example-2-y-1-y2-y0-0" class="nav-link" data-scroll-target="#example-2-y-1-y2-y0-0">Example 2 — <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0) = 0\)</span></a></li>
+  <li><a href="#example-3-graphing-the-approximations-for-y-y---x-y0-2" id="toc-example-3-graphing-the-approximations-for-y-y---x-y0-2" class="nav-link" data-scroll-target="#example-3-graphing-the-approximations-for-y-y---x-y0-2">Example 3 — Graphing the approximations for <span class="math inline">\(y' = y - x\)</span>, <span class="math inline">\(y(0) = 2\)</span></a></li>
+  <li><a href="#example-4-y--2xy-y1-1" id="toc-example-4-y--2xy-y1-1" class="nav-link" data-scroll-target="#example-4-y--2xy-y1-1">Example 4 — <span class="math inline">\(y' = -2xy\)</span>, <span class="math inline">\(y(1) = 1\)</span></a></li>
+  <li><a href="#systems-of-two-first-order-equations" id="toc-systems-of-two-first-order-equations" class="nav-link" data-scroll-target="#systems-of-two-first-order-equations">Systems of Two First-Order Equations</a></li>
+  <li><a href="#example-5-x--x---2y-y-3x-4y" id="toc-example-5-x--x---2y-y-3x-4y" class="nav-link" data-scroll-target="#example-5-x--x---2y-y-3x-4y">Example 5 — <span class="math inline">\(x' = -x - 2y\)</span>, <span class="math inline">\(y' = 3x + 4y\)</span></a></li>
+  <li><a href="#example-6-x-x-2y-y--x---y" id="toc-example-6-x-x-2y-y--x---y" class="nav-link" data-scroll-target="#example-6-x-x-2y-y--x---y">Example 6 — <span class="math inline">\(x' = x + 2y\)</span>, <span class="math inline">\(y' = -x - y\)</span></a></li>
+  <li><a href="#example-7-graphing-the-approximations-for-example-6" id="toc-example-7-graphing-the-approximations-for-example-6" class="nav-link" data-scroll-target="#example-7-graphing-the-approximations-for-example-6">Example 7 — Graphing the approximations for Example 6</a></li>
+  <li><a href="#systems-of-three-first-order-equations" id="toc-systems-of-three-first-order-equations" class="nav-link" data-scroll-target="#systems-of-three-first-order-equations">Systems of Three First-Order Equations</a></li>
+  <li><a href="#example-8-a-linear-system-in-three-dimensions" id="toc-example-8-a-linear-system-in-three-dimensions" class="nav-link" data-scroll-target="#example-8-a-linear-system-in-three-dimensions">Example 8 — A linear system in three dimensions</a></li>
+  <li><a href="#picards-method-for-second-order-equations" id="toc-picards-method-for-second-order-equations" class="nav-link" data-scroll-target="#picards-method-for-second-order-equations">Picard’s Method for Second-Order Equations</a></li>
+  <li><a href="#example-9-y-y-y0-1-y0-1" id="toc-example-9-y-y-y0-1-y0-1" class="nav-link" data-scroll-target="#example-9-y-y-y0-1-y0-1">Example 9 — <span class="math inline">\(y'' = y\)</span>, <span class="math inline">\(y(0) = 1\)</span>, <span class="math inline">\(y'(0) = 1\)</span></a></li>
+  <li><a href="#example-10-y--2y---y-y0-1-y0-2" id="toc-example-10-y--2y---y-y0-1-y0-2" class="nav-link" data-scroll-target="#example-10-y--2y---y-y0-1-y0-2">Example 10 — <span class="math inline">\(y'' = -2y' - y\)</span>, <span class="math inline">\(y(0) = 1\)</span>, <span class="math inline">\(y'(0) = 2\)</span></a></li>
+  <li><a href="#example-11-graphing-the-approximations-for-example-10" id="toc-example-11-graphing-the-approximations-for-example-10" class="nav-link" data-scroll-target="#example-11-graphing-the-approximations-for-example-10">Example 11 — Graphing the approximations for Example 10</a></li>
+  <li><a href="#example-12-y--2y---y-y1-1-y1-2" id="toc-example-12-y--2y---y-y1-1-y1-2" class="nav-link" data-scroll-target="#example-12-y--2y---y-y1-1-y1-2">Example 12 — <span class="math inline">\(y'' = -2y' - y\)</span>, <span class="math inline">\(y(1) = 1\)</span>, <span class="math inline">\(y'(1) = 2\)</span></a></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Picard Iteration</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Picard iteration, also called the method of successive approximations, solves the initial value problem <span class="math inline">\(y' = f(x, y)\)</span>, <span class="math inline">\(y(x_0) = y_0\)</span> by turning it into the equivalent integral equation <span class="math inline">\(y(x) = y_0 + \int_{x_0}^{x} f(t, y(t))\,dt\)</span> and iterating on that equation. The first approximation is the constant function <span class="math inline">\(Y_0(x) = y_0\)</span>, and each new approximation is obtained by substituting the previous one into the integral:</p>
+<p><span class="math display">\[
+Y_{n+1}(x) = y_0 + \int_{x_0}^{x} f\bigl(t, Y_n(t)\bigr)\,dt, \qquad n = 0, 1, 2, \ldots
+\]</span></p>
+<p>The iterates are functions, not numbers. This is the second meaning of “Picard iteration”: the first is <a href="../fixed-point-iteration/">fixed point iteration</a> <span class="math inline">\(p_{n+1} = g(p_n)\)</span> for an equation <span class="math inline">\(x = g(x)\)</span>, and Picard’s method for differential equations is fixed point iteration applied to the integral operator on the right-hand side. If <span class="math inline">\(f\)</span> and <span class="math inline">\(\partial f/\partial y\)</span> are continuous near <span class="math inline">\((x_0, y_0)\)</span>, the iterates converge to the unique solution on a small enough interval around <span class="math inline">\(x_0\)</span> (Theorem 2′). This is the classical proof of the existence theorem, and it needs no numerical arithmetic at all: the integrals are done exactly, which a computer algebra system does without the drudgery that makes the method tedious by hand.</p>
+<p>Mathews’ module (a revision of his 1989 article <em>Symbolic Computational Algebra Applied to Picard Iteration</em>, <em>Mathematics and Computer Education</em>, Vol. 23, No.&nbsp;2) applies the method to first-order equations, to systems of two and three first-order equations, and to second-order equations, in twelve examples. In all of them <span class="math inline">\(f\)</span> is a polynomial, so every iterate is a polynomial. Every iterate on this page was recomputed exactly with SymPy in rational arithmetic, and every exact solution was checked by substitution into its differential equation and initial conditions.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below shows <strong>Picard’s iterates appearing one per frame</strong>, <span class="math inline">\(n = 0, 1, \ldots, 6\)</span>, against the exact solution. The left panel is the graph Mathews draws for the example, in his window and with his colours for the exact solution (magenta) and the initial point (red dot); the current iterate is blue and the earlier ones are gray. The right panel is new. It plots the error of the current iterate on a logarithmic scale, <span class="math inline">\(|y(x) - Y_n(x)|\)</span> (in Case 3 the distance <span class="math inline">\(\lVert (X_n(t), Y_n(t)) - (x(t), y(t)) \rVert\)</span>), with the errors of the earlier iterates in gray and the tolerance <span class="math inline">\(0.01\)</span> dashed. Green shading in both panels marks where the error is at most <span class="math inline">\(0.01\)</span>. The left panel’s title gives that interval, and the right panel’s title gives the largest error on the window and where it occurs. The error is exactly zero at the initial point, and wherever it is below <span class="math inline">\(10^{-6}\)</span> its curve leaves the bottom of the right panel; a curve that leaves Mathews’ window is cut at the window’s edge. Each frame is shown for one second, and the last for three. The scripts compute the iterates exactly, as polynomials with rational coefficients, and check them against formulas (6) and (7) and the iterates <span class="math inline">\(X_6\)</span>, <span class="math inline">\(Y_6\)</span> of Example 6 and <span class="math inline">\(Y_6\)</span> of Example 10. They evaluate the errors in 256-bit arithmetic at <span class="math inline">\(20001\)</span> equally spaced points of the window and refine the ends of each shaded interval by bisection.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for Picard iteration, so all four animations are new, with no Mathews original. They animate the graphs of his Examples 3, 4, 7 and 11, with his windows and parameter ranges. Mathews shows the iterates in groups of three and then all together; here they appear one at a time. Not animated are Example 8, whose iterates Mathews draws as space curves in three dimensions, and Example 12, which is Example 11 shifted by <span class="math inline">\(1\)</span> in <span class="math inline">\(x\)</span>. Examples 1, 2, 5, 9 and 10 have no graphs, and Example 6 graphs only its exact solution, the ellipse drawn in every frame of Case 3.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-first-order-equation-example-3-y-y---x-y0-2-y_0-to-y_6-on--3-le-x-le-3" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-first-order-equation-example-3-y-y---x-y0-2-y_0-to-y_6-on--3-le-x-le-3">Case 1 — First-order equation (Example 3), <span class="math inline">\(y' = y - x\)</span>, <span class="math inline">\(y(0) = 2\)</span>, <span class="math inline">\(Y_0\)</span> to <span class="math inline">\(Y_6\)</span> on <span class="math inline">\(-3 \le x \le 3\)</span></h3>
+<p><strong>Behavior:</strong> Every iterate passes through the initial point <span class="math inline">\((0, 2)\)</span>, where its error is zero, and near <span class="math inline">\(x_0 = 0\)</span> the error of <span class="math inline">\(Y_n\)</span> behaves like <span class="math inline">\(2|x|^{n+1}/(n+1)!\)</span> (by formula (6)), so the dip in the right panel widens with every iteration. The interval where <span class="math inline">\(|y - Y_n| \le 0.01\)</span> widens at every step, from <span class="math inline">\([-0.005006, 0.004994]\)</span> for <span class="math inline">\(Y_0\)</span> to <span class="math inline">\([-0.5968, 0.5795]\)</span> for <span class="math inline">\(Y_3\)</span> and <span class="math inline">\([-1.606, 1.561]\)</span> for <span class="math inline">\(Y_6\)</span>, and always reaches a little farther to the left of <span class="math inline">\(x_0\)</span> than to the right. Away from <span class="math inline">\(x_0\)</span> the gap stays large: the largest error on Mathews’ interval is at <span class="math inline">\(x = 3\)</span> for every iterate and falls from <span class="math inline">\(22.09\)</span> to <span class="math inline">\(1.107\)</span>, as in the table of Example 3. <span class="math inline">\(Y_1\)</span> dips below the bottom of the window near <span class="math inline">\(x = -3\)</span>, where <span class="math inline">\(Y_1(-3) = -8.5\)</span>.</p>
+<p><a href="picardaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="picardaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Picard iterates Y0 to Y6 for y’ = y − x, y(0) = 2, appearing one per frame against the exact solution 1 + x + e^x in Mathews’ window [−3, 3] × [−8, 25], with a log-scale panel of the error |y − Yn|: the interval where the error is at most 0.01 (shaded green) widens from [−0.005006, 0.004994] for Y0 to [−1.606, 1.561] for Y6, while the largest error, at x = 3, falls from 22.09 to 1.107</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-initial-point-x_0-1-example-4-y--2xy-y1-1-y_0-to-y_6-on--1.7-le-x-le-1.7" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-initial-point-x_0-1-example-4-y--2xy-y1-1-y_0-to-y_6-on--1.7-le-x-le-1.7">Case 2 — Initial point <span class="math inline">\(x_0 = 1\)</span> (Example 4), <span class="math inline">\(y' = -2xy\)</span>, <span class="math inline">\(y(1) = 1\)</span>, <span class="math inline">\(Y_0\)</span> to <span class="math inline">\(Y_6\)</span> on <span class="math inline">\(-1.7 \le x \le 1.7\)</span></h3>
+<p><strong>Behavior:</strong> <span class="math inline">\(Y_n\)</span> and <span class="math inline">\(y\)</span> depend on <span class="math inline">\(x\)</span> only through <span class="math inline">\(w = 1 - x^2\)</span> (formula (7)), so both panels are symmetric about <span class="math inline">\(x = 0\)</span>. Since <span class="math inline">\(w = 0\)</span> at <span class="math inline">\(x = -1\)</span> as well as at <span class="math inline">\(x_0 = 1\)</span>, <span class="math inline">\(Y_n(-1) = 1 = y(-1)\)</span> for every <span class="math inline">\(n\)</span>, and each iterate is as accurate near <span class="math inline">\(x = -1\)</span> as near the initial point. The shading is therefore two intervals, around <span class="math inline">\(x = -1\)</span> and <span class="math inline">\(x = 1\)</span>, which widen until at <span class="math inline">\(n = 4\)</span> they merge into <span class="math inline">\([-1.440, 1.440]\)</span>; there the error at <span class="math inline">\(x = 0\)</span>, <span class="math inline">\(y(0) - Y_4(0) = 0.009948\)</span>, is just under the tolerance. At <span class="math inline">\(n = 6\)</span> the interval is <span class="math inline">\([-1.674, 1.674]\)</span>, and the largest error, <span class="math inline">\(0.01377\)</span> at both ends <span class="math inline">\(x = \pm 1.7\)</span>, is still above <span class="math inline">\(0.01\)</span>. <span class="math inline">\(Y_1\)</span> and <span class="math inline">\(Y_3\)</span> drop below the bottom of Mathews’ window near the ends, <span class="math inline">\(Y_1\)</span> for <span class="math inline">\(|x| &gt; \sqrt2 \approx 1.414\)</span> and <span class="math inline">\(Y_3\)</span> for <span class="math inline">\(|x| &gt; 1.611\)</span>.</p>
+<p><a href="picardbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="picardbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Picard iterates Y0 to Y6 for y’ = −2xy, y(1) = 1, appearing one per frame against the exact solution e^(1 − x²) in Mathews’ window [−1.7, 1.7] × [0, 2.75], with a log-scale panel of the error |y − Yn|, which is symmetric about x = 0 and zero at x = 1 and x = −1: two shaded intervals where the error is at most 0.01, around x = ±1, widen and merge at n = 4 into [−1.440, 1.440], and reach [−1.674, 1.674] at n = 6, when the largest error, at x = ±1.7, is 0.01377</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-a-system-in-the-phase-plane-example-7-x-x-2y-y--x---y-x0-y0-1-n-0-to-6-on--2-le-t-le-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-a-system-in-the-phase-plane-example-7-x-x-2y-y--x---y-x0-y0-1-n-0-to-6-on--2-le-t-le-2">Case 3 — A system in the phase plane (Example 7), <span class="math inline">\(x' = x + 2y\)</span>, <span class="math inline">\(y' = -x - y\)</span>, <span class="math inline">\(x(0) = y(0) = 1\)</span>, <span class="math inline">\(n = 0\)</span> to <span class="math inline">\(6\)</span> on <span class="math inline">\(-2 \le t \le 2\)</span></h3>
+<p><strong>Behavior:</strong> The left panel is drawn to scale, with equal units on both axes. <span class="math inline">\((X_0, Y_0)\)</span> is the single point <span class="math inline">\((1, 1)\)</span>. Every later iterate is a polynomial curve through <span class="math inline">\((1, 1)\)</span> at <span class="math inline">\(t = 0\)</span> that runs along the ellipse <span class="math inline">\(x^2 + 2xy + 2y^2 = 5\)</span> near that point and leaves it toward the ends <span class="math inline">\(t = \pm 2\)</span>; <span class="math inline">\((X_1, Y_1)\)</span> is a straight line and <span class="math inline">\((X_2, Y_2)\)</span> a parabola, and both leave the window at both ends. The stretch of <span class="math inline">\(t\)</span> where the distance to the exact point is at most <span class="math inline">\(0.01\)</span> grows from <span class="math inline">\([-0.002773, 0.002774]\)</span> for <span class="math inline">\(n = 0\)</span> to <span class="math inline">\([-1.460, 1.466]\)</span> for <span class="math inline">\(n = 6\)</span>, which covers nearly half of the ellipse (its period is <span class="math inline">\(2\pi\)</span>). The largest distance on <span class="math inline">\(-2 \le t \le 2\)</span> rises from <span class="math inline">\(4.211\)</span> to <span class="math inline">\(4.750\)</span> at the first step and falls at every step after that, to <span class="math inline">\(0.08875\)</span>, as in the table of Example 7; for <span class="math inline">\(n \ge 1\)</span> it is at an end of the interval, alternately <span class="math inline">\(t = 2\)</span> and <span class="math inline">\(t = -2\)</span>.</p>
+<p><a href="picardcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="picardcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Picard iterates for the system x’ = x + 2y, y’ = −x − y, x(0) = y(0) = 1, appearing one per frame as parametric curves (Xn(t), Yn(t)) for −2 ≤ t ≤ 2 against the exact solution, the ellipse x² + 2xy + 2y² = 5, in Mathews’ window [−3.2, 3.2] × [−2.3, 2.3], with a log-scale panel of the distance to the exact solution: the stretch of t where the distance is at most 0.01 (green) grows from [−0.002773, 0.002774] for n = 0 to [−1.460, 1.466] for n = 6, and the largest distance falls to 0.08875</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-4-second-order-equation-example-11-y--2y---y-y0-1-y0-2-y_0-to-y_6-on--2-le-x-le-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-4-second-order-equation-example-11-y--2y---y-y0-1-y0-2-y_0-to-y_6-on--2-le-x-le-2">Case 4 — Second-order equation (Example 11), <span class="math inline">\(y'' = -2y' - y\)</span>, <span class="math inline">\(y(0) = 1\)</span>, <span class="math inline">\(y'(0) = 2\)</span>, <span class="math inline">\(Y_0\)</span> to <span class="math inline">\(Y_6\)</span> on <span class="math inline">\(-2 \le x \le 2\)</span></h3>
+<p><strong>Behavior:</strong> Every iterate satisfies both initial conditions, so every curve passes through <span class="math inline">\((0, 1)\)</span> with slope <span class="math inline">\(2\)</span>; <span class="math inline">\(Y_0 = 1 + 2x\)</span> is the tangent line there. The interval where <span class="math inline">\(|y - Y_n| \le 0.01\)</span> widens at every step, from <span class="math inline">\([-0.06220, 0.06433]\)</span> for <span class="math inline">\(Y_0\)</span> to <span class="math inline">\([-1.050, 1.009]\)</span> for <span class="math inline">\(Y_6\)</span>. The largest error on Mathews’ interval is at <span class="math inline">\(x = -2\)</span> for <span class="math inline">\(n \le 3\)</span> and at <span class="math inline">\(x = 2\)</span> for <span class="math inline">\(n \ge 4\)</span>, and it falls from <span class="math inline">\(33.95\)</span> to <span class="math inline">\(2.773\)</span>, as in the table of Example 11. Mathews’ window cuts off the exact solution itself, which leaves the bottom edge at <span class="math inline">\(x \approx -1.270\)</span> and reaches <span class="math inline">\(y(-2) = -5e^2 \approx -36.95\)</span>. Every iterate from <span class="math inline">\(Y_1\)</span> on also leaves the window on the left, and <span class="math inline">\(Y_2\)</span> on the right as well.</p>
+<p><a href="picarddd.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="picarddd.gif" class="img-fluid figure-img"></p>
+<figcaption>Picard iterates Y0 to Y6 of the second-order method for y’’ = −2y’ − y, y(0) = 1, y’(0) = 2, appearing one per frame against the exact solution (1 + 3x)e^(−x) in Mathews’ window [−2, 2] × [−10, 10], starting from the tangent line Y0 = 1 + 2x, with a log-scale panel of the error |y − Yn|: the interval where the error is at most 0.01 (shaded green) widens from [−0.06220, 0.06433] to [−1.050, 1.009], and the largest error falls from 33.95 at x = −2 to 2.773 at x = 2</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="existence-and-uniqueness" class="level2">
+<h2 class="anchored" data-anchor-id="existence-and-uniqueness">Existence and Uniqueness</h2>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem 1 — Existence and uniqueness
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f(x, y)\)</span> and <span class="math inline">\(f_y(x, y)\)</span> are continuous on the rectangle <span class="math inline">\(R = \{(x, y) : a \le x \le b,\ c \le y \le d\}\)</span> and <span class="math inline">\((x_0, y_0)\)</span> is an interior point of <span class="math inline">\(R\)</span>, then the initial value problem</p>
+<p><span class="math display">\[
+y' = f(x, y), \qquad y(x_0) = y_0
+\tag{1}
+\]</span></p>
+<p>has a unique solution <span class="math inline">\(y(x)\)</span> for all <span class="math inline">\(x\)</span> in some (smaller) interval <span class="math inline">\(x_0 - \delta \le x \le x_0 + \delta\)</span> contained in <span class="math inline">\([a, b]\)</span>.</p>
+</div>
+</div>
+<p>The interval can be smaller than <span class="math inline">\([a, b]\)</span> because the solution may leave the rectangle before <span class="math inline">\(x\)</span> reaches <span class="math inline">\(a\)</span> or <span class="math inline">\(b\)</span>. Example 2 below, <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0) = 0\)</span>, has <span class="math inline">\(f\)</span> and <span class="math inline">\(f_y\)</span> continuous everywhere, but its solution <span class="math inline">\(\tan x\)</span> exists only for <span class="math inline">\(|x| &lt; \pi/2\)</span>.</p>
+</section>
+<section id="picards-method-for-first-order-equations" class="level2">
+<h2 class="anchored" data-anchor-id="picards-method-for-first-order-equations">Picard’s Method for First-Order Equations</h2>
+<p>Integrating (1) from <span class="math inline">\(x_0\)</span> to <span class="math inline">\(x\)</span> shows that a continuous function <span class="math inline">\(y\)</span> solves (1) if and only if it solves the integral equation</p>
+<p><span class="math display">\[
+y(x) = y_0 + \int_{x_0}^{x} f\bigl(t, y(t)\bigr)\,dt.
+\tag{2}
+\]</span></p>
+<p>Picard’s method uses the right-hand side of (2) to generate a sequence of functions.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem 2 — Successive approximations (Picard iteration)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The solution of the initial value problem (1) is found by constructing recursively the sequence of functions <span class="math inline">\(\{Y_n(x)\}_{n=0}^{\infty}\)</span> with</p>
+<p><span class="math display">\[
+Y_0(x) = y_0, \qquad Y_{n+1}(x) = y_0 + \int_{x_0}^{x} f\bigl(t, Y_n(t)\bigr)\,dt \quad \text{for } n \ge 0.
+\tag{3}
+\]</span></p>
+<p>Then the solution <span class="math inline">\(y(x)\)</span> of (1) is the limit</p>
+<p><span class="math display">\[
+y(x) = \lim_{n \to \infty} Y_n(x).
+\tag{4}
+\]</span></p>
+</div>
+</div>
+<p>Mathews states the theorem in this form. The following quantitative version is a general result, not a statement about any one example; it says where the limit (4) holds and how fast.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem 2′ — Interval of convergence and error bound (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(f\)</span> be continuous on <span class="math inline">\(R = \{|x - x_0| \le \alpha,\ |y - y_0| \le \beta\}\)</span>, with <span class="math inline">\(|f(x, y)| \le M\)</span> on <span class="math inline">\(R\)</span>, and let <span class="math inline">\(f\)</span> satisfy a Lipschitz condition <span class="math inline">\(|f(x, y) - f(x, z)| \le L\,|y - z|\)</span> on <span class="math inline">\(R\)</span> (it does with <span class="math inline">\(L = \max_R |f_y|\)</span> when <span class="math inline">\(f_y\)</span> is continuous). Put</p>
+<p><span class="math display">\[
+\delta = \min\Bigl(\alpha,\ \frac{\beta}{M}\Bigr).
+\]</span></p>
+<p>Then for <span class="math inline">\(|x - x_0| \le \delta\)</span> every iterate <span class="math inline">\(Y_n(x)\)</span> stays in <span class="math inline">\(R\)</span>, the iterates converge uniformly to the unique solution <span class="math inline">\(y(x)\)</span>, and</p>
+<p><span class="math display">\[
+|y(x) - Y_n(x)| \le \frac{M}{L}\,\frac{\bigl(L\,|x - x_0|\bigr)^{n+1}}{(n+1)!}\,e^{L|x - x_0|}.
+\tag{5}
+\]</span></p>
+</div>
+</div>
+<p><em>Proof sketch.</em> The choice of <span class="math inline">\(\delta\)</span> keeps <span class="math inline">\(|Y_n(x) - y_0| \le M|x - x_0| \le \beta\)</span>, so every iterate stays in <span class="math inline">\(R\)</span>. From <span class="math inline">\(|Y_1 - Y_0| \le M|x - x_0|\)</span> and the Lipschitz condition, induction gives <span class="math inline">\(|Y_{k+1}(x) - Y_k(x)| \le M L^k |x - x_0|^{k+1}/(k+1)!\)</span>. These are the terms of the series for <span class="math inline">\((M/L)\bigl(e^{L|x - x_0|} - 1\bigr)\)</span>, so <span class="math inline">\(Y_n = Y_0 + \sum_{k&lt;n} (Y_{k+1} - Y_k)\)</span> converges uniformly, the limit satisfies (2) by passing to the limit under the integral, and summing the tail from <span class="math inline">\(k = n\)</span> gives (5). If <span class="math inline">\(y\)</span> and <span class="math inline">\(z\)</span> both solve (2), then <span class="math inline">\(|y - z| \le L \int |y - z|\)</span>, and the same induction shows <span class="math inline">\(|y - z| \le C L^k |x - x_0|^k / k!\)</span> for every <span class="math inline">\(k\)</span>, so <span class="math inline">\(y = z\)</span>.</p>
+<p>The bound (5) has a factorial in the denominator, so on the interval <span class="math inline">\(|x - x_0| \le \delta\)</span> the convergence is eventually faster than geometric. It says nothing about <span class="math inline">\(x\)</span> outside that interval, and in the examples the error of a fixed iterate is largest far from <span class="math inline">\(x_0\)</span>.</p>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Picard iteration
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(f(x, y)\)</span>, the initial value <span class="math inline">\((x_0, y_0)\)</span> and the number of iterations <span class="math inline">\(n_{\max}\)</span>:</p>
+<ol type="1">
+<li>Set <span class="math inline">\(Y_0(x) = y_0\)</span>.</li>
+<li>For <span class="math inline">\(k = 0, 1, \ldots, n_{\max} - 1\)</span>: substitute <span class="math inline">\(Y_k(t)\)</span> for <span class="math inline">\(y\)</span> in <span class="math inline">\(f(t, y)\)</span>, integrate from <span class="math inline">\(x_0\)</span> to <span class="math inline">\(x\)</span>, and set <span class="math inline">\(Y_{k+1}(x) = y_0 + \int_{x_0}^{x} f(t, Y_k(t))\,dt\)</span>, simplified (expanded) as a function of <span class="math inline">\(x\)</span>.</li>
+<li>Return <span class="math inline">\(Y_0, Y_1, \ldots, Y_{n_{\max}}\)</span>; <span class="math inline">\(Y_{n_{\max}}\)</span> approximates <span class="math inline">\(y(x)\)</span> near <span class="math inline">\(x_0\)</span>.</li>
+</ol>
+</div>
+</div>
+<p>Mathews’ Mathematica subroutine <code>PicardIteration</code> does exactly this with <span class="math inline">\(n_{\max} = 6\)</span> in most examples. After each integration it replaces the new iterate by its Taylor polynomial of degree <span class="math inline">\(100\)</span> about <span class="math inline">\(x_0\)</span>, which keeps the expressions finite when <span class="math inline">\(f\)</span> is not a polynomial; in the examples below every iterate is a polynomial of degree at most <span class="math inline">\(31\)</span>, so this truncation changes nothing. A second version stores the iterates in a list so that they can be graphed together (Examples 3 and 4).</p>
+</section>
+</section>
+<section id="example-1-y-y---x-y0-2" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-y-y---x-y0-2">Example 1 — <span class="math inline">\(y' = y - x\)</span>, <span class="math inline">\(y(0) = 2\)</span></h2>
+<p>Use Picard iteration to find the solution of</p>
+<p><span class="math display">\[
+y' = y - x, \qquad y(0) = 2.
+\]</span></p>
+<p>Here <span class="math inline">\(f(x, y) = y - x\)</span>, <span class="math inline">\(x_0 = 0\)</span> and <span class="math inline">\(y_0 = 2\)</span>.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\(Y_0(x) = 2\)</span>, so</p>
+<p><span class="math display">\[
+Y_1(x) = 2 + \int_0^x (2 - t)\,dt = 2 + 2x - \frac{x^2}{2}.
+\]</span></p>
+<p><strong>Step 2</strong>:</p>
+<p><span class="math display">\[
+Y_2(x) = 2 + \int_0^x \Bigl(2 + 2t - \frac{t^2}{2} - t\Bigr)dt = 2 + 2x + \frac{x^2}{2} - \frac{x^3}{6}.
+\]</span></p>
+<p><strong>Steps 3 to 6</strong>: continuing in the same way,</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y_3(x) &amp;= 2 + 2x + \frac{x^2}{2} + \frac{x^3}{6} - \frac{x^4}{24}, \\
+Y_4(x) &amp;= 2 + 2x + \frac{x^2}{2} + \frac{x^3}{6} + \frac{x^4}{24} - \frac{x^5}{120}, \\
+Y_5(x) &amp;= 2 + 2x + \frac{x^2}{2} + \frac{x^3}{6} + \frac{x^4}{24} + \frac{x^5}{120} - \frac{x^6}{720}, \\
+Y_6(x) &amp;= 2 + 2x + \frac{x^2}{2} + \frac{x^3}{6} + \frac{x^4}{24} + \frac{x^5}{120} + \frac{x^6}{720} - \frac{x^7}{5040}.
+\end{aligned}
+\]</span></p>
+<p>The pattern is</p>
+<p><span class="math display">\[
+Y_n(x) = 2 + 2x + \sum_{k=2}^{n} \frac{x^k}{k!} - \frac{x^{n+1}}{(n+1)!}, \qquad n \ge 1,
+\tag{6}
+\]</span></p>
+<p>and it holds for every <span class="math inline">\(n\)</span>: substituting (6) into (3) gives <span class="math inline">\(Y_{n+1} = 2 + \int_0^x \bigl(2 + t + \sum_{k=2}^{n} t^k/k! - t^{n+1}/(n+1)!\bigr)\,dt\)</span>, which is (6) with <span class="math inline">\(n + 1\)</span> in place of <span class="math inline">\(n\)</span>.</p>
+<p><strong>The exact solution.</strong> The equation is linear, and its solution is <span class="math inline">\(y(x) = 1 + x + e^x\)</span>. Its Maclaurin series is</p>
+<p><span class="math display">\[
+y(x) = (1 + x) + \Bigl(1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \cdots\Bigr) = 2 + 2x + \sum_{k=2}^{\infty} \frac{x^k}{k!}.
+\]</span></p>
+<p>When the last term of <span class="math inline">\(Y_n\)</span> is dropped, what is left is the Maclaurin polynomial of degree <span class="math inline">\(n\)</span> of <span class="math inline">\(y(x)\)</span>, and the sum of the series is the solution: <span class="math inline">\(\lim_{n\to\infty} Y_n(x) = 1 + x + e^x\)</span> for every <span class="math inline">\(x\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y' = 1 + e^x\)</span> and <span class="math inline">\(y - x = 1 + e^x\)</span>, so <span class="math inline">\(y' = y - x\)</span>, and <span class="math inline">\(y(0) = 1 + 0 + 1 = 2\)</span>. At <span class="math inline">\(x = 1\)</span>, where <span class="math inline">\(y(1) = 2 + e = 4.718281828\)</span>, the iterates approach the solution:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(Y_n(1)\)</span></th>
+<th><span class="math inline">\(y(1) - Y_n(1)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\(2.718\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(3.5\)</span></td>
+<td><span class="math inline">\(1.218\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(4.333333333\)</span></td>
+<td><span class="math inline">\(0.3849\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(4.625\)</span></td>
+<td><span class="math inline">\(0.09328\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(4.7\)</span></td>
+<td><span class="math inline">\(0.01828\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(4.715277778\)</span></td>
+<td><span class="math inline">\(0.003004\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(4.717857143\)</span></td>
+<td><span class="math inline">\(0.0004247\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example-2-y-1-y2-y0-0" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-y-1-y2-y0-0">Example 2 — <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0) = 0\)</span></h2>
+<p>Use Picard iteration to find the solution of</p>
+<p><span class="math display">\[
+y' = 1 + y^2, \qquad y(0) = 0.
+\]</span></p>
+<p><strong>Step 1</strong>: <span class="math inline">\(Y_0 = 0\)</span>, so <span class="math inline">\(Y_1(x) = \int_0^x 1\,dt = x\)</span>.</p>
+<p><strong>Step 2</strong>: <span class="math inline">\(Y_2(x) = \int_0^x (1 + t^2)\,dt = x + \dfrac{x^3}{3}\)</span>.</p>
+<p><strong>Step 3</strong>: <span class="math inline">\(Y_3(x) = \displaystyle\int_0^x \Bigl(1 + \bigl(t + \tfrac{t^3}{3}\bigr)^2\Bigr)dt = x + \frac{x^3}{3} + \frac{2x^5}{15} + \frac{x^7}{63}\)</span>.</p>
+<p><strong>Steps 4 and 5</strong>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y_4(x) &amp;= x + \frac{x^3}{3} + \frac{2x^5}{15} + \frac{17x^7}{315} + \frac{38x^9}{2835} + \frac{134x^{11}}{51975} + \frac{4x^{13}}{12285} + \frac{x^{15}}{59535}, \\
+Y_5(x) &amp;= x + \frac{x^3}{3} + \frac{2x^5}{15} + \frac{17x^7}{315} + \frac{62x^9}{2835} + \frac{1142x^{11}}{155925} + \frac{13324x^{13}}{6081075} + \cdots + \frac{8x^{29}}{21210236775} + \frac{x^{31}}{109876902975}.
+\end{aligned}
+\]</span></p>
+<p>Squaring doubles the degree, so the degree of <span class="math inline">\(Y_n\)</span> is <span class="math inline">\(2^n - 1\)</span> (<span class="math inline">\(1, 3, 7, 15, 31\)</span> for <span class="math inline">\(n = 1, \ldots, 5\)</span>), and <span class="math inline">\(Y_5\)</span> has <span class="math inline">\(16\)</span> nonzero terms, one for each odd power from <span class="math inline">\(x\)</span> to <span class="math inline">\(x^{31}\)</span>. Mathews stops after these five iterations.</p>
+<p><strong>The exact solution.</strong> Separating variables gives <span class="math inline">\(\arctan y = x\)</span>, so <span class="math inline">\(y(x) = \tan x\)</span>. Its Maclaurin series begins</p>
+<p><span class="math display">\[
+\tan x = x + \frac{x^3}{3} + \frac{2x^5}{15} + \frac{17x^7}{315} + \frac{62x^9}{2835} + \frac{1382x^{11}}{155925} + \cdots
+\]</span></p>
+<p>The first five terms of <span class="math inline">\(Y_5\)</span> are the same as the Maclaurin series for <span class="math inline">\(\tan x\)</span>; the sixth already differs (<span class="math inline">\(1142/155925\)</span> against <span class="math inline">\(1382/155925\)</span>). For each <span class="math inline">\(n = 1, \ldots, 5\)</span>, <span class="math inline">\(Y_n\)</span> agrees with <span class="math inline">\(\tan x\)</span> through the term in <span class="math inline">\(x^{2n-1}\)</span>: each iteration adds one correct term, while the number of terms doubles (<span class="math inline">\(1, 2, 4, 8, 16\)</span>).</p>
+<p><strong>The interval of convergence.</strong> Theorem 1 gives existence only near <span class="math inline">\(x_0\)</span>, and here the restriction matters: <span class="math inline">\(\tan x\)</span> has poles at <span class="math inline">\(x = \pm\pi/2\)</span>. On the rectangle <span class="math inline">\(R = \{|x| \le \alpha,\ |y| \le \beta\}\)</span> Theorem 2′ gives <span class="math inline">\(M = 1 + \beta^2\)</span> and <span class="math inline">\(\delta = \min\bigl(\alpha, \beta/(1 + \beta^2)\bigr)\)</span>. The largest value of <span class="math inline">\(\beta/(1 + \beta^2)\)</span> is <span class="math inline">\(1/2\)</span>, at <span class="math inline">\(\beta = 1\)</span>, so the theorem guarantees convergence only on <span class="math inline">\(|x| \le 1/2\)</span>. With <span class="math inline">\(\beta = 1\)</span> the Lipschitz constant is <span class="math inline">\(L = \max |2y| = 2\)</span>, and at <span class="math inline">\(x = 1/2\)</span> the bound (5) is <span class="math inline">\(\bigl(1^{n+1}/(n+1)!\bigr)\,e\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(Y_n(1/2)\)</span></th>
+<th><span class="math inline">\(\tan(1/2) - Y_n(1/2)\)</span></th>
+<th>bound (5)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.5463\)</span></td>
+<td><span class="math inline">\(2.718\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td><span class="math inline">\(0.04630\)</span></td>
+<td><span class="math inline">\(1.359\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(0.5416666667\)</span></td>
+<td><span class="math inline">\(0.004636\)</span></td>
+<td><span class="math inline">\(0.4530\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(0.5459573413\)</span></td>
+<td><span class="math inline">\(3.451 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(0.1133\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(0.5462824389\)</span></td>
+<td><span class="math inline">\(2.005 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(0.02265\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(0.5463015370\)</span></td>
+<td><span class="math inline">\(9.529 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(0.003775\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The bound holds at every step, with a wide margin. Outside the guaranteed interval the first six iterates still move toward <span class="math inline">\(\tan x\)</span>, but more slowly. At <span class="math inline">\(x = 1\)</span> the error falls from <span class="math inline">\(1.557\)</span> (<span class="math inline">\(n = 0\)</span>) to <span class="math inline">\(0.004622\)</span> (<span class="math inline">\(n = 5\)</span>); at <span class="math inline">\(x = 1.5\)</span> the values <span class="math inline">\(Y_0, \ldots, Y_5\)</span> are <span class="math inline">\(0\)</span>, <span class="math inline">\(1.5\)</span>, <span class="math inline">\(2.625\)</span>, <span class="math inline">\(3.909\)</span>, <span class="math inline">\(5.369\)</span> and <span class="math inline">\(6.959\)</span>, still less than half of <span class="math inline">\(\tan 1.5 = 14.10\)</span> (<span class="math inline">\(1.5\)</span> is close to the pole at <span class="math inline">\(\pi/2 \approx 1.5708\)</span>).</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\dfrac{d}{dx}\tan x = \sec^2 x = 1 + \tan^2 x\)</span>, and <span class="math inline">\(\tan 0 = 0\)</span>.</p>
+</section>
+<section id="example-3-graphing-the-approximations-for-y-y---x-y0-2" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-graphing-the-approximations-for-y-y---x-y0-2">Example 3 — Graphing the approximations for <span class="math inline">\(y' = y - x\)</span>, <span class="math inline">\(y(0) = 2\)</span></h2>
+<p>Use Picard iteration to find and plot approximations for the solution of the initial value problem of Example 1,</p>
+<p><span class="math display">\[
+y' = y - x, \qquad y(0) = 2.
+\]</span></p>
+<p>The iterates <span class="math inline">\(Y_0, \ldots, Y_6\)</span> are those of Example 1 (formula (6)), and the exact solution is <span class="math inline">\(y(x) = 1 + x + e^x\)</span>. Mathews graphs the exact solution together with the iterates on <span class="math inline">\(-3 \le x \le 3\)</span>. Each iterate is a polynomial, and the gap between it and <span class="math inline">\(1 + x + e^x\)</span> opens up away from <span class="math inline">\(x_0 = 0\)</span>. The largest error on Mathews’ interval is at the right end, <span class="math inline">\(x = 3\)</span>, for every iterate, and it decreases with every iteration:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(\max_{-3 \le x \le 3} \lvert y(x) - Y_n(x) \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(22.09\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(20.59\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(16.09\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(10.46\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(5.736\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(2.698\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(1.107\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>At <span class="math inline">\(x = 3\)</span> the error of <span class="math inline">\(Y_6\)</span> is still <span class="math inline">\(1.107\)</span>, while at <span class="math inline">\(x = 1\)</span> it is <span class="math inline">\(0.0004247\)</span> (Example 1): a fixed iterate is a good approximation only near <span class="math inline">\(x_0\)</span>.</p>
+<p><strong>Verification:</strong> as in Example 1; the maxima were found on a grid of <span class="math inline">\(20001\)</span> points and checked in 50-digit arithmetic.</p>
+</section>
+<section id="example-4-y--2xy-y1-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-y--2xy-y1-1">Example 4 — <span class="math inline">\(y' = -2xy\)</span>, <span class="math inline">\(y(1) = 1\)</span></h2>
+<p>Use Picard iteration to find and plot approximations for the solution of</p>
+<p><span class="math display">\[
+y' = -2xy, \qquad y(1) = 1.
+\]</span></p>
+<p>The initial point is <span class="math inline">\(x_0 = 1\)</span>, so the iterates are naturally written in powers of <span class="math inline">\(x - 1\)</span>.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\(Y_1(x) = 1 + \displaystyle\int_1^x (-2t)\,dt = 2 - x^2 = 1 - 2(x - 1) - (x - 1)^2\)</span>.</p>
+<p><strong>Step 2</strong>: <span class="math inline">\(Y_2(x) = 1 + \displaystyle\int_1^x -2t\,(2 - t^2)\,dt = \frac52 - 2x^2 + \frac{x^4}{2} = 1 - 2(x - 1) + (x - 1)^2 + 2(x - 1)^3 + \tfrac12 (x - 1)^4\)</span>.</p>
+<p><strong>Steps 3 to 6</strong>: with <span class="math inline">\(u = x - 1\)</span>,</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y_3 &amp;= 1 - 2u + u^2 + \tfrac23 u^3 - \tfrac32 u^4 - u^5 - \tfrac16 u^6, \\
+Y_4 &amp;= 1 - 2u + u^2 + \tfrac23 u^3 - \tfrac56 u^4 + \tfrac13 u^5 + \tfrac56 u^6 + \tfrac13 u^7 + \tfrac1{24} u^8, \\
+Y_5 &amp;= 1 - 2u + u^2 + \tfrac23 u^3 - \tfrac56 u^4 + \tfrac1{15} u^5 + \tfrac16 u^6 - \tfrac13 u^7 - \tfrac7{24} u^8 - \tfrac1{12} u^9 - \tfrac1{120} u^{10}, \\
+Y_6 &amp;= 1 - 2u + u^2 + \tfrac23 u^3 - \tfrac56 u^4 + \tfrac1{15} u^5 + \tfrac{23}{90} u^6 - \tfrac1{15} u^7 + \tfrac1{24} u^8 + \tfrac5{36} u^9 + \tfrac3{40} u^{10} + \tfrac1{60} u^{11} + \tfrac1{720} u^{12}.
+\end{aligned}
+\]</span></p>
+<p>These are Mathews’ iterates. In powers of <span class="math inline">\(x - 1\)</span> they look irregular, but in terms of <span class="math inline">\(w = 1 - x^2\)</span> they have a simple form:</p>
+<p><span class="math display">\[
+Y_n(x) = \sum_{k=0}^{n} \frac{(1 - x^2)^k}{k!},
+\tag{7}
+\]</span></p>
+<p>because <span class="math inline">\(\int_1^x -2t\,(1 - t^2)^k/k!\,dt = (1 - x^2)^{k+1}/(k+1)!\)</span>. So <span class="math inline">\(Y_n\)</span> is the Maclaurin polynomial of degree <span class="math inline">\(n\)</span> of <span class="math inline">\(e^w\)</span>, evaluated at <span class="math inline">\(w = 1 - x^2\)</span>.</p>
+<p><strong>The exact solution.</strong> Separating variables, <span class="math inline">\(\ln y = 1 - x^2\)</span>, so <span class="math inline">\(y(x) = e^{1 - x^2}\)</span>, and (7) converges to it for every <span class="math inline">\(x\)</span>. Its series in powers of <span class="math inline">\(u = x - 1\)</span> is <span class="math inline">\(1 - 2u + u^2 + \tfrac23 u^3 - \tfrac56 u^4 + \tfrac1{15} u^5 + \tfrac{23}{90} u^6 - \tfrac{29}{315} u^7 + \cdots\)</span>, and <span class="math inline">\(Y_n\)</span> agrees with it through the term in <span class="math inline">\(u^n\)</span> for <span class="math inline">\(n = 0, \ldots, 6\)</span>.</p>
+<p>Mathews graphs the exact solution and the iterates on <span class="math inline">\(-1.7 \le x \le 1.7\)</span>. By (7), <span class="math inline">\(Y_n(0) = \sum_{k=0}^{n} 1/k!\)</span>, the partial sums for <span class="math inline">\(e = y(0)\)</span>: <span class="math inline">\(1\)</span>, <span class="math inline">\(2\)</span>, <span class="math inline">\(2.5\)</span>, <span class="math inline">\(2.6667\)</span>, <span class="math inline">\(2.7083\)</span>, <span class="math inline">\(2.7167\)</span>, <span class="math inline">\(2.7181\)</span>. At the ends <span class="math inline">\(x = \pm 1.7\)</span>, <span class="math inline">\(w = -1.89\)</span>, farther from <span class="math inline">\(0\)</span> than anywhere else on the interval, and there the error is largest for every <span class="math inline">\(n \ge 1\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(y(0) - Y_n(0)\)</span></th>
+<th><span class="math inline">\(\max_{-1.7 \le x \le 1.7} \lvert y(x) - Y_n(x) \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(1.718\)</span></td>
+<td><span class="math inline">\(1.718\)</span> (at <span class="math inline">\(x = 0\)</span>)</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(0.7183\)</span></td>
+<td><span class="math inline">\(1.041\)</span> (at <span class="math inline">\(x = \pm 1.7\)</span>)</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(0.2183\)</span></td>
+<td><span class="math inline">\(0.7450\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(0.05162\)</span></td>
+<td><span class="math inline">\(0.3802\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(0.009948\)</span></td>
+<td><span class="math inline">\(0.1514\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(0.001615\)</span></td>
+<td><span class="math inline">\(0.04954\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(2.263 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(0.01377\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> <span class="math inline">\(y' = -2x\,e^{1 - x^2} = -2xy\)</span> and <span class="math inline">\(y(1) = e^0 = 1\)</span>.</p>
+</section>
+<section id="systems-of-two-first-order-equations" class="level2">
+<h2 class="anchored" data-anchor-id="systems-of-two-first-order-equations">Systems of Two First-Order Equations</h2>
+<p>Consider the initial value problem for a system of two differential equations</p>
+<p><span class="math display">\[
+x' = f(t, x, y), \quad x(t_0) = x_0, \qquad y' = g(t, x, y), \quad y(t_0) = y_0.
+\tag{8}
+\]</span></p>
+<p>Picard iteration generates two sequences <span class="math inline">\(\{X_n(t)\}\)</span> and <span class="math inline">\(\{Y_n(t)\}\)</span>, defined recursively by <span class="math inline">\(X_0(t) = x_0\)</span>, <span class="math inline">\(Y_0(t) = y_0\)</span> and</p>
+<p><span class="math display">\[
+\begin{aligned}
+X_{n+1}(t) &amp;= x_0 + \int_{t_0}^{t} f\bigl(s, X_n(s), Y_n(s)\bigr)\,ds, \\
+Y_{n+1}(t) &amp;= y_0 + \int_{t_0}^{t} g\bigl(s, X_n(s), Y_n(s)\bigr)\,ds, \qquad n \ge 0.
+\end{aligned}
+\tag{9}
+\]</span></p>
+<p>(Mathews’ module prints <span class="math inline">\(y_0\)</span> in front of the integral in the <span class="math inline">\(X_{n+1}\)</span> formula; it should be <span class="math inline">\(x_0\)</span>, and his programs use <span class="math inline">\(x_0\)</span>.) Under the conditions of Theorem 2′, applied to the vector function <span class="math inline">\((f, g)\)</span>, the sequences converge to the solution near <span class="math inline">\(t_0\)</span>:</p>
+<p><span class="math display">\[
+\lim_{n \to \infty} X_n(t) = x(t), \qquad \lim_{n \to \infty} Y_n(t) = y(t).
+\tag{10}
+\]</span></p>
+<p>Both components are updated from the previous pair <span class="math inline">\((X_n, Y_n)\)</span>.</p>
+<p><strong>Linear systems with constant coefficients (general).</strong> For <span class="math inline">\(\mathbf{X}' = A\mathbf{X}\)</span>, <span class="math inline">\(\mathbf{X}(0) = \mathbf{v}\)</span>, with a constant matrix <span class="math inline">\(A\)</span>, the iterates are</p>
+<p><span class="math display">\[
+\mathbf{X}_n(t) = \sum_{k=0}^{n} \frac{(tA)^k}{k!}\,\mathbf{v},
+\tag{11}
+\]</span></p>
+<p>since <span class="math inline">\(\mathbf{v} + \int_0^t A \sum_{k=0}^{n} (sA)^k \mathbf{v}/k!\,ds = \sum_{k=0}^{n+1} (tA)^k \mathbf{v}/k!\)</span>. This is the Maclaurin polynomial of degree <span class="math inline">\(n\)</span> of the exact solution <span class="math inline">\(e^{tA}\mathbf{v}\)</span>: every term of <span class="math inline">\(\mathbf{X}_n\)</span> is correct, and each iteration adds the next one. Examples 5 to 8 are of this kind.</p>
+</section>
+<section id="example-5-x--x---2y-y-3x-4y" class="level2">
+<h2 class="anchored" data-anchor-id="example-5-x--x---2y-y-3x-4y">Example 5 — <span class="math inline">\(x' = -x - 2y\)</span>, <span class="math inline">\(y' = 3x + 4y\)</span></h2>
+<p>Use Picard iteration to find the solution of</p>
+<p><span class="math display">\[
+x' = -x - 2y, \quad x(0) = -1, \qquad y' = 3x + 4y, \quad y(0) = 2.
+\]</span></p>
+<p><strong>Step 1</strong>: <span class="math inline">\(X_0 = -1\)</span>, <span class="math inline">\(Y_0 = 2\)</span>, so</p>
+<p><span class="math display">\[
+X_1(t) = -1 + \int_0^t (1 - 4)\,ds = -1 - 3t, \qquad Y_1(t) = 2 + \int_0^t (-3 + 8)\,ds = 2 + 5t.
+\]</span></p>
+<p><strong>Step 2</strong>:</p>
+<p><span class="math display">\[
+X_2(t) = -1 + \int_0^t \bigl(-(-1 - 3s) - 2(2 + 5s)\bigr)ds = -1 - 3t - \frac{7t^2}{2}, \qquad
+Y_2(t) = 2 + \int_0^t \bigl(3(-1 - 3s) + 4(2 + 5s)\bigr)ds = 2 + 5t + \frac{11t^2}{2}.
+\]</span></p>
+<p><strong>Steps 3 to 6</strong>: each step adds one term to each component, and the final iterates are</p>
+<p><span class="math display">\[
+\begin{aligned}
+X_6(t) &amp;= -1 - 3t - \frac{7t^2}{2} - \frac{5t^3}{2} - \frac{31t^4}{24} - \frac{21t^5}{40} - \frac{127t^6}{720}, \\
+Y_6(t) &amp;= 2 + 5t + \frac{11t^2}{2} + \frac{23t^3}{6} + \frac{47t^4}{24} + \frac{19t^5}{24} + \frac{191t^6}{720},
+\end{aligned}
+\]</span></p>
+<p>with <span class="math inline">\(X_n\)</span> and <span class="math inline">\(Y_n\)</span> for <span class="math inline">\(n &lt; 6\)</span> given by the same expressions cut off after the term in <span class="math inline">\(t^n\)</span>.</p>
+<p><strong>The exact solution.</strong> The matrix <span class="math inline">\(\begin{pmatrix} -1 &amp; -2 \\ 3 &amp; 4 \end{pmatrix}\)</span> has eigenvalues <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span>, and the solution is</p>
+<p><span class="math display">\[
+x(t) = e^t - 2e^{2t}, \qquad y(t) = -e^t + 3e^{2t}.
+\]</span></p>
+<p>As Maclaurin series,</p>
+<p><span class="math display">\[
+x(t) = \sum_{k=0}^{\infty} \frac{(1 - 2^{k+1})\,t^k}{k!} = -1 - 3t - \frac{7t^2}{2} - \frac{5t^3}{2} - \frac{31t^4}{24} - \cdots, \qquad
+y(t) = \sum_{k=0}^{\infty} \frac{(3 \cdot 2^k - 1)\,t^k}{k!} = 2 + 5t + \frac{11t^2}{2} + \frac{23t^3}{6} + \cdots
+\]</span></p>
+<p>By (11), <span class="math inline">\(X_n\)</span> and <span class="math inline">\(Y_n\)</span> are exactly the Maclaurin polynomials of degree <span class="math inline">\(n\)</span> of <span class="math inline">\(x(t)\)</span> and <span class="math inline">\(y(t)\)</span>, so the sequences converge to the solution for every <span class="math inline">\(t\)</span>. (Mathews says that dropping the last term of each iterate leaves a Maclaurin polynomial; that is true, but here no term needs to be dropped: the coefficients of <span class="math inline">\(t^6\)</span> in <span class="math inline">\(X_6\)</span> and <span class="math inline">\(Y_6\)</span>, <span class="math inline">\(-127/720 = (1 - 2^7)/6!\)</span> and <span class="math inline">\(191/720 = (3 \cdot 2^6 - 1)/6!\)</span>, are already correct.)</p>
+<p><strong>Verification:</strong> <span class="math inline">\(x' = e^t - 4e^{2t}\)</span> and <span class="math inline">\(-x - 2y = -e^t + 2e^{2t} + 2e^t - 6e^{2t} = e^t - 4e^{2t}\)</span>; <span class="math inline">\(y' = -e^t + 6e^{2t}\)</span> and <span class="math inline">\(3x + 4y = 3e^t - 6e^{2t} - 4e^t + 12e^{2t} = -e^t + 6e^{2t}\)</span>; <span class="math inline">\(x(0) = -1\)</span>, <span class="math inline">\(y(0) = 2\)</span>.</p>
+</section>
+<section id="example-6-x-x-2y-y--x---y" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-x-x-2y-y--x---y">Example 6 — <span class="math inline">\(x' = x + 2y\)</span>, <span class="math inline">\(y' = -x - y\)</span></h2>
+<p>Use Picard iteration to find the solution of</p>
+<p><span class="math display">\[
+x' = x + 2y, \quad x(0) = 1, \qquad y' = -x - y, \quad y(0) = 1.
+\]</span></p>
+<p><strong>Step 1</strong>: <span class="math inline">\(X_1(t) = 1 + \int_0^t 3\,ds = 1 + 3t\)</span> and <span class="math inline">\(Y_1(t) = 1 + \int_0^t (-2)\,ds = 1 - 2t\)</span>.</p>
+<p><strong>Step 2</strong>: <span class="math inline">\(X_2(t) = 1 + \int_0^t \bigl((1 + 3s) + 2(1 - 2s)\bigr)ds = 1 + 3t - \dfrac{t^2}{2}\)</span> and <span class="math inline">\(Y_2(t) = 1 + \int_0^t \bigl(-(1 + 3s) - (1 - 2s)\bigr)ds = 1 - 2t - \dfrac{t^2}{2}\)</span>.</p>
+<p><strong>Steps 3 to 6</strong>: as in Example 5, each step adds one term:</p>
+<p><span class="math display">\[
+\begin{aligned}
+X_6(t) &amp;= 1 + 3t - \frac{t^2}{2} - \frac{t^3}{2} + \frac{t^4}{24} + \frac{t^5}{40} - \frac{t^6}{720}, \\
+Y_6(t) &amp;= 1 - 2t - \frac{t^2}{2} + \frac{t^3}{3} + \frac{t^4}{24} - \frac{t^5}{60} - \frac{t^6}{720}.
+\end{aligned}
+\]</span></p>
+<p><strong>The exact solution.</strong> The matrix <span class="math inline">\(A = \begin{pmatrix} 1 &amp; 2 \\ -1 &amp; -1 \end{pmatrix}\)</span> has eigenvalues <span class="math inline">\(\pm i\)</span> and <span class="math inline">\(A^2 = -I\)</span>, so by (11) the terms of the series repeat with period four in the powers of <span class="math inline">\(A\)</span>, and</p>
+<p><span class="math display">\[
+x(t) = \cos t + 3\sin t, \qquad y(t) = \cos t - 2\sin t,
+\]</span></p>
+<p>whose Maclaurin series are</p>
+<p><span class="math display">\[
+x(t) = 1 + 3t - \frac{t^2}{2} - \frac{t^3}{2} + \frac{t^4}{24} + \frac{t^5}{40} - \frac{t^6}{720} - \cdots, \qquad
+y(t) = 1 - 2t - \frac{t^2}{2} + \frac{t^3}{3} + \frac{t^4}{24} - \frac{t^5}{60} - \frac{t^6}{720} + \cdots
+\]</span></p>
+<p>Again <span class="math inline">\(X_6\)</span> and <span class="math inline">\(Y_6\)</span> are exactly the Maclaurin polynomials of degree <span class="math inline">\(6\)</span>. (Mathews’ module first gives the solution as <span class="math inline">\(x(t) = -\cos t + 3\sin t\)</span>, <span class="math inline">\(y(t) = 2\cos t - \sin t\)</span>. That pair also satisfies the differential equations, but it starts from <span class="math inline">\(x(0) = -1\)</span>, <span class="math inline">\(y(0) = 2\)</span>, the initial values of Example 5; the solution with <span class="math inline">\(x(0) = y(0) = 1\)</span> is the one above, which is also what his <code>DSolve</code> check at the end of the example returns.)</p>
+<p><strong>Verification:</strong> <span class="math inline">\(x' = -\sin t + 3\cos t\)</span> and <span class="math inline">\(x + 2y = \cos t + 3\sin t + 2\cos t - 4\sin t = 3\cos t - \sin t\)</span>; <span class="math inline">\(y' = -\sin t - 2\cos t\)</span> and <span class="math inline">\(-x - y = -\cos t - 3\sin t - \cos t + 2\sin t = -2\cos t - \sin t\)</span>; <span class="math inline">\(x(0) = y(0) = 1\)</span>.</p>
+</section>
+<section id="example-7-graphing-the-approximations-for-example-6" class="level2">
+<h2 class="anchored" data-anchor-id="example-7-graphing-the-approximations-for-example-6">Example 7 — Graphing the approximations for Example 6</h2>
+<p>Use Picard iteration to find and plot approximations for the solution of</p>
+<p><span class="math display">\[
+x' = x + 2y, \quad x(0) = 1, \qquad y' = -x - y, \quad y(0) = 1.
+\]</span></p>
+<p>The iterates are those of Example 6. Mathews plots them in the phase plane, as parametric curves <span class="math inline">\(\bigl(X_n(t), Y_n(t)\bigr)\)</span> for <span class="math inline">\(n = 1, \ldots, 6\)</span> over <span class="math inline">\(-2 \le t \le 2\)</span>, together with the exact solution curve over <span class="math inline">\(-\pi \le t \le \pi\)</span>, in the window <span class="math inline">\([-3.2, 3.2] \times [-2.3, 2.3]\)</span>.</p>
+<p>The exact curve is closed. Along the solution,</p>
+<p><span class="math display">\[
+x^2 + 2xy + 2y^2 = 5,
+\]</span></p>
+<p>an ellipse (the quadratic form has determinant <span class="math inline">\(1 &gt; 0\)</span> and positive diagonal), traced once as <span class="math inline">\(t\)</span> runs over an interval of length <span class="math inline">\(2\pi\)</span>. Its extreme values are <span class="math inline">\(|x| \le \sqrt{10} \approx 3.162\)</span> and <span class="math inline">\(|y| \le \sqrt{5} \approx 2.236\)</span>, so it fits inside Mathews’ window. Each iterate <span class="math inline">\(n \ge 1\)</span> is a polynomial curve through <span class="math inline">\((1, 1)\)</span> at <span class="math inline">\(t = 0\)</span> that follows the ellipse near that point; being unbounded, it must leave the bounded ellipse for large <span class="math inline">\(|t|\)</span>. The largest distance between <span class="math inline">\(\bigl(X_n(t), Y_n(t)\bigr)\)</span> and <span class="math inline">\(\bigl(x(t), y(t)\bigr)\)</span> over <span class="math inline">\(-2 \le t \le 2\)</span> rises at the first step and falls at every step after that:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(\max_{-2 \le t \le 2} \bigl\lVert (X_n, Y_n) - (x, y) \bigr\rVert\)</span></th>
+<th>at <span class="math inline">\(t =\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(4.211\)</span></td>
+<td><span class="math inline">\(-1.815\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(4.750\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(4.174\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(1.315\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(0.9051\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(0.1588\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(0.08875\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> with <span class="math inline">\(x = \cos t + 3\sin t\)</span> and <span class="math inline">\(y = \cos t - 2\sin t\)</span>, <span class="math inline">\(x^2 + 2xy + 2y^2 = 5\cos^2 t + 5\sin^2 t = 5\)</span>.</p>
+</section>
+<section id="systems-of-three-first-order-equations" class="level2">
+<h2 class="anchored" data-anchor-id="systems-of-three-first-order-equations">Systems of Three First-Order Equations</h2>
+<p>The method extends to three equations</p>
+<p><span class="math display">\[
+x' = f(t, x, y, z), \quad x(t_0) = x_0, \qquad y' = g(t, x, y, z), \quad y(t_0) = y_0, \qquad z' = h(t, x, y, z), \quad z(t_0) = z_0,
+\]</span></p>
+<p>with <span class="math inline">\(X_0 = x_0\)</span>, <span class="math inline">\(Y_0 = y_0\)</span>, <span class="math inline">\(Z_0 = z_0\)</span> and</p>
+<p><span class="math display">\[
+X_{n+1}(t) = x_0 + \int_{t_0}^{t} f(s, X_n, Y_n, Z_n)\,ds, \quad
+Y_{n+1}(t) = y_0 + \int_{t_0}^{t} g(s, X_n, Y_n, Z_n)\,ds, \quad
+Z_{n+1}(t) = z_0 + \int_{t_0}^{t} h(s, X_n, Y_n, Z_n)\,ds.
+\tag{12}
+\]</span></p>
+</section>
+<section id="example-8-a-linear-system-in-three-dimensions" class="level2">
+<h2 class="anchored" data-anchor-id="example-8-a-linear-system-in-three-dimensions">Example 8 — A linear system in three dimensions</h2>
+<p>Use Picard iteration to find and plot approximations for the solution of</p>
+<p><span class="math display">\[
+\begin{aligned}
+x' &amp;= x + 2y - z, &amp; x(0) &amp;= 1, \\
+y' &amp;= -2x + y - 2z, &amp; y(0) &amp;= 1, \\
+z' &amp;= x + 2y + z, &amp; z(0) &amp;= 1.
+\end{aligned}
+\]</span></p>
+<p><strong>Step 1</strong>: at <span class="math inline">\((1, 1, 1)\)</span> the right-hand sides are <span class="math inline">\(2\)</span>, <span class="math inline">\(-3\)</span> and <span class="math inline">\(4\)</span>, so <span class="math inline">\(X_1 = 1 + 2t\)</span>, <span class="math inline">\(Y_1 = 1 - 3t\)</span>, <span class="math inline">\(Z_1 = 1 + 4t\)</span>.</p>
+<p><strong>Step 2</strong>:</p>
+<p><span class="math display">\[
+X_2 = 1 + 2t - 4t^2, \qquad Y_2 = 1 - 3t - \frac{15t^2}{2}, \qquad Z_2 = 1 + 4t.
+\]</span></p>
+<p>The <span class="math inline">\(t^2\)</span> term of <span class="math inline">\(Z_2\)</span> is zero because <span class="math inline">\((1 + 2t) + 2(1 - 3t) + (1 + 4t) = 4\)</span> has no <span class="math inline">\(t\)</span> term.</p>
+<p><strong>Steps 3 to 6</strong>: each step adds the next power of <span class="math inline">\(t\)</span>, and</p>
+<p><span class="math display">\[
+\begin{aligned}
+X_6(t) &amp;= 1 + 2t - 4t^2 - \frac{19t^3}{3} + \frac{t^4}{12} + \frac{191t^5}{60} + \frac{371t^6}{360}, \\
+Y_6(t) &amp;= 1 - 3t - \frac{15t^2}{2} + \frac{t^3}{6} + \frac{51t^4}{8} + \frac{99t^5}{40} - \frac{187t^6}{144}, \\
+Z_6(t) &amp;= 1 + 4t - \frac{19t^3}{3} - \frac{37t^4}{12} + \frac{39t^5}{20} + \frac{121t^6}{72}.
+\end{aligned}
+\]</span></p>
+<p><strong>The exact solution.</strong> The coefficient matrix has eigenvalues <span class="math inline">\(1\)</span> and <span class="math inline">\(1 \pm 3i\)</span>, and the solution is</p>
+<p><span class="math display">\[
+\begin{aligned}
+x(t) &amp;= -\tfrac29 e^t + \tfrac{11}{9} e^t \cos 3t + \tfrac13 e^t \sin 3t, \\
+y(t) &amp;= \tfrac19 e^t + \tfrac89 e^t \cos 3t - \tfrac43 e^t \sin 3t, \\
+z(t) &amp;= \tfrac29 e^t + \tfrac79 e^t \cos 3t + e^t \sin 3t.
+\end{aligned}
+\]</span></p>
+<p>By (11), <span class="math inline">\(X_n\)</span>, <span class="math inline">\(Y_n\)</span> and <span class="math inline">\(Z_n\)</span> are its Maclaurin polynomials of degree <span class="math inline">\(n\)</span>.</p>
+<p>Mathews plots the exact solution and the iterates <span class="math inline">\(n = 1, \ldots, 6\)</span> as space curves for <span class="math inline">\(-1 \le t \le 1\)</span>. On that interval the largest distance between <span class="math inline">\((X_n, Y_n, Z_n)\)</span> and <span class="math inline">\((x, y, z)\)</span> is at <span class="math inline">\(t = 1\)</span> for every <span class="math inline">\(n\)</span>, and it grows for the first two steps before it falls:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>max distance on <span class="math inline">\([-1, 1]\)</span></td>
+<td><span class="math inline">\(6.333\)</span></td>
+<td><span class="math inline">\(9.133\)</span></td>
+<td><span class="math inline">\(9.618\)</span></td>
+<td><span class="math inline">\(7.622\)</span></td>
+<td><span class="math inline">\(4.820\)</span></td>
+<td><span class="math inline">\(2.536\)</span></td>
+<td><span class="math inline">\(1.143\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The eigenvalues <span class="math inline">\(1 \pm 3i\)</span> have modulus <span class="math inline">\(\sqrt{10} \approx 3.16\)</span>, so at <span class="math inline">\(t = 1\)</span> the terms of the series decrease slowly: the size <span class="math inline">\((\sqrt{10})^k/k!\)</span> is still <span class="math inline">\(1.389\)</span> for <span class="math inline">\(k = 6\)</span> and <span class="math inline">\(0.6274\)</span> for <span class="math inline">\(k = 7\)</span>, and six terms are far from enough there.</p>
+<p><strong>Verification:</strong> substituting <span class="math inline">\(x\)</span>, <span class="math inline">\(y\)</span>, <span class="math inline">\(z\)</span> into the three equations leaves zero residual in each (checked symbolically), and at <span class="math inline">\(t = 0\)</span>: <span class="math inline">\(x(0) = -\tfrac29 + \tfrac{11}{9} = 1\)</span>, <span class="math inline">\(y(0) = \tfrac19 + \tfrac89 = 1\)</span>, <span class="math inline">\(z(0) = \tfrac29 + \tfrac79 = 1\)</span>.</p>
+</section>
+<section id="picards-method-for-second-order-equations" class="level2">
+<h2 class="anchored" data-anchor-id="picards-method-for-second-order-equations">Picard’s Method for Second-Order Equations</h2>
+<p>Integrating twice extends the method to second-order problems.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem 3 — Picard iteration for second-order equations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given the second-order initial value problem</p>
+<p><span class="math display">\[
+y'' = f(x, y, y'), \qquad y(x_0) = y_0, \quad y'(x_0) = y_1,
+\tag{13}
+\]</span></p>
+<p>construct recursively the sequence of functions <span class="math inline">\(\{Y_n(x)\}_{n=0}^{\infty}\)</span> with <span class="math inline">\(Y_0(x) = y_0 + y_1(x - x_0)\)</span> and</p>
+<p><span class="math display">\[
+Y_{n+1}(x) = y_0 + y_1(x - x_0) + \int_{x_0}^{x} \left( \int_{x_0}^{s} f\bigl(t, Y_n(t), Y_n'(t)\bigr)\,dt \right) ds \quad \text{for } n \ge 0.
+\tag{14}
+\]</span></p>
+<p>Then the solution of (13) is the limit <span class="math inline">\(y(x) = \lim_{n \to \infty} Y_n(x)\)</span>.</p>
+</div>
+</div>
+<p>Integrating <span class="math inline">\(y'' = f\)</span> once from <span class="math inline">\(x_0\)</span> gives <span class="math inline">\(y'(s) = y_1 + \int_{x_0}^{s} f\,dt\)</span>, and integrating again gives the integral equation behind (14). The double integral can also be written as a single one, <span class="math inline">\(\int_{x_0}^{x} (x - t)\,f\bigl(t, Y_n(t), Y_n'(t)\bigr)\,dt\)</span>. Differentiating (14), <span class="math inline">\(Y_{n+1}'(x) = y_1 + \int_{x_0}^{x} f\bigl(t, Y_n, Y_n'\bigr)\,dt\)</span>, so each iterate carries its own derivative and both initial conditions hold for every <span class="math inline">\(n\)</span>. Mathews’ subroutine <code>PicardIterationOrder2</code> computes (14) with <span class="math inline">\(n_{\max} = 6\)</span>.</p>
+</section>
+<section id="example-9-y-y-y0-1-y0-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-9-y-y-y0-1-y0-1">Example 9 — <span class="math inline">\(y'' = y\)</span>, <span class="math inline">\(y(0) = 1\)</span>, <span class="math inline">\(y'(0) = 1\)</span></h2>
+<p>Use Picard iteration to find the solution of</p>
+<p><span class="math display">\[
+y'' = y, \qquad y(0) = 1, \quad y'(0) = 1.
+\]</span></p>
+<p><strong>Step 1</strong>: <span class="math inline">\(Y_0(x) = 1 + x\)</span>, so</p>
+<p><span class="math display">\[
+Y_1(x) = 1 + x + \int_0^x \int_0^s (1 + t)\,dt\,ds = 1 + x + \int_0^x \Bigl(s + \frac{s^2}{2}\Bigr) ds = 1 + x + \frac{x^2}{2} + \frac{x^3}{6}.
+\]</span></p>
+<p><strong>Step 2</strong>: integrating <span class="math inline">\(Y_1\)</span> twice adds two more terms, <span class="math inline">\(Y_2(x) = 1 + x + \dfrac{x^2}{2} + \dfrac{x^3}{6} + \dfrac{x^4}{24} + \dfrac{x^5}{120}\)</span>.</p>
+<p><strong>Steps 3 to 6</strong>: in general</p>
+<p><span class="math display">\[
+Y_n(x) = \sum_{k=0}^{2n+1} \frac{x^k}{k!},
+\]</span></p>
+<p>since integrating <span class="math inline">\(x^k/k!\)</span> twice from <span class="math inline">\(0\)</span> gives <span class="math inline">\(x^{k+2}/(k+2)!\)</span>, and</p>
+<p><span class="math display">\[
+Y_6(x) = 1 + x + \frac{x^2}{2} + \frac{x^3}{6} + \cdots + \frac{x^{12}}{479001600} + \frac{x^{13}}{6227020800}.
+\]</span></p>
+<p><strong>The exact solution</strong> is <span class="math inline">\(y(x) = e^x\)</span>, and every term of <span class="math inline">\(Y_n\)</span> agrees with its Maclaurin series: <span class="math inline">\(Y_n\)</span> is the Maclaurin polynomial of degree <span class="math inline">\(2n + 1\)</span>. Each iteration adds two correct terms. At <span class="math inline">\(x = 1\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(e - Y_n(1)\)</span></td>
+<td><span class="math inline">\(0.7183\)</span></td>
+<td><span class="math inline">\(0.05162\)</span></td>
+<td><span class="math inline">\(0.001615\)</span></td>
+<td><span class="math inline">\(2.786 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(3.029 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(2.261 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\(1.229 \times 10^{-11}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> <span class="math inline">\((e^x)'' = e^x\)</span>, <span class="math inline">\(e^0 = 1\)</span>, <span class="math inline">\((e^x)'|_{x=0} = 1\)</span>.</p>
+</section>
+<section id="example-10-y--2y---y-y0-1-y0-2" class="level2">
+<h2 class="anchored" data-anchor-id="example-10-y--2y---y-y0-1-y0-2">Example 10 — <span class="math inline">\(y'' = -2y' - y\)</span>, <span class="math inline">\(y(0) = 1\)</span>, <span class="math inline">\(y'(0) = 2\)</span></h2>
+<p>Use Picard iteration to find the solution of</p>
+<p><span class="math display">\[
+y'' = -2y' - y, \qquad y(0) = 1, \quad y'(0) = 2.
+\]</span></p>
+<p><strong>Step 1</strong>: <span class="math inline">\(Y_0(x) = 1 + 2x\)</span> and <span class="math inline">\(Y_0' = 2\)</span>, so <span class="math inline">\(f = -2 \cdot 2 - (1 + 2t) = -5 - 2t\)</span> and</p>
+<p><span class="math display">\[
+Y_1(x) = 1 + 2x + \int_0^x \int_0^s (-5 - 2t)\,dt\,ds = 1 + 2x - \frac{5x^2}{2} - \frac{x^3}{3}.
+\]</span></p>
+<p><strong>Step 2</strong>: <span class="math inline">\(Y_1' = 2 - 5x - x^2\)</span>, so <span class="math inline">\(f = -2Y_1' - Y_1 = -5 + 8t + \tfrac92 t^2 + \tfrac13 t^3\)</span> and</p>
+<p><span class="math display">\[
+Y_2(x) = 1 + 2x - \frac{5x^2}{2} + \frac{4x^3}{3} + \frac{3x^4}{8} + \frac{x^5}{60}.
+\]</span></p>
+<p><strong>Steps 3 to 6</strong>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+Y_3 &amp;= 1 + 2x - \tfrac52 x^2 + \tfrac43 x^3 - \tfrac{11}{24} x^4 - \tfrac{13}{60} x^5 - \tfrac{13}{720} x^6 - \tfrac1{2520} x^7, \\
+Y_4 &amp;= 1 + 2x - \tfrac52 x^2 + \tfrac43 x^3 - \tfrac{11}{24} x^4 + \tfrac7{60} x^5 + \tfrac7{80} x^6 + \tfrac{13}{1260} x^7 + \tfrac{17}{40320} x^8 + \tfrac1{181440} x^9, \\
+Y_5 &amp;= 1 + 2x - \tfrac52 x^2 + \tfrac43 x^3 - \tfrac{11}{24} x^4 + \tfrac7{60} x^5 - \tfrac{17}{720} x^6 - \tfrac1{36} x^7 - \tfrac{167}{40320} x^8 - \tfrac{43}{181440} x^9 - \tfrac1{172800} x^{10} - \tfrac1{19958400} x^{11}, \\
+Y_6 &amp;= 1 + 2x - \tfrac52 x^2 + \tfrac43 x^3 - \tfrac{11}{24} x^4 + \tfrac7{60} x^5 - \tfrac{17}{720} x^6 + \tfrac1{252} x^7 + \tfrac{33}{4480} x^8 + \tfrac{79}{60480} x^9 + \tfrac{113}{1209600} x^{10} + \tfrac1{311850} x^{11} + \tfrac1{19160064} x^{12} + \tfrac1{3113510400} x^{13}.
+\end{aligned}
+\]</span></p>
+<p><strong>The exact solution.</strong> The characteristic equation <span class="math inline">\(r^2 + 2r + 1 = 0\)</span> has the double root <span class="math inline">\(r = -1\)</span>, and the initial conditions give <span class="math inline">\(y(x) = (1 + 3x)\,e^{-x}\)</span>, with Maclaurin series</p>
+<p><span class="math display">\[
+y(x) = 1 + 2x - \frac{5x^2}{2} + \frac{4x^3}{3} - \frac{11x^4}{24} + \frac{7x^5}{60} - \frac{17x^6}{720} + \frac{x^7}{252} - \frac{23x^8}{40320} + \cdots
+\]</span></p>
+<p><span class="math inline">\(Y_6\)</span> agrees with this series through the term in <span class="math inline">\(x^7\)</span>, its first eight terms, and differs from <span class="math inline">\(x^8\)</span> on (<span class="math inline">\(33/4480\)</span> against <span class="math inline">\(-23/40320\)</span>). (Mathews says the first six terms agree; in fact eight do.) In this example <span class="math inline">\(Y_n\)</span> agrees with the series through <span class="math inline">\(x^{n+1}\)</span> for each <span class="math inline">\(n = 0, \ldots, 6\)</span>: one new correct term per iteration, against two in Example 9, although the degree of <span class="math inline">\(Y_n\)</span> again grows by two per step. The difference is the <span class="math inline">\(y'\)</span> in <span class="math inline">\(f\)</span>. If <span class="math inline">\(Y_n - y\)</span> starts with a term in <span class="math inline">\(x^m\)</span>, then <span class="math inline">\(Y_n' - y'\)</span> starts with <span class="math inline">\(x^{m-1}\)</span>, and integrating twice raises that only to <span class="math inline">\(x^{m+1}\)</span>; in Example 9, where <span class="math inline">\(f = y\)</span> does not involve <span class="math inline">\(y'\)</span>, the two integrations raise <span class="math inline">\(x^m\)</span> to <span class="math inline">\(x^{m+2}\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y' = (2 - 3x)e^{-x}\)</span> and <span class="math inline">\(y'' = (3x - 5)e^{-x}\)</span>, so <span class="math inline">\(y'' + 2y' + y = (3x - 5 + 4 - 6x + 1 + 3x)\,e^{-x} = 0\)</span>; <span class="math inline">\(y(0) = 1\)</span> and <span class="math inline">\(y'(0) = 2\)</span>.</p>
+</section>
+<section id="example-11-graphing-the-approximations-for-example-10" class="level2">
+<h2 class="anchored" data-anchor-id="example-11-graphing-the-approximations-for-example-10">Example 11 — Graphing the approximations for Example 10</h2>
+<p>Use Picard iteration to find and plot approximations for the solution of</p>
+<p><span class="math display">\[
+y'' = -2y' - y, \qquad y(0) = 1, \quad y'(0) = 2.
+\]</span></p>
+<p>The iterates are those of Example 10, and the exact solution is <span class="math inline">\(y(x) = (1 + 3x)e^{-x}\)</span>. Mathews graphs the exact solution and the iterates on <span class="math inline">\(-2 \le x \le 2\)</span>. On that interval the solution rises from <span class="math inline">\(y(-2) = -5e^2 \approx -36.95\)</span> to its maximum <span class="math inline">\(3e^{-2/3} \approx 1.540\)</span> at <span class="math inline">\(x = 2/3\)</span> and falls to <span class="math inline">\(y(2) = 7e^{-2} \approx 0.9473\)</span>. The largest error of each iterate on the interval decreases with every iteration; it is at the left end for <span class="math inline">\(n \le 3\)</span> and at the right end for <span class="math inline">\(n \ge 4\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\max_{-2 \le x \le 2} \lvert y - Y_n \rvert\)</span></td>
+<td><span class="math inline">\(33.95\)</span></td>
+<td><span class="math inline">\(26.61\)</span></td>
+<td><span class="math inline">\(18.75\)</span></td>
+<td><span class="math inline">\(11.77\)</span></td>
+<td><span class="math inline">\(8.151\)</span></td>
+<td><span class="math inline">\(5.135\)</span></td>
+<td><span class="math inline">\(2.773\)</span></td>
+</tr>
+<tr class="even">
+<td>at <span class="math inline">\(x =\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> as in Example 10.</p>
+</section>
+<section id="example-12-y--2y---y-y1-1-y1-2" class="level2">
+<h2 class="anchored" data-anchor-id="example-12-y--2y---y-y1-1-y1-2">Example 12 — <span class="math inline">\(y'' = -2y' - y\)</span>, <span class="math inline">\(y(1) = 1\)</span>, <span class="math inline">\(y'(1) = 2\)</span></h2>
+<p>Use Picard iteration to find and plot approximations for the solution of</p>
+<p><span class="math display">\[
+y'' = -2y' - y, \qquad y(1) = 1, \quad y'(1) = 2.
+\]</span></p>
+<p>The equation does not involve <span class="math inline">\(x\)</span>, so moving the initial point from <span class="math inline">\(0\)</span> to <span class="math inline">\(1\)</span> only shifts everything by <span class="math inline">\(1\)</span>. The iterates are those of Example 10 with <span class="math inline">\(x\)</span> replaced by <span class="math inline">\(x - 1\)</span>; for example,</p>
+<p><span class="math display">\[
+Y_1(x) = 1 + 2(x - 1) - \frac52 (x - 1)^2 - \frac13 (x - 1)^3,
+\]</span></p>
+<p>and the exact solution is</p>
+<p><span class="math display">\[
+y(x) = \bigl(1 + 3(x - 1)\bigr)e^{-(x - 1)} = (3x - 2)\,e^{1 - x}.
+\]</span></p>
+<p>Mathews graphs the exact solution and the iterates on <span class="math inline">\(0 \le x \le 2.5\)</span>, where <span class="math inline">\(y\)</span> runs from <span class="math inline">\(y(0) = -2e \approx -5.437\)</span> to <span class="math inline">\(y(2.5) \approx 1.227\)</span>. The largest error decreases with every iteration:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\max_{0 \le x \le 2.5} \lvert y - Y_n \rvert\)</span></td>
+<td><span class="math inline">\(4.437\)</span></td>
+<td><span class="math inline">\(3.977\)</span></td>
+<td><span class="math inline">\(3.673\)</span></td>
+<td><span class="math inline">\(2.530\)</span></td>
+<td><span class="math inline">\(1.397\)</span></td>
+<td><span class="math inline">\(0.6457\)</span></td>
+<td><span class="math inline">\(0.2569\)</span></td>
+</tr>
+<tr class="even">
+<td>at <span class="math inline">\(x =\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(2.5\)</span></td>
+<td><span class="math inline">\(2.5\)</span></td>
+<td><span class="math inline">\(2.5\)</span></td>
+<td><span class="math inline">\(2.5\)</span></td>
+<td><span class="math inline">\(2.5\)</span></td>
+<td><span class="math inline">\(2.5\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Because <span class="math inline">\(Y_n\)</span> and <span class="math inline">\(y\)</span> are those of Example 10 shifted by <span class="math inline">\(1\)</span>, these are the errors of Example 11 over <span class="math inline">\(-1 \le x \le 1.5\)</span>, a part of the interval graphed there, which is why they are smaller.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y' = (5 - 3x)e^{1 - x}\)</span>, <span class="math inline">\(y'' = (3x - 8)e^{1 - x}\)</span>, so <span class="math inline">\(y'' + 2y' + y = (3x - 8 + 10 - 6x + 3x - 2)\,e^{1 - x} = 0\)</span>; <span class="math inline">\(y(1) = 1\)</span> and <span class="math inline">\(y'(1) = 2\)</span>.</p>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Picard iteration is a symbolic method.</strong> Each step needs the antiderivative of <span class="math inline">\(f(t, Y_n(t))\)</span> in closed form. That always works when <span class="math inline">\(f\)</span> is a polynomial in <span class="math inline">\(y\)</span> (and in <span class="math inline">\(x\)</span>) and <span class="math inline">\(y_0\)</span> is a number, as in all twelve examples, because then every iterate is a polynomial. For other <span class="math inline">\(f\)</span> the integrals soon have no closed form, and the iterates have to be truncated to Taylor polynomials, as Mathews’ first-order subroutine does at degree <span class="math inline">\(100\)</span>, or the integrals done numerically.</li>
+<li><strong>Expression growth.</strong> A nonlinear <span class="math inline">\(f\)</span> makes the degree grow quickly: in Example 2 the degree of <span class="math inline">\(Y_n\)</span> is <span class="math inline">\(2^n - 1\)</span>, roughly doubling at every step, while only one more term becomes correct. Truncating each iterate to a Taylor polynomial, as Mathews’ first-order subroutine does at degree <span class="math inline">\(100\)</span>, limits this growth.</li>
+<li><strong>Accuracy is local.</strong> In every error table above (Examples 3, 4, 7, 8, 11 and 12), the largest error of each iterate <span class="math inline">\(Y_n\)</span> with <span class="math inline">\(n \ge 1\)</span> is at an end of the interval, away from <span class="math inline">\(x_0\)</span>. The general bound (5) guarantees convergence only on <span class="math inline">\(|x - x_0| \le \delta\)</span>, which can be much smaller than the interval where the solution exists (<span class="math inline">\(\delta = 1/2\)</span> against <span class="math inline">\(\pi/2\)</span> in Example 2).</li>
+<li><strong>What it is good for.</strong> Picard iteration proves existence and uniqueness, and it produces the first terms of the Taylor series of the solution with no differentiation of <span class="math inline">\(f\)</span>. For numerical values of a solution over a long interval, step-by-step methods such as <a href="../eulers-method-for-odes/">Euler’s method</a>, the <a href="../taylor-series-method-for-odes/">Taylor series method</a> and the <a href="../runge-kutta-method/">Runge-Kutta method</a> are the practical tools.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

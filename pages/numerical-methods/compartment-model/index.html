@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Compartment Model – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-mathews-example-1-open-chain-v-80-100-120-r-20-mathbfx_0-10-0-0-0-le-t-le-40" id="toc-case-1-mathews-example-1-open-chain-v-80-100-120-r-20-mathbfx_0-10-0-0-0-le-t-le-40" class="nav-link" data-scroll-target="#case-1-mathews-example-1-open-chain-v-80-100-120-r-20-mathbfx_0-10-0-0-0-le-t-le-40">Case 1 — Mathews’ Example 1, open chain, <span class="math inline">\(V = (80, 100, 120)\)</span>, <span class="math inline">\(r = 20\)</span>, <span class="math inline">\(\mathbf{X}_0 = (10, 0, 0)\)</span>, <span class="math inline">\(0 \le t \le 40\)</span></a></li>
+  <li><a href="#case-2-mathews-example-2-closed-loop-v-40-20-40-r-20-mathbfx_0-10-0-0-0-le-t-le-12.5" id="toc-case-2-mathews-example-2-closed-loop-v-40-20-40-r-20-mathbfx_0-10-0-0-0-le-t-le-12.5" class="nav-link" data-scroll-target="#case-2-mathews-example-2-closed-loop-v-40-20-40-r-20-mathbfx_0-10-0-0-0-le-t-le-12.5">Case 2 — Mathews’ Example 2, closed loop, <span class="math inline">\(V = (40, 20, 40)\)</span>, <span class="math inline">\(r = 20\)</span>, <span class="math inline">\(\mathbf{X}_0 = (10, 0, 0)\)</span>, <span class="math inline">\(0 \le t \le 12.5\)</span></a></li>
+  <li><a href="#case-3-mathews-example-3-open-chain-v-60-80-100-120-150-r-24-mathbfx_0-10-0-0-0-0-0-le-t-le-50" id="toc-case-3-mathews-example-3-open-chain-v-60-80-100-120-150-r-24-mathbfx_0-10-0-0-0-0-0-le-t-le-50" class="nav-link" data-scroll-target="#case-3-mathews-example-3-open-chain-v-60-80-100-120-150-r-24-mathbfx_0-10-0-0-0-0-0-le-t-le-50">Case 3 — Mathews’ Example 3, open chain, <span class="math inline">\(V = (60, 80, 100, 120, 150)\)</span>, <span class="math inline">\(r = 24\)</span>, <span class="math inline">\(\mathbf{X}_0 = (10, 0, 0, 0, 0)\)</span>, <span class="math inline">\(0 \le t \le 50\)</span></a></li>
+  </ul></li>
+  <li><a href="#modelling-the-tanks" id="toc-modelling-the-tanks" class="nav-link" data-scroll-target="#modelling-the-tanks">Modelling the Tanks</a></li>
+  <li><a href="#model-i-the-open-three-stage-system" id="toc-model-i-the-open-three-stage-system" class="nav-link" data-scroll-target="#model-i-the-open-three-stage-system">Model I — The Open Three-Stage System</a>
+  <ul class="collapse">
+  <li><a href="#eigenvalues-and-eigenvectors-of-a-chain" id="toc-eigenvalues-and-eigenvectors-of-a-chain" class="nav-link" data-scroll-target="#eigenvalues-and-eigenvectors-of-a-chain">Eigenvalues and eigenvectors of a chain</a></li>
+  <li><a href="#example-1-three-tanks-v_1-80-v_2-100-v_3-120-r-20" id="toc-example-1-three-tanks-v_1-80-v_2-100-v_3-120-r-20" class="nav-link" data-scroll-target="#example-1-three-tanks-v_1-80-v_2-100-v_3-120-r-20">Example 1 — Three tanks, <span class="math inline">\(V_1 = 80\)</span>, <span class="math inline">\(V_2 = 100\)</span>, <span class="math inline">\(V_3 = 120\)</span>, <span class="math inline">\(r = 20\)</span></a></li>
+  </ul></li>
+  <li><a href="#model-ii-the-closed-three-stage-system" id="toc-model-ii-the-closed-three-stage-system" class="nav-link" data-scroll-target="#model-ii-the-closed-three-stage-system">Model II — The Closed Three-Stage System</a>
+  <ul class="collapse">
+  <li><a href="#example-2-closed-loop-v_1-40-v_2-20-v_3-40-r-20" id="toc-example-2-closed-loop-v_1-40-v_2-20-v_3-40-r-20" class="nav-link" data-scroll-target="#example-2-closed-loop-v_1-40-v_2-20-v_3-40-r-20">Example 2 — Closed loop, <span class="math inline">\(V_1 = 40\)</span>, <span class="math inline">\(V_2 = 20\)</span>, <span class="math inline">\(V_3 = 40\)</span>, <span class="math inline">\(r = 20\)</span></a></li>
+  </ul></li>
+  <li><a href="#model-iii-the-five-stage-system" id="toc-model-iii-the-five-stage-system" class="nav-link" data-scroll-target="#model-iii-the-five-stage-system">Model III — The Five-Stage System</a>
+  <ul class="collapse">
+  <li><a href="#example-3-five-tanks-v-60-80-100-120-150-r-24" id="toc-example-3-five-tanks-v-60-80-100-120-150-r-24" class="nav-link" data-scroll-target="#example-3-five-tanks-v-60-80-100-120-150-r-24">Example 3 — Five tanks, <span class="math inline">\(V = (60, 80, 100, 120, 150)\)</span>, <span class="math inline">\(r = 24\)</span></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Compartment Model</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>A compartment model follows a dissolved substance as it is carried by a liquid through a chain of well-mixed tanks. Tank <span class="math inline">\(i\)</span> holds a fixed volume <span class="math inline">\(V_i\)</span> of liquid and an amount <span class="math inline">\(x_i(t)\)</span> of the substance; liquid flows from tank to tank at the constant rate <span class="math inline">\(r\)</span>, so the substance leaves tank <span class="math inline">\(i\)</span> at the rate <span class="math inline">\(r\,x_i/V_i = k_i x_i\)</span> and enters the next tank at the same rate. Writing “rate in minus rate out” for every tank gives a linear system of differential equations with constant coefficients,</p>
+<p><span class="math display">\[
+\mathbf{X}'(t) = \mathbf{A}\,\mathbf{X}(t), \qquad \mathbf{X}(0) = \mathbf{X}_0, \qquad k_i = \frac{r}{V_i},
+\]</span></p>
+<p>whose matrix <span class="math inline">\(\mathbf{A}\)</span> records which tank drains into which. The method is the eigenvalue method for linear systems: find the eigenvalues <span class="math inline">\(\lambda_j\)</span> and eigenvectors <span class="math inline">\(\mathbf{V}_j\)</span> of <span class="math inline">\(\mathbf{A}\)</span>, form the general solution <span class="math inline">\(\mathbf{X}(t) = \sum_j c_j e^{\lambda_j t}\mathbf{V}_j\)</span>, and choose the constants <span class="math inline">\(c_j\)</span> to match the initial amounts. (When the eigenvalues are complex the real and imaginary parts of <span class="math inline">\(e^{\lambda t}\mathbf{V}\)</span> are used instead; equivalently, <span class="math inline">\(\mathbf{X}(t) = e^{\mathbf{A}t}\mathbf{X}_0\)</span> with the <a href="../matrix-exponential/">matrix exponential</a>.)</p>
+<p>Mathews works three examples, all solved in closed form with no numerical integration and all starting with <span class="math inline">\(10\)</span> units of the substance in the first tank and none in the others: an <em>open</em> chain of three tanks fed by pure water, where the substance is washed out of the system; a <em>closed</em> loop of three tanks, where it is only redistributed; and an open chain of five tanks. Every solution below has been checked by substituting it into the differential equations and by comparing it with a high-accuracy numerical solution.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below runs one of Mathews’ three examples forward in time. The top of each frame draws the tanks with widths proportional to their volumes and a common height, so the shaded height in a tank is the concentration <span class="math inline">\(x_i/V_i\)</span> of the substance and the shaded area is proportional to the amount <span class="math inline">\(x_i\)</span>; arrows show the flow, and the labels under each tank give its amount and concentration at the time in the title. Since every pipe carries the same rate <span class="math inline">\(r\)</span>, each tank fills exactly while its shaded height is below that of the tank feeding it (<span class="math inline">\(x_i' = r\,(x_{i-1}/V_{i-1} - x_i/V_i)\)</span>; tank 1 of an open chain is fed pure water and only drains), and a tank reaches its maximum when the two shaded heights are level. Below the tanks, the amounts <span class="math inline">\(x_i(t)\)</span> and their sum <span class="math inline">\(S(t)\)</span> grow in time, with a dot on the newest value of each. The curves are the exact solutions found below by the eigenvalue method: the scripts compute the eigenvectors and the constants in exact rational arithmetic and evaluate the sums of exponentials in 256-bit arithmetic.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for the compartment model, so all three animations are new, with no Mathews original. They follow his three examples, with his parameters and, where his output survives, his plot windows and colours (his green darkened for legibility). Not animated are his matrix-exponential construction in Example 2, which gives the same solution as Case 2; the plots of his Example 2, whose images are lost from the archive, including his plot of how the three curves stack up; the generalized-eigenvector case of equal volumes, which he mentions in a remark but does not work, and the equal-volume example in the callout below.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-mathews-example-1-open-chain-v-80-100-120-r-20-mathbfx_0-10-0-0-0-le-t-le-40" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-mathews-example-1-open-chain-v-80-100-120-r-20-mathbfx_0-10-0-0-0-le-t-le-40">Case 1 — Mathews’ Example 1, open chain, <span class="math inline">\(V = (80, 100, 120)\)</span>, <span class="math inline">\(r = 20\)</span>, <span class="math inline">\(\mathbf{X}_0 = (10, 0, 0)\)</span>, <span class="math inline">\(0 \le t \le 40\)</span></h3>
+<p><strong>Behavior:</strong> Tank 1 drains from the start, <span class="math inline">\(x_1 = 10e^{-t/4}\)</span>, while the substance passes down the chain. Tank 2 fills until its shaded height is level with that of tank 1, at its maximum <span class="math inline">\(x_2 = 4.096\)</span> at <span class="math inline">\(t = 4.463\)</span>, and tank 3 until it is level with tank 2, at <span class="math inline">\(x_3 = 3.248\)</span> at <span class="math inline">\(t = 9.866\)</span>; a diamond marks each maximum once it has passed, and afterwards both tanks drain. The total <span class="math inline">\(S(t)\)</span> starts flat, because nothing leaves the system until tank 3 fills (<span class="math inline">\(S' = -\tfrac16 x_3\)</span>), and then decreases in every frame. The dashed tray on the right collects the washed-out amount <span class="math inline">\(10 - S(t)\)</span>, drawn to the same area scale as the tanks; at <span class="math inline">\(t = 40\)</span> it holds <span class="math inline">\(9.851\)</span>, and the <span class="math inline">\(S = 0.1488\)</span> left in the system is mostly in tank 3 (<span class="math inline">\(x_3 = 0.1339\)</span>). The bottom right panel is Mathews’ filled plot, with bands for <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_1 + x_2\)</span> and <span class="math inline">\(S\)</span> in his red, blue and green; the gray band above <span class="math inline">\(S\)</span> is the washed-out amount, so the bands always add up to <span class="math inline">\(10\)</span>. Mathews plots the single curves on <span class="math inline">\([0, 20] \times [0, 10]\)</span>; both panels here use the <span class="math inline">\([0, 40] \times [0, 10]\)</span> of his sum and filled plots.</p>
+<p><a href="compartmentaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="compartmentaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Mathews’ Example 1, three tanks of volumes 80, 100 and 120 drawn with widths proportional to volume, with 10 units of substance starting in tank 1 and pure water flowing in at r = 20: the shaded concentration drains from tank 1 and passes through tanks 2 and 3 into a washed-out tray, while the amounts x₁ (red), x₂ (blue), x₃ (green) and their sum S (magenta) grow in time on [0, 40] × [0, 10], with x₂ peaking at 4.096 at t = 4.463 and x₃ at 3.248 at t = 9.866, beside Mathews’ stacked filled plot; at t = 40, S = 0.1488 and 9.851 has been washed out</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-mathews-example-2-closed-loop-v-40-20-40-r-20-mathbfx_0-10-0-0-0-le-t-le-12.5" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-mathews-example-2-closed-loop-v-40-20-40-r-20-mathbfx_0-10-0-0-0-le-t-le-12.5">Case 2 — Mathews’ Example 2, closed loop, <span class="math inline">\(V = (40, 20, 40)\)</span>, <span class="math inline">\(r = 20\)</span>, <span class="math inline">\(\mathbf{X}_0 = (10, 0, 0)\)</span>, <span class="math inline">\(0 \le t \le 12.5\)</span></h3>
+<p><strong>Behavior:</strong> The liquid leaving tank 3 returns to tank 1, so the total stays <span class="math inline">\(S = 10\)</span> in every frame and the substance is only redistributed: the shaded heights level out at the common equilibrium concentration <span class="math inline">\(10/100 = 0.1\)</span> (the dashed line in each tank), so the amounts tend to <span class="math inline">\((4, 2, 4)\)</span>, in proportion to the volumes. Tank 2, the smallest, is the first to reach its equilibrium value: its shaded height passes the dashed line at <span class="math inline">\(t = 0.6435\)</span> and overshoots it, to the concentration <span class="math inline">\(0.1294\)</span> (<span class="math inline">\(x_2 = 2.588\)</span>) at <span class="math inline">\(t = \pi/2\)</span>. On the linear scale of the left panel the curves look settled by <span class="math inline">\(t = 5\)</span>, the end of Mathews’ interval (dotted line), where no tank is more than <span class="math inline">\(0.035\)</span> from its equilibrium value. The right panel plots the distance <span class="math inline">\(|x_i - \text{equilibrium}|\)</span> on a log scale, solid while <span class="math inline">\(x_i\)</span> is above its equilibrium value and dashed while below, and shows that the approach goes on as a damped oscillation. Each distance stays under its envelope, <span class="math inline">\(2\sqrt{10}\,e^{-t}\)</span> for tanks 1 and 2 and <span class="math inline">\(4\sqrt5\,e^{-t}\)</span> for tank 3, the straight lines of the log plot, and drops out of the bottom of the panel each time the tank crosses its equilibrium value: tank 2 at <span class="math inline">\(t = 0.6435\)</span> and <span class="math inline">\(6.927\)</span>, tank 1 at <span class="math inline">\(3.785\)</span> and <span class="math inline">\(10.07\)</span>, tank 3 at <span class="math inline">\(5.356\)</span> and <span class="math inline">\(11.64\)</span>, consecutive crossings of a tank being <span class="math inline">\(2\pi\)</span> apart. At <span class="math inline">\(t = 12.5\)</span> the largest distance is <span class="math inline">\(2.21 \times 10^{-5}\)</span>. Mathews’ plots of this example are lost, so the window <span class="math inline">\([0, 12.5] \times [0, 10.5]\)</span> and the colours, those of his Example 1, are chosen here; the clock runs past his <span class="math inline">\(t = 5\)</span> so that every tank crosses its equilibrium value twice.</p>
+<p><a href="compartmentbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="compartmentbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Mathews’ Example 2, a closed loop of three tanks of volumes 40, 20 and 40 with 10 units of substance starting in tank 1: the shaded concentrations level out at the common equilibrium concentration 0.1 while the amounts x₁, x₂, x₃ approach 4, 2 and 4 and their sum stays 10, on [0, 12.5] with Mathews’ end time t = 5 dotted, beside a log-scale plot of the distance of each amount from its equilibrium value, which decays under the envelopes 2√10 e⁻ᵗ and 4√5 e⁻ᵗ and drops to zero at each crossing of equilibrium, two per tank, 2π apart</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-mathews-example-3-open-chain-v-60-80-100-120-150-r-24-mathbfx_0-10-0-0-0-0-0-le-t-le-50" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-mathews-example-3-open-chain-v-60-80-100-120-150-r-24-mathbfx_0-10-0-0-0-0-0-le-t-le-50">Case 3 — Mathews’ Example 3, open chain, <span class="math inline">\(V = (60, 80, 100, 120, 150)\)</span>, <span class="math inline">\(r = 24\)</span>, <span class="math inline">\(\mathbf{X}_0 = (10, 0, 0, 0, 0)\)</span>, <span class="math inline">\(0 \le t \le 50\)</span></h3>
+<p><strong>Behavior:</strong> The pulse of substance travels down the chain of five tanks. Each of tanks 2 to 5 fills until its shaded height is level with that of the tank before it, and the maxima, marked by diamonds, come later and lower from tank to tank: <span class="math inline">\(4.219\)</span> at <span class="math inline">\(t = 2.877\)</span>, <span class="math inline">\(3.383\)</span> at <span class="math inline">\(6.527\)</span>, <span class="math inline">\(2.967\)</span> at <span class="math inline">\(10.97\)</span> and <span class="math inline">\(2.828\)</span> at <span class="math inline">\(16.48\)</span>. With five tanks to pass, the total stays near <span class="math inline">\(10\)</span> longer than in Case 1 (<span class="math inline">\(S(5) = 9.916\)</span>, against <span class="math inline">\(9.178\)</span> for the three tanks of Case 1), since only tank 5 empties out of the system (<span class="math inline">\(S' = -\tfrac4{25}x_5\)</span>), and then it decreases in every frame. At <span class="math inline">\(t = 50\)</span> the tray holds <span class="math inline">\(9.878\)</span>, and of the <span class="math inline">\(S = 0.1219\)</span> left nearly all is in tanks 4 and 5 (<span class="math inline">\(x_4 = 0.01188\)</span>, <span class="math inline">\(x_5 = 0.1093\)</span>). Mathews’ window <span class="math inline">\([0, 50] \times [0, 10]\)</span> and his colours red, brown, orange, green and blue are used for both panels; his own plot of <span class="math inline">\(S\)</span> chooses its vertical range automatically, and the bottom right panel is his filled plot, with the washed-out amount added in gray.</p>
+<p><a href="compartmentcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="compartmentcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Mathews’ Example 3, five tanks of volumes 60, 80, 100, 120 and 150 with 10 units of substance starting in tank 1 and pure water flowing in at r = 24: the pulse of concentration travels down the chain into a washed-out tray while the amounts x₁ to x₅ (red, brown, orange, green, blue) and their sum S (magenta) grow in time on [0, 50] × [0, 10], with the maxima 4.219, 3.383, 2.967 and 2.828 of tanks 2 to 5 at t = 2.877, 6.527, 10.97 and 16.48, beside Mathews’ stacked filled plot; at t = 50, S = 0.1219 and 9.878 has been washed out</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="modelling-the-tanks" class="level2">
+<h2 class="anchored" data-anchor-id="modelling-the-tanks">Modelling the Tanks</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Well-mixed tank
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A tank is <em>well mixed</em> if the substance is spread uniformly through its liquid at every instant, so that its concentration is <span class="math inline">\(x_i(t)/V_i\)</span> everywhere in the tank, including in the liquid that flows out.</p>
+</div>
+</div>
+<p>If liquid enters and leaves tank <span class="math inline">\(i\)</span> at the same rate <span class="math inline">\(r\)</span>, its volume <span class="math inline">\(V_i\)</span> stays constant, and the substance leaves it at the rate (flow rate) <span class="math inline">\(\times\)</span> (concentration) <span class="math inline">\(= r\,x_i/V_i\)</span>. The balance law for tank <span class="math inline">\(i\)</span> is</p>
+<p><span class="math display">\[
+\frac{dx_i}{dt} = (\text{rate in}) - (\text{rate out}).
+\tag{1}
+\]</span></p>
+<p>Mathews abbreviates the outflow coefficients as</p>
+<p><span class="math display">\[
+k_1 = \frac{r}{V_1}, \qquad k_2 = \frac{r}{V_2}, \qquad k_3 = \frac{r}{V_3}, \ \ldots
+\tag{2}
+\]</span></p>
+<p>so that the substance leaves tank <span class="math inline">\(i\)</span> at the rate <span class="math inline">\(k_i x_i\)</span>. A large tank (large <span class="math inline">\(V_i\)</span>) has a small <span class="math inline">\(k_i\)</span> and holds on to its substance longer. Mathews’ proof and program pages for this module were never written (both are empty placeholder pages in the archive), so the derivation here is the standard one.</p>
+</section>
+<section id="model-i-the-open-three-stage-system" class="level2">
+<h2 class="anchored" data-anchor-id="model-i-the-open-three-stage-system">Model I — The Open Three-Stage System</h2>
+<p>Pure water flows at the rate <span class="math inline">\(r\)</span> into the first tank; the mixture flows at the rate <span class="math inline">\(r\)</span> from tank 1 into tank 2, from tank 2 into tank 3, and out of tank 3. Applying (1) to each tank,</p>
+<p><span class="math display">\[
+\begin{aligned}
+x_1' &amp;= -k_1 x_1, \\
+x_2' &amp;= \phantom{-}k_1 x_1 - k_2 x_2, \\
+x_3' &amp;= \phantom{-}k_2 x_2 - k_3 x_3,
+\end{aligned}
+\qquad x_1(0) = a_1,\ x_2(0) = a_2,\ x_3(0) = a_3,
+\tag{3}
+\]</span></p>
+<p>or <span class="math inline">\(\mathbf{X}' = \mathbf{A}\mathbf{X}\)</span> with the lower triangular matrix</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} -k_1 &amp; 0 &amp; 0 \\ k_1 &amp; -k_2 &amp; 0 \\ 0 &amp; k_2 &amp; -k_3 \end{pmatrix}.
+\]</span></p>
+<section id="eigenvalues-and-eigenvectors-of-a-chain" class="level3">
+<h3 class="anchored" data-anchor-id="eigenvalues-and-eigenvectors-of-a-chain">Eigenvalues and eigenvectors of a chain</h3>
+<p>Because <span class="math inline">\(\mathbf{A}\)</span> is triangular, its eigenvalues are its diagonal entries, <span class="math inline">\(\lambda_j = -k_j\)</span>. All of them are negative, so every solution of (3) decays to <span class="math inline">\(\mathbf{0}\)</span>. For the eigenvalue <span class="math inline">\(-k_j\)</span> an eigenvector <span class="math inline">\(\mathbf{V}_j\)</span> has zeros above position <span class="math inline">\(j\)</span>, a <span class="math inline">\(1\)</span> (or any convenient nonzero number) in position <span class="math inline">\(j\)</span>, and below it</p>
+<p><span class="math display">\[
+v_i = \frac{k_{i-1}}{k_i - k_j}\, v_{i-1}, \qquad i = j+1, \ldots, n,
+\tag{4}
+\]</span></p>
+<p>which follows from row <span class="math inline">\(i\)</span> of <span class="math inline">\((\mathbf{A} + k_j\mathbf{I})\mathbf{V}_j = \mathbf{0}\)</span>. The same recursion holds for a chain of any length <span class="math inline">\(n\)</span>; it requires <span class="math inline">\(k_i \ne k_j\)</span> for <span class="math inline">\(i &gt; j\)</span>.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Solution of the open chain
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the tank volumes <span class="math inline">\(V_1, \ldots, V_n\)</span> are all different, then <span class="math inline">\(k_1, \ldots, k_n\)</span> are distinct, <span class="math inline">\(\mathbf{A}\)</span> has <span class="math inline">\(n\)</span> independent eigenvectors given by (4), and the solution is</p>
+<p><span class="math display">\[
+\mathbf{X}(t) = c_1 e^{-k_1 t}\mathbf{V}_1 + c_2 e^{-k_2 t}\mathbf{V}_2 + \cdots + c_n e^{-k_n t}\mathbf{V}_n,
+\tag{5}
+\]</span></p>
+<p>where <span class="math inline">\(c_1, \ldots, c_n\)</span> solve the triangular system <span class="math inline">\(c_1\mathbf{V}_1 + \cdots + c_n\mathbf{V}_n = \mathbf{X}_0\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Equal volumes need generalized eigenvectors
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Mathews remarks that ordinary eigenvectors suffice “if the size of the tanks is increasing” and otherwise “the system might require generalized eigenvectors”. The condition that matters is that the volumes be <em>different</em>, not that they increase: with <span class="math inline">\(V = (120, 100, 80)\)</span> or <span class="math inline">\((100, 80, 120)\)</span> the matrix is still diagonalizable. If two volumes are equal, even in tanks that are not next to each other, the matrix is never diagonalizable. Deleting the first row and last column of <span class="math inline">\(\mathbf{A} - \lambda\mathbf{I}\)</span> leaves a triangular matrix with <span class="math inline">\(k_1, \ldots, k_{n-1} \ne 0\)</span> on its diagonal, so every eigenvalue has a one-dimensional eigenspace, and a repeated eigenvalue <span class="math inline">\(-k_i = -k_j\)</span> is short of eigenvectors. For example, <span class="math inline">\(V = (80, 80, 120)\)</span>, <span class="math inline">\((80, 120, 80)\)</span> and <span class="math inline">\((100, 100, 100)\)</span> with <span class="math inline">\(r = 20\)</span> all give defective matrices. The general solution then contains terms such as <span class="math inline">\(t e^{-k t}\)</span>; with <span class="math inline">\(V = (80, 80, 120)\)</span>, <span class="math inline">\(r = 20\)</span> and Example 1’s initial amounts <span class="math inline">\((10, 0, 0)\)</span>, for instance, <span class="math inline">\(x_2(t) = \tfrac52\,t\,e^{-t/4}\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — The substance is washed out
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose every <span class="math inline">\(k_i &gt; 0\)</span>, <span class="math inline">\(a_1 &gt; 0\)</span> and <span class="math inline">\(a_2 = \cdots = a_n = 0\)</span>. Then for <span class="math inline">\(t &gt; 0\)</span>:</p>
+<ol type="1">
+<li>every <span class="math inline">\(x_i(t) &gt; 0\)</span>, because <span class="math inline">\(x_1 = a_1 e^{-k_1 t}\)</span> and, by variation of parameters, <span class="math inline">\(x_i(t) = k_{i-1}\int_0^t e^{-k_i(t-s)}x_{i-1}(s)\,ds\)</span>;</li>
+<li>the total <span class="math inline">\(S(t) = x_1 + \cdots + x_n\)</span> satisfies <span class="math inline">\(S' = -k_n x_n &lt; 0\)</span> (adding the equations, the transfer terms cancel and only the outflow of the last tank remains), so <span class="math inline">\(S\)</span> decreases strictly;</li>
+<li><span class="math inline">\(S(t) \to 0\)</span> as <span class="math inline">\(t \to \infty\)</span>, because every eigenvalue <span class="math inline">\(-k_i\)</span> is negative.</li>
+</ol>
+</div>
+</div>
+<p>For two tanks the solution of (3) is short enough to write in general. With <span class="math inline">\(x_1(0) = a_1\)</span>, <span class="math inline">\(x_2(0) = 0\)</span> and <span class="math inline">\(k_1 \ne k_2\)</span>,</p>
+<p><span class="math display">\[
+x_2(t) = \frac{a_1 k_1}{k_2 - k_1}\left(e^{-k_1 t} - e^{-k_2 t}\right),
+\]</span></p>
+<p>which is zero at <span class="math inline">\(t = 0\)</span>, rises, and has its maximum where <span class="math inline">\(k_1 e^{-k_1 t} = k_2 e^{-k_2 t}\)</span>, at</p>
+<p><span class="math display">\[
+t^* = \frac{\ln(k_1/k_2)}{k_1 - k_2}.
+\tag{6}
+\]</span></p>
+<p>More generally, at a maximum of any <span class="math inline">\(x_i\)</span> (<span class="math inline">\(i \ge 2\)</span>) the derivative is zero, so by (3) the inflow equals the outflow there: <span class="math inline">\(k_{i-1}x_{i-1}(t^*) = k_i x_i(t^*)\)</span>.</p>
+</section>
+<section id="example-1-three-tanks-v_1-80-v_2-100-v_3-120-r-20" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-three-tanks-v_1-80-v_2-100-v_3-120-r-20">Example 1 — Three tanks, <span class="math inline">\(V_1 = 80\)</span>, <span class="math inline">\(V_2 = 100\)</span>, <span class="math inline">\(V_3 = 120\)</span>, <span class="math inline">\(r = 20\)</span></h3>
+<p>Find the solution of (3) with <span class="math inline">\(V_1 = 80\)</span>, <span class="math inline">\(V_2 = 100\)</span>, <span class="math inline">\(V_3 = 120\)</span>, <span class="math inline">\(r = 20\)</span> and the initial conditions <span class="math inline">\(x_1(0) = 10\)</span>, <span class="math inline">\(x_2(0) = 0\)</span>, <span class="math inline">\(x_3(0) = 0\)</span>, and plot <span class="math inline">\(x_1(t)\)</span>, <span class="math inline">\(x_2(t)\)</span>, <span class="math inline">\(x_3(t)\)</span> for <span class="math inline">\(0 \le t \le 40\)</span>.</p>
+<p><strong>Step 1</strong> (rate constants): by (2),</p>
+<p><span class="math display">\[
+k_1 = \frac{20}{80} = \frac14, \qquad k_2 = \frac{20}{100} = \frac15, \qquad k_3 = \frac{20}{120} = \frac16,
+\qquad
+\mathbf{A} = \begin{pmatrix} -\tfrac14 &amp; 0 &amp; 0 \\[1mm] \tfrac14 &amp; -\tfrac15 &amp; 0 \\[1mm] 0 &amp; \tfrac15 &amp; -\tfrac16 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 2</strong> (eigenvalues and eigenvectors): the eigenvalues are <span class="math inline">\(-\tfrac14\)</span>, <span class="math inline">\(-\tfrac15\)</span>, <span class="math inline">\(-\tfrac16\)</span>. By (4), with integer scaling,</p>
+<p><span class="math display">\[
+\mathbf{V}_1 = \begin{pmatrix} 1 \\ -5 \\ 12 \end{pmatrix}, \qquad
+\mathbf{V}_2 = \begin{pmatrix} 0 \\ 1 \\ -6 \end{pmatrix}, \qquad
+\mathbf{V}_3 = \begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix}.
+\]</span></p>
+<p>For instance, for <span class="math inline">\(\mathbf{V}_1\)</span>: <span class="math inline">\(v_2 = \dfrac{1/4}{1/5 - 1/4} = -5\)</span> and <span class="math inline">\(v_3 = \dfrac{(1/5)(-5)}{1/6 - 1/4} = 12\)</span>. Mathews’ eigenvectors are the same vectors scaled to end in <span class="math inline">\(1\)</span>: <span class="math inline">\(\bigl(\tfrac1{12}, -\tfrac5{12}, 1\bigr)\)</span>, <span class="math inline">\(\bigl(0, -\tfrac16, 1\bigr)\)</span>, <span class="math inline">\((0, 0, 1)\)</span>.</p>
+<p><strong>Step 3</strong> (general solution):</p>
+<p><span class="math display">\[
+\mathbf{X}(t) = c_1 e^{-t/4}\begin{pmatrix} 1 \\ -5 \\ 12 \end{pmatrix} + c_2 e^{-t/5}\begin{pmatrix} 0 \\ 1 \\ -6 \end{pmatrix} + c_3 e^{-t/6}\begin{pmatrix} 0 \\ 0 \\ 1 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 4</strong> (constants): at <span class="math inline">\(t = 0\)</span> the system <span class="math inline">\(c_1 = 10\)</span>, <span class="math inline">\(-5c_1 + c_2 = 0\)</span>, <span class="math inline">\(12c_1 - 6c_2 + c_3 = 0\)</span> gives <span class="math inline">\(c_1 = 10\)</span>, <span class="math inline">\(c_2 = 50\)</span>, <span class="math inline">\(c_3 = 180\)</span>.</p>
+<p><strong>Step 5</strong> (solution):</p>
+<p><span class="math display">\[
+\boxed{\
+\begin{aligned}
+x_1(t) &amp;= 10\,e^{-t/4}, \\
+x_2(t) &amp;= -50\,e^{-t/4} + 50\,e^{-t/5}, \\
+x_3(t) &amp;= 120\,e^{-t/4} - 300\,e^{-t/5} + 180\,e^{-t/6},
+\end{aligned}\ }
+\]</span></p>
+<p>which is Mathews’ solution.</p>
+<p><strong>Verification:</strong> substituting into (3) leaves residuals that simplify to <span class="math inline">\(0\)</span>, the initial values are <span class="math inline">\((10, 0, 0)\)</span>, and the formula equals <span class="math inline">\(e^{\mathbf{A}t}(10, 0, 0)^T\)</span> computed symbolically. A numerical solution (Runge–Kutta, relative tolerance <span class="math inline">\(10^{-13}\)</span>) agrees with it to within <span class="math inline">\(4 \times 10^{-14}\)</span> at every time in the table:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_1(t)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_2(t)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_3(t)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(S(t) = x_1 + x_2 + x_3\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;"><span class="math inline">\(2.865\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.069\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.244\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.178\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><span class="math inline">\(0.8208\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.663\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.247\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(6.731\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;"><span class="math inline">\(0.06738\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.5789\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.735\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.381\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">40</td>
+<td style="text-align: right;"><span class="math inline">\(4.540\times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.01450\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1339\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1488\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>How the substance moves.</strong> The first tank empties exponentially. The second and third tanks each fill and then drain, and each has exactly one maximum (the sign of <span class="math inline">\(x_i'\)</span> was checked on a grid of step <span class="math inline">\(0.25\)</span> over <span class="math inline">\(0 &lt; t \le 500\)</span> in 60-digit arithmetic). By (6) the second tank peaks at <span class="math inline">\(t^* = 20\ln\tfrac54 \approx 4.463\)</span>, where <span class="math inline">\(e^{-t^*/20} = \tfrac45\)</span> and <span class="math inline">\(x_2(t^*) = 50\bigl((\tfrac45)^4 - (\tfrac45)^5\bigr) = 4.096\)</span> exactly. The third tank peaks later and lower, at <span class="math inline">\(t \approx 9.866\)</span> with <span class="math inline">\(x_3 \approx 3.248\)</span>; this time was found as a root of <span class="math inline">\(x_3'(t) = 0\)</span> and confirmed by locating the zero of the right-hand side <span class="math inline">\(k_2x_2 - k_3x_3\)</span> along a numerical solution, the two agreeing to <span class="math inline">\(12\)</span> digits.</p>
+<p><strong>The total amount.</strong> Adding the three solutions,</p>
+<p><span class="math display">\[
+S(t) = 80\,e^{-t/4} - 250\,e^{-t/5} + 180\,e^{-t/6}, \qquad S'(t) = -\tfrac16\, x_3(t),
+\]</span></p>
+<p>so the total decreases for all <span class="math inline">\(t &gt; 0\)</span> and <span class="math inline">\(\lim_{t\to\infty} S(t) = 0\)</span>, answering Mathews’ question about the limit of the sum. The substance can only leave through the third tank, so the total starts to fall only as the third tank fills: <span class="math inline">\(S'(0) = 0\)</span>. At <span class="math inline">\(t = 40\)</span> about <span class="math inline">\(1.5\%\)</span> of the original <span class="math inline">\(10\)</span> units is still in the system.</p>
+<p><strong>Mathews’ plots.</strong> He plots <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_2\)</span> and <span class="math inline">\(x_3\)</span> one at a time (red, blue, green) for <span class="math inline">\(0 \le t \le 20\)</span> with vertical range <span class="math inline">\([0, 10]\)</span>, then all three together. Although that plot command runs <span class="math inline">\(t\)</span> from <span class="math inline">\(0\)</span> to <span class="math inline">\(40\)</span>, its plot range is again <span class="math inline">\([0, 20] \times [0, 10]\)</span>. The sum <span class="math inline">\(S(t)\)</span> is plotted (magenta) on <span class="math inline">\([0, 40] \times [0, 10]\)</span>, then shown over the three curves. Finally a filled plot stacks the curves <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_1 + x_2\)</span> and <span class="math inline">\(x_1 + x_2 + x_3 = S\)</span> on <span class="math inline">\([0, 40] \times [0, 10]\)</span>, so that the coloured bands show how much of the substance is in each tank at each time.</p>
+</section>
+</section>
+<section id="model-ii-the-closed-three-stage-system" class="level2">
+<h2 class="anchored" data-anchor-id="model-ii-the-closed-three-stage-system">Model II — The Closed Three-Stage System</h2>
+<p>Now no fresh water enters: the liquid that leaves tank 3 returns to tank 1. Tank 1 therefore gains <span class="math inline">\(k_3 x_3\)</span>, and (1) gives</p>
+<p><span class="math display">\[
+\begin{aligned}
+x_1' &amp;= -k_1 x_1 + k_3 x_3, \\
+x_2' &amp;= \phantom{-}k_1 x_1 - k_2 x_2, \\
+x_3' &amp;= \phantom{-}k_2 x_2 - k_3 x_3,
+\end{aligned}
+\qquad
+\mathbf{A} = \begin{pmatrix} -k_1 &amp; 0 &amp; k_3 \\ k_1 &amp; -k_2 &amp; 0 \\ 0 &amp; k_2 &amp; -k_3 \end{pmatrix}.
+\tag{7}
+\]</span></p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Conservation and equilibrium in the closed loop
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For (7) with <span class="math inline">\(k_1, k_2, k_3 &gt; 0\)</span>:</p>
+<ol type="1">
+<li>Each column of <span class="math inline">\(\mathbf{A}\)</span> sums to <span class="math inline">\(0\)</span>, so <span class="math inline">\(S' = x_1' + x_2' + x_3' = 0\)</span>: the total amount <span class="math inline">\(S\)</span> never changes.</li>
+<li>The equilibria (<span class="math inline">\(\mathbf{A}\mathbf{X} = \mathbf{0}\)</span>) are the states with <span class="math inline">\(k_1 x_1 = k_2 x_2 = k_3 x_3\)</span>, that is, <span class="math inline">\(x_1/V_1 = x_2/V_2 = x_3/V_3\)</span>: the same concentration in every tank. With total <span class="math inline">\(S\)</span> this is <span class="math inline">\(x_i = S\,V_i/(V_1 + V_2 + V_3)\)</span>.</li>
+<li>The characteristic polynomial is <span class="math inline">\(\lambda\bigl(\lambda^2 + (k_1 + k_2 + k_3)\lambda + k_1k_2 + k_2k_3 + k_3k_1\bigr)\)</span>. Its quadratic factor has positive coefficients, so its two roots have negative real parts, and every solution approaches the equilibrium with the same total. The deviations from equilibrium are damped oscillations (complex roots) when <span class="math inline">\((k_1 + k_2 + k_3)^2 &lt; 4(k_1k_2 + k_2k_3 + k_3k_1)\)</span>.</li>
+</ol>
+</div>
+</div>
+<section id="example-2-closed-loop-v_1-40-v_2-20-v_3-40-r-20" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-closed-loop-v_1-40-v_2-20-v_3-40-r-20">Example 2 — Closed loop, <span class="math inline">\(V_1 = 40\)</span>, <span class="math inline">\(V_2 = 20\)</span>, <span class="math inline">\(V_3 = 40\)</span>, <span class="math inline">\(r = 20\)</span></h3>
+<p>Find the solution of (7) with <span class="math inline">\(V_1 = 40\)</span>, <span class="math inline">\(V_2 = 20\)</span>, <span class="math inline">\(V_3 = 40\)</span>, <span class="math inline">\(r = 20\)</span> and <span class="math inline">\(x_1(0) = 10\)</span>, <span class="math inline">\(x_2(0) = 0\)</span>, <span class="math inline">\(x_3(0) = 0\)</span>, and plot <span class="math inline">\(x_1(t)\)</span>, <span class="math inline">\(x_2(t)\)</span>, <span class="math inline">\(x_3(t)\)</span> for <span class="math inline">\(0 \le t \le 5\)</span>.</p>
+<p><strong>Step 1</strong> (rate constants):</p>
+<p><span class="math display">\[
+k_1 = \frac{20}{40} = \frac12, \qquad k_2 = \frac{20}{20} = 1, \qquad k_3 = \frac{20}{40} = \frac12,
+\qquad
+\mathbf{A} = \begin{pmatrix} -\tfrac12 &amp; 0 &amp; \tfrac12 \\[1mm] \tfrac12 &amp; -1 &amp; 0 \\[1mm] 0 &amp; 1 &amp; -\tfrac12 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 2</strong> (eigenvalues): the characteristic polynomial is <span class="math inline">\(\lambda\bigl(\lambda^2 + 2\lambda + \tfrac54\bigr)\)</span>, so</p>
+<p><span class="math display">\[
+\lambda_1 = 0, \qquad \lambda_{2,3} = -1 \pm \tfrac12 i.
+\]</span></p>
+<p>Here <span class="math inline">\((k_1 + k_2 + k_3)^2 = 4 &lt; 5 = 4(k_1k_2 + k_2k_3 + k_3k_1)\)</span>, so the approach to equilibrium oscillates.</p>
+<p><strong>Step 3</strong> (eigenvectors):</p>
+<p><span class="math display">\[
+\lambda_1 = 0:\ \ \mathbf{V}_1 = \begin{pmatrix} 2 \\ 1 \\ 2 \end{pmatrix}, \qquad
+\lambda = -1 + \tfrac12 i:\ \ \mathbf{W} = \begin{pmatrix} -1 - i \\ -1 + i \\ 2 \end{pmatrix} = \underbrace{\begin{pmatrix} -1 \\ -1 \\ 2 \end{pmatrix}}_{\mathbf{a}} + i\,\underbrace{\begin{pmatrix} -1 \\ 1 \\ 0 \end{pmatrix}}_{\mathbf{b}},
+\]</span></p>
+<p>and the conjugate <span class="math inline">\(\overline{\mathbf{W}}\)</span> belongs to <span class="math inline">\(-1 - \tfrac12 i\)</span>. The eigenvector for <span class="math inline">\(0\)</span> is proportional to the volumes <span class="math inline">\((40, 20, 40)\)</span>, as the theorem says.</p>
+<p><strong>Step 4</strong> (real general solution): the real and imaginary parts of <span class="math inline">\(e^{(-1 + i/2)t}\mathbf{W}\)</span> are two real solutions,</p>
+<p><span class="math display">\[
+\mathbf{U}(t) = e^{-t}\bigl(\mathbf{a}\cos\tfrac t2 - \mathbf{b}\sin\tfrac t2\bigr), \qquad
+\mathbf{Z}(t) = e^{-t}\bigl(\mathbf{a}\sin\tfrac t2 + \mathbf{b}\cos\tfrac t2\bigr),
+\]</span></p>
+<p>and <span class="math inline">\(\mathbf{X}(t) = c_1\mathbf{V}_1 + c_2\mathbf{U}(t) + c_3\mathbf{Z}(t)\)</span>.</p>
+<p><strong>Step 5</strong> (constants): <span class="math inline">\(c_1\mathbf{V}_1 + c_2\mathbf{a} + c_3\mathbf{b} = (10, 0, 0)^T\)</span> gives <span class="math inline">\(c_1 = 2\)</span>, <span class="math inline">\(c_2 = -2\)</span>, <span class="math inline">\(c_3 = -4\)</span>.</p>
+<p><strong>Step 6</strong> (solution):</p>
+<p><span class="math display">\[
+\boxed{\
+\begin{aligned}
+x_1(t) &amp;= 4 + 2e^{-t}\bigl(3\cos\tfrac t2 + \sin\tfrac t2\bigr), \\
+x_2(t) &amp;= 2 + 2e^{-t}\bigl(3\sin\tfrac t2 - \cos\tfrac t2\bigr), \\
+x_3(t) &amp;= 4 - 4e^{-t}\bigl(\cos\tfrac t2 + 2\sin\tfrac t2\bigr).
+\end{aligned}\ }
+\]</span></p>
+<p><strong>Matrix exponential.</strong> Mathews also builds the solution as <span class="math inline">\(\mathbf{X}(t) = e^{\mathbf{A}t}\mathbf{X}_0\)</span>. Here</p>
+<p><span class="math display">\[
+e^{\mathbf{A}t} = \frac15\begin{pmatrix}
+2 + e^{-t}(3\cos\tfrac t2 + \sin\tfrac t2) &amp; 2 - 2e^{-t}(\cos\tfrac t2 + 2\sin\tfrac t2) &amp; 2 - e^{-t}(2\cos\tfrac t2 - \sin\tfrac t2) \\[1mm]
+1 - e^{-t}(\cos\tfrac t2 - 3\sin\tfrac t2) &amp; 1 + e^{-t}(4\cos\tfrac t2 - 2\sin\tfrac t2) &amp; 1 - e^{-t}(\cos\tfrac t2 + 2\sin\tfrac t2) \\[1mm]
+2 - 2e^{-t}(\cos\tfrac t2 + 2\sin\tfrac t2) &amp; 2 - 2e^{-t}(\cos\tfrac t2 - 3\sin\tfrac t2) &amp; 2 + e^{-t}(3\cos\tfrac t2 + \sin\tfrac t2)
+\end{pmatrix},
+\]</span></p>
+<p>and <span class="math inline">\(10\)</span> times its first column is the solution above, the same as by eigenvectors. As <span class="math inline">\(t \to \infty\)</span> every column tends to <span class="math inline">\(\tfrac15(2, 1, 2)^T\)</span>.</p>
+<p><strong>Verification:</strong> the residual of (7) simplifies to <span class="math inline">\(0\)</span>, the initial values are <span class="math inline">\((10, 0, 0)\)</span>, and a numerical solution (Runge–Kutta, relative tolerance <span class="math inline">\(10^{-13}\)</span>) agrees to within <span class="math inline">\(2 \times 10^{-13}\)</span> at the times in the table. The last column confirms that the total stays at <span class="math inline">\(10\)</span>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_1(t)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_2(t)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_3(t)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(S(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;"><span class="math inline">\(6.290\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.413\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.298\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><span class="math inline">\(4.666\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.537\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.796\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;"><span class="math inline">\(4.120\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.291\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.589\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;"><span class="math inline">\(3.988\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.115\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.897\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;"><span class="math inline">\(3.976\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.035\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.989\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>How the substance moves.</strong> The total <span class="math inline">\(10\)</span> ends up spread in proportion to the volumes, <span class="math inline">\(40 : 20 : 40\)</span>, so <span class="math inline">\(\mathbf{X}(t) \to (4, 2, 4)\)</span>; the deviation from this equilibrium is <span class="math inline">\(e^{-t}\)</span> times a combination of <span class="math inline">\(\cos\tfrac t2\)</span> and <span class="math inline">\(\sin\tfrac t2\)</span>. The derivatives are</p>
+<p><span class="math display">\[
+x_1' = -5e^{-t}\bigl(\sin\tfrac t2 + \cos\tfrac t2\bigr), \qquad
+x_2' = 5e^{-t}\bigl(\cos\tfrac t2 - \sin\tfrac t2\bigr), \qquad
+x_3' = 10\,e^{-t}\sin\tfrac t2,
+\]</span></p>
+<p>so the turning points are exact. On Mathews’ interval <span class="math inline">\(0 \le t \le 5\)</span>:</p>
+<ul>
+<li><span class="math inline">\(x_1\)</span> falls from <span class="math inline">\(10\)</span>, passes the equilibrium value <span class="math inline">\(4\)</span> at <span class="math inline">\(t = 2\pi - 2\arctan 3 \approx 3.785\)</span>, and reaches its minimum <span class="math inline">\(4 - 2\sqrt2\,e^{-3\pi/2} \approx 3.9746\)</span> at <span class="math inline">\(t = 3\pi/2 \approx 4.712\)</span>. It then rises again, to <span class="math inline">\(3.9757\)</span> at <span class="math inline">\(t = 5\)</span>.</li>
+<li><span class="math inline">\(x_2\)</span> rises past <span class="math inline">\(2\)</span> at <span class="math inline">\(t = 2\arctan\tfrac13 \approx 0.6435\)</span> to its maximum <span class="math inline">\(2 + 2\sqrt2\,e^{-\pi/2} \approx 2.5880\)</span> at <span class="math inline">\(t = \pi/2 \approx 1.571\)</span>, then falls, staying above <span class="math inline">\(2\)</span> until <span class="math inline">\(t = 2\pi + 2\arctan\tfrac13 \approx 6.927\)</span>.</li>
+<li><span class="math inline">\(x_3\)</span> increases on the whole interval, since <span class="math inline">\(x_3' &gt; 0\)</span> for <span class="math inline">\(0 &lt; t &lt; 2\pi\)</span>, and reaches <span class="math inline">\(3.9893\)</span> at <span class="math inline">\(t = 5\)</span>. It overshoots only after the interval ends, crossing <span class="math inline">\(4\)</span> at <span class="math inline">\(t = 2\pi - 2\arctan\tfrac12 \approx 5.356\)</span> and peaking at <span class="math inline">\(4 + 4e^{-2\pi} \approx 4.0075\)</span> at <span class="math inline">\(t = 2\pi\)</span>.</li>
+</ul>
+<p>At <span class="math inline">\(t = 5\)</span> no tank is more than <span class="math inline">\(0.035\)</span> from its equilibrium value. Successive turning points of each tank are <span class="math inline">\(2\pi\)</span> apart, and from one to the next the deviation from equilibrium changes sign and shrinks by the factor <span class="math inline">\(e^{-2\pi} \approx 0.0019\)</span>.</p>
+<p><strong>Mathews’ plots.</strong> The problem asks for the plot on <span class="math inline">\(0 \le t \le 5\)</span>. His notebook goes on to plot the three amounts, their sum, and a stacked plot of how “the three curves stack up”, but the output images for this example are missing from the archive, so his plot windows and colours cannot be read.</p>
+</section>
+</section>
+<section id="model-iii-the-five-stage-system" class="level2">
+<h2 class="anchored" data-anchor-id="model-iii-the-five-stage-system">Model III — The Five-Stage System</h2>
+<p>The open chain extends to any number of tanks. For five tanks with pure water flowing in at the rate <span class="math inline">\(r\)</span> and the mixture passing through tanks 1 to 5 in turn,</p>
+<p><span class="math display">\[
+\begin{aligned}
+x_1' &amp;= -k_1 x_1, \\
+x_2' &amp;= \phantom{-}k_1 x_1 - k_2 x_2, \\
+x_3' &amp;= \phantom{-}k_2 x_2 - k_3 x_3, \\
+x_4' &amp;= \phantom{-}k_3 x_3 - k_4 x_4, \\
+x_5' &amp;= \phantom{-}k_4 x_4 - k_5 x_5,
+\end{aligned}
+\qquad x_i(0) = a_i,
+\tag{8}
+\]</span></p>
+<p>with <span class="math inline">\(k_i = r/V_i\)</span>. The eigenvalues are <span class="math inline">\(-k_1, \ldots, -k_5\)</span>, the eigenvectors come from (4), and when the five volumes are different the solution is the sum (5) of five exponentials.</p>
+<section id="example-3-five-tanks-v-60-80-100-120-150-r-24" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-five-tanks-v-60-80-100-120-150-r-24">Example 3 — Five tanks, <span class="math inline">\(V = (60, 80, 100, 120, 150)\)</span>, <span class="math inline">\(r = 24\)</span></h3>
+<p>Find the solution of (8) with <span class="math inline">\(V_1 = 60\)</span>, <span class="math inline">\(V_2 = 80\)</span>, <span class="math inline">\(V_3 = 100\)</span>, <span class="math inline">\(V_4 = 120\)</span>, <span class="math inline">\(V_5 = 150\)</span>, <span class="math inline">\(r = 24\)</span> and <span class="math inline">\(x_1(0) = 10\)</span>, <span class="math inline">\(x_2(0) = x_3(0) = x_4(0) = x_5(0) = 0\)</span>, and plot <span class="math inline">\(x_1(t), \ldots, x_5(t)\)</span> for <span class="math inline">\(0 \le t \le 50\)</span>. (Mathews’ statement of the initial conditions lists <span class="math inline">\(x_5(0) = 0\)</span> twice and omits <span class="math inline">\(x_4(0)\)</span>; it is meant to be <span class="math inline">\(0\)</span>, as his solution shows.)</p>
+<p><strong>Step 1</strong> (rate constants):</p>
+<p><span class="math display">\[
+k_1 = \frac{24}{60} = \frac25, \quad k_2 = \frac{24}{80} = \frac3{10}, \quad k_3 = \frac{24}{100} = \frac6{25}, \quad k_4 = \frac{24}{120} = \frac15, \quad k_5 = \frac{24}{150} = \frac4{25}.
+\]</span></p>
+<p><strong>Step 2</strong> (eigenvalues and eigenvectors): the eigenvalues are <span class="math inline">\(-\tfrac25, -\tfrac3{10}, -\tfrac6{25}, -\tfrac15, -\tfrac4{25}\)</span>, and (4) with integer scaling gives</p>
+<p><span class="math display">\[
+\mathbf{V}_1 = \begin{pmatrix} 2 \\ -8 \\ 15 \\ -18 \\ 15 \end{pmatrix}, \quad
+\mathbf{V}_2 = \begin{pmatrix} 0 \\ -7 \\ 35 \\ -84 \\ 120 \end{pmatrix}, \quad
+\mathbf{V}_3 = \begin{pmatrix} 0 \\ 0 \\ 1 \\ -6 \\ 15 \end{pmatrix}, \quad
+\mathbf{V}_4 = \begin{pmatrix} 0 \\ 0 \\ 0 \\ -1 \\ 5 \end{pmatrix}, \quad
+\mathbf{V}_5 = \begin{pmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 3</strong> (constants): solving <span class="math inline">\(c_1\mathbf{V}_1 + \cdots + c_5\mathbf{V}_5 = (10, 0, 0, 0, 0)^T\)</span> from the top down gives</p>
+<p><span class="math display">\[
+c_1 = 5, \quad c_2 = -\tfrac{40}{7}, \quad c_3 = 125, \quad c_4 = -360, \quad c_5 = \tfrac{3750}{7}.
+\]</span></p>
+<p><strong>Step 4</strong> (solution):</p>
+<p><span class="math display">\[
+\boxed{\
+\begin{aligned}
+x_1(t) &amp;= 10\,e^{-2t/5}, \\
+x_2(t) &amp;= -40\,e^{-2t/5} + 40\,e^{-3t/10}, \\
+x_3(t) &amp;= 75\,e^{-2t/5} - 200\,e^{-3t/10} + 125\,e^{-6t/25}, \\
+x_4(t) &amp;= -90\,e^{-2t/5} + 480\,e^{-3t/10} - 750\,e^{-6t/25} + 360\,e^{-t/5}, \\
+x_5(t) &amp;= 75\,e^{-2t/5} - \tfrac{4800}{7}\,e^{-3t/10} + 1875\,e^{-6t/25} - 1800\,e^{-t/5} + \tfrac{3750}{7}\,e^{-4t/25},
+\end{aligned}\ }
+\]</span></p>
+<p>which is Mathews’ solution.</p>
+<p><strong>Verification:</strong> the residual of (8) simplifies to <span class="math inline">\(0\)</span>, the initial values are <span class="math inline">\((10, 0, 0, 0, 0)\)</span>, the formula equals <span class="math inline">\(e^{\mathbf{A}t}(10, 0, 0, 0, 0)^T\)</span> computed symbolically, and a numerical solution (Runge–Kutta, relative tolerance <span class="math inline">\(10^{-13}\)</span>) agrees with it to within <span class="math inline">\(2 \times 10^{-13}\)</span> at the times in the table.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_5\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(S(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><span class="math inline">\(0.1832\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.259\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.756\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.932\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.885\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.015\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;"><span class="math inline">\(0.003355\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.08573\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.5581\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.581\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.625\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.853\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">30</td>
+<td style="text-align: right;"><span class="math inline">\(6.144\times 10^{-5}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.004691\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.06910\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.3911\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.263\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.728\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">50</td>
+<td style="text-align: right;"><span class="math inline">\(2.061\times 10^{-8}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.215\times 10^{-5}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.070\times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.01188\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1093\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1219\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>How the substance moves.</strong> The pulse of substance travels down the chain. Each of tanks 2 to 5 fills and drains with exactly one maximum (the sign of <span class="math inline">\(x_i'\)</span> was checked on a grid of step <span class="math inline">\(0.25\)</span> over <span class="math inline">\(0 &lt; t \le 500\)</span> in 60-digit arithmetic), and the maxima come later and lower from tank to tank:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Tank</th>
+<th style="text-align: right;">Time of maximum</th>
+<th style="text-align: right;">Maximum amount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><span class="math inline">\(10\ln\tfrac43 \approx 2.877\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(\tfrac{135}{32} = 4.21875\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;"><span class="math inline">\(6.527\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.383\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;"><span class="math inline">\(10.97\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.967\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;"><span class="math inline">\(16.48\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.828\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The time for tank 2 is (6) with <span class="math inline">\(k_1 = \tfrac25\)</span>, <span class="math inline">\(k_2 = \tfrac3{10}\)</span>. The others are roots of <span class="math inline">\(x_i'(t) = 0\)</span>, each confirmed by locating the zero of <span class="math inline">\(k_{i-1}x_{i-1} - k_i x_i\)</span> along a numerical solution, the two agreeing to <span class="math inline">\(12\)</span> digits. The total is</p>
+<p><span class="math display">\[
+S(t) = 30\,e^{-2t/5} - \tfrac{2560}{7}\,e^{-3t/10} + 1250\,e^{-6t/25} - 1440\,e^{-t/5} + \tfrac{3750}{7}\,e^{-4t/25}, \qquad S'(t) = -\tfrac4{25}\,x_5(t),
+\]</span></p>
+<p>which decreases for <span class="math inline">\(t &gt; 0\)</span> and tends to <span class="math inline">\(0\)</span>. At <span class="math inline">\(t = 50\)</span> about <span class="math inline">\(1.2\%\)</span> of the substance is still in the system, nearly all of it in the last two tanks.</p>
+<p><strong>Mathews’ plots.</strong> He plots each <span class="math inline">\(x_i\)</span> separately for <span class="math inline">\(0 \le t \le 50\)</span> with vertical range <span class="math inline">\([0, 10]\)</span> (red, brown, orange, green, blue for tanks 1 to 5), then all five together. The sum <span class="math inline">\(S(t)\)</span> is plotted (magenta) for <span class="math inline">\(0 \le t \le 50\)</span> with the vertical range chosen automatically, then shown over the five curves. Finally a filled plot stacks <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_1 + x_2\)</span>, …, <span class="math inline">\(x_1 + \cdots + x_5 = S\)</span> on <span class="math inline">\([0, 50] \times [0, 10]\)</span>.</p>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

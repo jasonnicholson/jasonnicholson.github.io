@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Finite Difference Method for ODE’s – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#boundary-value-problems" id="toc-boundary-value-problems" class="nav-link" data-scroll-target="#boundary-value-problems">Boundary Value Problems</a></li>
+  <li><a href="#the-finite-difference-method" id="toc-the-finite-difference-method" class="nav-link" data-scroll-target="#the-finite-difference-method">The Finite-Difference Method</a>
+  <ul class="collapse">
+  <li><a href="#derivation" id="toc-derivation" class="nav-link" data-scroll-target="#derivation">Derivation</a></li>
+  <li><a href="#the-tridiagonal-system" id="toc-the-tridiagonal-system" class="nav-link" data-scroll-target="#the-tridiagonal-system">The tridiagonal system</a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  </ul></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">Worked Examples</a>
+  <ul class="collapse">
+  <li><a href="#the-exact-solution" id="toc-the-exact-solution" class="nav-link" data-scroll-target="#the-exact-solution">The exact solution</a></li>
+  <li><a href="#example-1-25-subintervals-step-by-step" id="toc-example-1-25-subintervals-step-by-step" class="nav-link" data-scroll-target="#example-1-25-subintervals-step-by-step">Example 1 — <span class="math inline">\(25\)</span> subintervals, step by step</a></li>
+  <li><a href="#example-2-the-same-problem-with-the-program" id="toc-example-2-the-same-problem-with-the-program" class="nav-link" data-scroll-target="#example-2-the-same-problem-with-the-program">Example 2 — the same problem with the program</a></li>
+  <li><a href="#example-3-50-subintervals" id="toc-example-3-50-subintervals" class="nav-link" data-scroll-target="#example-3-50-subintervals">Example 3 — <span class="math inline">\(50\)</span> subintervals</a></li>
+  <li><a href="#example-4-how-much-do-the-two-solutions-differ" id="toc-example-4-how-much-do-the-two-solutions-differ" class="nav-link" data-scroll-target="#example-4-how-much-do-the-two-solutions-differ">Example 4 — how much do the two solutions differ?</a></li>
+  <li><a href="#example-5-richardson-extrapolation" id="toc-example-5-richardson-extrapolation" class="nav-link" data-scroll-target="#example-5-richardson-extrapolation">Example 5 — Richardson extrapolation</a></li>
+  <li><a href="#example-6-how-good-did-it-get" id="toc-example-6-how-good-did-it-get" class="nav-link" data-scroll-target="#example-6-how-good-did-it-get">Example 6 — how good did it get?</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Finite Difference Method for ODE’s</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>A second-order <strong>boundary value problem</strong> asks for a function <span class="math inline">\(x(t)\)</span> on an interval <span class="math inline">\([a, b]\)</span> that satisfies a differential equation inside the interval and prescribed values at both ends. For the linear equation</p>
+<p><span class="math display">\[
+x'' = p(t)\,x' + q(t)\,x + r(t), \qquad x(a) = \alpha, \quad x(b) = \beta,
+\]</span></p>
+<p>the <strong>finite difference method</strong> divides <span class="math inline">\([a, b]\)</span> into <span class="math inline">\(n\)</span> equal subintervals of width <span class="math inline">\(h = (b - a)/n\)</span>, with mesh points <span class="math inline">\(t_j = a + jh\)</span>, and looks for numbers <span class="math inline">\(x_j \approx x(t_j)\)</span>. At every interior mesh point it replaces <span class="math inline">\(x'\)</span> and <span class="math inline">\(x''\)</span> by central difference quotients, which turns the differential equation into one linear equation linking <span class="math inline">\(x_{j-1}\)</span>, <span class="math inline">\(x_j\)</span> and <span class="math inline">\(x_{j+1}\)</span>:</p>
+<p><span class="math display">\[
+\Bigl(-\frac{h}{2}p_j - 1\Bigr)x_{j-1} + \bigl(2 + h^2 q_j\bigr)x_j + \Bigl(\frac{h}{2}p_j - 1\Bigr)x_{j+1} = -h^2 r_j, \qquad j = 1, 2, \ldots, n-1,
+\]</span></p>
+<p>where <span class="math inline">\(p_j = p(t_j)\)</span>, <span class="math inline">\(q_j = q(t_j)\)</span>, <span class="math inline">\(r_j = r(t_j)\)</span>, <span class="math inline">\(x_0 = \alpha\)</span> and <span class="math inline">\(x_n = \beta\)</span>. These <span class="math inline">\(n - 1\)</span> equations form a tridiagonal linear system, which tridiagonal elimination solves in <span class="math inline">\(O(n)\)</span> operations, and the solution values together with the two boundary values give the approximate solution curve.</p>
+<p>Both difference quotients are accurate to <span class="math inline">\(O(h^2)\)</span>. Under the conditions stated below, and for a smooth solution, the error of the method is then <span class="math inline">\(O(h^2)\)</span>, so halving <span class="math inline">\(h\)</span> cuts it by about a factor of four, and two runs with <span class="math inline">\(h\)</span> and <span class="math inline">\(h/2\)</span> can be combined by Richardson extrapolation into a much more accurate answer. Mathews’ examples do exactly this for one equation on <span class="math inline">\([1, 6]\)</span> with <span class="math inline">\(25\)</span> and <span class="math inline">\(50\)</span> subintervals; every number below has been recomputed (the example tables in 40-digit arithmetic), and the computed solutions are compared with the exact solution.</p>
+</section>
+<section id="boundary-value-problems" class="level2">
+<h2 class="anchored" data-anchor-id="boundary-value-problems">Boundary Value Problems</h2>
+<p>The boundary value problem <span class="math inline">\(x'' = f(t, x, x')\)</span>, <span class="math inline">\(x(a) = \alpha\)</span>, <span class="math inline">\(x(b) = \beta\)</span> need not have a solution, and when it has one it need not be unique. The following theorem gives a sufficient condition. In it, <span class="math inline">\(y\)</span> stands for the third argument of <span class="math inline">\(f\)</span>, the slot where <span class="math inline">\(x'(t)\)</span> goes, so that the partial derivatives <span class="math inline">\(f_x\)</span> and <span class="math inline">\(f_y\)</span> can be written down.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Boundary value problem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Assume that <span class="math inline">\(f(t, x, y)\)</span> is continuous on the region <span class="math inline">\(R = \{(t, x, y) : a \le t \le b,\ -\infty &lt; x &lt; \infty,\ -\infty &lt; y &lt; \infty\}\)</span> and that <span class="math inline">\(f_x\)</span> and <span class="math inline">\(f_y\)</span> are continuous on <span class="math inline">\(R\)</span>. If there is a constant <span class="math inline">\(M &gt; 0\)</span> for which</p>
+<p><span class="math display">\[
+f_x(t, x, y) &gt; 0 \quad\text{and}\quad |f_y(t, x, y)| \le M \qquad \text{for all } (t, x, y) \in R,
+\]</span></p>
+<p>then the boundary value problem</p>
+<p><span class="math display">\[
+x'' = f(t, x, x'), \qquad x(a) = \alpha, \quad x(b) = \beta
+\]</span></p>
+<p>has a unique solution <span class="math inline">\(x = x(t)\)</span> for <span class="math inline">\(a \le t \le b\)</span>.</p>
+</div>
+</div>
+<p>For a linear equation, <span class="math inline">\(f(t, x, y) = p(t)\,y + q(t)\,x + r(t)\)</span>, so <span class="math inline">\(f_x = q(t)\)</span> and <span class="math inline">\(f_y = p(t)\)</span>, and the theorem becomes:</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Corollary — Linear boundary value problem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Assume that <span class="math inline">\(p\)</span>, <span class="math inline">\(q\)</span> and <span class="math inline">\(r\)</span> are continuous on <span class="math inline">\([a, b]\)</span> and that</p>
+<p><span class="math display">\[
+q(t) &gt; 0 \qquad \text{for all } t \in [a, b].
+\]</span></p>
+<p>Then the linear boundary value problem</p>
+<p><span class="math display">\[
+x'' = p(t)\,x'(t) + q(t)\,x(t) + r(t), \qquad x(a) = \alpha, \quad x(b) = \beta
+\tag{1}
+\]</span></p>
+<p>has a unique solution <span class="math inline">\(x = x(t)\)</span> over <span class="math inline">\(a \le t \le b\)</span>. (A bound <span class="math inline">\(|p(t)| \le M\)</span> is automatic here, with <span class="math inline">\(M = \max_{a \le t \le b} |p(t)|\)</span>, because <span class="math inline">\(p\)</span> is continuous on a closed interval.)</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The condition <span class="math inline">\(q(t) &gt; 0\)</span> is sufficient, not necessary
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The equation <span class="math inline">\(x'' = -x\)</span> has <span class="math inline">\(q(t) = -1 &lt; 0\)</span>, and its general solution is <span class="math inline">\(x(t) = c_1 \cos t + c_2 \sin t\)</span>. With the boundary conditions <span class="math inline">\(x(0) = \alpha\)</span> and <span class="math inline">\(x(\pi) = \beta\)</span>, the first condition gives <span class="math inline">\(c_1 = \alpha\)</span> and the second gives <span class="math inline">\(x(\pi) = -c_1 = -\alpha\)</span>, so the problem can be solved only when <span class="math inline">\(\beta = -\alpha\)</span>, and then <span class="math inline">\(c_2\)</span> is arbitrary and there are infinitely many solutions. (Mathews’ footnote states the condition as <span class="math inline">\(\alpha = \beta\)</span>; the general solution gives <span class="math inline">\(\beta = -\alpha\)</span>.) This counterexample is why the theory is phrased with <span class="math inline">\(q(t) &gt; 0\)</span>. But the condition is only sufficient: many problems with <span class="math inline">\(q(t) &lt; 0\)</span> somewhere, including the one solved on this page, still have exactly one solution, and they can be solved by finite differences or by the shooting method with some care.</p>
+</div>
+</div>
+</section>
+<section id="the-finite-difference-method" class="level2">
+<h2 class="anchored" data-anchor-id="the-finite-difference-method">The Finite-Difference Method</h2>
+<section id="derivation" class="level3">
+<h3 class="anchored" data-anchor-id="derivation">Derivation</h3>
+<p>Consider the linear equation (1) over <span class="math inline">\([a, b]\)</span> with <span class="math inline">\(x(a) = \alpha\)</span> and <span class="math inline">\(x(b) = \beta\)</span>. Form a partition of <span class="math inline">\([a, b]\)</span> using the points <span class="math inline">\(a = t_0 &lt; t_1 &lt; \cdots &lt; t_n = b\)</span>, where</p>
+<p><span class="math display">\[
+h = \frac{b - a}{n} \qquad\text{and}\qquad t_j = a + jh \quad\text{for } j = 0, 1, \ldots, n.
+\]</span></p>
+<p>The central difference formulas approximate the derivatives at an interior point <span class="math inline">\(t_j\)</span>:</p>
+<p><span class="math display">\[
+x'(t_j) = \frac{x(t_{j+1}) - x(t_{j-1})}{2h} + O(h^2),
+\tag{2}
+\]</span></p>
+<p><span class="math display">\[
+x''(t_j) = \frac{x(t_{j+1}) - 2x(t_j) + x(t_{j-1})}{h^2} + O(h^2).
+\tag{3}
+\]</span></p>
+<p>For a solution with continuous fourth derivative the two error terms are <span class="math inline">\(-\tfrac{h^2}{6}x'''(c_1)\)</span> and <span class="math inline">\(-\tfrac{h^2}{12}x^{(4)}(c_2)\)</span> for some <span class="math inline">\(c_1, c_2\)</span> in <span class="math inline">\((t_{j-1}, t_{j+1})\)</span>; Taylor expansion of the quotients gives <span class="math inline">\(x' + \tfrac{h^2}{6}x''' + \cdots\)</span> and <span class="math inline">\(x'' + \tfrac{h^2}{12}x^{(4)} + \cdots\)</span>.</p>
+<p>Write <span class="math inline">\(x_j\)</span> for the approximation to <span class="math inline">\(x(t_j)\)</span>, drop the two <span class="math inline">\(O(h^2)\)</span> terms, and use the notation <span class="math inline">\(p_j = p(t_j)\)</span>, <span class="math inline">\(q_j = q(t_j)\)</span> and <span class="math inline">\(r_j = r(t_j)\)</span>. Equation (1) at <span class="math inline">\(t = t_j\)</span> becomes the difference equation</p>
+<p><span class="math display">\[
+\frac{x_{j+1} - 2x_j + x_{j-1}}{h^2} = p_j\,\frac{x_{j+1} - x_{j-1}}{2h} + q_j x_j + r_j.
+\tag{4}
+\]</span></p>
+<p>Multiply each side by <span class="math inline">\(h^2\)</span> and collect the terms involving <span class="math inline">\(x_{j-1}\)</span>, <span class="math inline">\(x_j\)</span> and <span class="math inline">\(x_{j+1}\)</span>:</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>The finite difference equations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\Bigl(-\frac{h}{2}p_j - 1\Bigr)x_{j-1} + \bigl(2 + h^2 q_j\bigr)x_j + \Bigl(\frac{h}{2}p_j - 1\Bigr)x_{j+1} = -h^2 r_j
+\tag{5}
+\]</span></p>
+<p>for <span class="math inline">\(j = 1, 2, \ldots, n - 1\)</span>, where <span class="math inline">\(x_0 = \alpha\)</span> and <span class="math inline">\(x_n = \beta\)</span>.</p>
+</div>
+</div>
+<p>(Mathews’ module prints the left boundary value as <span class="math inline">\(x_0 = \beta\)</span>; it is <span class="math inline">\(x_0 = x(a) = \alpha\)</span>.)</p>
+</section>
+<section id="the-tridiagonal-system" class="level3">
+<h3 class="anchored" data-anchor-id="the-tridiagonal-system">The tridiagonal system</h3>
+<p>Equation (5) for <span class="math inline">\(j = 1\)</span> contains the known value <span class="math inline">\(x_0 = \alpha\)</span>, and for <span class="math inline">\(j = n - 1\)</span> the known value <span class="math inline">\(x_n = \beta\)</span>; moving these to the right-hand side leaves <span class="math inline">\(n - 1\)</span> equations in the <span class="math inline">\(n - 1\)</span> unknowns <span class="math inline">\(x_1, \ldots, x_{n-1}\)</span>. Write</p>
+<p><span class="math display">\[
+d_j = 2 + h^2 q_j, \qquad a_j = -\frac{h}{2}p_j - 1, \qquad c_j = \frac{h}{2}p_j - 1, \qquad e_j = -h^2 r_j.
+\]</span></p>
+<p>Then the system is</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+d_1 &amp; c_1 &amp; &amp; &amp; \\
+a_2 &amp; d_2 &amp; c_2 &amp; &amp; \\
+&amp; \ddots &amp; \ddots &amp; \ddots &amp; \\
+&amp; &amp; a_{n-2} &amp; d_{n-2} &amp; c_{n-2} \\
+&amp; &amp; &amp; a_{n-1} &amp; d_{n-1}
+\end{pmatrix}
+\begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_{n-2} \\ x_{n-1} \end{pmatrix}
+=
+\begin{pmatrix} e_1 - a_1\alpha \\ e_2 \\ \vdots \\ e_{n-2} \\ e_{n-1} - c_{n-1}\beta \end{pmatrix},
+\tag{6}
+\]</span></p>
+<p>which has the familiar <a href="../../pages/numerical-methods/tri-diagonal-matrices.html">tridiagonal</a> form and is solved by elimination in <span class="math inline">\(O(n)\)</span> operations.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>When the system has a unique solution (general result)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose <span class="math inline">\(q(t_j) &gt; 0\)</span> at every interior mesh point and <span class="math inline">\(h\,|p(t_j)| \le 2\)</span> there (for instance <span class="math inline">\(h \le 2/M\)</span> with <span class="math inline">\(M = \max_{a \le t \le b}|p(t)|\)</span>). Then <span class="math inline">\(a_j \le 0\)</span> and <span class="math inline">\(c_j \le 0\)</span>, so <span class="math inline">\(|a_j| + |c_j| = \bigl(1 + \tfrac{h}{2}p_j\bigr) + \bigl(1 - \tfrac{h}{2}p_j\bigr) = 2 &lt; 2 + h^2 q_j = d_j\)</span>. Every row of (6) is strictly diagonally dominant, so the matrix is nonsingular and the tridiagonal elimination needs no pivoting.</p>
+</div>
+</div>
+<p>When <span class="math inline">\(q\)</span> is negative, as in the example below, the matrix is not diagonally dominant and nonsingularity has to be checked another way; it does not follow from this result.</p>
+<p>The finite difference solution also converges to <span class="math inline">\(x(t)\)</span> as <span class="math inline">\(h \to 0\)</span>: under the conditions of the corollary, with <span class="math inline">\(h \le 2/M\)</span>, and for a solution with continuous fourth derivative, the error at the mesh points is <span class="math inline">\(O(h^2)\)</span>. This is a standard general result. The example below does not satisfy these conditions, but it shows the factor of four per halving of <span class="math inline">\(h\)</span> numerically all the same.</p>
+</section>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<p>To approximate the solution of <span class="math inline">\(x'' = p(t)x'(t) + q(t)x(t) + r(t)\)</span> with <span class="math inline">\(x(a) = \alpha\)</span> and <span class="math inline">\(x(b) = \beta\)</span> over <span class="math inline">\([a, b]\)</span> by the finite difference method of order <span class="math inline">\(O(h^2)\)</span>, Mathews’ program uses the mesh <span class="math inline">\(a = t_1 &lt; t_2 &lt; \cdots &lt; t_{n+1} = b\)</span> (numbered from <span class="math inline">\(1\)</span>, so it has <span class="math inline">\(n + 1\)</span> points for <span class="math inline">\(n\)</span> subintervals) and returns the solution points <span class="math inline">\(\{(t_j, x_j)\}_{j=1}^{n+1}\)</span>. Its three steps are:</p>
+<ol type="1">
+<li>Construct the tridiagonal matrix and the right-hand-side vector of (6).</li>
+<li>Solve the system in step 1 for the ordinates strictly inside the interval.</li>
+<li>Join the mesh points and the solution vector from step 2 into points, and put the boundary points <span class="math inline">\((a, \alpha)\)</span> and <span class="math inline">\((b, \beta)\)</span> at the two ends.</li>
+</ol>
+</section>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">Worked Examples</h2>
+<p>All six of Mathews’ examples use the same boundary value problem,</p>
+<p><span class="math display">\[
+x'' + \frac{1}{t}\,x' + \Bigl(1 - \frac{1}{4t^2}\Bigr)x = \sqrt{t}\,\cos t, \qquad x(1) = 1, \quad x(6) = -0.5,
+\tag{7}
+\]</span></p>
+<p>over <span class="math inline">\([1, 6]\)</span>. In the form (1) it has</p>
+<p><span class="math display">\[
+p(t) = -\frac{1}{t}, \qquad q(t) = \frac{1}{4t^2} - 1, \qquad r(t) = \sqrt{t}\,\cos t.
+\]</span></p>
+<p>Here <span class="math inline">\(q(t)\)</span> decreases from <span class="math inline">\(q(1) = -0.75\)</span> to <span class="math inline">\(q(6) = -0.993056\)</span>, so it is negative on the whole interval and the corollary does not apply. The problem nevertheless has exactly one solution, which can be written down.</p>
+<section id="the-exact-solution" class="level3">
+<h3 class="anchored" data-anchor-id="the-exact-solution">The exact solution</h3>
+<p>The homogeneous equation <span class="math inline">\(x'' + \tfrac{1}{t}x' + \bigl(1 - \tfrac{1}{4t^2}\bigr)x = 0\)</span> is Bessel’s equation of order <span class="math inline">\(\tfrac12\)</span>. The substitution <span class="math inline">\(x = u/\sqrt{t}\)</span> turns (7) into</p>
+<p><span class="math display">\[
+u'' + u = t\cos t,
+\]</span></p>
+<p>whose general solution is <span class="math inline">\(u = c_1\cos t + c_2\sin t + \tfrac14 t\cos t + \tfrac14 t^2\sin t\)</span>. Hence</p>
+<p><span class="math display">\[
+x(t) = \frac{c_1\cos t + c_2\sin t}{\sqrt{t}} + \frac14\sqrt{t}\,\cos t + \frac14\,t^{3/2}\sin t.
+\tag{8}
+\]</span></p>
+<p>The boundary conditions give two linear equations for <span class="math inline">\(c_1\)</span> and <span class="math inline">\(c_2\)</span>, whose determinant is <span class="math inline">\(\cos 1\,\sin 6 - \sin 1\,\cos 6 = \sin 5 = -0.958924 \neq 0\)</span>, so there is exactly one solution:</p>
+<p><span class="math display">\[
+c_1 = 0.0588713451552886, \qquad c_2 = 0.740071095780206,
+\]</span></p>
+<p>the same constants that Mathews uses in Example 6. The same determinant shows that the homogeneous problem with <span class="math inline">\(x(1) = x(6) = 0\)</span> has only the zero solution. Formula (8) satisfies (7) and both boundary conditions to 40-digit precision, and an independent numerical solution of (7) with SciPy’s <code>solve_bvp</code> agrees with it to within <span class="math inline">\(9 \times 10^{-16}\)</span> on <span class="math inline">\([1, 6]\)</span>. Its minimum on <span class="math inline">\([1, 6]\)</span> is about <span class="math inline">\(-2.9057\)</span>, near <span class="math inline">\(t = 4.78\)</span>.</p>
+</section>
+<section id="example-1-25-subintervals-step-by-step" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-25-subintervals-step-by-step">Example 1 — <span class="math inline">\(25\)</span> subintervals, step by step</h3>
+<p>Solve (7) over <span class="math inline">\([1, 6]\)</span> with the finite difference method and <span class="math inline">\(n = 25\)</span> subintervals (<span class="math inline">\(26\)</span> points).</p>
+<p><strong>Step 1</strong>: The mesh. With <span class="math inline">\(h = (6 - 1)/25 = 0.2\)</span>,</p>
+<p><span class="math display">\[
+t_j = 1 + 0.2j, \qquad j = 0, 1, \ldots, 25,
+\]</span></p>
+<p>and the unknowns are <span class="math inline">\(x_1, \ldots, x_{24}\)</span> at <span class="math inline">\(t = 1.2, 1.4, \ldots, 5.8\)</span>.</p>
+<p><strong>Step 2</strong>: The coefficient functions at the mesh points. At <span class="math inline">\(t_1 = 1.2\)</span>,</p>
+<p><span class="math display">\[
+p_1 = -\frac{1}{1.2} = -0.833333, \qquad q_1 = \frac{1}{4(1.44)} - 1 = -0.826389, \qquad r_1 = \sqrt{1.2}\,\cos 1.2 = 0.396943.
+\]</span></p>
+<p><strong>Step 3</strong>: The first row of (6). With <span class="math inline">\(h/2 = 0.1\)</span> and <span class="math inline">\(h^2 = 0.04\)</span>,</p>
+<p><span class="math display">\[
+d_1 = 2 + 0.04\,q_1 = 1.966944, \qquad c_1 = 0.1\,p_1 - 1 = -1.083333,
+\]</span></p>
+<p><span class="math display">\[
+e_1 - a_1\alpha = -0.04\,r_1 + (1 + 0.1\,p_1)(1) = -0.015878 + 0.916667 = 0.900789.
+\]</span></p>
+<p>The second row, at <span class="math inline">\(t_2 = 1.4\)</span>, is the first full one: <span class="math inline">\(a_2 = -0.928571\)</span>, <span class="math inline">\(d_2 = 1.965102\)</span>, <span class="math inline">\(c_2 = -1.071429\)</span> and right-hand side <span class="math inline">\(e_2 = -0.04\,r_2 = -0.008044\)</span>.</p>
+<p><strong>Step 4</strong>: The last row, at <span class="math inline">\(t_{24} = 5.8\)</span>, where <span class="math inline">\(p_{24} = -0.172414\)</span>, <span class="math inline">\(q_{24} = -0.992568\)</span> and <span class="math inline">\(r_{24} = 2.132613\)</span>:</p>
+<p><span class="math display">\[
+a_{24} = -0.1\,p_{24} - 1 = -0.982759, \qquad d_{24} = 2 + 0.04\,q_{24} = 1.960297,
+\]</span></p>
+<p><span class="math display">\[
+e_{24} - c_{24}\beta = -0.04\,r_{24} + (1 - 0.1\,p_{24})(-0.5) = -0.085305 - 0.508621 = -0.593925.
+\]</span></p>
+<p>These are the first and last entries of the four vectors Mathews prints (sub-diagonal, diagonal, super-diagonal, right-hand side), and all four agree with the recomputation to the six figures he shows.</p>
+<p><strong>Step 5</strong>: Solve the <span class="math inline">\(24 \times 24\)</span> tridiagonal system. Because <span class="math inline">\(q &lt; 0\)</span>, the diagonal entries run from <span class="math inline">\(d_1 = 1.966944\)</span> down to <span class="math inline">\(d_{24} = 1.960297\)</span>, all below <span class="math inline">\(2\)</span>, while <span class="math inline">\(|a_j| + |c_j| = 2\)</span> in rows <span class="math inline">\(2\)</span> to <span class="math inline">\(23\)</span>; so the matrix is not diagonally dominant and the general result above does not apply. It is nonsingular all the same: its determinant is <span class="math inline">\(-4.903642\)</span> and its condition number (2-norm) is about <span class="math inline">\(225\)</span>.</p>
+<p><strong>Step 6</strong>: Put the boundary points <span class="math inline">\((1, 1)\)</span> and <span class="math inline">\((6, -0.5)\)</span> at the ends of the list of points <span class="math inline">\((t_j, x_j)\)</span>. The finite difference solution, compared with the exact solution (8), is:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(j\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(t_j\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_j\)</span> (<span class="math inline">\(n = 25\)</span>)</th>
+<th style="text-align: right;"><span class="math inline">\(x(t_j)\)</span> exact</th>
+<th style="text-align: right;"><span class="math inline">\(x_j - x(t_j)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><span class="math inline">\(1.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.000000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.000000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;"><span class="math inline">\(1.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.056798\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.054685\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.113 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><span class="math inline">\(1.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.087268\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.083207\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.061 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;"><span class="math inline">\(1.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.085770\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.079984\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.786 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;"><span class="math inline">\(1.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.046173\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.038964\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.209 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;"><span class="math inline">\(2.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.962608\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.954361\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.247 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;"><span class="math inline">\(2.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.830202\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.821380\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.822 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;"><span class="math inline">\(2.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.645789\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.636919\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.871 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;"><span class="math inline">\(2.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.408541\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.400186\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.354 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;"><span class="math inline">\(2.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.120491\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.113228\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.263 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><span class="math inline">\(3.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.213090\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.218711\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.621 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td style="text-align: right;"><span class="math inline">\(3.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.583505\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.586993\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.488 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td style="text-align: right;"><span class="math inline">\(3.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.978659\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.979619\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.600 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td style="text-align: right;"><span class="math inline">\(3.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.383297\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.381461\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.835 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14</td>
+<td style="text-align: right;"><span class="math inline">\(3.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.779484\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.774742\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.741 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">15</td>
+<td style="text-align: right;"><span class="math inline">\(4.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.147294\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.139711\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-7.583 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td style="text-align: right;"><span class="math inline">\(4.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.465691\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.455517\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.017 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">17</td>
+<td style="text-align: right;"><span class="math inline">\(4.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.713565\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.701239\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.233 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">18</td>
+<td style="text-align: right;"><span class="math inline">\(4.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.870876\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.857011\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.387 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">19</td>
+<td style="text-align: right;"><span class="math inline">\(4.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.919846\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.905208\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.464 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;"><span class="math inline">\(5.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.846136\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.831610\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.453 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">21</td>
+<td style="text-align: right;"><span class="math inline">\(5.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.639947\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.626490\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.346 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">22</td>
+<td style="text-align: right;"><span class="math inline">\(5.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.296961\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.285556\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.140 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">23</td>
+<td style="text-align: right;"><span class="math inline">\(5.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.819090\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.810685\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-8.405 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">24</td>
+<td style="text-align: right;"><span class="math inline">\(5.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.214944\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.210391\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.553 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">25</td>
+<td style="text-align: right;"><span class="math inline">\(6.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.500000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.500000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The values <span class="math inline">\(x_j\)</span> agree with Mathews’ printed solution to all the figures he gives. The error is positive from <span class="math inline">\(t = 1.2\)</span> to <span class="math inline">\(t = 3.4\)</span> and negative from <span class="math inline">\(t = 3.6\)</span> to <span class="math inline">\(t = 5.8\)</span>, and its largest size, <span class="math inline">\(0.01464\)</span>, is at <span class="math inline">\(t = 4.8\)</span>.</p>
+<p><strong>Verification:</strong> Substituting the computed <span class="math inline">\(x_j\)</span> back into the first and last equations of (6):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Row</th>
+<th>Left-hand side</th>
+<th>Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(j = 1\)</span></td>
+<td><span class="math inline">\(1.966944(1.056798) - 1.083333(1.087268) = 2.078663 - 1.177874 = 0.900789\)</span></td>
+<td><span class="math inline">\(0.900789\ \checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 24\)</span></td>
+<td><span class="math inline">\(-0.982759(-1.819090) + 1.960297(-1.214944) = 1.787726 - 2.381651 = -0.593925\)</span></td>
+<td><span class="math inline">\(-0.593925\ \checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>In 40-digit arithmetic the largest residual over all <span class="math inline">\(24\)</span> equations is below <span class="math inline">\(10^{-43}\)</span>.</p>
+</section>
+<section id="example-2-the-same-problem-with-the-program" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-the-same-problem-with-the-program">Example 2 — the same problem with the program</h3>
+<p>Mathews repeats Example 1 with his finite difference program, which carries out the three steps of the algorithm in one call with <span class="math inline">\(a = 1\)</span>, <span class="math inline">\(b = 6\)</span>, <span class="math inline">\(\alpha = 1\)</span>, <span class="math inline">\(\beta = -0.5\)</span> and <span class="math inline">\(25\)</span> subintervals, skipping the details. The program returns the same <span class="math inline">\(26\)</span> points as the table in Example 1; the list he calls <code>points1</code> and prints again in Example 4 is identical to his Example 1 list. Call these values <span class="math inline">\(X_1\)</span>.</p>
+</section>
+<section id="example-3-50-subintervals" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-50-subintervals">Example 3 — <span class="math inline">\(50\)</span> subintervals</h3>
+<p>Solve (7) again with <span class="math inline">\(n = 50\)</span> subintervals (<span class="math inline">\(51\)</span> points), so <span class="math inline">\(h = 0.1\)</span> and the system has <span class="math inline">\(49\)</span> unknowns. Call the result <span class="math inline">\(X_2\)</span>. Its first and last interior values are <span class="math inline">\(x(1.1) \approx 1.03057\)</span> and <span class="math inline">\(x(5.9) \approx -0.868321\)</span>, as in Mathews’ output; the values at the <span class="math inline">\(26\)</span> points <span class="math inline">\(t = 1.0, 1.2, \ldots, 6.0\)</span> that it shares with <span class="math inline">\(X_1\)</span> are listed in the table under Example 5.</p>
+</section>
+<section id="example-4-how-much-do-the-two-solutions-differ" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-how-much-do-the-two-solutions-differ">Example 4 — how much do the two solutions differ?</h3>
+<p>The two solutions cannot be subtracted directly: <span class="math inline">\(X_1\)</span> has <span class="math inline">\(26\)</span> points and <span class="math inline">\(X_2\)</span> has <span class="math inline">\(51\)</span>. The mesh of <span class="math inline">\(X_1\)</span> is every other point of the mesh of <span class="math inline">\(X_2\)</span>, so Mathews takes points <span class="math inline">\(1, 3, 5, \ldots, 51\)</span> of <span class="math inline">\(X_2\)</span> (numbering from <span class="math inline">\(1\)</span>), which lie at <span class="math inline">\(t = 1.0, 1.2, \ldots, 6.0\)</span>, and forms the difference <span class="math inline">\(X_2 - X_1\)</span> there. It appears in the table under Example 5. The difference is negative from <span class="math inline">\(t = 1.2\)</span> to <span class="math inline">\(t = 3.4\)</span>, positive from <span class="math inline">\(t = 3.6\)</span> to <span class="math inline">\(t = 5.8\)</span>, and largest in size at <span class="math inline">\(t = 4.8\)</span>, where <span class="math inline">\(X_2 - X_1 = 0.01100\)</span>.</p>
+<p>Is that small or large? Since the method is of order <span class="math inline">\(O(h^2)\)</span>, the error of <span class="math inline">\(X_2\)</span> should be about a quarter of the error of <span class="math inline">\(X_1\)</span>, so <span class="math inline">\(X_2 - X_1 \approx -\tfrac34(X_1 - x)\)</span>, and the difference itself estimates the error: <span class="math inline">\(X_1 - x \approx -\tfrac43(X_2 - X_1)\)</span>, which at <span class="math inline">\(t = 4.8\)</span> is <span class="math inline">\(-\tfrac43(0.01100) = -0.01467\)</span>, close to the actual error <span class="math inline">\(-0.01464\)</span>. The improvement scheme of the next example removes most of it.</p>
+</section>
+<section id="example-5-richardson-extrapolation" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-richardson-extrapolation">Example 5 — Richardson extrapolation</h3>
+<p>Use <a href="richardson-extrapolation/">Richardson extrapolation</a> and the results of Examples 2 and 3 to construct a more accurate solution at the <span class="math inline">\(26\)</span> points of the <span class="math inline">\(25\)</span>-subinterval mesh.</p>
+<p>If the error of the method behaves like <span class="math inline">\(C h^2\)</span> at a fixed point <span class="math inline">\(t\)</span>, then <span class="math inline">\(X_1 \approx x + Ch^2\)</span> and <span class="math inline">\(X_2 \approx x + C h^2/4\)</span>. Eliminating <span class="math inline">\(C\)</span> gives the extrapolated values</p>
+<p><span class="math display">\[
+X_3 = \frac{4X_2 - X_1}{3} = X_2 + \frac{X_2 - X_1}{3}.
+\tag{9}
+\]</span></p>
+<p>(The output of this example is missing from Mathews’ archive; formula (9) is the one he uses in Example 6.) At <span class="math inline">\(t = 4.8\)</span>, for instance, <span class="math inline">\(X_3 = (4(-2.908846) - (-2.919846))/3 = -2.905179\)</span>, compared with the exact value <span class="math inline">\(-2.905208\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_1\)</span> (<span class="math inline">\(n = 25\)</span>)</th>
+<th style="text-align: right;"><span class="math inline">\(X_2\)</span> (<span class="math inline">\(n = 50\)</span>)</th>
+<th style="text-align: right;"><span class="math inline">\(X_2 - X_1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_3 = (4X_2 - X_1)/3\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(1.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.000000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.000000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.000000\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(1.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.056798\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.055209\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.589 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.054679\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(1.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.087268\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.084215\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.054 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.083197\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(1.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.085770\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.081419\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.351 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.079969\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(1.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.046173\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.040752\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-5.421 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.038945\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(2.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.962608\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.956406\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-6.202 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.954338\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(2.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.830202\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.823568\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-6.634 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.821357\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(2.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.645789\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.639118\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-6.671 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.636894\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(2.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.408541\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.402257\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-6.283 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.400163\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(2.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.120491\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.115028\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-5.463 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.113207\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(3.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.213090\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.217318\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.229 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.218728\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(3.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.583505\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.586131\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.625 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.587006\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(3.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.978659\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.979384\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-7.250 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.979625\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(3.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.383297\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.381920\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.376 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.381462\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(3.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.779484\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.775923\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.561 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.774736\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(4.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.147294\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.141597\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.697 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.139698\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(4.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.465691\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.458047\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.644 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.455499\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(4.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.713565\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.704303\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.262 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.701215\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(4.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.870876\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.860457\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.042 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.856984\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(4.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.919846\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.908846\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.100 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.905179\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(5.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.846136\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.835220\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.092 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.831581\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(5.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.639947\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.629834\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.011 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.626464\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(5.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.296961\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.288391\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.570 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.285534\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(5.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.819090\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.812774\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(6.316 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.810668\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(5.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.214944\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.211523\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.421 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.210382\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(6.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.500000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.500000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.500000\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example-6-how-good-did-it-get" class="level3">
+<h3 class="anchored" data-anchor-id="example-6-how-good-did-it-get">Example 6 — how good did it get?</h3>
+<p>Mathews remarks that the graphs of the solutions “look alike”, so he compares them with the exact solution (8). The errors at the <span class="math inline">\(26\)</span> common points are:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x(t)\)</span> exact</th>
+<th style="text-align: right;"><span class="math inline">\(X_1 - x\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_2 - x\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_3 - x\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(1.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.000000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(1.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.054685\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.113 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.244 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-5.248 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(1.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.083207\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.061 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.007 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.041 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(1.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.079984\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.786 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.435 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.512 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(1.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.038964\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.209 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.788 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.909 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(2.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.954361\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.247 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.045 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.208 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(2.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.821380\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.822 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.188 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.389 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(2.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.636919\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.871 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.199 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.436 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(2.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.400186\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.354 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.071 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.341 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(2.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.113228\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.263 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.800 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.105 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(3.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.218711\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.621 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.392 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.735 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(3.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.586993\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.488 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.627 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.248 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(3.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.979619\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.600 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.350 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-6.682 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(3.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.381461\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.835 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.590 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.825 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(3.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.774742\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.741 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.181 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(6.347 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(4.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.139711\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-7.583 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.886 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.280 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(4.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.455517\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.017 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.529 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.864 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(4.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.701239\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.233 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.064 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.348 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(4.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.857011\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.387 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.446 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.693 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(4.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.905208\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.464 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.638 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.869 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(5.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.831610\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.453 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.610 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.856 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(5.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.626490\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.346 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-3.344 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.641 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(5.4\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.285556\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.140 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.834 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.228 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(5.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.810685\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-8.405 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.089 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.630 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(5.8\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.210391\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.553 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.132 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.743 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(6.0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.500000\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The largest errors at these <span class="math inline">\(26\)</span> points, all at <span class="math inline">\(t = 4.8\)</span>, are</p>
+<p><span class="math display">\[
+\max|X_1 - x| = 0.0146383, \qquad \max|X_2 - x| = 0.00363805, \qquad \max|X_3 - x| = 0.0000286914,
+\]</span></p>
+<p>as Mathews reports. (Over all <span class="math inline">\(51\)</span> points of the finer mesh, the largest error of <span class="math inline">\(X_2\)</span> is slightly larger, <span class="math inline">\(0.0036531\)</span> at <span class="math inline">\(t = 4.9\)</span>.) Their ratio is</p>
+<p><span class="math display">\[
+\frac{\max|X_2 - x|}{\max|X_1 - x|} = 0.24853 \approx \frac14,
+\]</span></p>
+<p>and at each of the <span class="math inline">\(24\)</span> interior common points the ratio <span class="math inline">\((X_2 - x)/(X_1 - x)\)</span> lies between <span class="math inline">\(0.2448\)</span> (at <span class="math inline">\(t = 3.4\)</span>) and <span class="math inline">\(0.2501\)</span> (at <span class="math inline">\(t = 3.6\)</span>), the two points on either side of the sign change of the error. Halving <span class="math inline">\(h\)</span> divides the error by about four, as a method of order <span class="math inline">\(O(h^2)\)</span> should. Extrapolation works: the largest error of <span class="math inline">\(X_3\)</span> is about <span class="math inline">\(510\)</span> times smaller than that of <span class="math inline">\(X_1\)</span> and about <span class="math inline">\(127\)</span> times smaller than that of <span class="math inline">\(X_2\)</span>, although <span class="math inline">\(X_3\)</span> uses no mesh finer than <span class="math inline">\(X_2\)</span>.</p>
+<p><strong>Verification of the order.</strong> Continuing to halve <span class="math inline">\(h\)</span> shows the same factor of four. The largest error over all mesh points:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(n\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(h\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\max_j |x_j - x(t_j)|\)</span></th>
+<th style="text-align: right;">ratio to previous</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(25\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.4638 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(50\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.6531 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.2496\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(100\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.05\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.1193 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.2496\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(200\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.025\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.2800 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.2500\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(400\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.0125\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.6994 \times 10^{-5}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.2500\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The extrapolated values improve faster. Applying (9) to the pairs <span class="math inline">\((25, 50)\)</span>, <span class="math inline">\((50, 100)\)</span> and <span class="math inline">\((100, 200)\)</span> gives largest errors <span class="math inline">\(2.869 \times 10^{-5}\)</span>, <span class="math inline">\(1.788 \times 10^{-6}\)</span> and <span class="math inline">\(1.115 \times 10^{-7}\)</span>, with ratios <span class="math inline">\(0.0623\)</span> and <span class="math inline">\(0.0624\)</span>, close to <span class="math inline">\(\tfrac{1}{16}\)</span>: for this problem the extrapolated solution behaves like a method of order <span class="math inline">\(O(h^4)\)</span>.</p>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

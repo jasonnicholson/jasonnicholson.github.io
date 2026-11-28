@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Quadratic Interpolative Search – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#unimodal-functions-and-the-derivative-test" id="toc-unimodal-functions-and-the-derivative-test" class="nav-link" data-scroll-target="#unimodal-functions-and-the-derivative-test">Unimodal Functions and the Derivative Test</a></li>
+  <li><a href="#quadratic-interpolative-search" id="toc-quadratic-interpolative-search" class="nav-link" data-scroll-target="#quadratic-interpolative-search">Quadratic Interpolative Search</a>
+  <ul class="collapse">
+  <li><a href="#bracketing-the-minimum" id="toc-bracketing-the-minimum" class="nav-link" data-scroll-target="#bracketing-the-minimum">Bracketing the minimum</a></li>
+  <li><a href="#the-vertex-of-the-interpolating-quadratic" id="toc-the-vertex-of-the-interpolating-quadratic" class="nav-link" data-scroll-target="#the-vertex-of-the-interpolating-quadratic">The vertex of the interpolating quadratic</a></li>
+  <li><a href="#restarting-and-stopping" id="toc-restarting-and-stopping" class="nav-link" data-scroll-target="#restarting-and-stopping">Restarting and stopping</a></li>
+  <li><a href="#example-1-minimise-x2---sin-x-on-0-1" id="toc-example-1-minimise-x2---sin-x-on-0-1" class="nav-link" data-scroll-target="#example-1-minimise-x2---sin-x-on-0-1">Example 1 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span></a></li>
+  <li><a href="#example-3-minimise-tfrac12-x5---tfrac45-x-on-0-1" id="toc-example-3-minimise-tfrac12-x5---tfrac45-x-on-0-1" class="nav-link" data-scroll-target="#example-3-minimise-tfrac12-x5---tfrac45-x-on-0-1">Example 3 — Minimise <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span></a></li>
+  </ul></li>
+  <li><a href="#cubic-interpolative-search" id="toc-cubic-interpolative-search" class="nav-link" data-scroll-target="#cubic-interpolative-search">Cubic Interpolative Search</a>
+  <ul class="collapse">
+  <li><a href="#the-starting-step" id="toc-the-starting-step" class="nav-link" data-scroll-target="#the-starting-step">The starting step</a></li>
+  <li><a href="#the-interpolating-cubic" id="toc-the-interpolating-cubic" class="nav-link" data-scroll-target="#the-interpolating-cubic">The interpolating cubic</a></li>
+  <li><a href="#example-2-minimise-x2---sin-x-by-cubic-search" id="toc-example-2-minimise-x2---sin-x-by-cubic-search" class="nav-link" data-scroll-target="#example-2-minimise-x2---sin-x-by-cubic-search">Example 2 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> by cubic search</a></li>
+  <li><a href="#example-4-minimise-tfrac12-x5---tfrac45-x-by-cubic-search" id="toc-example-4-minimise-tfrac12-x5---tfrac45-x-by-cubic-search" class="nav-link" data-scroll-target="#example-4-minimise-tfrac12-x5---tfrac45-x-by-cubic-search">Example 4 — Minimise <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> by cubic search</a></li>
+  </ul></li>
+  <li><a href="#comparing-the-two-searches" id="toc-comparing-the-two-searches" class="nav-link" data-scroll-target="#comparing-the-two-searches">Comparing the Two Searches</a></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Quadratic Interpolative Search</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Quadratic interpolative search finds the minimum of a unimodal function <span class="math inline">\(f\)</span> on an interval <span class="math inline">\([a, b]\)</span> by fitting a parabola through three function values and moving to the parabola’s lowest point. The version on this page is the one in Mathews’ module and <em>Mathematica</em> subroutine, which uses three <strong>equally spaced</strong> points <span class="math inline">\(p_0\)</span>, <span class="math inline">\(p_1 = p_0 + h\)</span>, <span class="math inline">\(p_2 = p_0 + 2h\)</span>. It starts from <span class="math inline">\(p_0 = a\)</span> with <span class="math inline">\(h = (b - a)/2\)</span> and steps to the right when <span class="math inline">\(f'(p_0) &lt; 0\)</span>, to the left when <span class="math inline">\(f'(p_0) &gt; 0\)</span>. It then halves <span class="math inline">\(h\)</span> while <span class="math inline">\(f(p_0) \le f(p_1)\)</span> and doubles it while <span class="math inline">\(f(p_2) &lt; f(p_1)\)</span>, until the middle value is the lowest, <span class="math inline">\(f(p_0) &gt; f(p_1) \le f(p_2)\)</span>. With <span class="math inline">\(y_i = f(p_i)\)</span>, the vertex of the interpolating quadratic is</p>
+<p><span class="math display">\[
+p_{\min} = p_0 + h_{\min}, \qquad h_{\min} = \frac{h\,(4y_1 - 3y_0 - y_2)}{2\,(2y_1 - y_0 - y_2)}.
+\]</span></p>
+<p>The search restarts from <span class="math inline">\(p_0 = p_{\min}\)</span>, with <span class="math inline">\(h\)</span> equal to the distance from <span class="math inline">\(p_{\min}\)</span> to the nearest of the three old points. It stops when one of <span class="math inline">\(y_0, y_1, y_2\)</span> agrees with <span class="math inline">\(f(p_{\min})\)</span> to within a tolerance <span class="math inline">\(\varepsilon\)</span>.</p>
+<p>The module also covers <strong>cubic interpolative search</strong>, which uses derivative values explicitly. It fits a cubic <span class="math inline">\(P\)</span> to the values of <span class="math inline">\(f\)</span> and <span class="math inline">\(f'\)</span> at two points <span class="math inline">\(p_0\)</span> and <span class="math inline">\(p_1 = p_0 + h\)</span>, and moves to the local minimum of the cubic, <span class="math inline">\(p_2 = p_0 + \gamma h\)</span>, where</p>
+<p><span class="math display">\[
+\gamma = \frac{-2h f'(p_0)}{(G - 3\alpha) + \sqrt{(G - 3\alpha)^2 - 12 h \alpha f'(p_0)}}, \qquad
+F = f(p_1) - f(p_0), \quad G = h\bigl(f'(p_1) - f'(p_0)\bigr), \quad \alpha = G - 2\bigl(F - h f'(p_0)\bigr).
+\]</span></p>
+<p>Then <span class="math inline">\((p_0, p_1)\)</span> is replaced by <span class="math inline">\((p_1, p_2)\)</span> and the step repeats. The cubic search does not keep a bracket: in both of Mathews’ examples its first point <span class="math inline">\(p_1\)</span> lies outside <span class="math inline">\([a, b]\)</span>. The examples below keep Mathews’ numbers. Examples 1 and 3 use the quadratic search and Examples 2 and 4 the cubic search. Examples 1 and 2 minimise the same function, and so do Examples 3 and 4.</p>
+</section>
+<section id="unimodal-functions-and-the-derivative-test" class="level2">
+<h2 class="anchored" data-anchor-id="unimodal-functions-and-the-derivative-test">Unimodal Functions and the Derivative Test</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Unimodal function
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The function <span class="math inline">\(f\)</span> is <em>unimodal</em> on <span class="math inline">\(I = [a, b]\)</span> if there is a unique number <span class="math inline">\(p \in I\)</span> such that <span class="math inline">\(f\)</span> is decreasing on <span class="math inline">\([a, p]\)</span> and increasing on <span class="math inline">\([p, b]\)</span>.</p>
+</div>
+</div>
+<p>Bracketing searches such as the golden ratio and Fibonacci searches need only this condition. The two methods on this page also use the derivative. Suppose <span class="math inline">\(f\)</span> is unimodal on <span class="math inline">\([a, b]\)</span> with minimum at <span class="math inline">\(p\)</span>, <span class="math inline">\(f'\)</span> exists on <span class="math inline">\((a, b)\)</span>, and <span class="math inline">\(p_0 \in (a, b)\)</span>. If <span class="math inline">\(f'(p_0) &lt; 0\)</span> the minimum lies to the right of <span class="math inline">\(p_0\)</span>, and if <span class="math inline">\(f'(p_0) &gt; 0\)</span> it lies to the left.</p>
+<p>Both of Mathews’ functions are unimodal on <span class="math inline">\([0, 1]\)</span>:</p>
+<ul>
+<li><span class="math inline">\(f(x) = x^2 - \sin x\)</span> has <span class="math inline">\(f''(x) = 2 + \sin x \ge 2 &gt; 0\)</span> on <span class="math inline">\([0, 1]\)</span>, <span class="math inline">\(f'(0) = -1 &lt; 0\)</span> and <span class="math inline">\(f'(1) = 2 - \cos 1 = 1.4597 &gt; 0\)</span>. The minimiser is the root of <span class="math inline">\(2x = \cos x\)</span>, <span class="math inline">\(p = 0.4501836113\)</span>, with <span class="math inline">\(f(p) = -0.2324655752\)</span>.</li>
+<li><span class="math inline">\(f(x) = \tfrac12 + x^5 - \tfrac45 x\)</span> has <span class="math inline">\(f''(x) = 20x^3 &gt; 0\)</span> on <span class="math inline">\((0, 1]\)</span>, <span class="math inline">\(f'(0) = -0.8\)</span> and <span class="math inline">\(f'(1) = 4.2\)</span>. The minimiser is exact: <span class="math inline">\(5p^4 = \tfrac45\)</span> gives <span class="math inline">\(p = (4/25)^{1/4} = \sqrt{10}/5 = 0.6324555320\)</span>, with <span class="math inline">\(f(p) = 0.0952284595\)</span>.</li>
+</ul>
+</section>
+<section id="quadratic-interpolative-search" class="level2">
+<h2 class="anchored" data-anchor-id="quadratic-interpolative-search">Quadratic Interpolative Search</h2>
+<section id="bracketing-the-minimum" class="level3">
+<h3 class="anchored" data-anchor-id="bracketing-the-minimum">Bracketing the minimum</h3>
+<p>The first task is to find three test values</p>
+<p><span class="math display">\[
+p_0, \qquad p_1 = p_0 + h, \qquad p_2 = p_0 + 2h
+\tag{1}
+\]</span></p>
+<p>such that</p>
+<p><span class="math display">\[
+f(p_0) &gt; f(p_1) \qquad\text{and}\qquad f(p_1) &lt; f(p_2).
+\tag{2}
+\]</span></p>
+<p>Suppose <span class="math inline">\(f'(p_0) &lt; 0\)</span>, so that <span class="math inline">\(p_0 &lt; p\)</span> and <span class="math inline">\(h\)</span> is chosen positive. One pass of the bracketing loop does one of three things:</p>
+<ul>
+<li><strong>Case (i):</strong> if (2) holds, the bracket is found.</li>
+<li><strong>Case (ii):</strong> if <span class="math inline">\(f(p_0) &gt; f(p_1)\)</span> and <span class="math inline">\(f(p_1) &gt; f(p_2)\)</span>, then <span class="math inline">\(p_2 &lt; p\)</span> and the points must reach farther right. <em>Double the step:</em> <span class="math inline">\(p_1 \leftarrow p_2\)</span>, <span class="math inline">\(h \leftarrow 2h\)</span>, <span class="math inline">\(p_2 \leftarrow p_0 + 2h\)</span>.</li>
+<li><strong>Case (iii):</strong> if <span class="math inline">\(f(p_0) \le f(p_1)\)</span>, the step has jumped over <span class="math inline">\(p\)</span> and is too large. <em>Halve the step:</em> <span class="math inline">\(p_2 \leftarrow p_1\)</span>, <span class="math inline">\(h \leftarrow h/2\)</span>, <span class="math inline">\(p_1 \leftarrow p_0 + h\)</span>.</li>
+</ul>
+<p>Each pass of cases (ii) and (iii) evaluates <span class="math inline">\(f\)</span> at one new point. When <span class="math inline">\(f'(p_0) &gt; 0\)</span> the step <span class="math inline">\(h\)</span> is negative and the same three cases apply. Mathews’ subroutine accepts the bracket when <span class="math inline">\(f(p_0) &gt; f(p_1)\)</span> and <span class="math inline">\(f(p_2) \ge f(p_1)\)</span>, so a tie between <span class="math inline">\(f(p_1)\)</span> and <span class="math inline">\(f(p_2)\)</span> also ends the loop. The loop also stops if <span class="math inline">\(|h|\)</span> falls to a minimum step <span class="math inline">\(\delta\)</span>. Mathews’ text starts with <span class="math inline">\(h = 1\)</span>, or <span class="math inline">\(h = \tfrac12\)</span> if <span class="math inline">\(a + 1 &lt; b\)</span> fails. His subroutine starts with <span class="math inline">\(h = (b - a)/2\)</span>, which for the interval <span class="math inline">\([0, 1]\)</span> of both examples is the same <span class="math inline">\(h = \tfrac12\)</span>.</p>
+</section>
+<section id="the-vertex-of-the-interpolating-quadratic" class="level3">
+<h3 class="anchored" data-anchor-id="the-vertex-of-the-interpolating-quadratic">The vertex of the interpolating quadratic</h3>
+<p>With <span class="math inline">\(y_i = f(p_i)\)</span> for <span class="math inline">\(i = 0, 1, 2\)</span>, the Lagrange polynomial through the three points (1) is</p>
+<p><span class="math display">\[
+Q(x) = y_0\,\frac{(x - p_1)(x - p_2)}{2h^2} - y_1\,\frac{(x - p_0)(x - p_2)}{h^2} + y_2\,\frac{(x - p_0)(x - p_1)}{2h^2},
+\tag{3}
+\]</span></p>
+<p>and its derivative is</p>
+<p><span class="math display">\[
+Q'(x) = y_0\,\frac{2x - p_1 - p_2}{2h^2} - y_1\,\frac{2x - p_0 - p_2}{h^2} + y_2\,\frac{2x - p_0 - p_1}{2h^2}.
+\tag{4}
+\]</span></p>
+<p>Write the critical point as <span class="math inline">\(x = p_0 + h_{\min}\)</span>, set <span class="math inline">\(Q'(p_0 + h_{\min}) = 0\)</span>, multiply by <span class="math inline">\(2h^2\)</span> and collect the terms in <span class="math inline">\(h_{\min}\)</span>:</p>
+<p><span class="math display">\[
+0 = h_{\min}(2y_0 - 4y_1 + 2y_2) + y_0(2p_0 - p_1 - p_2) - y_1(4p_0 - 2p_0 - 2p_2) + y_2(2p_0 - p_0 - p_1).
+\]</span></p>
+<p>With <span class="math inline">\(p_1 = p_0 + h\)</span> and <span class="math inline">\(p_2 = p_0 + 2h\)</span> the last three terms are <span class="math inline">\(-3hy_0 + 4hy_1 - hy_2\)</span>, so</p>
+<p><span class="math display">\[
+h_{\min} = \frac{h\,(4y_1 - 3y_0 - y_2)}{2\,(2y_1 - y_0 - y_2)}, \qquad p_{\min} = p_0 + h_{\min}.
+\tag{5}
+\]</span></p>
+<p>Subtracting <span class="math inline">\(h\)</span> gives the position of the vertex relative to the middle point:</p>
+<p><span class="math display">\[
+p_{\min} - p_1 = h_{\min} - h = \frac{h\,(y_0 - y_2)}{2\,(y_0 - 2y_1 + y_2)}.
+\tag{6}
+\]</span></p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Property of the vertex step (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The second derivative of <span class="math inline">\(Q\)</span> is <span class="math inline">\(Q'' = (y_0 - 2y_1 + y_2)/h^2\)</span>. If the triple is bracketed, <span class="math inline">\(y_0 &gt; y_1\)</span> and <span class="math inline">\(y_2 \ge y_1\)</span>, then <span class="math inline">\(Q'' &gt; 0\)</span>, so <span class="math inline">\(p_{\min}\)</span> is the minimum of <span class="math inline">\(Q\)</span>, and</p>
+<p><span class="math display">\[
+-\tfrac12 |h| &lt; \operatorname{sign}(h)\,(p_{\min} - p_1) \le \tfrac12 |h|,
+\]</span></p>
+<p>with equality only when <span class="math inline">\(y_2 = y_1\)</span>. So <span class="math inline">\(p_{\min}\)</span> lies within half a step of <span class="math inline">\(p_1\)</span>, strictly between <span class="math inline">\(p_0\)</span> and <span class="math inline">\(p_2\)</span>. To see this, put <span class="math inline">\(u = y_0 - y_1 &gt; 0\)</span> and <span class="math inline">\(v = y_2 - y_1 \ge 0\)</span>; then (6) reads <span class="math inline">\((p_{\min} - p_1)/h = (u - v)/\bigl(2(u + v)\bigr)\)</span>, and <span class="math inline">\(|u - v| &lt; u + v\)</span> unless <span class="math inline">\(v = 0\)</span>.</p>
+</div>
+</div>
+<p>In the seven vertex steps of Examples 1 and 3, <span class="math inline">\(|p_{\min} - p_1|/|h|\)</span> takes the values <span class="math inline">\(0.128\)</span>, <span class="math inline">\(0.105\)</span>, <span class="math inline">\(0.418\)</span> and <span class="math inline">\(0.107\)</span>, <span class="math inline">\(0.270\)</span>, <span class="math inline">\(0.490\)</span>, <span class="math inline">\(0.165\)</span>, all below <span class="math inline">\(\tfrac12\)</span>.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>When the vertex formula fails (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The denominator <span class="math inline">\(2(2y_1 - y_0 - y_2)\)</span> of (5) is zero when the three points are collinear, <span class="math inline">\(y_1 = (y_0 + y_2)/2\)</span>. If the triple is not bracketed, for instance because the bracketing loop stopped at <span class="math inline">\(|h| \le \delta\)</span>, then <span class="math inline">\(Q\)</span> can be concave, and (5) then gives its maximum, or <span class="math inline">\(p_{\min}\)</span> can lie far outside the triple. In Examples 1 and 3 every bracketing loop ends in case (i), so neither problem arises.</p>
+</div>
+</div>
+</section>
+<section id="restarting-and-stopping" class="level3">
+<h3 class="anchored" data-anchor-id="restarting-and-stopping">Restarting and stopping</h3>
+<p>Mathews notes that <span class="math inline">\(p_{\min}\)</span> is a better approximation to <span class="math inline">\(p\)</span> than <span class="math inline">\(p_0\)</span>, so the search replaces <span class="math inline">\(p_0\)</span> by <span class="math inline">\(p_{\min}\)</span> and repeats both processes with a new <span class="math inline">\(h\)</span>. His subroutine takes the new step to be the distance from <span class="math inline">\(p_{\min}\)</span> to the nearest point of the old triple,</p>
+<p><span class="math display">\[
+h_{\text{new}} = \min\bigl\{\,|h_{\min}|,\ |h_{\min} - h|,\ |h_{\min} - 2h|\,\bigr\},
+\tag{7}
+\]</span></p>
+<p>and uses <span class="math inline">\(h_{\text{new}} = h_{\min}\)</span> if this minimum is zero. The sign of <span class="math inline">\(f'(p_{\min})\)</span> then sets the direction of the next step. (The subroutine evaluates (7) after replacing <span class="math inline">\(h\)</span> by <span class="math inline">\(|h|\)</span>, so the three numbers are the distances to <span class="math inline">\(p_0\)</span>, <span class="math inline">\(p_1\)</span>, <span class="math inline">\(p_2\)</span> only for a step to the right. Every outer step of Examples 1 and 3 goes to the right.)</p>
+<p>The subroutine stops on function values, not on the distance to <span class="math inline">\(p\)</span>. After each vertex it computes <span class="math inline">\(e_i = |y_i - f(p_{\min})|\)</span> for <span class="math inline">\(i = 0, 1, 2\)</span>. <span class="math inline">\(\mathrm{Err}\)</span> is the smallest nonzero <span class="math inline">\(e_i\)</span> found so far, starting from <span class="math inline">\(\mathrm{Err} = 1\)</span>, and the search stops when <span class="math inline">\(\mathrm{Err} \le \varepsilon\)</span>. It also stops after 50 outer steps, and each bracketing loop is limited to 50 passes.</p>
+<p>Mathews writes that the method uses the derivative only implicitly, through (4), and makes no explicit use of <span class="math inline">\(f'\)</span>. His subroutine does evaluate <span class="math inline">\(f'(p_0)\)</span> once per outer step, but uses only its sign, to choose the direction.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Quadratic search for a minimum (Mathews’ subroutine)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(f\)</span> unimodal on <span class="math inline">\([a, b]\)</span>, a minimum step <span class="math inline">\(\delta\)</span> and a tolerance <span class="math inline">\(\varepsilon\)</span>: set <span class="math inline">\(p_0 = a\)</span>, <span class="math inline">\(h = (b - a)/2\)</span>, <span class="math inline">\(\mathrm{Err} = 1\)</span>, <span class="math inline">\(k = 0\)</span>.</p>
+<ol type="1">
+<li>If <span class="math inline">\(f'(p_0) &gt; 0\)</span>, set <span class="math inline">\(h = -|h|\)</span>. Evaluate <span class="math inline">\(y_i = f(p_i)\)</span> at the triple (1).</li>
+<li>While <span class="math inline">\(|h| &gt; \delta\)</span> and the triple is not bracketed: if <span class="math inline">\(y_0 \le y_1\)</span>, halve (case iii); otherwise, if <span class="math inline">\(y_2 &lt; y_1\)</span>, double (case ii).</li>
+<li>Compute <span class="math inline">\(h_{\min}\)</span> and <span class="math inline">\(p_{\min} = p_{3k+3}\)</span> from (5), and <span class="math inline">\(f(p_{\min})\)</span>.</li>
+<li>Update <span class="math inline">\(\mathrm{Err}\)</span> from the <span class="math inline">\(e_i\)</span> and set the new <span class="math inline">\(h\)</span> from (7).</li>
+<li>Set <span class="math inline">\(p_0 = p_{\min}\)</span> and <span class="math inline">\(k \leftarrow k + 1\)</span>. Repeat from step 1 while <span class="math inline">\(\mathrm{Err} &gt; \varepsilon\)</span>.</li>
+</ol>
+</div>
+</div>
+<p>The tables label the points as Mathews does. The bracketing triple of outer step <span class="math inline">\(k\)</span> is <span class="math inline">\(p_{3k}, p_{3k+1}, p_{3k+2}\)</span>, its vertex is <span class="math inline">\(p_{3k+3}\)</span>, and the trial points of the bracketing loop are <span class="math inline">\(q_{3k+2,j}\)</span>, <span class="math inline">\(j = 0, 1, \ldots\)</span></p>
+</section>
+<section id="example-1-minimise-x2---sin-x-on-0-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-minimise-x2---sin-x-on-0-1">Example 1 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span></h3>
+<p>Find the minimum of</p>
+<p><span class="math display">\[
+f(x) = x^2 - \sin x
+\]</span></p>
+<p>on <span class="math inline">\([0, 1]\)</span> with the quadratic search. Mathews calls his subroutine with <span class="math inline">\(\delta = \varepsilon = 10^{-6}\)</span>.</p>
+<p><strong>Step 1</strong> (first triple): <span class="math inline">\(p_0 = 0\)</span> and <span class="math inline">\(f'(0) = -1 &lt; 0\)</span>, so <span class="math inline">\(h = (1 - 0)/2 = 0.5\)</span> is positive. The triple is</p>
+<p><span class="math display">\[
+p_0 = 0,\quad p_1 = 0.5,\quad p_2 = 1, \qquad y_0 = 0,\quad y_1 = -0.2294255386,\quad y_2 = 0.1585290152 .
+\]</span></p>
+<p>Since <span class="math inline">\(y_0 &gt; y_1 &lt; y_2\)</span>, this triple is already bracketed (case i).</p>
+<p><strong>Step 2</strong> (first vertex): from (5),</p>
+<p><span class="math display">\[
+h_{\min} = \frac{0.5\,(4y_1 - 3y_0 - y_2)}{2\,(2y_1 - y_0 - y_2)} = \frac{0.5\,(-1.0762311696)}{-1.2347601848} = 0.4358057471,
+\]</span></p>
+<p>so <span class="math inline">\(p_3 = 0.4358057471\)</span> and <span class="math inline">\(f(p_3) = -0.2322143232\)</span>.</p>
+<p><strong>Step 3</strong> (restart): the distances from <span class="math inline">\(p_3\)</span> to the old points are <span class="math inline">\(0.4358057471\)</span>, <span class="math inline">\(0.0641942529\)</span> and <span class="math inline">\(0.5641942529\)</span>, so by (7) the new step is <span class="math inline">\(h = 0.0641942529\)</span>, the distance to <span class="math inline">\(p_1 = 0.5\)</span>. The differences <span class="math inline">\(e_i\)</span> are <span class="math inline">\(0.232\)</span>, <span class="math inline">\(2.79 \times 10^{-3}\)</span> and <span class="math inline">\(0.391\)</span>, so <span class="math inline">\(\mathrm{Err} = 2.79 \times 10^{-3} &gt; 10^{-6}\)</span> and the search continues. Since <span class="math inline">\(f'(p_3) = -0.0349 &lt; 0\)</span>, the step stays positive.</p>
+<p><strong>Step 4</strong> (second bracket): the new triple is <span class="math inline">\(0.4358057471\)</span>, <span class="math inline">\(0.5\)</span>, <span class="math inline">\(0.5641942529\)</span>, with values <span class="math inline">\(-0.2322143232\)</span>, <span class="math inline">\(-0.2294255386\)</span>, <span class="math inline">\(-0.2164199625\)</span>. Since <span class="math inline">\(y_0 \le y_1\)</span>, halve: <span class="math inline">\(q_{5,0} = 0.4679028735\)</span>, with <span class="math inline">\(f = -0.2320824604\)</span>, is still above <span class="math inline">\(y_0\)</span>, so halve again: <span class="math inline">\(q_{5,1} = 0.4518543103\)</span>, with <span class="math inline">\(f = -0.2324621759\)</span>. Now <span class="math inline">\(y_0 &gt; y_1\)</span> and <span class="math inline">\(y_2 = f(0.4679028735) &gt; y_1\)</span>, so the bracket is <span class="math inline">\((0.4358057471, 0.4518543103, 0.4679028735)\)</span> with <span class="math inline">\(h = 0.0160485632\)</span>.</p>
+<p><strong>Step 5</strong> (second vertex): (5) gives <span class="math inline">\(h_{\min} = 0.0143625245\)</span>, so <span class="math inline">\(p_6 = 0.4501682715\)</span> and <span class="math inline">\(f(p_6) = -0.232465574872\)</span>. The new step is <span class="math inline">\(h = 0.0016860388\)</span>, the distance to <span class="math inline">\(0.4518543103\)</span>, and <span class="math inline">\(\mathrm{Err} = 3.40 \times 10^{-6}\)</span>.</p>
+<p><strong>Step 6</strong> (third bracket and vertex): six halvings bring the step down to <span class="math inline">\(h = 2.63444 \times 10^{-5}\)</span>, and the vertex is <span class="math inline">\(p_9 = 0.4501836113\)</span>. Now <span class="math inline">\(\mathrm{Err} = 1.47 \times 10^{-10} \le 10^{-6}\)</span>, and the search stops.</p>
+<p>Every point the subroutine evaluates, in order:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th>Point</th>
+<th><span class="math inline">\(x\)</span></th>
+<th><span class="math inline">\(f(x)\)</span></th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(p_{0}\)</span></td>
+<td>0.0000000000</td>
+<td>0.000000000000</td>
+<td><span class="math inline">\(f'(p_0) &lt; 0\)</span>, <span class="math inline">\(h = 0.5000000000\)</span></td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td><span class="math inline">\(p_0 + h\)</span></td>
+<td>0.5000000000</td>
+<td>-0.229425538604</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(p_0 + 2h\)</span></td>
+<td>1.0000000000</td>
+<td>0.158529015192</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td><span class="math inline">\(p_{3}\)</span> (vertex)</td>
+<td>0.4358057471</td>
+<td>-0.232214323192</td>
+<td>triple <span class="math inline">\((0.00000000, 0.50000000, 1.00000000)\)</span></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(p_{3}\)</span> (start)</td>
+<td>0.4358057471</td>
+<td>-0.232214323192</td>
+<td><span class="math inline">\(f'(p_0) &lt; 0\)</span>, <span class="math inline">\(h = 0.0641942529\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(p_0 + h\)</span></td>
+<td>0.5000000000</td>
+<td>-0.229425538604</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(p_0 + 2h\)</span></td>
+<td>0.5641942529</td>
+<td>-0.216419962455</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(q_{5,0}\)</span></td>
+<td>0.4679028735</td>
+<td>-0.232082460352</td>
+<td>halve: <span class="math inline">\(h = 0.0320971265\)</span></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(q_{5,1}\)</span></td>
+<td>0.4518543103</td>
+<td>-0.232462175947</td>
+<td>halve: <span class="math inline">\(h = 0.0160485632\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(p_{6}\)</span> (vertex)</td>
+<td>0.4501682715</td>
+<td>-0.232465574872</td>
+<td>triple <span class="math inline">\((0.43580575, 0.45185431, 0.46790287)\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(p_{6}\)</span> (start)</td>
+<td>0.4501682715</td>
+<td>-0.232465574872</td>
+<td><span class="math inline">\(f'(p_0) &lt; 0\)</span>, <span class="math inline">\(h = 0.0016860388\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(p_0 + h\)</span></td>
+<td>0.4518543103</td>
+<td>-0.232462175947</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(p_0 + 2h\)</span></td>
+<td>0.4535403491</td>
+<td>-0.232451850337</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(q_{8,0}\)</span></td>
+<td>0.4510112909</td>
+<td>-0.232464740976</td>
+<td>halve: <span class="math inline">\(h = 0.0008430194\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(q_{8,1}\)</span></td>
+<td>0.4505897812</td>
+<td>-0.232465374281</td>
+<td>halve: <span class="math inline">\(h = 0.0004215097\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(q_{8,2}\)</span></td>
+<td>0.4503790264</td>
+<td>-0.232465528662</td>
+<td>halve: <span class="math inline">\(h = 0.0002107548\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(q_{8,3}\)</span></td>
+<td>0.4502736490</td>
+<td>-0.232465565288</td>
+<td>halve: <span class="math inline">\(h = 0.0001053774\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(q_{8,4}\)</span></td>
+<td>0.4502209603</td>
+<td>-0.232465573460</td>
+<td>halve: <span class="math inline">\(h = 0.0000526887\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(q_{8,5}\)</span></td>
+<td>0.4501946159</td>
+<td>-0.232465575011</td>
+<td>halve: <span class="math inline">\(h = 0.0000263444\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(p_{9}\)</span> (vertex)</td>
+<td>0.4501836113</td>
+<td>-0.232465575158</td>
+<td>triple <span class="math inline">\((0.45016827, 0.45019462, 0.45022096)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The outer steps in summary:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th>Bracketing triple <span class="math inline">\(p_{3k}, p_{3k+1}, p_{3k+2}\)</span></th>
+<th><span class="math inline">\(h\)</span></th>
+<th><span class="math inline">\(h_{\min}\)</span></th>
+<th><span class="math inline">\(p_{3k+3}\)</span></th>
+<th><span class="math inline">\(\lvert p_{3k+3} - p \rvert\)</span></th>
+<th>new <span class="math inline">\(h\)</span></th>
+<th>Err</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.00000000, 0.50000000, 1.00000000</td>
+<td><span class="math inline">\(5.0000 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(4.3581 \times 10^{-1}\)</span></td>
+<td>0.4358057471</td>
+<td><span class="math inline">\(1.44 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(6.4194 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(2.79 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.43580575, 0.45185431, 0.46790287</td>
+<td><span class="math inline">\(1.6049 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(1.4363 \times 10^{-2}\)</span></td>
+<td>0.4501682715</td>
+<td><span class="math inline">\(1.53 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(1.6860 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(3.40 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.45016827, 0.45019462, 0.45022096</td>
+<td><span class="math inline">\(2.6344 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(1.5340 \times 10^{-5}\)</span></td>
+<td>0.4501836113</td>
+<td><span class="math inline">\(2.00 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\(1.1005 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(1.47 \times 10^{-10}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result:</strong> after three vertex steps and 20 calls of <span class="math inline">\(f\)</span> (the subroutine does not reuse values, so for example it evaluates <span class="math inline">\(f\)</span> at <span class="math inline">\(p_0\)</span> again at the start of every outer step),</p>
+<p><span class="math display">\[
+\boxed{\,p \approx p_9 = 0.4501836113, \qquad f(p_9) = -0.2324655752\,}
+\]</span></p>
+<p>Mathews’ listing of this run agrees with these points to the eight decimals it prints. It prints <span class="math inline">\(p_4 = 0.5\)</span>, <span class="math inline">\(p_5 = 0.56419425\)</span>, <span class="math inline">\(p_7 = 0.45185431\)</span> and <span class="math inline">\(p_8 = 0.45354035\)</span>, the triples before halving, where the tables above list the triples after bracketing. Its first line gives <span class="math inline">\(f(p_0) = -0.2322143232\)</span> for <span class="math inline">\(p_0 = 0\)</span>. That is <span class="math inline">\(f(p_3)\)</span>: the subroutine prints <span class="math inline">\(y_0\)</span> before assigning it, and the variable still held the value from the step-by-step calculation above it. In fact <span class="math inline">\(f(0) = 0\)</span>.</p>
+<p><strong>Verification:</strong> the minimiser is the root of <span class="math inline">\(f'(x) = 2x - \cos x\)</span>, solved independently to 40 digits.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>True minimiser <span class="math inline">\(p\)</span></td>
+<td><span class="math inline">\(0.4501836113\)</span></td>
+</tr>
+<tr class="even">
+<td>True minimum <span class="math inline">\(f(p)\)</span></td>
+<td><span class="math inline">\(-0.2324655752\)</span></td>
+</tr>
+<tr class="odd">
+<td>Quadratic-search estimate <span class="math inline">\(p_9\)</span></td>
+<td><span class="math inline">\(0.4501836113\)</span></td>
+</tr>
+<tr class="even">
+<td>Error <span class="math inline">\(\lvert p_9 - p \rvert\)</span></td>
+<td><span class="math inline">\(2.0 \times 10^{-11}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(f(p_9) - f(p)\)</span></td>
+<td><span class="math inline">\(4.9 \times 10^{-22}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(f'(p_9)\)</span></td>
+<td><span class="math inline">\(-4.9 \times 10^{-11}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Each bracketing triple contains <span class="math inline">\(p\)</span></td>
+<td><span class="math inline">\(\checkmark\)</span> (all three)</td>
+</tr>
+</tbody>
+</table>
+<p>Mathews compares with <em>Mathematica</em>’s <code>FindMinimum</code>, which gives <span class="math inline">\(p = 0.45018361\)</span> and <span class="math inline">\(f(p) = -0.23246558\)</span>, in agreement.</p>
+</section>
+<section id="example-3-minimise-tfrac12-x5---tfrac45-x-on-0-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-minimise-tfrac12-x5---tfrac45-x-on-0-1">Example 3 — Minimise <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span></h3>
+<p>Find the minimum of</p>
+<p><span class="math display">\[
+f(x) = \frac12 + x^5 - \frac45\,x
+\]</span></p>
+<p>on <span class="math inline">\([0, 1]\)</span> with the quadratic search, again with <span class="math inline">\(\delta = \varepsilon = 10^{-6}\)</span>. This is the example of Mathews’ quadratic-search animation. His solution prints the points in the order of the table below and interleaves the printed lines with graphs of <span class="math inline">\(f\)</span> that mark the current points. This example uses all three cases of the bracketing loop.</p>
+<p><strong>Step 1</strong> (first triple and vertex): <span class="math inline">\(f'(0) = -0.8 &lt; 0\)</span> and <span class="math inline">\(h = 0.5\)</span>. The triple <span class="math inline">\(0, 0.5, 1\)</span> has values <span class="math inline">\(0.5\)</span>, <span class="math inline">\(0.13125\)</span>, <span class="math inline">\(0.7\)</span>, so it is bracketed. Here <span class="math inline">\(4y_1 - 3y_0 - y_2 = -1.675\)</span> and <span class="math inline">\(2(2y_1 - y_0 - y_2) = -1.875\)</span>, so</p>
+<p><span class="math display">\[
+h_{\min} = \frac{0.5\,(-1.675)}{-1.875} = 0.4466666667 = \tfrac{67}{150}, \qquad p_3 = 0.4466666667, \qquad f(p_3) = 0.1604460919.
+\]</span></p>
+<p>The new step is the distance to <span class="math inline">\(0.5\)</span>, <span class="math inline">\(h = 0.0533333333\)</span>, and <span class="math inline">\(\mathrm{Err} = 2.92 \times 10^{-2}\)</span>.</p>
+<p><strong>Step 2</strong> (doubling, case ii): the triple <span class="math inline">\(0.4466666667\)</span>, <span class="math inline">\(0.5\)</span>, <span class="math inline">\(0.5533333333\)</span> has values <span class="math inline">\(0.1604460919\)</span>, <span class="math inline">\(0.13125\)</span>, <span class="math inline">\(0.1092054735\)</span>, which decrease, so double: <span class="math inline">\(q_{5,0} = p_0 + 2(0.1066666667) = 0.66\)</span>, with <span class="math inline">\(f = 0.0972332576\)</span>, is lower again, so double once more: <span class="math inline">\(q_{5,1} = 0.8733333333\)</span>, with <span class="math inline">\(f = 0.3093759954\)</span>. The bracket is <span class="math inline">\((0.4466666667, 0.66, 0.8733333333)\)</span> with <span class="math inline">\(h = 0.2133333333\)</span>. Its vertex is <span class="math inline">\(p_6 = 0.6023078449\)</span>, with <span class="math inline">\(f(p_6) = 0.0974207564\)</span>. This value is higher than <span class="math inline">\(f(0.66) = 0.0972332576\)</span>, and <span class="math inline">\(p_6\)</span> is farther from <span class="math inline">\(p\)</span> (<span class="math inline">\(0.0302\)</span>) than <span class="math inline">\(0.66\)</span> is (<span class="math inline">\(0.0275\)</span>). The vertex is not always the best point found so far. The new step is <span class="math inline">\(h = 0.0576921551\)</span>, the distance to <span class="math inline">\(0.66\)</span>, and <span class="math inline">\(\mathrm{Err} = 1.87 \times 10^{-4}\)</span>.</p>
+<p><strong>Step 3</strong> (bracketed at once): the triple <span class="math inline">\(0.6023078449\)</span>, <span class="math inline">\(0.66\)</span>, <span class="math inline">\(0.7176921551\)</span> is bracketed without halving or doubling, and its vertex is <span class="math inline">\(p_9 = 0.6317169944\)</span>. None of its <span class="math inline">\(e_i\)</span> is below <span class="math inline">\(1.87 \times 10^{-4}\)</span>, so <span class="math inline">\(\mathrm{Err}\)</span> does not change.</p>
+<p><strong>Step 4</strong> (halving, case iii): from <span class="math inline">\(p_9\)</span> with <span class="math inline">\(h = 0.0282830056\)</span>, five halvings give the bracket <span class="math inline">\((0.6317169944, 0.6326008383, 0.6334846822)\)</span> and the vertex <span class="math inline">\(p_{12} = 0.6324549648\)</span>. Now <span class="math inline">\(\mathrm{Err} = 5.34 \times 10^{-8} \le 10^{-6}\)</span>, and the search stops.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th>Point</th>
+<th><span class="math inline">\(x\)</span></th>
+<th><span class="math inline">\(f(x)\)</span></th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(p_{0}\)</span></td>
+<td>0.0000000000</td>
+<td>0.500000000000</td>
+<td><span class="math inline">\(f'(p_0) &lt; 0\)</span>, <span class="math inline">\(h = 0.5000000000\)</span></td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td><span class="math inline">\(p_0 + h\)</span></td>
+<td>0.5000000000</td>
+<td>0.131250000000</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(p_0 + 2h\)</span></td>
+<td>1.0000000000</td>
+<td>0.700000000000</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td><span class="math inline">\(p_{3}\)</span> (vertex)</td>
+<td>0.4466666667</td>
+<td>0.160446091944</td>
+<td>triple <span class="math inline">\((0.00000000, 0.50000000, 1.00000000)\)</span></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(p_{3}\)</span> (start)</td>
+<td>0.4466666667</td>
+<td>0.160446091944</td>
+<td><span class="math inline">\(f'(p_0) &lt; 0\)</span>, <span class="math inline">\(h = 0.0533333333\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(p_0 + h\)</span></td>
+<td>0.5000000000</td>
+<td>0.131250000000</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(p_0 + 2h\)</span></td>
+<td>0.5533333333</td>
+<td>0.109205473488</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(q_{5,0}\)</span></td>
+<td>0.6600000000</td>
+<td>0.097233257600</td>
+<td>double: <span class="math inline">\(h = 0.1066666667\)</span></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(q_{5,1}\)</span></td>
+<td>0.8733333333</td>
+<td>0.309375995404</td>
+<td>double: <span class="math inline">\(h = 0.2133333333\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(p_{6}\)</span> (vertex)</td>
+<td>0.6023078449</td>
+<td>0.097420756388</td>
+<td>triple <span class="math inline">\((0.44666667, 0.66000000, 0.87333333)\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(p_{6}\)</span> (start)</td>
+<td>0.6023078449</td>
+<td>0.097420756388</td>
+<td><span class="math inline">\(f'(p_0) &lt; 0\)</span>, <span class="math inline">\(h = 0.0576921551\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(p_0 + h\)</span></td>
+<td>0.6600000000</td>
+<td>0.097233257600</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(p_0 + 2h\)</span></td>
+<td>0.7176921551</td>
+<td>0.116256820653</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(p_{9}\)</span> (vertex)</td>
+<td>0.6317169944</td>
+<td>0.095229837749</td>
+<td>triple <span class="math inline">\((0.60230784, 0.66000000, 0.71769216)\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(p_{9}\)</span> (start)</td>
+<td>0.6317169944</td>
+<td>0.095229837749</td>
+<td><span class="math inline">\(f'(p_0) &lt; 0\)</span>, <span class="math inline">\(h = 0.0282830056\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(p_0 + h\)</span></td>
+<td>0.6600000000</td>
+<td>0.097233257600</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(p_0 + 2h\)</span></td>
+<td>0.6882830056</td>
+<td>0.103840425046</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(q_{11,0}\)</span></td>
+<td>0.6458584972</td>
+<td>0.095692648704</td>
+<td>halve: <span class="math inline">\(h = 0.0141415028\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(q_{11,1}\)</span></td>
+<td>0.6387877458</td>
+<td>0.095330918305</td>
+<td>halve: <span class="math inline">\(h = 0.0070707514\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(q_{11,2}\)</span></td>
+<td>0.6352523701</td>
+<td>0.095248336238</td>
+<td>halve: <span class="math inline">\(h = 0.0035353757\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(q_{11,3}\)</span></td>
+<td>0.6334846822</td>
+<td>0.095231143323</td>
+<td>halve: <span class="math inline">\(h = 0.0017676879\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(q_{11,4}\)</span></td>
+<td>0.6326008383</td>
+<td>0.095228512925</td>
+<td>halve: <span class="math inline">\(h = 0.0008838439\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(p_{12}\)</span> (vertex)</td>
+<td>0.6324549648</td>
+<td>0.095228459499</td>
+<td>triple <span class="math inline">\((0.63171699, 0.63260084, 0.63348468)\)</span></td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th>Bracketing triple <span class="math inline">\(p_{3k}, p_{3k+1}, p_{3k+2}\)</span></th>
+<th><span class="math inline">\(h\)</span></th>
+<th><span class="math inline">\(h_{\min}\)</span></th>
+<th><span class="math inline">\(p_{3k+3}\)</span></th>
+<th><span class="math inline">\(\lvert p_{3k+3} - p \rvert\)</span></th>
+<th>new <span class="math inline">\(h\)</span></th>
+<th>Err</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.00000000, 0.50000000, 1.00000000</td>
+<td><span class="math inline">\(5.0000 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(4.4667 \times 10^{-1}\)</span></td>
+<td>0.4466666667</td>
+<td><span class="math inline">\(1.86 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(5.3333 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(2.92 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.44666667, 0.66000000, 0.87333333</td>
+<td><span class="math inline">\(2.1333 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(1.5564 \times 10^{-1}\)</span></td>
+<td>0.6023078449</td>
+<td><span class="math inline">\(3.01 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(5.7692 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(1.87 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.60230784, 0.66000000, 0.71769216</td>
+<td><span class="math inline">\(5.7692 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(2.9409 \times 10^{-2}\)</span></td>
+<td>0.6317169944</td>
+<td><span class="math inline">\(7.39 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(2.8283 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(1.87 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.63171699, 0.63260084, 0.63348468</td>
+<td><span class="math inline">\(8.8384 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(7.3797 \times 10^{-4}\)</span></td>
+<td>0.6324549648</td>
+<td><span class="math inline">\(5.67 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(1.4587 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(5.34 \times 10^{-8}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result:</strong> after four vertex steps and 23 calls of <span class="math inline">\(f\)</span>,</p>
+<p><span class="math display">\[
+\boxed{\,p \approx p_{12} = 0.6324549648, \qquad f(p_{12}) = 0.0952284595\,}
+\]</span></p>
+<p>Every point and value printed in Mathews’ solution, to eight decimals for the points and ten for the values, agrees with this run.</p>
+<p><strong>Verification:</strong> the exact minimiser is <span class="math inline">\(p = \sqrt{10}/5\)</span>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>True minimiser <span class="math inline">\(p = \sqrt{10}/5\)</span></td>
+<td><span class="math inline">\(0.6324555320\)</span></td>
+</tr>
+<tr class="even">
+<td>True minimum <span class="math inline">\(f(p)\)</span></td>
+<td><span class="math inline">\(0.0952284595\)</span></td>
+</tr>
+<tr class="odd">
+<td>Quadratic-search estimate <span class="math inline">\(p_{12}\)</span></td>
+<td><span class="math inline">\(0.6324549648\)</span></td>
+</tr>
+<tr class="even">
+<td>Error <span class="math inline">\(\lvert p_{12} - p \rvert\)</span></td>
+<td><span class="math inline">\(5.67 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(f(p_{12}) - f(p)\)</span></td>
+<td><span class="math inline">\(8.1 \times 10^{-13}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(f'(p_{12})\)</span></td>
+<td><span class="math inline">\(-2.9 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Each bracketing triple contains <span class="math inline">\(p\)</span></td>
+<td><span class="math inline">\(\checkmark\)</span> (all four)</td>
+</tr>
+</tbody>
+</table>
+<p>The stopping test uses function values, so the error in <span class="math inline">\(p\)</span> is much larger than the agreement of the function values: <span class="math inline">\(f(p_{12}) - f(p) = 8.1 \times 10^{-13}\)</span> while <span class="math inline">\(p_{12} - p = -5.67 \times 10^{-7}\)</span>. Near a minimum <span class="math inline">\(f(x) - f(p) \approx \tfrac12 f''(p)(x - p)^2\)</span>, and here <span class="math inline">\(\tfrac12 f''(p) (5.67 \times 10^{-7})^2 = \tfrac12 (5.06)(3.2 \times 10^{-13}) = 8.1 \times 10^{-13}\)</span>.</p>
+</section>
+</section>
+<section id="cubic-interpolative-search" class="level2">
+<h2 class="anchored" data-anchor-id="cubic-interpolative-search">Cubic Interpolative Search</h2>
+<section id="the-starting-step" class="level3">
+<h3 class="anchored" data-anchor-id="the-starting-step">The starting step</h3>
+<p>Assume <span class="math inline">\(f\)</span> is unimodal and differentiable on <span class="math inline">\([a, b]\)</span>, with minimum at <span class="math inline">\(p\)</span>, and let <span class="math inline">\(p_0 = a\)</span>. Any reasonable step <span class="math inline">\(h\)</span> can start the iteration. Mathews estimates one from the mean value theorem, <span class="math inline">\(f(a + h) - f(a) = h f'(c)\)</span> for some <span class="math inline">\(c\)</span> between <span class="math inline">\(a\)</span> and <span class="math inline">\(a + h\)</span>. If <span class="math inline">\(a + h\)</span> were just to the right of the minimum, the average slope <span class="math inline">\(f'(c)\)</span> might be about <span class="math inline">\(\tfrac12 f'(a)\)</span>. Since the position of <span class="math inline">\(a + h\)</span> is unknown, he takes <span class="math inline">\(f(a + h) \approx f(b)\)</span> and obtains</p>
+<p><span class="math display">\[
+h_0 = \frac{2\bigl(f(b) - f(a)\bigr)}{f'(a)}, \qquad p_1 = p_0 + h_0.
+\tag{8}
+\]</span></p>
+<p>When <span class="math inline">\(f'(a) &lt; 0\)</span>, this <span class="math inline">\(h_0\)</span> is positive only if <span class="math inline">\(f(b) &lt; f(a)\)</span>. In both of Mathews’ examples <span class="math inline">\(f(b) &gt; f(a)\)</span>, so <span class="math inline">\(h_0 &lt; 0\)</span> and <span class="math inline">\(p_1\)</span> lies to the left of <span class="math inline">\(a\)</span>, outside the interval.</p>
+</section>
+<section id="the-interpolating-cubic" class="level3">
+<h3 class="anchored" data-anchor-id="the-interpolating-cubic">The interpolating cubic</h3>
+<p>Let <span class="math inline">\(h = p_1 - p_0\)</span>. The cubic <span class="math inline">\(P\)</span> is written about the abscissa <span class="math inline">\(p_2\)</span> of its minimum:</p>
+<p><span class="math display">\[
+P(x) = \frac{\alpha}{h^3}(x - p_2)^3 + \frac{\beta}{h^2}(x - p_2)^2 + f(p_2),
+\qquad
+P'(x) = \frac{3\alpha}{h^3}(x - p_2)^2 + \frac{2\beta}{h^2}(x - p_2).
+\tag{9}
+\]</span></p>
+<p>It must satisfy <span class="math inline">\(P(p_0) = f(p_0)\)</span>, <span class="math inline">\(P(p_1) = f(p_1)\)</span>, <span class="math inline">\(P'(p_0) = f'(p_0)\)</span> and <span class="math inline">\(P'(p_1) = f'(p_1)\)</span>. (The powers of <span class="math inline">\(h\)</span> in the denominators make the following algebra simpler.) Put</p>
+<p><span class="math display">\[
+p_2 = p_0 + \gamma h,
+\tag{10}
+\]</span></p>
+<p>so that <span class="math inline">\(p_1 - p_2 = (1 - \gamma)h\)</span> and <span class="math inline">\(p_0 - p_2 = -\gamma h\)</span>. Substituting into (9) gives three equations:</p>
+<p><span class="math display">\[
+\begin{aligned}
+F &amp;= f(p_1) - f(p_0) = \alpha(3\gamma^2 - 3\gamma + 1) + \beta(1 - 2\gamma), \\
+G &amp;= h\bigl(f'(p_1) - f'(p_0)\bigr) = 3\alpha(1 - 2\gamma) + 2\beta, \\
+h f'(p_0) &amp;= 3\alpha\gamma^2 - 2\beta\gamma.
+\end{aligned}
+\tag{11}
+\]</span></p>
+<p>The book section linked from Mathews’ module gives the middle equation as <span class="math inline">\(G = f'(p_1) - f'(p_0)\)</span>, without the factor <span class="math inline">\(h\)</span>. The module and the subroutine include the factor, and it is needed. The combination <span class="math inline">\(G - 2(F - h f'(p_0))\)</span> cancels both <span class="math inline">\(\beta\)</span> and every <span class="math inline">\(\gamma\)</span>:</p>
+<p><span class="math display">\[
+\alpha = G - 2\bigl(F - h f'(p_0)\bigr).
+\tag{12}
+\]</span></p>
+<p>Multiplying the second equation of (11) by <span class="math inline">\(\gamma\)</span> and adding the third eliminates <span class="math inline">\(\beta\)</span>:</p>
+<p><span class="math display">\[
+3\alpha\gamma^2 + (G - 3\alpha)\gamma + h f'(p_0) = 0.
+\tag{13}
+\]</span></p>
+<p>The quadratic formula, with the numerator rationalised, gives the root Mathews uses:</p>
+<p><span class="math display">\[
+\gamma = \frac{-2h f'(p_0)}{(G - 3\alpha) + \sqrt{(G - 3\alpha)^2 - 12 h \alpha f'(p_0)}}.
+\tag{14}
+\]</span></p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Which root (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>From (9), <span class="math inline">\(P''(p_2) = 2\beta/h^2\)</span>, so <span class="math inline">\(p_2\)</span> is a local minimum of <span class="math inline">\(P\)</span> when <span class="math inline">\(\beta &gt; 0\)</span>. Each critical point of the cubic through the four conditions gives a representation (9) about that point, so the two roots of (13) are the cubic’s two critical points. Form (14) is the root that stays finite as <span class="math inline">\(\alpha \to 0\)</span>. In that limit <span class="math inline">\(P\)</span> is a quadratic and <span class="math inline">\(\gamma = -h f'(p_0)/G\)</span>, so</p>
+<p><span class="math display">\[
+p_2 = p_0 - f'(p_0)\,\frac{p_1 - p_0}{f'(p_1) - f'(p_0)},
+\]</span></p>
+<p>the secant step for <span class="math inline">\(f'(x) = 0\)</span>. If the discriminant in (14) is negative, the cubic has no critical point and the step is undefined.</p>
+</div>
+</div>
+<p>In every step of Examples 2 and 4 the discriminant is positive and <span class="math inline">\(\beta &gt; 0\)</span>, so (14) picks the local minimum of the cubic.</p>
+<p>To continue, set <span class="math inline">\(h = p_2 - p_1\)</span> and replace <span class="math inline">\(p_0, p_1\)</span> by <span class="math inline">\(p_1, p_2\)</span> in (11)–(14). The method does not keep a bracket, so a stopping rule is harder to choose. Mathews suggests <span class="math inline">\(|f'(p_k)| &lt; \varepsilon\)</span>, since <span class="math inline">\(f'(p) = 0\)</span>. His subroutine simply runs a fixed number of steps.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Cubic search for a minimum (Mathews’ subroutine)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(f\)</span> unimodal and differentiable on <span class="math inline">\([a, b]\)</span> and a number of steps <span class="math inline">\(m_{\max}\)</span>: set <span class="math inline">\(p_0 = a\)</span>, <span class="math inline">\(h_0 = 2(f(b) - f(a))/f'(a)\)</span>, <span class="math inline">\(p_1 = p_0 + h_0\)</span>. For <span class="math inline">\(k = 0, 1, \ldots, m_{\max} - 1\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+F &amp;= f(p_{k+1}) - f(p_k), \qquad G = h_k\bigl(f'(p_{k+1}) - f'(p_k)\bigr), \qquad \alpha = G - 2\bigl(F - h_k f'(p_k)\bigr), \\
+\gamma &amp;= \frac{-2h_k f'(p_k)}{(G - 3\alpha) + \sqrt{(G - 3\alpha)^2 - 12 h_k \alpha f'(p_k)}}, \qquad
+p_{k+2} = p_k + \gamma h_k, \qquad h_{k+1} = p_{k+2} - p_{k+1}.
+\end{aligned}
+\]</span></p>
+</div>
+</div>
+<p>Mathews’ algorithm statement lists <span class="math inline">\(p_1 = b\)</span> among the starting values. In his subroutine <span class="math inline">\(b\)</span> enters only through <span class="math inline">\(f(b)\)</span> in <span class="math inline">\(h_0\)</span>, and the iteration starts from <span class="math inline">\(p_1 = p_0 + h_0\)</span>.</p>
+</section>
+<section id="example-2-minimise-x2---sin-x-by-cubic-search" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-minimise-x2---sin-x-by-cubic-search">Example 2 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> by cubic search</h3>
+<p>Find the minimum of <span class="math inline">\(f(x) = x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span>, the function of Example 1, with the cubic search and <span class="math inline">\(m_{\max} = 4\)</span> as in Mathews’ run. Here <span class="math inline">\(f'(x) = 2x - \cos x\)</span>.</p>
+<p><strong>Step 1</strong> (starting step): <span class="math inline">\(f(0) = 0\)</span>, <span class="math inline">\(f(1) = 0.1585290152\)</span> and <span class="math inline">\(f'(0) = -1\)</span>, so by (8)</p>
+<p><span class="math display">\[
+h_0 = \frac{2(0.1585290152 - 0)}{-1} = -0.3170580304, \qquad p_1 = -0.3170580304,
+\]</span></p>
+<p>which is outside <span class="math inline">\([0, 1]\)</span>, with <span class="math inline">\(f(p_1) = 0.4122983762\)</span> and <span class="math inline">\(f'(p_1) = -1.5842728149\)</span>.</p>
+<p><strong>Step 2</strong> (first cubic step): from (11) and (12),</p>
+<p><span class="math display">\[
+F = 0.4122983762, \qquad G = 0.1852483879, \qquad \alpha = 0.1852483879 - 2(0.4122983762 - 0.3170580304) = -0.0052323037.
+\]</span></p>
+<p>Then <span class="math inline">\(G - 3\alpha = 0.2009452991\)</span>, the discriminant is <span class="math inline">\(0.0602863403\)</span> with square root <span class="math inline">\(0.2455327682\)</span>, and</p>
+<p><span class="math display">\[
+\gamma = \frac{-0.6341160608}{0.2009452991 + 0.2455327682} = -1.4202625104, \qquad
+p_2 = 0 + (-1.4202625104)(-0.3170580304) = 0.4503056342 .
+\]</span></p>
+<p>The other root of (13), <span class="math inline">\(\gamma = 14.22\)</span>, corresponds to <span class="math inline">\(x = -4.509\)</span>, a local maximum of the cubic. The first cubic step lands within <span class="math inline">\(1.22 \times 10^{-4}\)</span> of <span class="math inline">\(p\)</span>.</p>
+<p><strong>Step 3</strong> (continue): set <span class="math inline">\(h = p_2 - p_1 = 0.7673636646\)</span> and repeat with <span class="math inline">\((p_1, p_2)\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(m\)</span></th>
+<th><span class="math inline">\(h\)</span></th>
+<th><span class="math inline">\(F\)</span></th>
+<th><span class="math inline">\(G\)</span></th>
+<th><span class="math inline">\(\alpha\)</span></th>
+<th><span class="math inline">\(\gamma\)</span></th>
+<th><span class="math inline">\(p_m\)</span></th>
+<th><span class="math inline">\(f(p_m)\)</span></th>
+<th><span class="math inline">\(f'(p_m)\)</span></th>
+<th><span class="math inline">\(\lvert p_m - p \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0.0000000000</td>
+<td>0.000000000000</td>
+<td><span class="math inline">\(-1.00\)</span></td>
+<td><span class="math inline">\(4.50 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-0.3170580304</td>
+<td>0.412298376202</td>
+<td><span class="math inline">\(-1.58\)</span></td>
+<td><span class="math inline">\(7.67 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(-3.170580 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(4.122984 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(1.852484 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-5.232304 \times 10^{-3}\)</span></td>
+<td>-1.42026251</td>
+<td>0.4503056342</td>
+<td>-0.232465557029</td>
+<td><span class="math inline">\(2.97 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(1.22 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(7.673637 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-6.447639 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(1.215941\)</span></td>
+<td><span class="math inline">\(7.404249 \times 10^{-2}\)</span></td>
+<td>0.99984144</td>
+<td>0.4501839577</td>
+<td>-0.232465575158</td>
+<td><span class="math inline">\(8.43 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(3.46 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(-1.216765 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(-1.812917 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(3.605335 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(-2.703607 \times 10^{-13}\)</span></td>
+<td>1.00284657</td>
+<td>0.4501836113</td>
+<td>-0.232465575158</td>
+<td><span class="math inline">\(-2.78 \times 10^{-15}\)</span></td>
+<td><span class="math inline">\(1.13 \times 10^{-15}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(-3.463607 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(-1.460776 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\(2.921322 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\(2.297528 \times 10^{-17}\)</span></td>
+<td>1.00000000</td>
+<td>0.4501836113</td>
+<td>-0.232465575158</td>
+<td><span class="math inline">\(1.11 \times 10^{-16}\)</span></td>
+<td><span class="math inline">\(3.60 \times 10^{-17}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The column <span class="math inline">\(h\)</span> is the step <span class="math inline">\(p_{m-1} - p_{m-2}\)</span> used to compute <span class="math inline">\(p_m\)</span>. The iterates <span class="math inline">\(p_2\)</span> and <span class="math inline">\(p_3\)</span> lie to the right of <span class="math inline">\(p\)</span> and <span class="math inline">\(p_4\)</span> to the left. By <span class="math inline">\(p_4\)</span> the error is at the level of double-precision rounding, and <span class="math inline">\(p_5\)</span> only changes the rounding.</p>
+<p><strong>Result:</strong></p>
+<p><span class="math display">\[
+\boxed{\,p \approx p_5 = 0.4501836113, \qquad f(p_5) = -0.2324655752\,}
+\]</span></p>
+<p>Mathews’ listing agrees to the eight decimals it prints: <span class="math inline">\(p_2 = 0.45030563\)</span>, <span class="math inline">\(p_3 = 0.45018396\)</span>, <span class="math inline">\(p_4 = p_5 = 0.45018361\)</span>.</p>
+<p><strong>Verification:</strong> the result agrees with the root <span class="math inline">\(p = 0.4501836113\)</span> of <span class="math inline">\(2x = \cos x\)</span> from Example 1 to all ten printed decimals, and <span class="math inline">\(f'(p_5) = 1.1 \times 10^{-16}\)</span>.</p>
+<p>Mathews also compares with the secant method for the root of <span class="math inline">\(g(x) = f'(x) = 2x - \cos x\)</span>, started from <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(p_k\)</span></th>
+<th><span class="math inline">\(g(p_k)\)</span></th>
+<th><span class="math inline">\(\lvert p_k - p \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.0000000000</td>
+<td><span class="math inline">\(-1.0000\)</span></td>
+<td><span class="math inline">\(4.50 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>1.0000000000</td>
+<td><span class="math inline">\(1.4597\)</span></td>
+<td><span class="math inline">\(5.50 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.4065540259</td>
+<td><span class="math inline">\(-1.0538 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(4.36 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.4465123273</td>
+<td><span class="math inline">\(-8.9340 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(3.67 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.4502137087</td>
+<td><span class="math inline">\(7.3292 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(3.01 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>0.4501835908</td>
+<td><span class="math inline">\(-4.9806 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(2.05 \times 10^{-8}\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>0.4501836113</td>
+<td><span class="math inline">\(-2.7711 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\(1.14 \times 10^{-13}\)</span></td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>0.4501836113</td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(1.95 \times 10^{-17}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>These values agree with the ones Mathews prints. The secant method reaches an error of <span class="math inline">\(10^{-13}\)</span> at <span class="math inline">\(p_6\)</span>, while the cubic search, which also uses values of <span class="math inline">\(f\)</span>, reaches <span class="math inline">\(10^{-15}\)</span> at <span class="math inline">\(p_4\)</span>.</p>
+</section>
+<section id="example-4-minimise-tfrac12-x5---tfrac45-x-by-cubic-search" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-minimise-tfrac12-x5---tfrac45-x-by-cubic-search">Example 4 — Minimise <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> by cubic search</h3>
+<p>Find the minimum of <span class="math inline">\(f(x) = \tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span>, the function of Example 3, with the cubic search and <span class="math inline">\(m_{\max} = 7\)</span>. Here <span class="math inline">\(f'(x) = 5x^4 - \tfrac45\)</span>. This is the example of Mathews’ cubic-search animation. His solution interleaves the printed points with graphs of <span class="math inline">\(f\)</span> on <span class="math inline">\([0, 1]\)</span> that mark the current points.</p>
+<p><strong>Step 1</strong> (starting step): <span class="math inline">\(f(0) = 0.5\)</span>, <span class="math inline">\(f(1) = 0.7\)</span> and <span class="math inline">\(f'(0) = -0.8\)</span>, so</p>
+<p><span class="math display">\[
+h_0 = \frac{2(0.7 - 0.5)}{-0.8} = -0.5, \qquad p_1 = -0.5, \qquad f(p_1) = 0.86875, \qquad f'(p_1) = -0.4875 .
+\]</span></p>
+<p><strong>Step 2</strong> (first cubic step): <span class="math inline">\(F = 0.36875\)</span>, <span class="math inline">\(G = (-0.5)(-0.4875 + 0.8) = -0.15625\)</span> and <span class="math inline">\(\alpha = -0.15625 - 2(0.36875 - 0.4) = -0.09375\)</span>. Here <span class="math inline">\(G &lt; 0\)</span>: between <span class="math inline">\(p_1 = -0.5\)</span> and <span class="math inline">\(p_0 = 0\)</span> the function is concave (<span class="math inline">\(f''(x) = 20x^3 &lt; 0\)</span> for <span class="math inline">\(x &lt; 0\)</span>). Then <span class="math inline">\(G - 3\alpha = 0.125\)</span>, the discriminant is <span class="math inline">\(0.465625\)</span>, and</p>
+<p><span class="math display">\[
+\gamma = \frac{-0.8}{0.125 + 0.6823672032} = -0.9908750279, \qquad p_2 = 0 + (-0.9908750279)(-0.5) = 0.4954375140 .
+\]</span></p>
+<p><strong>Step 3</strong> (continue): <span class="math inline">\(p_2\)</span> is still to the left of <span class="math inline">\(p\)</span>, and <span class="math inline">\(p_3 = 0.7627526748\)</span> overshoots to the right of it. From <span class="math inline">\(p_4\)</span> on the iterates close in on <span class="math inline">\(p\)</span>, and <span class="math inline">\(p_4\)</span>, <span class="math inline">\(p_5\)</span>, <span class="math inline">\(p_6\)</span> fall on alternate sides of it.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(m\)</span></th>
+<th><span class="math inline">\(h\)</span></th>
+<th><span class="math inline">\(F\)</span></th>
+<th><span class="math inline">\(G\)</span></th>
+<th><span class="math inline">\(\alpha\)</span></th>
+<th><span class="math inline">\(\gamma\)</span></th>
+<th><span class="math inline">\(p_m\)</span></th>
+<th><span class="math inline">\(f(p_m)\)</span></th>
+<th><span class="math inline">\(f'(p_m)\)</span></th>
+<th><span class="math inline">\(\lvert p_m - p \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0.0000000000</td>
+<td>0.500000000000</td>
+<td><span class="math inline">\(-8.00 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(6.32 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>-0.5000000000</td>
+<td>0.868750000000</td>
+<td><span class="math inline">\(-4.88 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(1.13\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(-5.000000 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(3.687500 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-1.562500 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-9.375000 \times 10^{-2}\)</span></td>
+<td>-0.99087503</td>
+<td>0.4954375140</td>
+<td>0.133499995943</td>
+<td><span class="math inline">\(-4.99 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(1.37 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(9.954375 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-7.352500 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-1.119971 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(4.887487 \times 10^{-1}\)</span></td>
+<td>1.26854037</td>
+<td>0.7627526748</td>
+<td>0.147975541667</td>
+<td><span class="math inline">\(8.92 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(1.30 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(2.673152 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(1.447555 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(3.718778 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(7.627927 \times 10^{-2}\)</span></td>
+<td>0.51226173</td>
+<td>0.6323728413</td>
+<td>0.095228476795</td>
+<td><span class="math inline">\(-4.18 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(8.27 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(-1.303798 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-5.274706 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\(1.164065 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(-1.080328 \times 10^{-2}\)</span></td>
+<td>0.99935087</td>
+<td>0.6324574747</td>
+<td>0.095228459508</td>
+<td><span class="math inline">\(9.83 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\(1.94 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(8.463345 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(-1.728652 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(3.623439 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(2.424569 \times 10^{-12}\)</span></td>
+<td>0.97704602</td>
+<td>0.6324555320</td>
+<td>0.095228459498</td>
+<td><span class="math inline">\(-6.51 \times 10^{-14}\)</span></td>
+<td><span class="math inline">\(1.29 \times 10^{-14}\)</span></td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td><span class="math inline">\(-1.942674 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\(-9.547585 \times 10^{-12}\)</span></td>
+<td><span class="math inline">\(1.909510 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\(6.695557 \times 10^{-17}\)</span></td>
+<td>0.99999999</td>
+<td>0.6324555320</td>
+<td>0.095228459498</td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(1.60 \times 10^{-17}\)</span></td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td><span class="math inline">\(1.287859 \times 10^{-14}\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(8.378689 \times 10^{-28}\)</span></td>
+<td><span class="math inline">\(-8.378689 \times 10^{-28}\)</span></td>
+<td>0.33333333</td>
+<td>0.6324555320</td>
+<td>0.095228459498</td>
+<td><span class="math inline">\(-4.32 \times 10^{-14}\)</span></td>
+<td><span class="math inline">\(8.53 \times 10^{-15}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>By <span class="math inline">\(p_6\)</span> the error is <span class="math inline">\(1.3 \times 10^{-14}\)</span>. The last two steps work with differences at the level of rounding: for <span class="math inline">\(p_8\)</span> the difference <span class="math inline">\(F\)</span> is exactly zero and <span class="math inline">\(\gamma = \tfrac13\)</span> is meaningless, although <span class="math inline">\(p_8\)</span> still agrees with <span class="math inline">\(p\)</span> to fourteen decimals.</p>
+<p><strong>Result:</strong></p>
+<p><span class="math display">\[
+\boxed{\,p \approx p_8 = 0.6324555320, \qquad f(p_8) = 0.0952284595\,}
+\]</span></p>
+<p>Every point and value Mathews prints (<span class="math inline">\(p_0\)</span> to <span class="math inline">\(p_8\)</span>, to eight decimals for the points and ten for the values) agrees with this run.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(p = \sqrt{10}/5 = 0.6324555320\)</span>; the error of <span class="math inline">\(p_6\)</span>, <span class="math inline">\(p_7\)</span> and <span class="math inline">\(p_8\)</span> is at most <span class="math inline">\(1.3 \times 10^{-14}\)</span>, and <span class="math inline">\(f'(p_8) = -4.3 \times 10^{-14}\)</span>.</p>
+</section>
+</section>
+<section id="comparing-the-two-searches" class="level2">
+<h2 class="anchored" data-anchor-id="comparing-the-two-searches">Comparing the Two Searches</h2>
+<p>Examples 1 and 2 minimise the same function, so the methods can be compared directly.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method (on <span class="math inline">\(x^2 - \sin x\)</span>)</th>
+<th>Information used</th>
+<th>Steps</th>
+<th>Error of the result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Quadratic search (Example 1)</td>
+<td>20 calls of <span class="math inline">\(f\)</span>, sign of <span class="math inline">\(f'\)</span> at 3 points</td>
+<td>3 vertex steps</td>
+<td><span class="math inline">\(2.0 \times 10^{-11}\)</span></td>
+</tr>
+<tr class="even">
+<td>Cubic search (Example 2)</td>
+<td><span class="math inline">\(f\)</span> and <span class="math inline">\(f'\)</span> at the iterates</td>
+<td><span class="math inline">\(p_3\)</span> after 2 cubic steps, <span class="math inline">\(p_4\)</span> after 3</td>
+<td><span class="math inline">\(3.5 \times 10^{-7}\)</span>, then <span class="math inline">\(1.1 \times 10^{-15}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Secant method on <span class="math inline">\(f'\)</span></td>
+<td><span class="math inline">\(f'\)</span> only</td>
+<td><span class="math inline">\(p_6\)</span> after 5 secant steps</td>
+<td><span class="math inline">\(1.1 \times 10^{-13}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>To see the rate of convergence without the limit of double precision, the three iterations were repeated in 400-digit arithmetic. The ratio <span class="math inline">\(\log e_{k+1} / \log e_k\)</span> of successive errors measures the order:</p>
+<ul>
+<li><strong>Cubic search:</strong> the ratios settle near <span class="math inline">\(2\)</span>. The last ratios before the 400-digit limit are <span class="math inline">\(2.10\)</span>, <span class="math inline">\(1.98\)</span>, <span class="math inline">\(2.02\)</span> in Example 2 and <span class="math inline">\(2.09\)</span>, <span class="math inline">\(1.95\)</span>, <span class="math inline">\(2.02\)</span> in Example 4. This is consistent with the order <span class="math inline">\(2\)</span> of cubic interpolation using function and derivative values (a general result).</li>
+<li><strong>Secant method on <span class="math inline">\(f'\)</span>:</strong> the ratios fall to <span class="math inline">\(1.62\)</span>, the golden ratio <span class="math inline">\((1 + \sqrt5)/2 \approx 1.618\)</span> that is the general order of the secant method.</li>
+<li><strong>Mathews’ quadratic search:</strong> each outer step roughly squares the error. The ratios are <span class="math inline">\(2.61\)</span>, <span class="math inline">\(2.22\)</span>, <span class="math inline">\(2.11\)</span>, <span class="math inline">\(2.05\)</span>, <span class="math inline">\(2.02\)</span>, <span class="math inline">\(2.01\)</span> in Example 1 and <span class="math inline">\(2.08\)</span>, <span class="math inline">\(2.06\)</span>, <span class="math inline">\(2.00\)</span>, <span class="math inline">\(2.02\)</span>, <span class="math inline">\(2.00\)</span>, <span class="math inline">\(2.00\)</span>, <span class="math inline">\(2.00\)</span>, <span class="math inline">\(2.00\)</span> in Example 3. But the bracketing loops of the successive outer steps need more and more halvings or doublings: <span class="math inline">\(2, 6, 19, 34, 76, 156\)</span> in Example 1 and <span class="math inline">\(2, 0, 5, 8, 13, 39, 82, 164\)</span> in Example 3. In the last three steps of each run that is <span class="math inline">\(1.4\)</span> to <span class="math inline">\(1.7\)</span> passes, each costing one evaluation of <span class="math inline">\(f\)</span>, per decimal digit gained. Counted per function evaluation, the quadratic search therefore converges far more slowly than the squaring per step suggests.</li>
+</ul>
+<p>This variant is not the textbook <em>successive parabolic interpolation</em>, which keeps the three most recent points, unequally spaced, and needs no bracketing loop.</p>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Quadratic search, direction.</strong> The subroutine evaluates <span class="math inline">\(f'(p_0)\)</span> once per outer step and uses only its sign. A version without derivatives must choose the direction from function values instead.</li>
+<li><strong>Quadratic search, step rule.</strong> Rule (7) gives the distance from <span class="math inline">\(p_{\min}\)</span> to the nearest old point only when <span class="math inline">\(h &gt; 0\)</span>, because the subroutine replaces <span class="math inline">\(h\)</span> by <span class="math inline">\(|h|\)</span> first. Every outer step in Examples 1 and 3 has <span class="math inline">\(f'(p_0) &lt; 0\)</span> and therefore <span class="math inline">\(h &gt; 0\)</span>.</li>
+<li><strong>Quadratic search, bracketing.</strong> Check that the triple really is bracketed before using (5). The loop can also end because <span class="math inline">\(|h| \le \delta\)</span>, and the vertex of an unbracketed or collinear triple is meaningless or undefined.</li>
+<li><strong>Quadratic search, stopping.</strong> <span class="math inline">\(\mathrm{Err}\)</span> compares function values, which agree to about the square of the distance to <span class="math inline">\(p\)</span> (Example 3: <span class="math inline">\(8.1 \times 10^{-13}\)</span> in <span class="math inline">\(f\)</span> against <span class="math inline">\(5.7 \times 10^{-7}\)</span> in <span class="math inline">\(x\)</span>). A tolerance <span class="math inline">\(\varepsilon\)</span> on <span class="math inline">\(f\)</span> therefore corresponds to a distance of roughly <span class="math inline">\(\sqrt{2\varepsilon / f''(p)}\)</span> (general).</li>
+<li><strong>Cubic search, starting step.</strong> Formula (8) needs <span class="math inline">\(f'(a) \ne 0\)</span>, and with <span class="math inline">\(f(b) &gt; f(a)\)</span> it sends <span class="math inline">\(p_1\)</span> outside <span class="math inline">\([a, b]\)</span> (both examples). The method does not keep a bracket, and <span class="math inline">\(p_1\)</span> can land where <span class="math inline">\(f\)</span> is not convex, as in Example 4.</li>
+<li><strong>Cubic search, stopping.</strong> Use a test such as <span class="math inline">\(|f'(p_k)| &lt; \varepsilon\)</span> rather than a fixed number of steps. Once the iterates agree to rounding, <span class="math inline">\(F\)</span>, <span class="math inline">\(G\)</span> and <span class="math inline">\(\alpha\)</span> are pure rounding noise. Continued in double precision, both examples eventually reach <span class="math inline">\(0/0\)</span> in (14): Example 2 at <span class="math inline">\(p_9\)</span>, after <span class="math inline">\(p_7 = p_8\)</span> exactly, and Example 4 also at <span class="math inline">\(p_9\)</span>, where <span class="math inline">\(f'(p_7) = 0\)</span> exactly. Mathews’ runs stop before this.</li>
+<li><strong>Unimodality.</strong> Neither method can tell a local minimum from the global one. If <span class="math inline">\(f\)</span> has several minima in <span class="math inline">\([a, b]\)</span>, the result depends on the start.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

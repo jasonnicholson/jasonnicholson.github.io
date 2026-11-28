@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>van der Pol System – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-example-1-mu-0-from-0-3-over-0-le-t-le-6.283185-n-400" id="toc-case-1-example-1-mu-0-from-0-3-over-0-le-t-le-6.283185-n-400" class="nav-link" data-scroll-target="#case-1-example-1-mu-0-from-0-3-over-0-le-t-le-6.283185-n-400">Case 1 — Example 1: <span class="math inline">\(\mu = 0\)</span>, from <span class="math inline">\((0, 3)\)</span> over <span class="math inline">\(0 \le t \le 6.283185\)</span>, <span class="math inline">\(n = 400\)</span></a></li>
+  <li><a href="#case-2-examples-2-to-5-mu-tfrac116-tfrac14-tfrac12-1-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60" id="toc-case-2-examples-2-to-5-mu-tfrac116-tfrac14-tfrac12-1-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60" class="nav-link" data-scroll-target="#case-2-examples-2-to-5-mu-tfrac116-tfrac14-tfrac12-1-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60">Case 2 — Examples 2 to 5: <span class="math inline">\(\mu = \tfrac{1}{16}, \tfrac14, \tfrac12, 1\)</span>, from <span class="math inline">\((0, 3)\)</span> and <span class="math inline">\((0, 0.5)\)</span>, <span class="math inline">\(h = 0.01\)</span> on <span class="math inline">\(0 \le t \le 60\)</span></a></li>
+  <li><a href="#case-3-example-6-mu-4-the-relaxation-oscillation-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60" id="toc-case-3-example-6-mu-4-the-relaxation-oscillation-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60" class="nav-link" data-scroll-target="#case-3-example-6-mu-4-the-relaxation-oscillation-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60">Case 3 — Example 6: <span class="math inline">\(\mu = 4\)</span>, the relaxation oscillation, from <span class="math inline">\((0, 3)\)</span> and <span class="math inline">\((0, 0.5)\)</span>, <span class="math inline">\(h = 0.01\)</span> on <span class="math inline">\(0 \le t \le 60\)</span></a></li>
+  </ul></li>
+  <li><a href="#the-van-der-pol-equation" id="toc-the-van-der-pol-equation" class="nav-link" data-scroll-target="#the-van-der-pol-equation">The van der Pol Equation</a>
+  <ul class="collapse">
+  <li><a href="#the-equivalent-first-order-system" id="toc-the-equivalent-first-order-system" class="nav-link" data-scroll-target="#the-equivalent-first-order-system">The equivalent first-order system</a></li>
+  <li><a href="#energy" id="toc-energy" class="nav-link" data-scroll-target="#energy">Energy</a></li>
+  <li><a href="#the-equilibrium-at-the-origin" id="toc-the-equilibrium-at-the-origin" class="nav-link" data-scroll-target="#the-equilibrium-at-the-origin">The equilibrium at the origin</a></li>
+  <li><a href="#the-limit-cycle" id="toc-the-limit-cycle" class="nav-link" data-scroll-target="#the-limit-cycle">The limit cycle</a></li>
+  </ul></li>
+  <li><a href="#the-runge-kutta-method-for-a-system" id="toc-the-runge-kutta-method-for-a-system" class="nav-link" data-scroll-target="#the-runge-kutta-method-for-a-system">The Runge-Kutta Method for a System</a></li>
+  <li><a href="#example-1-mu-0-the-harmonic-oscillator" id="toc-example-1-mu-0-the-harmonic-oscillator" class="nav-link" data-scroll-target="#example-1-mu-0-the-harmonic-oscillator">Example 1 — <span class="math inline">\(\mu = 0\)</span>: the harmonic oscillator</a></li>
+  <li><a href="#examples-2-to-6-mu-tfrac116-tfrac14-tfrac12-1-4" id="toc-examples-2-to-6-mu-tfrac116-tfrac14-tfrac12-1-4" class="nav-link" data-scroll-target="#examples-2-to-6-mu-tfrac116-tfrac14-tfrac12-1-4">Examples 2 to 6 — <span class="math inline">\(\mu = \tfrac{1}{16}, \tfrac14, \tfrac12, 1, 4\)</span></a>
+  <ul class="collapse">
+  <li><a href="#example-2-mu-tfrac116" id="toc-example-2-mu-tfrac116" class="nav-link" data-scroll-target="#example-2-mu-tfrac116">Example 2 — <span class="math inline">\(\mu = \tfrac{1}{16}\)</span></a></li>
+  <li><a href="#example-3-mu-tfrac14" id="toc-example-3-mu-tfrac14" class="nav-link" data-scroll-target="#example-3-mu-tfrac14">Example 3 — <span class="math inline">\(\mu = \tfrac14\)</span></a></li>
+  <li><a href="#example-4-mu-tfrac12" id="toc-example-4-mu-tfrac12" class="nav-link" data-scroll-target="#example-4-mu-tfrac12">Example 4 — <span class="math inline">\(\mu = \tfrac12\)</span></a></li>
+  <li><a href="#example-5-mu-1" id="toc-example-5-mu-1" class="nav-link" data-scroll-target="#example-5-mu-1">Example 5 — <span class="math inline">\(\mu = 1\)</span></a></li>
+  <li><a href="#example-6-mu-4" id="toc-example-6-mu-4" class="nav-link" data-scroll-target="#example-6-mu-4">Example 6 — <span class="math inline">\(\mu = 4\)</span></a></li>
+  <li><a href="#starting-inside-the-cycle" id="toc-starting-inside-the-cycle" class="nav-link" data-scroll-target="#starting-inside-the-cycle">Starting inside the cycle</a></li>
+  <li><a href="#verification-of-examples-2-to-6" id="toc-verification-of-examples-2-to-6" class="nav-link" data-scroll-target="#verification-of-examples-2-to-6">Verification of Examples 2 to 6</a></li>
+  </ul></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">van der Pol System</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>The <strong>van der Pol equation</strong> <span class="math inline">\(x'' - \mu (1 - x^2)\, x' + x = 0\)</span>, with a constant <span class="math inline">\(\mu \ge 0\)</span>, is an oscillator whose damping depends on the displacement <span class="math inline">\(x\)</span>. For <span class="math inline">\(\mu &gt; 0\)</span>, while <span class="math inline">\(|x| &lt; 1\)</span> the damping coefficient <span class="math inline">\(-\mu(1 - x^2)\)</span> is negative and pumps energy in, and while <span class="math inline">\(|x| &gt; 1\)</span> it is positive and drains energy out. For <span class="math inline">\(\mu = 0\)</span> the equation is the harmonic oscillator <span class="math inline">\(x'' + x = 0\)</span>, whose solutions other than <span class="math inline">\(x = 0\)</span> run round circles in the phase plane. For every <span class="math inline">\(\mu &gt; 0\)</span> there is exactly one periodic solution, a closed curve called the <strong>limit cycle</strong>, and every other solution except the equilibrium at the origin winds onto it, from outside or from inside.</p>
+<p>For <span class="math inline">\(\mu &gt; 0\)</span> Mathews computes the solutions numerically. With <span class="math inline">\(y = x'\)</span> the equation becomes the first-order system <span class="math inline">\(x' = y\)</span>, <span class="math inline">\(y' = -x + \mu(1 - x^2)\, y\)</span>, and Mathews solves that system with the fourth-order <a href="../runge-kutta-method/">Runge-Kutta method</a> in vector form. With the vector <span class="math inline">\(\mathbf{Z} = (x, y)\)</span>, the right-hand side <span class="math inline">\(\mathbf{F}(t, \mathbf{Z}) = \bigl(y,\ -x + \mu(1 - x^2)\, y\bigr)\)</span> and a fixed step <span class="math inline">\(h = (b - a)/n\)</span>, each step is</p>
+<p><span class="math display">\[
+\mathbf{Z}_{j+1} = \mathbf{Z}_j + \frac{1}{6}\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr),
+\]</span></p>
+<p>where the four vectors <span class="math inline">\(\mathbf{k}_i\)</span> are <span class="math inline">\(h\)</span> times <span class="math inline">\(\mathbf{F}\)</span> evaluated at the start, twice at the middle and once at the end of the step (equation (5) below). Mathews’ module has six examples, <span class="math inline">\(\mu = 0, \tfrac{1}{16}, \tfrac14, \tfrac12, 1, 4\)</span>, and plots the solution of Example 1 as a path in the <span class="math inline">\(xy\)</span>-plane. Example 1 (<span class="math inline">\(\mu = 0\)</span>) survives in full: it starts at <span class="math inline">\((x, y) = (0, 3)\)</span> and takes <span class="math inline">\(n = 400\)</span> steps over one turn, <span class="math inline">\(0 \le t \le 6.283185\)</span>. For Examples 2 to 6 the archive keeps only the value of <span class="math inline">\(\mu\)</span>, so this page keeps Example 1’s starting point and integrates over <span class="math inline">\(0 \le t \le 60\)</span> with <span class="math inline">\(n = 6000\)</span> steps (<span class="math inline">\(h = 0.01\)</span>). Every number below has been recomputed.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below traces <strong>Runge-Kutta solutions (5) in the phase plane</strong>, the <span class="math inline">\(xy\)</span>-plane in which Mathews draws his solutions: the computed points <span class="math inline">\(\mathbf{Z}_j\)</span> are joined by straight segments, as in his plot, and a large dot marks the current point. Cases 1 and 3 also plot the computed <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> against <span class="math inline">\(t\)</span>. The limit cycles (black, dashed) are computed separately, with the Runge-Kutta method at <span class="math inline">\(h = 0.001\)</span> run for <span class="math inline">\(200\)</span> time units from <span class="math inline">\((2, 0)\)</span> before one period is drawn. Maxima of <span class="math inline">\(x\)</span> and the other marked times are located by bisection on the size of one Runge-Kutta step from the last computed point, not read off the grid, and agree with the values in the examples below. The last frame of each animation is held for about three seconds.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for the van der Pol equation, so all three animations are new, with no Mathews original. Case 1 animates Example 1 with Mathews’ values and his plot style (magenta, axes marked from <span class="math inline">\(-3\)</span> to <span class="math inline">\(3\)</span>, aspect ratio <span class="math inline">\(1\)</span>). Cases 2 and 3 animate Examples 2 to 6, whose intervals, starting points and plots are lost, with this page’s choices: the start <span class="math inline">\((0, 3)\)</span> over <span class="math inline">\(0 \le t \le 60\)</span> with <span class="math inline">\(n = 6000\)</span>, together with the run from <span class="math inline">\((0, 0.5)\)</span> of “Starting inside the cycle”. Every example of the module is animated; not animated are the page’s verification tables (Example 1’s errors for <span class="math inline">\(n = 100\)</span> to <span class="math inline">\(1600\)</span> and the comparison of Examples 2 to 6 with the order-8 reference solver), which are checks rather than pictures.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-example-1-mu-0-from-0-3-over-0-le-t-le-6.283185-n-400" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-example-1-mu-0-from-0-3-over-0-le-t-le-6.283185-n-400">Case 1 — Example 1: <span class="math inline">\(\mu = 0\)</span>, from <span class="math inline">\((0, 3)\)</span> over <span class="math inline">\(0 \le t \le 6.283185\)</span>, <span class="math inline">\(n = 400\)</span></h3>
+<p><strong>Behavior:</strong> Four steps per frame, the computed points run clockwise round the circle of radius <span class="math inline">\(3\)</span> from its top point <span class="math inline">\((0, 3)\)</span> and close it up after <span class="math inline">\(400\)</span> steps at <span class="math inline">\((-9.31101 \times 10^{-7},\ 2.99999999987)\)</span>, Mathews’ printed end point <span class="math inline">\(\{-9.31101 \times 10^{-7}, 3.\}\)</span>. In the time panel they lie on <span class="math inline">\(3 \sin t\)</span> and <span class="math inline">\(3 \cos t\)</span>. The error panel shows, on a logarithmic scale, the distance of each point from the exact point <span class="math inline">\((3 \sin t_j, 3 \cos t_j)\)</span>, which never decreases and reaches <span class="math inline">\(9.563 \times 10^{-9}\)</span> at the end, and the amount by which its distance from the origin falls short of <span class="math inline">\(3\)</span>, which also never decreases and reaches <span class="math inline">\(1.252 \times 10^{-10}\)</span>: the method loses a tiny amount of energy each step, as the verification of Example 1 explains.</p>
+<p><a href="vanderpolaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="vanderpolaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta solution of x′′ + x = 0 (μ = 0) from (x, y) = (0, 3) with n = 400 steps over 0 ≤ t ≤ 6.283185, traced four steps per frame in Mathews’ style (magenta, axes −3 to 3, aspect ratio 1) clockwise round the dashed exact circle of radius 3 to the end point (−9.31101e−7, 2.99999999987), with x(t) and y(t) on the exact 3 sin t and 3 cos t, and on a log scale the error, growing to 9.563e−9, and the shrink of the distance from the origin, growing to 1.252e−10</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-examples-2-to-5-mu-tfrac116-tfrac14-tfrac12-1-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-examples-2-to-5-mu-tfrac116-tfrac14-tfrac12-1-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60">Case 2 — Examples 2 to 5: <span class="math inline">\(\mu = \tfrac{1}{16}, \tfrac14, \tfrac12, 1\)</span>, from <span class="math inline">\((0, 3)\)</span> and <span class="math inline">\((0, 0.5)\)</span>, <span class="math inline">\(h = 0.01\)</span> on <span class="math inline">\(0 \le t \le 60\)</span></h3>
+<p><strong>Behavior:</strong> The four examples advance together, <span class="math inline">\(0.25\)</span> time units per frame. In each panel the run from <span class="math inline">\((0, 3)\)</span> (magenta) winds inwards onto the limit cycle from outside and the run from <span class="math inline">\((0, 0.5)\)</span> (blue) winds outwards onto it from inside. The diamonds on the positive <span class="math inline">\(x\)</span>-axis are the maxima of <span class="math inline">\(x\)</span>: from outside they decrease and from inside they increase towards the cycle’s largest <span class="math inline">\(x\)</span>, which the panel title prints with the factor <span class="math inline">\(\rho\)</span> by which the gap shrinks per turn. The larger <span class="math inline">\(\mu\)</span>, the faster the approach. For <span class="math inline">\(\mu = \tfrac{1}{16}\)</span> (<span class="math inline">\(\rho = 0.6751\)</span>) the tenth maxima, <span class="math inline">\(2.014879\)</span> and <span class="math inline">\(1.692056\)</span> near <span class="math inline">\(t = 58.12\)</span>, are still <span class="math inline">\(0.0148\)</span> above and <span class="math inline">\(0.308\)</span> below the cycle’s <span class="math inline">\(2.000041\)</span>, and the run from inside is a slowly widening spiral; for <span class="math inline">\(\mu = \tfrac14\)</span> the tenth maxima are <span class="math inline">\(2.000644\)</span> and <span class="math inline">\(2.000637\)</span>; for <span class="math inline">\(\mu = \tfrac12\)</span> both runs equal the cycle’s <span class="math inline">\(2.002488\)</span> to seven figures from their sixth and seventh maxima, and for <span class="math inline">\(\mu = 1\)</span> they equal <span class="math inline">\(2.008620\)</span> from their third and fourth. As <span class="math inline">\(\mu\)</span> grows the cycle changes from a near circle of radius <span class="math inline">\(2\)</span> into a lopsided loop, with largest <span class="math inline">\(|y|\)</span> <span class="math inline">\(2.6784\)</span> for <span class="math inline">\(\mu = 1\)</span>.</p>
+<p><a href="vanderpolbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="vanderpolbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Four phase-plane panels, one each for μ = 1/16, 1/4, 1/2 and 1, in which Runge-Kutta solutions of x′ = y, y′ = −x + μ(1 − x²)y with h = 0.01 from (0, 3) (magenta, outside) and (0, 0.5) (blue, inside) wind onto the dashed limit cycle over 0 ≤ t ≤ 60, with diamonds at the maxima of x closing in on the cycle’s largest x (2.000041, 2.000644, 2.002488, 2.008620) from both sides; the approach is slowest for μ = 1/16, where the tenth maxima are still 2.014879 and 1.692056, and fastest for μ = 1</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-example-6-mu-4-the-relaxation-oscillation-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-example-6-mu-4-the-relaxation-oscillation-from-0-3-and-0-0.5-h-0.01-on-0-le-t-le-60">Case 3 — Example 6: <span class="math inline">\(\mu = 4\)</span>, the relaxation oscillation, from <span class="math inline">\((0, 3)\)</span> and <span class="math inline">\((0, 0.5)\)</span>, <span class="math inline">\(h = 0.01\)</span> on <span class="math inline">\(0 \le t \le 60\)</span></h3>
+<p><strong>Behavior:</strong> Both starts are inside this cycle, <span class="math inline">\(0.2\)</span> time units per frame. The run from <span class="math inline">\((0, 3)\)</span> reaches its first maximum of <span class="math inline">\(x\)</span>, <span class="math inline">\(1.957\)</span> at <span class="math inline">\(t = 0.6541\)</span>, below the cycle’s <span class="math inline">\(2.023\)</span>, and its second, at <span class="math inline">\(t = 10.47\)</span>, is on the cycle; the run from <span class="math inline">\((0, 0.5)\)</span> joins it at its own second maximum, after which both repeat the same oscillation, the run from <span class="math inline">\((0, 0.5)\)</span> <span class="math inline">\(0.9736\)</span> time units ahead. On the cycle <span class="math inline">\(x\)</span> drifts slowly from <span class="math inline">\(2.023\)</span> down to <span class="math inline">\(1\)</span> in <span class="math inline">\(3.86\)</span> time units (yellow band), while the path in the phase plane stays within <span class="math inline">\(0.022\)</span> of the curve <span class="math inline">\(y' = 0\)</span> (orange) for <span class="math inline">\(1.5 \le x \le 2\)</span>; then <span class="math inline">\(x\)</span> falls from <span class="math inline">\(1\)</span> to <span class="math inline">\(-1\)</span> in only <span class="math inline">\(0.829\)</span> (red band), and during the fall <span class="math inline">\(|y|\)</span> peaks at <span class="math inline">\(6.344\)</span> at <span class="math inline">\(x = -0.9805\)</span> (star). The other half of the cycle is the same half turned through <span class="math inline">\(180^\circ\)</span> about the origin. So the dots crawl along the slow parts and jump across the fast parts in about four frames, and <span class="math inline">\(y(t)\)</span> is a narrow spike on each fall.</p>
+<p><a href="vanderpolcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="vanderpolcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta solutions of x′ = y, y′ = −x + 4(1 − x²)y with h = 0.01 from (0, 3) (magenta) and (0, 0.5) (blue) over 0 ≤ t ≤ 60, in the phase plane with the dashed limit cycle, the curve y′ = 0 and the lines x = ±1, beside x(t) and y(t): the runs reach the cycle at their second maxima of x and then repeat the relaxation oscillation, x drifting from 2.023 to 1 in 3.86 time units and falling from 1 to −1 in 0.829, with |y| peaking at 6.344 at x = −0.9805</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="the-van-der-pol-equation" class="level2">
+<h2 class="anchored" data-anchor-id="the-van-der-pol-equation">The van der Pol Equation</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — van der Pol equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <em>van der Pol equation</em> is the second-order differential equation</p>
+<p><span class="math display">\[
+x'' - \mu \left(1 - x^2\right) x' + x = 0,
+\tag{1}
+\]</span></p>
+<p>where <span class="math inline">\(\mu\)</span> is a constant. Mathews takes <span class="math inline">\(\mu &gt; 0\)</span> in the definition, and his first example uses <span class="math inline">\(\mu = 0\)</span>.</p>
+</div>
+</div>
+<p>When <span class="math inline">\(\mu = 0\)</span> the equation reduces to <span class="math inline">\(x'' + x = 0\)</span>, which has the familiar solution</p>
+<p><span class="math display">\[
+x(t) = c_1 \cos t + c_2 \sin t .
+\]</span></p>
+<p>For <span class="math inline">\(\mu &gt; 0\)</span> the middle term <span class="math inline">\(-\mu(1 - x^2)\, x'\)</span> acts like friction or resistance where its coefficient <span class="math inline">\(-\mu(1 - x^2)\)</span> is positive, that is where <span class="math inline">\(|x| &gt; 1\)</span>. Where <span class="math inline">\(|x| &lt; 1\)</span> the coefficient is negative, the case of “negative resistance”, which feeds energy into the motion. Mathews notes that vacuum-tube circuits of early radios showed such negative resistance; the equation is named after Balthasar van der Pol (1889–1959), who studied it, and its solutions show <em>orbital stability</em>: nearby solutions are drawn onto the same closed path.</p>
+<section id="the-equivalent-first-order-system" class="level3">
+<h3 class="anchored" data-anchor-id="the-equivalent-first-order-system">The equivalent first-order system</h3>
+<p>With <span class="math inline">\(y = x'\)</span>, equation (1) becomes the system</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = -x + \mu\left(1 - x^2\right) y .
+\tag{2}
+\]</span></p>
+</section>
+<section id="energy" class="level3">
+<h3 class="anchored" data-anchor-id="energy">Energy</h3>
+<p>The energy of the harmonic oscillator, <span class="math inline">\(E = \tfrac12 (x^2 + y^2)\)</span>, is the squared distance from the origin, halved. Along a solution of (2),</p>
+<p><span class="math display">\[
+\frac{dE}{dt} = x x' + y y' = x y + y\bigl(-x + \mu(1 - x^2)\, y\bigr) = \mu \left(1 - x^2\right) y^2 .
+\tag{3}
+\]</span></p>
+<p>For <span class="math inline">\(\mu = 0\)</span> the energy is constant, so every solution runs round a circle centred at the origin. For <span class="math inline">\(\mu &gt; 0\)</span> the energy grows while <span class="math inline">\(|x| &lt; 1\)</span> and decays while <span class="math inline">\(|x| &gt; 1\)</span> (wherever <span class="math inline">\(y \ne 0\)</span>), so small oscillations are pushed outwards and large ones pulled inwards.</p>
+</section>
+<section id="the-equilibrium-at-the-origin" class="level3">
+<h3 class="anchored" data-anchor-id="the-equilibrium-at-the-origin">The equilibrium at the origin</h3>
+<p>The only equilibrium of (2) is <span class="math inline">\((0, 0)\)</span>, since <span class="math inline">\(x' = 0\)</span> forces <span class="math inline">\(y = 0\)</span> and then <span class="math inline">\(y' = 0\)</span> forces <span class="math inline">\(x = 0\)</span>. The Jacobian matrix of (2) at the origin and its eigenvalues are</p>
+<p><span class="math display">\[
+\mathbf{J}(0, 0) = \begin{pmatrix} 0 &amp; 1 \\ -1 &amp; \mu \end{pmatrix}, \qquad \lambda^2 - \mu \lambda + 1 = 0, \qquad \lambda = \frac{\mu \pm \sqrt{\mu^2 - 4}}{2} .
+\]</span></p>
+<p>For <span class="math inline">\(\mu = 0\)</span> the eigenvalues are <span class="math inline">\(\pm i\)</span> and the origin is a centre, surrounded by the circles. For <span class="math inline">\(0 &lt; \mu &lt; 2\)</span> they are complex with positive real part <span class="math inline">\(\mu/2\)</span>, so solutions spiral away from the origin; for <span class="math inline">\(\mu = 2\)</span> there is the double eigenvalue <span class="math inline">\(1\)</span>, and for <span class="math inline">\(\mu &gt; 2\)</span> both eigenvalues are real and positive, so solutions leave the origin without spiralling. In every case with <span class="math inline">\(\mu &gt; 0\)</span> the origin repels.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\mu\)</span></th>
+<th>eigenvalues of <span class="math inline">\(\mathbf{J}(0, 0)\)</span></th>
+<th>type of the origin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(\pm i\)</span></td>
+<td>centre</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\tfrac{1}{16}\)</span></td>
+<td><span class="math inline">\(0.03125 \pm 0.99951\, i\)</span></td>
+<td>unstable spiral</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\tfrac14\)</span></td>
+<td><span class="math inline">\(0.125 \pm 0.99216\, i\)</span></td>
+<td>unstable spiral</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\tfrac12\)</span></td>
+<td><span class="math inline">\(0.25 \pm 0.96825\, i\)</span></td>
+<td>unstable spiral</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(0.5 \pm 0.86603\, i\)</span></td>
+<td>unstable spiral</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(4\)</span></td>
+<td><span class="math inline">\(2 - \sqrt3 = 0.26795\)</span> and <span class="math inline">\(2 + \sqrt3 = 3.73205\)</span></td>
+<td>unstable node</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="the-limit-cycle" class="level3">
+<h3 class="anchored" data-anchor-id="the-limit-cycle">The limit cycle</h3>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Limit cycle
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <em>limit cycle</em> of a system <span class="math inline">\(x' = f_1(x, y)\)</span>, <span class="math inline">\(y' = f_2(x, y)\)</span> is a closed path traced by a periodic solution that has no other closed paths arbitrarily close to it. It is <em>stable</em> when the solutions that start near it approach it as <span class="math inline">\(t \to \infty\)</span>.</p>
+</div>
+</div>
+<p>The circles of the case <span class="math inline">\(\mu = 0\)</span> are closed paths, but each has others arbitrarily close to it, so none of them is a limit cycle.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Liénard’s theorem, applied to the van der Pol equation (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Write (1) as <span class="math inline">\(x'' + f(x)\, x' + g(x) = 0\)</span> with <span class="math inline">\(f(x) = \mu(x^2 - 1)\)</span> and <span class="math inline">\(g(x) = x\)</span>, and let <span class="math inline">\(F(x) = \int_0^x f(s)\, ds = \mu\bigl(\tfrac13 x^3 - x\bigr)\)</span>. Liénard’s theorem gives a unique stable limit cycle when <span class="math inline">\(F\)</span> and <span class="math inline">\(g\)</span> have continuous derivatives, <span class="math inline">\(g\)</span> is odd with <span class="math inline">\(x g(x) &gt; 0\)</span> for <span class="math inline">\(x \ne 0\)</span>, <span class="math inline">\(F\)</span> is odd with <span class="math inline">\(F'(0) &lt; 0\)</span>, <span class="math inline">\(F\)</span> has a single positive zero <span class="math inline">\(x = a\)</span>, and <span class="math inline">\(F\)</span> increases to <span class="math inline">\(\infty\)</span> for <span class="math inline">\(x \ge a\)</span>. For <span class="math inline">\(\mu &gt; 0\)</span> all of these hold, with <span class="math inline">\(F'(0) = -\mu\)</span>, <span class="math inline">\(a = \sqrt3\)</span> and <span class="math inline">\(F'(x) = \mu(x^2 - 1) &gt; 0\)</span> for <span class="math inline">\(x \ge \sqrt3\)</span>. So for every <span class="math inline">\(\mu &gt; 0\)</span> the van der Pol equation has exactly one periodic solution up to a shift in time, and every solution other than the equilibrium <span class="math inline">\(x = 0\)</span> approaches it as <span class="math inline">\(t \to \infty\)</span>.</p>
+</div>
+</div>
+<p>The theorem does not say where the cycle is. Its size for small <span class="math inline">\(\mu\)</span> follows from the energy equation (3): when <span class="math inline">\(\mu\)</span> is small a solution is nearly a circle <span class="math inline">\(x = A \sin t\)</span>, <span class="math inline">\(y = A \cos t\)</span> over one turn, and the net energy gained over that turn is</p>
+<p><span class="math display">\[
+\int_0^{2\pi} \mu \left(1 - A^2 \sin^2 t\right) A^2 \cos^2 t \, dt = \frac{\pi \mu A^2}{4}\left(4 - A^2\right) .
+\tag{4}
+\]</span></p>
+<p>This is positive for <span class="math inline">\(A &lt; 2\)</span> and negative for <span class="math inline">\(A &gt; 2\)</span>, so for small <span class="math inline">\(\mu\)</span> the limit cycle is close to the circle of radius <span class="math inline">\(2\)</span>. This is an approximation for small <span class="math inline">\(\mu\)</span>; the computed cycles below have their largest <span class="math inline">\(x\)</span> between <span class="math inline">\(2.00004\)</span> (for <span class="math inline">\(\mu = \tfrac{1}{16}\)</span>) and <span class="math inline">\(2.02296\)</span> (for <span class="math inline">\(\mu = 4\)</span>), and their period grows from close to <span class="math inline">\(2\pi\)</span> to <span class="math inline">\(10.2035\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\mu\)</span></th>
+<th>period <span class="math inline">\(P\)</span></th>
+<th>largest <span class="math inline">\(x\)</span> on the cycle</th>
+<th>largest <span class="math inline">\(\lvert y \rvert\)</span> on the cycle</th>
+<th>gap factor per turn <span class="math inline">\(\rho\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\tfrac{1}{16}\)</span></td>
+<td><span class="math inline">\(6.284719\)</span></td>
+<td><span class="math inline">\(2.000041\)</span></td>
+<td><span class="math inline">\(2.0046\)</span></td>
+<td><span class="math inline">\(0.6751\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\tfrac14\)</span></td>
+<td><span class="math inline">\(6.307688\)</span></td>
+<td><span class="math inline">\(2.000644\)</span></td>
+<td><span class="math inline">\(2.0670\)</span></td>
+<td><span class="math inline">\(0.2053\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\tfrac12\)</span></td>
+<td><span class="math inline">\(6.380676\)</span></td>
+<td><span class="math inline">\(2.002488\)</span></td>
+<td><span class="math inline">\(2.2270\)</span></td>
+<td><span class="math inline">\(0.03918\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(6.663287\)</span></td>
+<td><span class="math inline">\(2.008620\)</span></td>
+<td><span class="math inline">\(2.6784\)</span></td>
+<td><span class="math inline">\(8.597 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(4\)</span></td>
+<td><span class="math inline">\(10.203524\)</span></td>
+<td><span class="math inline">\(2.022963\)</span></td>
+<td><span class="math inline">\(6.3442\)</span></td>
+<td><span class="math inline">\(1.3 \times 10^{-25}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The cycles were computed with an adaptive Runge-Kutta method of order 8 at tolerance <span class="math inline">\(10^{-13}\)</span>, run for <span class="math inline">\(200\)</span> time units from <span class="math inline">\((2, 0)\)</span> before measuring, and the periods and largest <span class="math inline">\(x\)</span> were confirmed to all the digits shown by an independent implicit (Radau) solver. The last column is the factor by which the gap between a nearby solution and the cycle shrinks in one turn. For a periodic solution of a plane system, that factor is (a general result) the exponential of the integral of the divergence <span class="math inline">\(\partial f_1/\partial x + \partial f_2/\partial y = \mu(1 - x^2)\)</span> over one period,</p>
+<p><span class="math display">\[
+\rho = \exp\!\left( \mu \int_0^P \bigl(1 - x(t)^2\bigr)\, dt \right),
+\]</span></p>
+<p>and for small <span class="math inline">\(\mu\)</span>, where <span class="math inline">\(x \approx 2 \cos t\)</span>, the integral is close to <span class="math inline">\(-2\pi\mu\)</span> and <span class="math inline">\(\rho \approx e^{-2\pi\mu}\)</span> (<span class="math inline">\(0.6752\)</span> for <span class="math inline">\(\mu = \tfrac{1}{16}\)</span>). The cycle attracts slowly for small <span class="math inline">\(\mu\)</span> and extremely fast for <span class="math inline">\(\mu = 4\)</span>, as the examples show.</p>
+</section>
+</section>
+<section id="the-runge-kutta-method-for-a-system" class="level2">
+<h2 class="anchored" data-anchor-id="the-runge-kutta-method-for-a-system">The Runge-Kutta Method for a System</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Initial value problem in the plane
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Compute approximations to the solution of</p>
+<p><span class="math display">\[
+x' = f_1(t, x, y), \quad x(a) = \alpha, \qquad y' = f_2(t, x, y), \quad y(a) = \beta, \qquad a \le t \le b,
+\]</span></p>
+<p>at a discrete set of points <span class="math inline">\(t_0 = a &lt; t_1 &lt; \cdots &lt; t_n = b\)</span>. In vector form, with <span class="math inline">\(\mathbf{Z} = (x, y)\)</span> and <span class="math inline">\(\mathbf{F}(t, \mathbf{Z}) = \bigl(f_1(t, x, y),\ f_2(t, x, y)\bigr)\)</span>, the problem is <span class="math inline">\(\mathbf{Z}' = \mathbf{F}(t, \mathbf{Z})\)</span>, <span class="math inline">\(\mathbf{Z}(a) = (\alpha, \beta)\)</span>.</p>
+</div>
+</div>
+<p>The Runge-Kutta method in two dimensions is the “vector form” of the one-dimensional method: the function <span class="math inline">\(f\)</span> is replaced by the vector function <span class="math inline">\(\mathbf{F}\)</span>, and every stage is computed for both components at once.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Runge-Kutta method of order 4 for a system
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With <span class="math inline">\(h = (b - a)/n\)</span>, <span class="math inline">\(t_j = a + j h\)</span> and <span class="math inline">\(\mathbf{Z}_0 = (\alpha, \beta)\)</span>, for <span class="math inline">\(j = 0, 1, \ldots, n - 1\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{k}_1 &amp;= h\, \mathbf{F}(t_j, \mathbf{Z}_j), \\
+\mathbf{k}_2 &amp;= h\, \mathbf{F}\bigl(t_j + \tfrac{h}{2},\ \mathbf{Z}_j + \tfrac12 \mathbf{k}_1\bigr), \\
+\mathbf{k}_3 &amp;= h\, \mathbf{F}\bigl(t_j + \tfrac{h}{2},\ \mathbf{Z}_j + \tfrac12 \mathbf{k}_2\bigr), \\
+\mathbf{k}_4 &amp;= h\, \mathbf{F}\bigl(t_j + h,\ \mathbf{Z}_j + \mathbf{k}_3\bigr), \\
+\mathbf{Z}_{j+1} &amp;= \mathbf{Z}_j + \tfrac16 \bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr).
+\end{aligned}
+\tag{5}
+\]</span></p>
+</div>
+</div>
+<p>Mathews’ subroutine builds the list of times <span class="math inline">\(t_j\)</span> and the list of points <span class="math inline">\(\mathbf{Z}_j\)</span> and returns the points, which are then joined by line segments to draw the path in the <span class="math inline">\(xy\)</span>-plane. For a smooth <span class="math inline">\(\mathbf{F}\)</span> the method has global error of order <span class="math inline">\(h^4\)</span> (a general result): doubling <span class="math inline">\(n\)</span> divides the error by about <span class="math inline">\(16\)</span>, as both sets of examples below confirm. For the van der Pol system <span class="math inline">\(\mathbf{F}\)</span> does not depend on <span class="math inline">\(t\)</span>, so the times <span class="math inline">\(t_j\)</span> only label the points.</p>
+</section>
+<section id="example-1-mu-0-the-harmonic-oscillator" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-mu-0-the-harmonic-oscillator">Example 1 — <span class="math inline">\(\mu = 0\)</span>: the harmonic oscillator</h2>
+<p>Solve the van der Pol equation with <span class="math inline">\(\mu = 0\)</span>,</p>
+<p><span class="math display">\[
+x'' + x = 0, \qquad x(0) = 0, \quad x'(0) = 3,
+\]</span></p>
+<p>over <span class="math inline">\(0 \le t \le 6.283185\)</span> with <span class="math inline">\(n = 400\)</span> steps. These are the values in Mathews’ notebook.</p>
+<p><strong>Step 1</strong>: Write the equation as the system (2) with <span class="math inline">\(\mu = 0\)</span>:</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = -x, \qquad \mathbf{F}(t, (x, y)) = (y, -x), \qquad \mathbf{Z}_0 = (0, 3).
+\]</span></p>
+<p><strong>Step 2</strong>: The step size is</p>
+<p><span class="math display">\[
+h = \frac{6.283185 - 0}{400} = 0.0157079625 .
+\]</span></p>
+<p><strong>Step 3</strong>: The first step, from <span class="math inline">\(t_0 = 0\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{k}_1 &amp;= h\,\mathbf{F}(0, (0, 3)) = h\,(3, 0) = (0.0471238875,\ 0), \\
+\mathbf{k}_2 &amp;= h\,\mathbf{F}\bigl(\tfrac{h}{2}, (0.02356194375,\ 3)\bigr) = (0.0471238875,\ -0.000370110129), \\
+\mathbf{k}_3 &amp;= h\,\mathbf{F}\bigl(\tfrac{h}{2}, (0.02356194375,\ 2.999814945)\bigr) = (0.0471209807,\ -0.000370110129), \\
+\mathbf{k}_4 &amp;= h\,\mathbf{F}\bigl(h, (0.0471209807,\ 2.999629890)\bigr) = (0.0471180738,\ -0.000740174597), \\
+\mathbf{Z}_1 &amp;= \mathbf{Z}_0 + \tfrac16 (\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4) = (0.0471219496,\ 2.999629897).
+\end{aligned}
+\]</span></p>
+<p>The exact value <span class="math inline">\(\bigl(3\sin h, 3\cos h\bigr) = (0.0471219496, 2.999629897)\)</span> agrees to all the digits shown; the error in <span class="math inline">\(x\)</span> is <span class="math inline">\(-2.4 \times 10^{-11}\)</span>.</p>
+<p><strong>Step 4</strong>: Repeating the step <span class="math inline">\(400\)</span> times gives the end point</p>
+<p><span class="math display">\[
+\mathbf{Z}_{400} = \bigl(-9.311010 \times 10^{-7},\ 2.99999999987\bigr) \approx \bigl(-9.31101 \times 10^{-7},\ 3.\bigr),
+\]</span></p>
+<p>which is the end point Mathews prints, <span class="math inline">\(\{-9.31101 \times 10^{-7}, 3.\}\)</span>.</p>
+<p>The exact solution is <span class="math inline">\(x(t) = 3 \sin t\)</span>, <span class="math inline">\(y(t) = 3 \cos t\)</span>, the circle of radius <span class="math inline">\(3\)</span> traced clockwise from its top point <span class="math inline">\((0, 3)\)</span>. Mathews plots the <span class="math inline">\(400\)</span> segments in the <span class="math inline">\(xy\)</span>-plane with both axes marked from <span class="math inline">\(-3\)</span> to <span class="math inline">\(3\)</span>, and they close up into that circle.</p>
+<p><strong>Verification:</strong> The right end <span class="math inline">\(b = 6.283185\)</span> is <span class="math inline">\(3.07 \times 10^{-7}\)</span> short of <span class="math inline">\(2\pi\)</span>, so the exact solution there is not <span class="math inline">\((0, 3)\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><span class="math inline">\(x(b)\)</span></th>
+<th><span class="math inline">\(y(b)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Runge-Kutta, <span class="math inline">\(n = 400\)</span></td>
+<td><span class="math inline">\(-9.311010 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(2.9999999998747\)</span></td>
+</tr>
+<tr class="even">
+<td>exact, <span class="math inline">\(3\sin b\)</span> and <span class="math inline">\(3\cos b\)</span></td>
+<td><span class="math inline">\(-9.215388 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(2.9999999999999\)</span></td>
+</tr>
+<tr class="odd">
+<td>error</td>
+<td><span class="math inline">\(-9.56 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\(-1.25 \times 10^{-10}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Most of the small <span class="math inline">\(x\)</span> value in Mathews’ end point is the shortfall of <span class="math inline">\(b\)</span>, not error of the method. Over all <span class="math inline">\(401\)</span> points the distance from the exact solution is at most <span class="math inline">\(9.56 \times 10^{-9}\)</span>, and the distance from the origin stays between <span class="math inline">\(3 - 1.3 \times 10^{-10}\)</span> and <span class="math inline">\(3\)</span>. The method loses a tiny amount of energy each step: for <span class="math inline">\(\mathbf{F} = (y, -x)\)</span> one Runge-Kutta step multiplies the distance from the origin by <span class="math inline">\(1 - 1.04 \times 10^{-13}\)</span>, which over <span class="math inline">\(400\)</span> steps shrinks the radius by <span class="math inline">\(1.25 \times 10^{-10}\)</span>, the error in <span class="math inline">\(y(b)\)</span> above. Over one full turn <span class="math inline">\(0 \le t \le 2\pi\)</span> the largest error falls by a factor of <span class="math inline">\(16.0\)</span> each time <span class="math inline">\(n\)</span> is doubled, the order <span class="math inline">\(h^4\)</span> of the method:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(100\)</span></th>
+<th><span class="math inline">\(200\)</span></th>
+<th><span class="math inline">\(400\)</span></th>
+<th><span class="math inline">\(800\)</span></th>
+<th><span class="math inline">\(1600\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>largest error on <span class="math inline">\([0, 2\pi]\)</span></td>
+<td><span class="math inline">\(2.448 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\(1.530 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(9.563 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\(5.977 \times 10^{-10}\)</span></td>
+<td><span class="math inline">\(3.736 \times 10^{-11}\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="examples-2-to-6-mu-tfrac116-tfrac14-tfrac12-1-4" class="level2">
+<h2 class="anchored" data-anchor-id="examples-2-to-6-mu-tfrac116-tfrac14-tfrac12-1-4">Examples 2 to 6 — <span class="math inline">\(\mu = \tfrac{1}{16}, \tfrac14, \tfrac12, 1, 4\)</span></h2>
+<p>Mathews solves the van der Pol equation with <span class="math inline">\(\mu = \tfrac{1}{16}\)</span> (Example 2), <span class="math inline">\(\tfrac14\)</span> (Example 3), <span class="math inline">\(\tfrac12\)</span> (Example 4), <span class="math inline">\(1\)</span> (Example 5) and <span class="math inline">\(4\)</span> (Example 6):</p>
+<p><span class="math display">\[
+x'' - \tfrac{1}{16}\left(1 - x^2\right) x' + x = 0, \quad \ldots, \quad x'' - 4\left(1 - x^2\right) x' + x = 0 .
+\]</span></p>
+<p>Each is the system (2) with <span class="math inline">\(\mathbf{F}(t, (x, y)) = \bigl(y,\ -x + \mu(1 - x^2)\, y\bigr)\)</span>, solved by (5). For these examples the archive keeps only the value of <span class="math inline">\(\mu\)</span>; the notebook cells with the interval, the number of steps and the starting point, and the plots, are lost. This page therefore keeps Example 1’s starting point <span class="math inline">\((x, y) = (0, 3)\)</span>, that is <span class="math inline">\(x(0) = 0\)</span>, <span class="math inline">\(x'(0) = 3\)</span>, and integrates over <span class="math inline">\(0 \le t \le 60\)</span> with <span class="math inline">\(n = 6000\)</span> steps, <span class="math inline">\(h = 0.01\)</span>.</p>
+<p>Each solution is followed through the points where <span class="math inline">\(x\)</span> has a local maximum, which are the points where the path crosses the positive <span class="math inline">\(x\)</span>-axis (<span class="math inline">\(y = 0\)</span>, <span class="math inline">\(x &gt; 0\)</span>). Comparing those maxima with the largest <span class="math inline">\(x\)</span> on the cycle (the table above) measures how far the solution still is from the limit cycle after each turn. The maxima below are located exactly (to the digits shown) with the order-8 reference solver; the Runge-Kutta points agree with it to within the errors listed in the verification table at the end of this section.</p>
+<section id="example-2-mu-tfrac116" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-mu-tfrac116">Example 2 — <span class="math inline">\(\mu = \tfrac{1}{16}\)</span></h3>
+<p>The cycle passes through the positive <span class="math inline">\(y\)</span>-axis at <span class="math inline">\(y = 2.0007\)</span>, so <span class="math inline">\((0, 3)\)</span> is outside it, and the solution spirals inwards. The ten maxima of <span class="math inline">\(x\)</span> in <span class="math inline">\(0 \le t \le 60\)</span> are</p>
+<p><span class="math display">\[
+2.849009,\ 2.464188,\ 2.279308,\ 2.175986,\ 2.113772,\ 2.074697,\ 2.049523,\ 2.033042,\ 2.022140,\ 2.014879,
+\]</span></p>
+<p>decreasing towards the cycle’s <span class="math inline">\(2.000041\)</span>. The gap shrinks by the factors <span class="math inline">\(0.547, 0.602, 0.630, \ldots, 0.671\)</span> per turn, approaching <span class="math inline">\(\rho = 0.675\)</span>, so at the tenth maximum (<span class="math inline">\(t = 58.12\)</span>) the solution is still <span class="math inline">\(0.0148\)</span> outside the cycle. This is the slowest approach of the five: it takes many turns of a nearly circular path.</p>
+</section>
+<section id="example-3-mu-tfrac14" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-mu-tfrac14">Example 3 — <span class="math inline">\(\mu = \tfrac14\)</span></h3>
+<p>The cycle crosses the positive <span class="math inline">\(y\)</span>-axis at <span class="math inline">\(y = 2.0111\)</span>, so the solution again starts outside it. The maxima of <span class="math inline">\(x\)</span> are</p>
+<p><span class="math display">\[
+2.593435,\ 2.083519,\ 2.016735,\ 2.003912,\ 2.001313,\ 2.000781,\ 2.000672,\ 2.000650,\ 2.000645,\ 2.000644,
+\]</span></p>
+<p>decreasing to the cycle’s <span class="math inline">\(2.000644\)</span>; from the sixth maximum on each gap is <span class="math inline">\(\rho = 0.2053\)</span> times the one before (to four digits), down to <span class="math inline">\(2.4 \times 10^{-7}\)</span> at the tenth maximum.</p>
+</section>
+<section id="example-4-mu-tfrac12" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-mu-tfrac12">Example 4 — <span class="math inline">\(\mu = \tfrac12\)</span></h3>
+<p>The cycle crosses the positive <span class="math inline">\(y\)</span>-axis at <span class="math inline">\(y = 2.0441\)</span>. The maxima of <span class="math inline">\(x\)</span> are</p>
+<p><span class="math display">\[
+2.418210,\ 2.012688,\ 2.002883,\ 2.002503,\ 2.002489,\ 2.002488, \ldots
+\]</span></p>
+<p>and from the sixth on they equal the cycle’s <span class="math inline">\(2.002488\)</span> to six decimals. From the fourth maximum on each gap is <span class="math inline">\(\rho = 0.0392\)</span> times the one before, down to <span class="math inline">\(5.6 \times 10^{-14}\)</span> at the tenth maximum.</p>
+</section>
+<section id="example-5-mu-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-mu-1">Example 5 — <span class="math inline">\(\mu = 1\)</span></h3>
+<p>The cycle crosses the positive <span class="math inline">\(y\)</span>-axis at <span class="math inline">\(y = 2.1727\)</span>. The maxima of <span class="math inline">\(x\)</span> are</p>
+<p><span class="math display">\[
+2.240070,\ 2.008728,\ 2.008620, \ldots
+\]</span></p>
+<p>and from the third on (at <span class="math inline">\(t = 14.70\)</span>) they equal the cycle’s <span class="math inline">\(2.008620\)</span> to six decimals. The gaps are <span class="math inline">\(0.23\)</span>, <span class="math inline">\(1.1 \times 10^{-4}\)</span>, <span class="math inline">\(9.3 \times 10^{-8}\)</span>, <span class="math inline">\(8.0 \times 10^{-11}\)</span> and <span class="math inline">\(6.8 \times 10^{-14}\)</span>, and from the third on each is about <span class="math inline">\(\rho \approx 8.6 \times 10^{-4}\)</span> times the one before; from the sixth maximum on the solution is on the cycle to rounding level. The cycle is visibly no longer a circle: on it <span class="math inline">\(|y|\)</span> reaches <span class="math inline">\(2.6784\)</span> while <span class="math inline">\(|x|\)</span> stays below <span class="math inline">\(2.0087\)</span>.</p>
+</section>
+<section id="example-6-mu-4" class="level3">
+<h3 class="anchored" data-anchor-id="example-6-mu-4">Example 6 — <span class="math inline">\(\mu = 4\)</span></h3>
+<p>Now the cycle crosses the positive <span class="math inline">\(y\)</span>-axis at <span class="math inline">\(y = 3.7623\)</span>, so the starting point <span class="math inline">\((0, 3)\)</span> is <em>inside</em> the cycle. The first maximum of <span class="math inline">\(x\)</span> is <span class="math inline">\(1.956754\)</span>, below the cycle’s <span class="math inline">\(2.022963\)</span>, and the second, at <span class="math inline">\(t = 10.47\)</span>, already equals <span class="math inline">\(2.022963\)</span> to rounding level (<span class="math inline">\(\rho = 1.3 \times 10^{-25}\)</span>). The cycle is a <em>relaxation oscillation</em>, made of slow and fast parts. From its largest value <span class="math inline">\(2.023\)</span>, <span class="math inline">\(x\)</span> takes <span class="math inline">\(3.860\)</span> time units, <span class="math inline">\(76\%\)</span> of the half period <span class="math inline">\(5.102\)</span>, to drift down to <span class="math inline">\(x = 1\)</span>; it then falls from <span class="math inline">\(1\)</span> to <span class="math inline">\(-1\)</span> in only <span class="math inline">\(0.829\)</span> time units, and during that fall, at <span class="math inline">\(x = -0.9805\)</span>, <span class="math inline">\(|y|\)</span> peaks at <span class="math inline">\(6.3442\)</span>. The other half of the cycle is this half turned through <span class="math inline">\(180^\circ\)</span> about the origin, since (2) is unchanged when <span class="math inline">\((x, y)\)</span> is replaced by <span class="math inline">\((-x, -y)\)</span>. Over the whole cycle <span class="math inline">\(|y|\)</span> exceeds <span class="math inline">\(2\)</span> only <span class="math inline">\(10.8\%\)</span> of the time.</p>
+</section>
+<section id="starting-inside-the-cycle" class="level3">
+<h3 class="anchored" data-anchor-id="starting-inside-the-cycle">Starting inside the cycle</h3>
+<p>To see the cycle attract from inside as well, the same computation was repeated from <span class="math inline">\((x, y) = (0, 0.5)\)</span>, which is inside the cycle for all five values of <span class="math inline">\(\mu\)</span>. The maxima of <span class="math inline">\(x\)</span> now increase towards the same values until they reach them: for <span class="math inline">\(\mu = \tfrac14\)</span> they are <span class="math inline">\(0.606543, 1.140036, 1.664822, 1.913297, 1.981599, \ldots\)</span>, reaching <span class="math inline">\(2.000637\)</span> at the tenth maximum. For <span class="math inline">\(\mu = \tfrac{1}{16}\)</span> the approach is again the slowest, with the tenth maximum still at <span class="math inline">\(1.692056\)</span>; for <span class="math inline">\(\mu = \tfrac12\)</span> the tenth maximum is within <span class="math inline">\(2.0 \times 10^{-12}\)</span> of the cycle, and for <span class="math inline">\(\mu = 1\)</span> and <span class="math inline">\(4\)</span> the solution reaches the cycle to rounding level within <span class="math inline">\(0 \le t \le 60\)</span>, as from outside.</p>
+</section>
+<section id="verification-of-examples-2-to-6" class="level3">
+<h3 class="anchored" data-anchor-id="verification-of-examples-2-to-6">Verification of Examples 2 to 6</h3>
+<p>The table compares the Runge-Kutta solution (<span class="math inline">\(n = 6000\)</span>, <span class="math inline">\(h = 0.01\)</span>) with the order-8 reference solution at all <span class="math inline">\(6001\)</span> points. The last column is the ratio of the largest errors for <span class="math inline">\(n = 6000\)</span> and <span class="math inline">\(n = 12000\)</span>; a ratio near <span class="math inline">\(16\)</span> is the order <span class="math inline">\(h^4\)</span> of the method. The ratios are measured against a sharper reference, Runge-Kutta itself with <span class="math inline">\(n = 192000\)</span> and <span class="math inline">\(384000\)</span> in <span class="math inline">\(256\)</span>-bit arithmetic combined by Richardson extrapolation, because for <span class="math inline">\(\mu = \tfrac14\)</span> the error at <span class="math inline">\(n = 12000\)</span>, <span class="math inline">\(1.3 \times 10^{-9}\)</span>, is only about <span class="math inline">\(120\)</span> times the order-8 solver’s own error of <span class="math inline">\(1.1 \times 10^{-11}\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Example</th>
+<th><span class="math inline">\(\mu\)</span></th>
+<th>Runge-Kutta end point at <span class="math inline">\(t = 60\)</span></th>
+<th>reference end point</th>
+<th>largest error</th>
+<th>ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(\tfrac{1}{16}\)</span></td>
+<td><span class="math inline">\((-0.549830,\ -1.969337)\)</span></td>
+<td><span class="math inline">\((-0.549830,\ -1.969337)\)</span></td>
+<td><span class="math inline">\(1.1 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(16.00\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(\tfrac14\)</span></td>
+<td><span class="math inline">\((0.008656,\ -2.008874)\)</span></td>
+<td><span class="math inline">\((0.008656,\ -2.008874)\)</span></td>
+<td><span class="math inline">\(2.1 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(15.98\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(\tfrac12\)</span></td>
+<td><span class="math inline">\((1.237782,\ -1.228926)\)</span></td>
+<td><span class="math inline">\((1.237782,\ -1.228926)\)</span></td>
+<td><span class="math inline">\(6.1 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(15.96\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\((-0.362932,\ 1.791347)\)</span></td>
+<td><span class="math inline">\((-0.362932,\ 1.791347)\)</span></td>
+<td><span class="math inline">\(4.1 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(15.94\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(4\)</span></td>
+<td><span class="math inline">\((-1.1428,\ 0.5101)\)</span></td>
+<td><span class="math inline">\((-1.1428,\ 0.5101)\)</span></td>
+<td><span class="math inline">\(2.0 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(15.69\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>With the same step <span class="math inline">\(h = 0.01\)</span> the largest error grows with <span class="math inline">\(\mu\)</span>, from <span class="math inline">\(1.1 \times 10^{-8}\)</span> for <span class="math inline">\(\mu = \tfrac{1}{16}\)</span> to <span class="math inline">\(2.0 \times 10^{-4}\)</span> for <span class="math inline">\(\mu = 4\)</span>.</p>
+</section>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Step size.</strong> The fixed-step method spends the same effort on the slow and the fast parts of a relaxation oscillation. For large <span class="math inline">\(\mu\)</span> an adaptive method such as the <a href="../runge-kutta-fehlberg-method/">Runge-Kutta-Fehlberg method</a> puts small steps only where the solution changes quickly.</li>
+<li><strong>Interval length.</strong> How long to integrate depends on <span class="math inline">\(\mu\)</span>: the gap to the cycle shrinks by the factor <span class="math inline">\(\rho\)</span> per turn, which is <span class="math inline">\(0.675\)</span> for <span class="math inline">\(\mu = \tfrac{1}{16}\)</span> but <span class="math inline">\(8.6 \times 10^{-4}\)</span> for <span class="math inline">\(\mu = 1\)</span>.</li>
+<li><strong>End of the interval.</strong> A right end written to a few decimals, such as <span class="math inline">\(6.283185\)</span> for <span class="math inline">\(2\pi\)</span>, shifts the exact end point; compare a computed value with the exact solution at the same <span class="math inline">\(t\)</span>, as in Example 1.</li>
+<li><strong>Symmetry check.</strong> The system (2) is unchanged when <span class="math inline">\((x, y)\)</span> is replaced by <span class="math inline">\((-x, -y)\)</span>, so the computed cycle should be symmetric about the origin; its largest and smallest <span class="math inline">\(x\)</span> agree to all the digits computed (<span class="math inline">\(\pm 2.022963\)</span> for <span class="math inline">\(\mu = 4\)</span>).</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

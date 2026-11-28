@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Shooting Methods for ODE’s – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-shots-with-slopes-s-0-1--1-2-and-c-examples-26-m-100-h-0.05" id="toc-case-1-shots-with-slopes-s-0-1--1-2-and-c-examples-26-m-100-h-0.05" class="nav-link" data-scroll-target="#case-1-shots-with-slopes-s-0-1--1-2-and-c-examples-26-m-100-h-0.05">Case 1 — Shots with slopes <span class="math inline">\(s = 0, 1, -1, 2\)</span> and <span class="math inline">\(C\)</span> (Examples 2–6), <span class="math inline">\(m = 100\)</span>, <span class="math inline">\(h = 0.05\)</span></a></li>
+  <li><a href="#case-2-refining-the-step-m-25-50-100-200-400-example-5" id="toc-case-2-refining-the-step-m-25-50-100-200-400-example-5" class="nav-link" data-scroll-target="#case-2-refining-the-step-m-25-50-100-200-400-example-5">Case 2 — Refining the step, <span class="math inline">\(m = 25, 50, 100, 200, 400\)</span> (Example 5)</a></li>
+  <li><a href="#case-3-right-end-b-approaching-1-pi-example-3-b-6-5-4.6-4.4-4.25-4.2-4.16-4.15-4.145-1-pi" id="toc-case-3-right-end-b-approaching-1-pi-example-3-b-6-5-4.6-4.4-4.25-4.2-4.16-4.15-4.145-1-pi" class="nav-link" data-scroll-target="#case-3-right-end-b-approaching-1-pi-example-3-b-6-5-4.6-4.4-4.25-4.2-4.16-4.15-4.145-1-pi">Case 3 — Right end <span class="math inline">\(b\)</span> approaching <span class="math inline">\(1 + \pi\)</span> (Example 3), <span class="math inline">\(b = 6, 5, 4.6, 4.4, 4.25, 4.2, 4.16, 4.15, 4.145, 1 + \pi\)</span></a></li>
+  </ul></li>
+  <li><a href="#boundary-value-problems" id="toc-boundary-value-problems" class="nav-link" data-scroll-target="#boundary-value-problems">Boundary Value Problems</a></li>
+  <li><a href="#reduction-to-two-initial-value-problems-linear-shooting" id="toc-reduction-to-two-initial-value-problems-linear-shooting" class="nav-link" data-scroll-target="#reduction-to-two-initial-value-problems-linear-shooting">Reduction to Two Initial Value Problems: Linear Shooting</a>
+  <ul class="collapse">
+  <li><a href="#why-it-is-called-shooting" id="toc-why-it-is-called-shooting" class="nav-link" data-scroll-target="#why-it-is-called-shooting">Why it is called shooting</a></li>
+  <li><a href="#when-linear-shooting-works" id="toc-when-linear-shooting-works" class="nav-link" data-scroll-target="#when-linear-shooting-works">When linear shooting works</a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  </ul></li>
+  <li><a href="#worked-examples" id="toc-worked-examples" class="nav-link" data-scroll-target="#worked-examples">Worked Examples</a>
+  <ul class="collapse">
+  <li><a href="#example-1-is-the-equation-linear" id="toc-example-1-is-the-equation-linear" class="nav-link" data-scroll-target="#example-1-is-the-equation-linear">Example 1 — Is the equation linear?</a></li>
+  <li><a href="#example-2-the-first-function-ut" id="toc-example-2-the-first-function-ut" class="nav-link" data-scroll-target="#example-2-the-first-function-ut">Example 2 — The first function <span class="math inline">\(u(t)\)</span></a></li>
+  <li><a href="#example-3-the-second-function-vt" id="toc-example-3-the-second-function-vt" class="nav-link" data-scroll-target="#example-3-the-second-function-vt">Example 3 — The second function <span class="math inline">\(v(t)\)</span></a></li>
+  <li><a href="#example-4-neither-u-nor-v-solves-the-boundary-value-problem" id="toc-example-4-neither-u-nor-v-solves-the-boundary-value-problem" class="nav-link" data-scroll-target="#example-4-neither-u-nor-v-solves-the-boundary-value-problem">Example 4 — Neither <span class="math inline">\(u\)</span> nor <span class="math inline">\(v\)</span> solves the boundary value problem</a></li>
+  <li><a href="#example-5-the-solution-of-the-boundary-value-problem" id="toc-example-5-the-solution-of-the-boundary-value-problem" class="nav-link" data-scroll-target="#example-5-the-solution-of-the-boundary-value-problem">Example 5 — The solution of the boundary value problem</a></li>
+  <li><a href="#example-6-the-analytic-solution" id="toc-example-6-the-analytic-solution" class="nav-link" data-scroll-target="#example-6-the-analytic-solution">Example 6 — The analytic solution</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Shooting Methods for ODE’s</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>A <strong>boundary value problem</strong> asks for a solution of a second-order differential equation <span class="math inline">\(x'' = f(t, x, x')\)</span> on an interval <span class="math inline">\(a \le t \le b\)</span> whose values are prescribed at <em>both</em> ends, <span class="math inline">\(x(a) = \alpha\)</span> and <span class="math inline">\(x(b) = \beta\)</span>. The numerical methods for initial value problems cannot be used directly, because they need <span class="math inline">\(x(a)\)</span> and the slope <span class="math inline">\(x'(a)\)</span>, and the slope is unknown. A <strong>shooting method</strong> guesses the missing slope <span class="math inline">\(s = x'(a)\)</span>, solves the initial value problem from <span class="math inline">\(t = a\)</span> like firing a shot from a cannon at angle <span class="math inline">\(s\)</span>, sees where the shot lands at <span class="math inline">\(t = b\)</span>, and corrects <span class="math inline">\(s\)</span> until it lands on the target value <span class="math inline">\(\beta\)</span>.</p>
+<p>For a <strong>linear</strong> equation <span class="math inline">\(x'' = p(t)\,x' + q(t)\,x + r(t)\)</span> no trial and error is needed. Two initial value problems are solved, one for <span class="math inline">\(u(t)\)</span> with <span class="math inline">\(u(a) = \alpha\)</span>, <span class="math inline">\(u'(a) = 0\)</span> and one for <span class="math inline">\(v(t)\)</span> (without the term <span class="math inline">\(r(t)\)</span>) with <span class="math inline">\(v(a) = 0\)</span>, <span class="math inline">\(v'(a) = 1\)</span>. Every solution that starts at <span class="math inline">\(\alpha\)</span> is then <span class="math inline">\(u(t) + s\,v(t)\)</span>, and the one that ends at <span class="math inline">\(\beta\)</span> is</p>
+<p><span class="math display">\[
+x(t) = u(t) + \frac{\beta - u(b)}{v(b)}\, v(t), \qquad v(b) \ne 0 .
+\]</span></p>
+<p>Mathews solves both initial value problems with the fourth-order Runge–Kutta method and works one example from start to finish: <span class="math inline">\(x'' + \tfrac{1}{t} x' + \bigl(1 - \tfrac{1}{4t^2}\bigr) x = \sqrt{t}\cos t\)</span> on <span class="math inline">\([1, 6]\)</span> with <span class="math inline">\(x(1) = 1\)</span> and <span class="math inline">\(x(6) = -0.5\)</span>. That equation can also be solved in closed form, so every number below is checked against the exact solution.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below solves Mathews’ boundary value problem (7) by linear shooting, frame by frame. The left panel is the graph Mathews draws for his examples, on <span class="math inline">\(1 \le t \le 6\)</span> and in his colours: <span class="math inline">\(u\)</span> green, <span class="math inline">\(v\)</span> blue and the solution of the boundary value problem magenta. The exact solution of Example 6 is dashed black (Cases 1 and 2), and red marks the boundary values (in Case 3, the target <span class="math inline">\(x(b) = -0.5\)</span>). The right panel is new. In Cases 1 and 3 it plots the landing point <span class="math inline">\(x(b; s) = u(b) + s\,v(b)\)</span> of the shot against its slope <span class="math inline">\(s = x'(1)\)</span>, a straight line that meets the target <span class="math inline">\(\beta = -0.5\)</span> at <span class="math inline">\(s = C\)</span>. In Case 2 it plots the error <span class="math inline">\(\lvert x_j - x(t_j) \rvert\)</span> at the nodes on a logarithmic scale. Like Mathews, the scripts compute <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span> with <em>Runge2D</em>, the classical fourth-order Runge–Kutta method, with <span class="math inline">\(m = 100\)</span> steps unless the case says otherwise, in double precision; the exact solutions of Example 6 are evaluated in 256-bit arithmetic. A curve that leaves the window is cut at its edge, and its true extreme value is given in the legend or title. Each frame is shown for two seconds, and the last for six.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for shooting methods or boundary value problems, so all three animations are new, with no Mathews original. Case 1 animates the graphs of his Examples 2 to 6 (<span class="math inline">\(u\)</span>, <span class="math inline">\(v\)</span>, both together, the shooting solution and the exact solution), Case 2 the convergence table of Example 5, and Case 3 follows up the remark under Example 3 that linear shooting would fail at <span class="math inline">\(b = 1 + \pi\)</span>; its right ends other than <span class="math inline">\(b = 6\)</span> are new. Not animated are Example 1, which identifies <span class="math inline">\(p\)</span>, <span class="math inline">\(q\)</span> and <span class="math inline">\(r\)</span> and has no graph, and the algebra of Example 6 (Mathematica’s complex form of the solution and the linear system for <span class="math inline">\(c_1\)</span> and <span class="math inline">\(c_2\)</span>), whose result is the exact solution drawn in Cases 1 and 2. The counterexample <span class="math inline">\(x'' = -x\)</span> on <span class="math inline">\([0, \pi]\)</span> is not animated either; Case 3 shows the same failure, <span class="math inline">\(v(b) = 0\)</span>, for equation (7).</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-shots-with-slopes-s-0-1--1-2-and-c-examples-26-m-100-h-0.05" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-shots-with-slopes-s-0-1--1-2-and-c-examples-26-m-100-h-0.05">Case 1 — Shots with slopes <span class="math inline">\(s = 0, 1, -1, 2\)</span> and <span class="math inline">\(C\)</span> (Examples 2–6), <span class="math inline">\(m = 100\)</span>, <span class="math inline">\(h = 0.05\)</span></h3>
+<p><strong>Behavior:</strong> The first shot, <span class="math inline">\(s = 0\)</span>, is <span class="math inline">\(u\)</span> and lands at <span class="math inline">\(u_{100} = -0.370482\)</span>; the second, <span class="math inline">\(s = 1\)</span>, lands at <span class="math inline">\(-0.761962\)</span>, and the difference of the two is <span class="math inline">\(v_{100} = -0.391479\)</span>. Because the landing point <span class="math inline">\(u_{100} + s\,v_{100}\)</span> is a straight-line function of <span class="math inline">\(s\)</span>, the shots <span class="math inline">\(s = -1\)</span> and <span class="math inline">\(s = 2\)</span> land on the line through the first two, at <span class="math inline">\(0.0209968\)</span> and <span class="math inline">\(-1.15344\)</span>. That line crosses <span class="math inline">\(\beta = -0.5\)</span> at <span class="math inline">\(s = C = 0.3308413669\)</span> (the exact slope is <span class="math inline">\(0.3308424899\)</span>), and the shot with this slope lands on the target; at the scale of the picture it cannot be told apart from the exact solution. All the shots cross near <span class="math inline">\(t = 1 + \pi \approx 4.142\)</span>, where <span class="math inline">\(v = 0\)</span> (Case 3 is about this point).</p>
+<p><a href="shootingaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="shootingaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Linear shooting for x’’ + x’/t + (1 − 1/(4t²))x = √t cos t on [1, 6] with x(1) = 1, x(6) = −0.5: shots with slopes s = 0 (the function u), 1, −1 and 2 appear one per frame and land at −0.370482, −0.761962, 0.0209968 and −1.15344; the landing points lie on one straight line in a second panel, which crosses the target −0.5 at s = C = 0.3308413669, and the last shot, with that slope, lands on the target and matches the exact solution</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-refining-the-step-m-25-50-100-200-400-example-5" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-refining-the-step-m-25-50-100-200-400-example-5">Case 2 — Refining the step, <span class="math inline">\(m = 25, 50, 100, 200, 400\)</span> (Example 5)</h3>
+<p><strong>Behavior:</strong> The nodes <span class="math inline">\((t_j, x_j)\)</span> lie on the exact solution at every <span class="math inline">\(m\)</span>; the right panel shows how close. The error is zero at both ends, where <span class="math inline">\(x_0 = 1\)</span> and <span class="math inline">\(x_m = -0.5\)</span> hold exactly in double precision, and largest near <span class="math inline">\(t \approx 2.2\)</span> to <span class="math inline">\(2.3\)</span>. It falls from <span class="math inline">\(1.54 \times 10^{-4}\)</span> at <span class="math inline">\(t = 2.2\)</span> for <span class="math inline">\(m = 25\)</span> to <span class="math inline">\(2.56 \times 10^{-9}\)</span> at <span class="math inline">\(t = 2.275\)</span> for <span class="math inline">\(m = 400\)</span>, and each doubling of <span class="math inline">\(m\)</span> divides the largest error by <span class="math inline">\(15.2\)</span>, <span class="math inline">\(15.7\)</span>, <span class="math inline">\(15.8\)</span> and <span class="math inline">\(15.9\)</span>, ratios that increase toward <span class="math inline">\(2^4 = 16\)</span> (the table of Example 5). In the interior the error changes sign once, between <span class="math inline">\(t = 3.8\)</span> and <span class="math inline">\(t = 4\)</span>, which is the notch in each curve. The computed slope <span class="math inline">\(C\)</span> approaches the exact <span class="math inline">\(0.3308424899\)</span>: <span class="math inline">\(0.3305760489\)</span>, <span class="math inline">\(0.3308249263\)</span>, <span class="math inline">\(0.3308413669\)</span>, <span class="math inline">\(0.3308424190\)</span>, <span class="math inline">\(0.3308424855\)</span>.</p>
+<p><a href="shootingbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="shootingbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Linear shooting with m = 25, 50, 100, 200 and 400 Runge–Kutta steps for Mathews’ boundary value problem, one m per frame: the nodes of the shooting solution lie on the exact solution, and a log-scale panel of the error at the nodes shows the largest error falling from 1.54e−4 at t = 2.2 to 2.56e−9 at t = 2.275, by a factor of 15.2, 15.7, 15.8 and 15.9 per doubling of m, with the error zero at both ends</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-right-end-b-approaching-1-pi-example-3-b-6-5-4.6-4.4-4.25-4.2-4.16-4.15-4.145-1-pi" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-right-end-b-approaching-1-pi-example-3-b-6-5-4.6-4.4-4.25-4.2-4.16-4.15-4.145-1-pi">Case 3 — Right end <span class="math inline">\(b\)</span> approaching <span class="math inline">\(1 + \pi\)</span> (Example 3), <span class="math inline">\(b = 6, 5, 4.6, 4.4, 4.25, 4.2, 4.16, 4.15, 4.145, 1 + \pi\)</span></h3>
+<p><strong>Behavior:</strong> Here equation (7) is solved on <span class="math inline">\([1, b]\)</span> with <span class="math inline">\(x(1) = 1\)</span> and <span class="math inline">\(x(b) = -0.5\)</span>; only <span class="math inline">\(b = 6\)</span> is Mathews’ problem. The shots <span class="math inline">\(x(t; s) = u(t) + s\,v(t)\)</span> do not depend on <span class="math inline">\(b\)</span>, so the fan of shots <span class="math inline">\(s = -3, \ldots, 3\)</span> is the same in every frame and only the target moves. Since <span class="math inline">\(v(1 + \pi) = 0\)</span>, every shot passes through the point <span class="math inline">\((1 + \pi, u(1 + \pi)) = (4.142, -2.3696)\)</span>. As <span class="math inline">\(b\)</span> moves toward <span class="math inline">\(1 + \pi\)</span>, <span class="math inline">\(|v(b)|\)</span> falls from <span class="math inline">\(0.3915\)</span> to <span class="math inline">\(0.001674\)</span>, the landing points crowd together and the landing line flattens, and the slope that hits the target grows, from <span class="math inline">\(C = 0.3308\)</span> at <span class="math inline">\(b = 6\)</span> and <span class="math inline">\(-6.558\)</span> at <span class="math inline">\(b = 5\)</span> to <span class="math inline">\(-1120\)</span> at <span class="math inline">\(b = 4.145\)</span>. The solution plunges with it: its lowest value is <span class="math inline">\(-2.905\)</span> at <span class="math inline">\(b = 6\)</span>, <span class="math inline">\(-6.688\)</span> at <span class="math inline">\(b = 4.6\)</span>, where it first leaves the window, and <span class="math inline">\(-712.3\)</span> at <span class="math inline">\(b = 4.145\)</span>. The Runge–Kutta error in <span class="math inline">\(C\)</span> grows at every frame from <span class="math inline">\(b = 5\)</span> on, from <span class="math inline">\(9.0 \times 10^{-8}\)</span> to <span class="math inline">\(4.7 \times 10^{-3}\)</span>, although the step <span class="math inline">\(h = (b - 1)/100\)</span> shrinks: the magnification described under “A small <span class="math inline">\(v(b)\)</span>”. At <span class="math inline">\(b = 1 + \pi\)</span> (the double-precision number nearest it) every shot lands at <span class="math inline">\(u(1 + \pi) = -2.3696\)</span> and none at <span class="math inline">\(-0.5\)</span>, so the problem has no solution. <em>Runge2D</em> does not notice: its <span class="math inline">\(v_{100} = 7.06 \times 10^{-9}\)</span> is Runge–Kutta error, not <span class="math inline">\(0\)</span>, and the formula returns <span class="math inline">\(C = 2.648 \times 10^{8}\)</span> and a “solution” whose largest value is <span class="math inline">\(1.686 \times 10^{8}\)</span>, a list of meaningless numbers. In the left panel the fan, <span class="math inline">\(u\)</span>, <span class="math inline">\(v\)</span>, the gray landing points at <span class="math inline">\(b\)</span> and the black diamond are drawn from the exact formulas of Example 6, and the left title gives the exact <span class="math inline">\(v(b)\)</span> and <span class="math inline">\(C\)</span> and the Runge–Kutta error in <span class="math inline">\(C\)</span> (in the last frame, <span class="math inline">\(v(b) = 0\)</span> and the exact <span class="math inline">\(u(1 + \pi)\)</span>); the magenta solution, its legend and the right panel use the <em>Runge2D</em> values.</p>
+<p><a href="shootingcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="shootingcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Linear shooting for the same equation on [1, b] with x(b) = −0.5, as b moves from 6 toward 1 + π: a fixed fan of shots with slopes −3 to 3 all pass through the point (1 + π, −2.3696), where v = 0; as b approaches 1 + π the landing line in the second panel flattens, the slope C that hits the target grows from 0.3308 to −1120 and the solution plunges off the window, and at b = 1 + π no shot reaches −0.5 while the Runge–Kutta computation returns a meaningless C = 2.648e8</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="boundary-value-problems" class="level2">
+<h2 class="anchored" data-anchor-id="boundary-value-problems">Boundary Value Problems</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Boundary value problem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <em>boundary value problem</em> is a differential equation</p>
+<p><span class="math display">\[
+x'' = f(t, x, x') \qquad \text{for } a \le t \le b
+\tag{1}
+\]</span></p>
+<p>together with the boundary conditions</p>
+<p><span class="math display">\[
+x(a) = \alpha \qquad \text{and} \qquad x(b) = \beta .
+\tag{2}
+\]</span></p>
+</div>
+</div>
+<p>Before any numerical scheme is applied, it should be checked that a solution exists; otherwise the program prints a list of meaningless numbers. The notation <span class="math inline">\(y = x'(t)\)</span> is used below to name the third variable of <span class="math inline">\(f(t, x, x')\)</span>.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Boundary value problem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Assume that <span class="math inline">\(f(t, x, y)\)</span> is continuous on the region <span class="math inline">\(R = \{(t, x, y) : a \le t \le b,\ -\infty &lt; x &lt; \infty,\ -\infty &lt; y &lt; \infty\}\)</span> and that <span class="math inline">\(\partial f/\partial x = f_x(t, x, y)\)</span> and <span class="math inline">\(\partial f/\partial y = f_y(t, x, y)\)</span> are continuous on <span class="math inline">\(R\)</span>. If there is a constant <span class="math inline">\(M &gt; 0\)</span> for which</p>
+<p><span class="math display">\[
+f_x(t, x, y) &gt; 0 \quad \text{and} \quad |f_y(t, x, y)| \le M \qquad \text{for all } (t, x, y) \in R,
+\]</span></p>
+<p>then the boundary value problem <span class="math inline">\(x'' = f(t, x, x')\)</span> with <span class="math inline">\(x(a) = \alpha\)</span> and <span class="math inline">\(x(b) = \beta\)</span> has a unique solution <span class="math inline">\(x = x(t)\)</span> for <span class="math inline">\(a \le t \le b\)</span>.</p>
+</div>
+</div>
+<p>The special case of a linear differential equation deserves its own statement.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Corollary — Linear boundary value problem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Assume that <span class="math inline">\(f\)</span> in the theorem has the form <span class="math inline">\(f(t, x, y) = p(t)\,y + q(t)\,x + r(t)\)</span> and that <span class="math inline">\(f\)</span> and its partial derivatives <span class="math inline">\(f_x = q(t)\)</span> and <span class="math inline">\(f_y = p(t)\)</span> are continuous on <span class="math inline">\(R\)</span>. If</p>
+<p><span class="math display">\[
+q(t) &gt; 0 \qquad \text{for all } t \in [a, b],
+\]</span></p>
+<p>then the linear boundary value problem</p>
+<p><span class="math display">\[
+x'' = p(t)\,x'(t) + q(t)\,x(t) + r(t) \qquad \text{with } x(a) = \alpha \text{ and } x(b) = \beta
+\tag{3}
+\]</span></p>
+<p>has a unique solution <span class="math inline">\(x = x(t)\)</span> over <span class="math inline">\(a \le t \le b\)</span>.</p>
+</div>
+</div>
+<p>The bound on <span class="math inline">\(f_y = p(t)\)</span> needs no separate check in the corollary: a continuous <span class="math inline">\(p\)</span> on the closed interval <span class="math inline">\([a, b]\)</span> is bounded, with <span class="math inline">\(M = \max_{a \le t \le b} |p(t)|\)</span>.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The conditions are sufficient, not necessary
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Take <span class="math inline">\(x'' = -x\)</span>, whose general solution is <span class="math inline">\(x(t) = c_1 \cos t + c_2 \sin t\)</span>, with the boundary conditions <span class="math inline">\(x(0) = \alpha\)</span> and <span class="math inline">\(x(\pi) = \beta\)</span>. The first condition gives <span class="math inline">\(c_1 = \alpha\)</span> and the second gives <span class="math inline">\(-c_1 = \beta\)</span>, so the problem can be solved only if <span class="math inline">\(\beta = -\alpha\)</span>, and then it has infinitely many solutions <span class="math inline">\(\alpha\cos t + c_2 \sin t\)</span>. (Mathews writes the condition as <span class="math inline">\(\alpha = \beta\)</span>; since <span class="math inline">\(\cos \pi = -1\)</span> it is <span class="math inline">\(\beta = -\alpha\)</span>.) Here <span class="math inline">\(q(t) = -1 &lt; 0\)</span>, and this counterexample is why the theory is phrased with <span class="math inline">\(q(t) &gt; 0\)</span>. But the condition is only sufficient. Many problems with <span class="math inline">\(q(t) &lt; 0\)</span> have exactly one solution and can be solved by shooting, Mathews’ example below among them; the method just has to be used with care, because it may fail.</p>
+</div>
+</div>
+</section>
+<section id="reduction-to-two-initial-value-problems-linear-shooting" class="level2">
+<h2 class="anchored" data-anchor-id="reduction-to-two-initial-value-problems-linear-shooting">Reduction to Two Initial Value Problems: Linear Shooting</h2>
+<p>The linear structure of (3) lets the boundary value problem be split into two initial value problems. Let <span class="math inline">\(u(t)\)</span> be the unique solution of</p>
+<p><span class="math display">\[
+u'' = p(t)\,u'(t) + q(t)\,u(t) + r(t) \qquad \text{with } u(a) = \alpha \text{ and } u'(a) = 0,
+\tag{4}
+\]</span></p>
+<p>and let <span class="math inline">\(v(t)\)</span> be the unique solution of the homogeneous problem</p>
+<p><span class="math display">\[
+v'' = p(t)\,v'(t) + q(t)\,v(t) \qquad \text{with } v(a) = 0 \text{ and } v'(a) = 1.
+\tag{5}
+\]</span></p>
+<p>For any constant <span class="math inline">\(C\)</span> the combination <span class="math inline">\(x(t) = u(t) + C\,v(t)\)</span> solves the differential equation in (3), because</p>
+<p><span class="math display">\[
+x'' = u'' + C v'' = p(t)\,u' + q(t)\,u + r(t) + p(t)\,C v' + q(t)\,C v = p(t)\,x' + q(t)\,x + r(t).
+\]</span></p>
+<p>It also satisfies <span class="math inline">\(x(a) = u(a) + C\,v(a) = \alpha\)</span> for every <span class="math inline">\(C\)</span>. Choosing <span class="math inline">\(C\)</span> so that <span class="math inline">\(x(b) = u(b) + C\,v(b) = \beta\)</span> gives the solution of the boundary value problem.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Linear shooting formula
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(v(b) \ne 0\)</span>, the solution of (3) is</p>
+<p><span class="math display">\[
+x(t) = u(t) + \frac{\beta - u(b)}{v(b)}\, v(t).
+\tag{6}
+\]</span></p>
+</div>
+</div>
+<section id="why-it-is-called-shooting" class="level3">
+<h3 class="anchored" data-anchor-id="why-it-is-called-shooting">Why it is called shooting</h3>
+<p>The solution of (3) with initial values <span class="math inline">\(x(a) = \alpha\)</span> and <span class="math inline">\(x'(a) = s\)</span> is <span class="math inline">\(x(t; s) = u(t) + s\,v(t)\)</span>, since both sides solve the same initial value problem. So the constant <span class="math inline">\(C\)</span> in (6) <em>is</em> the initial slope, <span class="math inline">\(x'(a) = C\)</span>. A shot fired with slope <span class="math inline">\(s = 0\)</span> is <span class="math inline">\(u(t)\)</span> and lands at <span class="math inline">\(u(b)\)</span>; a shot with slope <span class="math inline">\(s = 1\)</span> lands at <span class="math inline">\(u(b) + v(b)\)</span>. Because the landing point <span class="math inline">\(x(b; s) = u(b) + s\,v(b)\)</span> is a straight-line function of <span class="math inline">\(s\)</span>, the straight line through these two shots hits the target <span class="math inline">\(\beta\)</span> exactly, at <span class="math inline">\(s = (\beta - u(b))/v(b)\)</span>. When <span class="math inline">\(f\)</span> is not linear, <span class="math inline">\(x(b; s)\)</span> is no longer a straight-line function of <span class="math inline">\(s\)</span>, and in general the slope must be found by solving <span class="math inline">\(x(b; s) - \beta = 0\)</span> iteratively, for instance with the secant method, one initial value problem per shot. Mathews’ module treats only the linear case.</p>
+</section>
+<section id="when-linear-shooting-works" class="level3">
+<h3 class="anchored" data-anchor-id="when-linear-shooting-works">When linear shooting works</h3>
+<p>What a computation really needs is that two linearly independent solutions <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span> can be computed and that <span class="math inline">\(v(b) \ne 0\)</span>. (Mathews states this with <span class="math inline">\(\alpha \ne \beta\)</span> as a premise; formula (6) needs <span class="math inline">\(v(b) \ne 0\)</span> whatever <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are.) The following general fact, which follows from the argument above, explains the role of <span class="math inline">\(v(b)\)</span>.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Existence and uniqueness through <span class="math inline">\(v(b)\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(p\)</span>, <span class="math inline">\(q\)</span> and <span class="math inline">\(r\)</span> be continuous on <span class="math inline">\([a, b]\)</span>, and let <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span> be the solutions of (4) and (5). Every solution of the differential equation in (3) with <span class="math inline">\(x(a) = \alpha\)</span> has the form <span class="math inline">\(u(t) + s\,v(t)\)</span> with <span class="math inline">\(s = x'(a)\)</span>. Hence</p>
+<ul>
+<li>if <span class="math inline">\(v(b) \ne 0\)</span>, the boundary value problem (3) has exactly one solution, given by (6);</li>
+<li>if <span class="math inline">\(v(b) = 0\)</span>, it has no solution when <span class="math inline">\(\beta \ne u(b)\)</span> and infinitely many when <span class="math inline">\(\beta = u(b)\)</span>.</li>
+</ul>
+</div>
+</div>
+<p>The counterexample above is the case <span class="math inline">\(v(b) = 0\)</span>: for <span class="math inline">\(x'' = -x\)</span> on <span class="math inline">\([0, \pi]\)</span>, <span class="math inline">\(v(t) = \sin t\)</span> and <span class="math inline">\(v(\pi) = 0\)</span>, while <span class="math inline">\(u(t) = \alpha \cos t\)</span> and <span class="math inline">\(u(\pi) = -\alpha\)</span>.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>A small <span class="math inline">\(v(b)\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In general, formula (6) divides by <span class="math inline">\(v(b)\)</span>, and when <span class="math inline">\(v(b)\)</span> is close to zero, the errors made in computing <span class="math inline">\(u(b)\)</span> and <span class="math inline">\(v(b)\)</span> are magnified in <span class="math inline">\(C\)</span> and in the whole computed solution, so a small <span class="math inline">\(|v(b)|\)</span> is a warning that the problem is close to one without a unique solution.</p>
+</div>
+</div>
+</section>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<p>To approximate the solution of (3) over <span class="math inline">\([a, b]\)</span> with the Runge–Kutta method of order 4, write each initial value problem as a system of two first-order equations.</p>
+<p><strong>Step 1.</strong> Solve for <span class="math inline">\(u\)</span> with <span class="math inline">\(y = u'\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+u' &amp;= y(t), &amp; u(a) &amp;= \alpha, \\
+y' &amp;= p(t)\,y(t) + q(t)\,u(t) + r(t), &amp; y(a) &amp;= u'(a) = 0 .
+\end{aligned}
+\]</span></p>
+<p><strong>Step 2.</strong> Solve for <span class="math inline">\(v\)</span> with <span class="math inline">\(z = v'\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+v' &amp;= z(t), &amp; v(a) &amp;= 0, \\
+z' &amp;= p(t)\,z(t) + q(t)\,v(t), &amp; z(a) &amp;= v'(a) = 1 .
+\end{aligned}
+\]</span></p>
+<p>Mathews’ subroutine <em>Runge2D</em> solves a system <span class="math inline">\(\mathbf{Z}' = \mathbf{F}(t, \mathbf{Z})\)</span> with <span class="math inline">\(\mathbf{Z} = (x, y)\)</span> using <span class="math inline">\(m\)</span> steps of size <span class="math inline">\(h = (b - a)/m\)</span> at the nodes <span class="math inline">\(t_j = a + jh\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{k}_1 &amp;= h\,\mathbf{F}(t_j, \mathbf{Z}_j), &amp;
+\mathbf{k}_2 &amp;= h\,\mathbf{F}\bigl(t_j + \tfrac{h}{2}, \mathbf{Z}_j + \tfrac12\mathbf{k}_1\bigr), \\
+\mathbf{k}_3 &amp;= h\,\mathbf{F}\bigl(t_j + \tfrac{h}{2}, \mathbf{Z}_j + \tfrac12\mathbf{k}_2\bigr), &amp;
+\mathbf{k}_4 &amp;= h\,\mathbf{F}(t_j + h, \mathbf{Z}_j + \mathbf{k}_3),
+\end{aligned}
+\qquad
+\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4).
+\]</span></p>
+<p><strong>Step 3.</strong> With <span class="math inline">\(u_j \approx u(t_j)\)</span> and <span class="math inline">\(v_j \approx v(t_j)\)</span> from the two runs on the same nodes, form</p>
+<p><span class="math display">\[
+x_j = u_j + \frac{\beta - u_m}{v_m}\, v_j, \qquad j = 0, 1, \ldots, m .
+\]</span></p>
+<p>The points <span class="math inline">\((t_j, x_j)\)</span> approximate the solution. By construction <span class="math inline">\(x_0 = \alpha\)</span> and <span class="math inline">\(x_m = \beta\)</span> (up to rounding), whatever the accuracy of the runs; the error shows in the interior.</p>
+</section>
+</section>
+<section id="worked-examples" class="level2">
+<h2 class="anchored" data-anchor-id="worked-examples">Worked Examples</h2>
+<p>All six of Mathews’ examples treat the same boundary value problem,</p>
+<p><span class="math display">\[
+x'' + \frac{1}{t}\,x' + \left(1 - \frac{1}{4t^2}\right) x = \sqrt{t}\,\cos t \qquad \text{over } [1, 6], \qquad x(1) = 1.0, \quad x(6) = -0.5 .
+\tag{7}
+\]</span></p>
+<section id="example-1-is-the-equation-linear" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-is-the-equation-linear">Example 1 — Is the equation linear?</h3>
+<p><strong>Problem.</strong> Is (7) a linear differential equation? Identify <span class="math inline">\(p(t)\)</span>, <span class="math inline">\(q(t)\)</span> and <span class="math inline">\(r(t)\)</span>.</p>
+<p><strong>Solution.</strong> Solving (7) for <span class="math inline">\(x''\)</span> gives</p>
+<p><span class="math display">\[
+x'' = -\frac{1}{t}\,x'(t) - \left(1 - \frac{1}{4t^2}\right) x(t) + \sqrt{t}\,\cos t .
+\]</span></p>
+<p>It is linear: <span class="math inline">\(x\)</span> and <span class="math inline">\(x'\)</span> appear only to the first power, multiplied by functions of <span class="math inline">\(t\)</span> alone. In the form (3),</p>
+<p><span class="math display">\[
+\boxed{\ p(t) = -\frac{1}{t}, \qquad q(t) = -\left(1 - \frac{1}{4t^2}\right), \qquad r(t) = \sqrt{t}\,\cos t\ }
+\]</span></p>
+<p>All three are continuous on <span class="math inline">\([1, 6]\)</span>. But <span class="math inline">\(q(t) &lt; 0\)</span> on the whole interval: <span class="math inline">\(1/(4t^2) \le 1/4\)</span> for <span class="math inline">\(t \ge 1\)</span>, and <span class="math inline">\(q\)</span> decreases from <span class="math inline">\(q(1) = -3/4\)</span> to <span class="math inline">\(q(6) = -143/144 \approx -0.993056\)</span>. So the corollary does not apply. That does not matter for the computation: as Mathews notes, the solution can still be computed provided <span class="math inline">\(v(6) \ne 0\)</span>, and Example 3 finds that it is.</p>
+</section>
+<section id="example-2-the-first-function-ut" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-the-first-function-ut">Example 2 — The first function <span class="math inline">\(u(t)\)</span></h3>
+<p><strong>Problem.</strong> Use linear shooting on (7) and solve for <span class="math inline">\(u(t)\)</span>.</p>
+<p><strong>Step 1</strong> (the system): with <span class="math inline">\(y = u'\)</span>,</p>
+<p><span class="math display">\[
+\begin{aligned}
+u' &amp;= y, &amp; u(1) &amp;= 1, \\
+y' &amp;= \left(-1 + \frac{1}{4t^2}\right) u - \frac{y}{t} + \sqrt{t}\,\cos t, &amp; y(1) &amp;= u'(1) = 0 .
+\end{aligned}
+\]</span></p>
+<p><strong>Step 2</strong> (Runge–Kutta): Mathews runs <em>Runge2D</em> with <span class="math inline">\(m = 100\)</span> steps, so <span class="math inline">\(h = (6 - 1)/100 = 0.05\)</span>, from <span class="math inline">\((u, y) = (1, 0)\)</span> at <span class="math inline">\(t = 1\)</span>.</p>
+<p><strong>Result.</strong> The last node gives</p>
+<p><span class="math display">\[
+u(6) \approx u_{100} = -0.370482 .
+\]</span></p>
+<p>This agrees with Mathews’ output. The exact value, from the closed form in Example 6, is <span class="math inline">\(u(6) = -0.3704820481\)</span>; the Runge–Kutta value is <span class="math inline">\(-0.3704824638\)</span>, and over all 101 nodes <span class="math inline">\(|u_j - u(t_j)| \le 4.2 \times 10^{-7}\)</span>.</p>
+</section>
+<section id="example-3-the-second-function-vt" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-the-second-function-vt">Example 3 — The second function <span class="math inline">\(v(t)\)</span></h3>
+<p><strong>Problem.</strong> Use linear shooting on (7) and solve for <span class="math inline">\(v(t)\)</span>.</p>
+<p><strong>Step 1</strong> (the system): with <span class="math inline">\(z = v'\)</span> and no <span class="math inline">\(r(t)\)</span> term,</p>
+<p><span class="math display">\[
+\begin{aligned}
+v' &amp;= z, &amp; v(1) &amp;= 0, \\
+z' &amp;= \left(-1 + \frac{1}{4t^2}\right) v - \frac{z}{t}, &amp; z(1) &amp;= v'(1) = 1 .
+\end{aligned}
+\]</span></p>
+<p><strong>Step 2</strong> (Runge–Kutta): <em>Runge2D</em> with the same <span class="math inline">\(m = 100\)</span> and <span class="math inline">\(h = 0.05\)</span>, from <span class="math inline">\((v, z) = (0, 1)\)</span>.</p>
+<p><strong>Result.</strong></p>
+<p><span class="math display">\[
+v(6) \approx v_{100} = -0.391479 \ne 0,
+\]</span></p>
+<p>in agreement with Mathews’ output, so (6) can be used: “we are in luck”, as Mathews says.</p>
+<p><strong>Verification.</strong> For this equation <span class="math inline">\(v\)</span> is known exactly. The functions <span class="math inline">\(\cos t/\sqrt{t}\)</span> and <span class="math inline">\(\sin t/\sqrt{t}\)</span> solve the homogeneous equation (see Example 6), and the combination with <span class="math inline">\(v(1) = 0\)</span>, <span class="math inline">\(v'(1) = 1\)</span> is</p>
+<p><span class="math display">\[
+v(t) = \frac{\sin(t - 1)}{\sqrt{t}}, \qquad v(6) = \frac{\sin 5}{\sqrt 6} = -0.3914791958 .
+\]</span></p>
+<p>The Runge–Kutta value is <span class="math inline">\(-0.3914792683\)</span>, and over all 101 nodes <span class="math inline">\(|v_j - v(t_j)| \le 7.3 \times 10^{-8}\)</span>. The exact form also shows where the luck lies: <span class="math inline">\(v(b) = \sin(b - 1)/\sqrt{b}\)</span> vanishes exactly when <span class="math inline">\(b - 1\)</span> is a multiple of <span class="math inline">\(\pi\)</span>. On <span class="math inline">\([1, 6]\)</span>, <span class="math inline">\(v\)</span> changes sign once, at <span class="math inline">\(t = 1 + \pi \approx 4.1416\)</span>, but <span class="math inline">\(v(6) \ne 0\)</span> because <span class="math inline">\(5\)</span> is not a multiple of <span class="math inline">\(\pi\)</span>. Had the right end been <span class="math inline">\(b = 1 + \pi\)</span>, linear shooting would have failed.</p>
+</section>
+<section id="example-4-neither-u-nor-v-solves-the-boundary-value-problem" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-neither-u-nor-v-solves-the-boundary-value-problem">Example 4 — Neither <span class="math inline">\(u\)</span> nor <span class="math inline">\(v\)</span> solves the boundary value problem</h3>
+<p><strong>Problem.</strong> Show that neither of the solutions in Examples 2 and 3 satisfies the boundary conditions, although each satisfies its own initial conditions <span class="math inline">\(u(1) = 1\)</span>, <span class="math inline">\(u'(1) = 0\)</span> and <span class="math inline">\(v(1) = 0\)</span>, <span class="math inline">\(v'(1) = 1\)</span>.</p>
+<p><strong>Solution.</strong> Mathews graphs the two functions to see this. The Runge–Kutta values at the integer nodes are:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th><span class="math inline">\(u_j \approx u(t)\)</span></th>
+<th><span class="math inline">\(v_j \approx v(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1.000000</td>
+<td>0.000000</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>0.757506</td>
+<td>0.595010</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>−0.392397</td>
+<td>0.524983</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>−2.163055</td>
+<td>0.070560</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>−2.719635</td>
+<td>−0.338452</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>−0.370482</td>
+<td>−0.391479</td>
+</tr>
+</tbody>
+</table>
+<p>The function <span class="math inline">\(u\)</span> starts at the right value, <span class="math inline">\(u(1) = 1\)</span>, but ends at <span class="math inline">\(u(6) = -0.370482\)</span>, not at <span class="math inline">\(-0.5\)</span>. The function <span class="math inline">\(v\)</span> ends at <span class="math inline">\(-0.391479\)</span> and starts at <span class="math inline">\(v(1) = 0\)</span>, not at <span class="math inline">\(1\)</span>. Neither satisfies both boundary conditions of (7); what is needed is the right combination of the two.</p>
+</section>
+<section id="example-5-the-solution-of-the-boundary-value-problem" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-the-solution-of-the-boundary-value-problem">Example 5 — The solution of the boundary value problem</h3>
+<p><strong>Problem.</strong> Form the solution of (7).</p>
+<p><strong>Step 1</strong> (the constant): with <span class="math inline">\(\beta = -0.5\)</span>, <span class="math inline">\(u(b) \approx u_{100}\)</span> and <span class="math inline">\(v(b) \approx v_{100}\)</span>,</p>
+<p><span class="math display">\[
+C = \frac{\beta - u_{100}}{v_{100}} = \frac{-0.5 - (-0.3704824638)}{-0.3914792683} = 0.3308413669 .
+\]</span></p>
+<p>This <span class="math inline">\(C\)</span> is the computed initial slope <span class="math inline">\(x'(1)\)</span>; the exact slope is <span class="math inline">\(0.3308424899\)</span>.</p>
+<p><strong>Step 2</strong> (the combination): at every node,</p>
+<p><span class="math display">\[
+x_j = u_j + 0.3308413669\, v_j , \qquad j = 0, 1, \ldots, 100 .
+\]</span></p>
+<p><strong>Result.</strong> The first point is <span class="math inline">\(x(1) = 1\)</span> and the last is <span class="math inline">\(x(6) = -0.5\)</span>, as Mathews prints. The solution rises from <span class="math inline">\(1\)</span> to a maximum of <span class="math inline">\(1.0861\)</span> near <span class="math inline">\(t = 1.4828\)</span>, crosses zero near <span class="math inline">\(t = 2.8711\)</span>, falls to a minimum of <span class="math inline">\(-2.9057\)</span> near <span class="math inline">\(t = 4.7825\)</span>, and then climbs to <span class="math inline">\(-0.5\)</span> at <span class="math inline">\(t = 6\)</span> (the extrema and the zero are those of the exact solution of Example 6).</p>
+<p><strong>Verification.</strong> The table compares <span class="math inline">\(x_j\)</span> with the exact solution <span class="math inline">\(x(t)\)</span> of Example 6.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th><span class="math inline">\(x_j\)</span> (shooting, <span class="math inline">\(h = 0.05\)</span>)</th>
+<th>exact <span class="math inline">\(x(t)\)</span></th>
+<th><span class="math inline">\(x_j - x(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>1.000000</td>
+<td>1.000000</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>0.954360</td>
+<td>0.954361</td>
+<td><span class="math inline">\(-6.2 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>−0.218711</td>
+<td>−0.218711</td>
+<td><span class="math inline">\(-4.7 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>−2.139711</td>
+<td>−2.139711</td>
+<td><span class="math inline">\(4.8 \times 10^{-8}\)</span></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>−2.831609</td>
+<td>−2.831610</td>
+<td><span class="math inline">\(3.1 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>−0.500000</td>
+<td>−0.500000</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Over all 101 nodes the largest error is <span class="math inline">\(6.5 \times 10^{-7}\)</span>, at <span class="math inline">\(t = 2.25\)</span>. The end values are exact (up to rounding) by construction. Repeating the computation with other numbers of steps shows the fourth-order behaviour of the Runge–Kutta method: each halving of <span class="math inline">\(h\)</span> divides the largest error by close to <span class="math inline">\(2^4 = 16\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(m\)</span></th>
+<th><span class="math inline">\(h\)</span></th>
+<th>largest <span class="math inline">\(\lvert x_j - x(t_j) \rvert\)</span></th>
+<th>ratio to the previous row</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>25</td>
+<td>0.2</td>
+<td><span class="math inline">\(1.54 \times 10^{-4}\)</span></td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td>50</td>
+<td>0.1</td>
+<td><span class="math inline">\(1.01 \times 10^{-5}\)</span></td>
+<td>15.2</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>0.05</td>
+<td><span class="math inline">\(6.47 \times 10^{-7}\)</span></td>
+<td>15.7</td>
+</tr>
+<tr class="even">
+<td>200</td>
+<td>0.025</td>
+<td><span class="math inline">\(4.08 \times 10^{-8}\)</span></td>
+<td>15.8</td>
+</tr>
+<tr class="odd">
+<td>400</td>
+<td>0.0125</td>
+<td><span class="math inline">\(2.56 \times 10^{-9}\)</span></td>
+<td>15.9</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example-6-the-analytic-solution" class="level3">
+<h3 class="anchored" data-anchor-id="example-6-the-analytic-solution">Example 6 — The analytic solution</h3>
+<p><strong>Problem.</strong> Find the analytic solution of (7).</p>
+<p><strong>Step 1</strong> (a substitution): put <span class="math inline">\(x(t) = w(t)/\sqrt{t}\)</span>. A direct computation gives</p>
+<p><span class="math display">\[
+x'' + \frac{1}{t}\,x' + \left(1 - \frac{1}{4t^2}\right) x = \frac{w'' + w}{\sqrt{t}},
+\]</span></p>
+<p>so (7) becomes <span class="math inline">\(w'' + w = t \cos t\)</span>. (Equation (7) is Bessel’s equation of order <span class="math inline">\(\tfrac12\)</span> with a forcing term, which is why this substitution works.)</p>
+<p><strong>Step 2</strong> (general solution): the homogeneous equation <span class="math inline">\(w'' + w = 0\)</span> has the solutions <span class="math inline">\(\cos t\)</span> and <span class="math inline">\(\sin t\)</span>, and <span class="math inline">\(w_p = \tfrac14\left(t\cos t + t^2 \sin t\right)\)</span> satisfies <span class="math inline">\(w_p'' + w_p = t\cos t\)</span>. Hence</p>
+<p><span class="math display">\[
+x(t) = \frac{1}{\sqrt{t}}\left( c_1 \cos t + c_2 \sin t + \frac{t \cos t + t^2 \sin t}{4} \right).
+\tag{8}
+\]</span></p>
+<p>Mathematica’s <em>DSolve</em> returns the same family written with the complex exponentials <span class="math inline">\(e^{\pm i t}/\sqrt{t}\)</span>, which is why, as Mathews remarks, this real equation appears to have a solution “involving complex numbers”; by Euler’s formula it is the real family (8), and its particular part differs from <span class="math inline">\(w_p/\sqrt{t}\)</span> only by the homogeneous term <span class="math inline">\(-\sin t/(8\sqrt{t})\)</span>.</p>
+<p><strong>Step 3</strong> (boundary conditions): <span class="math inline">\(x(1) = 1\)</span> and <span class="math inline">\(\sqrt{6}\,x(6) = -\sqrt{6}/2\)</span> give the linear system</p>
+<p><span class="math display">\[
+\begin{aligned}
+c_1 \cos 1 + c_2 \sin 1 &amp;= 1 - \tfrac14(\cos 1 + \sin 1) = 0.654556677, \\
+c_1 \cos 6 + c_2 \sin 6 &amp;= -\tfrac{\sqrt 6}{2} - \tfrac14(6\cos 6 + 36 \sin 6) = -0.150260818 .
+\end{aligned}
+\]</span></p>
+<p>Its determinant is <span class="math inline">\(\cos 1 \sin 6 - \sin 1 \cos 6 = \sin 5 = -0.958924 \ne 0\)</span>, the same <span class="math inline">\(\sin 5\)</span> that makes <span class="math inline">\(v(6) = \sin 5/\sqrt{6}\)</span> nonzero in Example 3. By Cramer’s rule,</p>
+<p><span class="math display">\[
+\boxed{\ c_1 = 0.0588713452, \qquad c_2 = 0.7400710958\ }
+\]</span></p>
+<p>and the exact solution of (7) is (8) with these constants. Its slope at the left end is <span class="math inline">\(x'(1) = 0.3308424899\)</span>, the slope <span class="math inline">\(C\)</span> that linear shooting approximates in Example 5.</p>
+<p><strong>Verification.</strong> Substituting (8) into (7) symbolically leaves a residual of <span class="math inline">\(0\)</span> for every <span class="math inline">\(c_1\)</span> and <span class="math inline">\(c_2\)</span>; with the constants above, <span class="math inline">\(x(1) = 1\)</span> and <span class="math inline">\(x(6) = -0.5\)</span>. The functions <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span> of Examples 2 and 3 come from the same formula: <span class="math inline">\(v(t) = \sin(t - 1)/\sqrt{t}\)</span>, and <span class="math inline">\(u\)</span> is (8) with <span class="math inline">\(c_1 = 0.3372657010\)</span> and <span class="math inline">\(c_2 = 0.5613161356\)</span>, which give <span class="math inline">\(u(1) = 1\)</span>, <span class="math inline">\(u'(1) = 0\)</span> and <span class="math inline">\(u(6) = -0.3704820481\)</span>. The exact solution also satisfies <span class="math inline">\(x = u + C v\)</span> with the exact <span class="math inline">\(C = (-0.5 - u(6))/v(6) = 0.3308424899\)</span>, which confirms formula (6) on this problem.</p>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

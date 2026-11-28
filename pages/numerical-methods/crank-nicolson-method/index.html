@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Crank-Nicolson Method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-example-1-forward-differences-with-r-0.5-h-0.2-k-0.02" id="toc-case-1-example-1-forward-differences-with-r-0.5-h-0.2-k-0.02" class="nav-link" data-scroll-target="#case-1-example-1-forward-differences-with-r-0.5-h-0.2-k-0.02">Case 1 — Example 1: forward differences with <span class="math inline">\(r = 0.5\)</span>, <span class="math inline">\(h = 0.2\)</span>, <span class="math inline">\(k = 0.02\)</span></a></li>
+  <li><a href="#case-2-example-2-forward-differences-with-r-0.875-continued-to-t-0.70" id="toc-case-2-example-2-forward-differences-with-r-0.875-continued-to-t-0.70" class="nav-link" data-scroll-target="#case-2-example-2-forward-differences-with-r-0.875-continued-to-t-0.70">Case 2 — Example 2: forward differences with <span class="math inline">\(r = 0.875\)</span>, continued to <span class="math inline">\(t = 0.70\)</span></a></li>
+  <li><a href="#case-3-examples-3-and-4-crank-nicolson-with-r-1-and-r-2" id="toc-case-3-examples-3-and-4-crank-nicolson-with-r-1-and-r-2" class="nav-link" data-scroll-target="#case-3-examples-3-and-4-crank-nicolson-with-r-1-and-r-2">Case 3 — Examples 3 and 4: Crank-Nicolson with <span class="math inline">\(r = 1\)</span> and <span class="math inline">\(r = 2\)</span></a></li>
+  <li><a href="#case-4-what-stability-buys-a-sawtooth-of-size-0.001-on-example-4s-grid-r-2" id="toc-case-4-what-stability-buys-a-sawtooth-of-size-0.001-on-example-4s-grid-r-2" class="nav-link" data-scroll-target="#case-4-what-stability-buys-a-sawtooth-of-size-0.001-on-example-4s-grid-r-2">Case 4 — What stability buys: a sawtooth of size <span class="math inline">\(0.001\)</span> on Example 4’s grid, <span class="math inline">\(r = 2\)</span></a></li>
+  </ul></li>
+  <li><a href="#the-heat-equation-and-the-grid" id="toc-the-heat-equation-and-the-grid" class="nav-link" data-scroll-target="#the-heat-equation-and-the-grid">The Heat Equation and the Grid</a></li>
+  <li><a href="#the-forward-difference-method" id="toc-the-forward-difference-method" class="nav-link" data-scroll-target="#the-forward-difference-method">The Forward-Difference Method</a>
+  <ul class="collapse">
+  <li><a href="#example-1-forward-differences-with-r-0.5" id="toc-example-1-forward-differences-with-r-0.5" class="nav-link" data-scroll-target="#example-1-forward-differences-with-r-0.5">Example 1 — Forward differences with <span class="math inline">\(r = 0.5\)</span></a></li>
+  <li><a href="#example-2-forward-differences-with-r-0.875-the-step-is-too-large" id="toc-example-2-forward-differences-with-r-0.875-the-step-is-too-large" class="nav-link" data-scroll-target="#example-2-forward-differences-with-r-0.875-the-step-is-too-large">Example 2 — Forward differences with <span class="math inline">\(r = 0.875\)</span>: the step is too large</a></li>
+  </ul></li>
+  <li><a href="#the-crank-nicolson-method" id="toc-the-crank-nicolson-method" class="nav-link" data-scroll-target="#the-crank-nicolson-method">The Crank-Nicolson Method</a>
+  <ul class="collapse">
+  <li><a href="#the-tridiagonal-system" id="toc-the-tridiagonal-system" class="nav-link" data-scroll-target="#the-tridiagonal-system">The tridiagonal system</a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  <li><a href="#example-3-crank-nicolson-with-r-1" id="toc-example-3-crank-nicolson-with-r-1" class="nav-link" data-scroll-target="#example-3-crank-nicolson-with-r-1">Example 3 — Crank-Nicolson with <span class="math inline">\(r = 1\)</span></a></li>
+  <li><a href="#example-4-crank-nicolson-with-r-2-is-the-method-stable-when-r-1" id="toc-example-4-crank-nicolson-with-r-2-is-the-method-stable-when-r-1" class="nav-link" data-scroll-target="#example-4-crank-nicolson-with-r-2-is-the-method-stable-when-r-1">Example 4 — Crank-Nicolson with <span class="math inline">\(r = 2\)</span>: is the method stable when <span class="math inline">\(r &gt; 1\)</span>?</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary">Summary</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Crank-Nicolson Method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>The one-dimensional heat equation <span class="math inline">\(u_t = c^2 u_{xx}\)</span> describes the temperature <span class="math inline">\(u(x, t)\)</span> in an insulated rod <span class="math inline">\(0 \le x \le a\)</span> whose ends are held at fixed temperatures and whose initial temperature is <span class="math inline">\(u(x, 0) = f(x)\)</span>. A finite-difference method lays a grid over the rectangle <span class="math inline">\(0 \le x \le a\)</span>, <span class="math inline">\(0 \le t \le b\)</span>, with spacing <span class="math inline">\(h\)</span> in <span class="math inline">\(x\)</span> and time step <span class="math inline">\(k\)</span>, and computes the temperatures row by row, from the initial row <span class="math inline">\(t = 0\)</span> forward in time. How the method behaves depends on the dimensionless ratio <span class="math inline">\(r = c^2 k / h^2\)</span>. The simplest method, the explicit forward-difference method, computes each new temperature directly from three old ones, but it is stable only when <span class="math inline">\(r \le \tfrac12\)</span>. For larger <span class="math inline">\(r\)</span>, rapidly oscillating error components can grow at every step until they swamp the solution, as in Example 2 below.</p>
+<p>The Crank-Nicolson method, due to John Crank and Phyllis Nicolson, centres the difference equation halfway between two time rows. It averages the second-difference approximation of <span class="math inline">\(u_{xx}\)</span> over the old row <span class="math inline">\(j\)</span> and the new row <span class="math inline">\(j+1\)</span>:</p>
+<p><span class="math display">\[
+-r\,u_{i-1,j+1} + (2 + 2r)\,u_{i,j+1} - r\,u_{i+1,j+1} \;=\; r\,u_{i-1,j} + (2 - 2r)\,u_{i,j} + r\,u_{i+1,j}.
+\]</span></p>
+<p>The new temperatures are coupled, so every time step solves a tridiagonal linear system. In return, the method is second-order accurate in both <span class="math inline">\(h\)</span> and <span class="math inline">\(k\)</span> and stable for every <span class="math inline">\(r &gt; 0\)</span> (general results, stated below). Mathews’ module first runs the forward-difference method twice, with <span class="math inline">\(r = 0.5\)</span> and with the “too large” <span class="math inline">\(r = 0.875\)</span> (Examples 1 and 2), and then runs Crank-Nicolson with <span class="math inline">\(r = 1\)</span> and <span class="math inline">\(r = 2\)</span> (Examples 3 and 4). Every number below has been recomputed: Examples 1 and 2 in exact rational arithmetic, Examples 3 and 4 in double precision, and all four compared with the Fourier series solution of the heat equation.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below advances the <strong>temperature profile</strong> <span class="math inline">\(u(x, t_j)\)</span> one time row per frame and draws the exact solution at the same time (black) beside it. The computed values <span class="math inline">\(u_{i,j}\)</span> at the grid points are joined by straight lines, as in Mathews’ plots. Mathews draws all the rows at once as a three-dimensional surface over the indices <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>; each frame here is one row of that surface. The second panel shows what the profile alone does not: the error at the grid points (Case 1), the sizes of the two sine modes in the data (Case 2), the largest error in each row (Case 3), or the part of the solution caused by a small perturbation (Case 4). The exact solution of Examples 1 and 2 is the Fourier series below, summed over the odd terms up to <span class="math inline">\(p = 1999\)</span>; that of Examples 3 and 4 is the closed form given there. The numbers in the titles and legends agree with the tables in the examples.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for partial differential equations, so all four animations are new, with no Mathews original. Cases 1 to 3 animate Mathews’ four examples with his grids and step sizes; Case 2 continues Example 2 past his last row, to <span class="math inline">\(t = 0.70\)</span>. Case 4 animates the sawtooth experiment of Example 4 (“What stability buys”), which is not in the module. Not animated are Mathews’ three-dimensional surfaces themselves (including his surfaces of the exact solution in Examples 3 and 4, drawn here as the black curves), the refinement table of Example 3, and the sawtooth figures for <span class="math inline">\(r = 1\)</span>.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-example-1-forward-differences-with-r-0.5-h-0.2-k-0.02" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-example-1-forward-differences-with-r-0.5-h-0.2-k-0.02">Case 1 — Example 1: forward differences with <span class="math inline">\(r = 0.5\)</span>, <span class="math inline">\(h = 0.2\)</span>, <span class="math inline">\(k = 0.02\)</span></h3>
+<p><strong>Behavior:</strong> With <span class="math inline">\(r = \tfrac12\)</span> each new value is the average of its two neighbours in the row below, and the profile sinks smoothly toward zero, symmetric about <span class="math inline">\(x = 0.5\)</span>, with the earlier rows left behind in a faint stack. Every computed row lies below the exact solution at the interior grid points, so the error panel stays negative. The largest error in the first step, <span class="math inline">\(0.02411\)</span>, is at <span class="math inline">\(x = 0.2\)</span> and <span class="math inline">\(0.8\)</span>; from the second step on it is at <span class="math inline">\(x = 0.4\)</span> and <span class="math inline">\(0.6\)</span>, where it reaches its largest value, <span class="math inline">\(0.02582\)</span>, at <span class="math inline">\(t = 0.1\)</span> (row <span class="math inline">\(6\)</span>), and then falls to <span class="math inline">\(0.01853\)</span> at <span class="math inline">\(t = 0.2\)</span>, where the computed values are <span class="math inline">\(u(0.2) = 0.0728125\)</span> and <span class="math inline">\(u(0.4) = 0.1178125\)</span>.</p>
+<p><a href="cranknicolsonaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="cranknicolsonaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Forward-difference solution of u_t = u_xx with u(x, 0) = 4x − 4x², h = 0.2, k = 0.02 and r = 0.5, advanced one time row per frame from t = 0 to t = 0.2 against the exact Fourier-series solution, with the earlier rows faint; a second panel shows the error at the grid points, negative at every interior point, largest (0.02582) at x = 0.4 and 0.6 when t = 0.1 and 0.01853 at t = 0.2</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-example-2-forward-differences-with-r-0.875-continued-to-t-0.70" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-example-2-forward-differences-with-r-0.875-continued-to-t-0.70">Case 2 — Example 2: forward differences with <span class="math inline">\(r = 0.875\)</span>, continued to <span class="math inline">\(t = 0.70\)</span></h3>
+<p><strong>Behavior:</strong> The computed profile is a combination of the two discrete sine modes <span class="math inline">\(\sin(\pi x_i)\)</span> and <span class="math inline">\(\sin(3\pi x_i)\)</span>, and the right panel follows their coefficients <span class="math inline">\(A_1\)</span> and <span class="math inline">\(A_3\)</span> on a logarithmic scale. <span class="math inline">\(A_1\)</span> shrinks by the factor <span class="math inline">\(0.665780\)</span> per step, a little faster than the true factor <span class="math inline">\(e^{-\pi^2 k} = 0.707912\)</span>. <span class="math inline">\(A_3\)</span> should shrink by <span class="math inline">\(e^{-9\pi^2 k} = 0.044649\)</span> per step; instead it is multiplied by <span class="math inline">\(G_3 = -1.290780\)</span>, so it changes sign at every step (open and filled markers) and grows. From row <span class="math inline">\(7\)</span> (<span class="math inline">\(t = 0.21\)</span>) on, <span class="math inline">\(|A_3|\)</span> is larger than <span class="math inline">\(A_1\)</span>, and the profile flips between two zigzag shapes from one step to the next, with the previous row drawn dashed. At Mathews’ last row, <span class="math inline">\(t = 0.35\)</span>, the largest computed value is <span class="math inline">\(0.4441\)</span> while the exact solution is at most <span class="math inline">\(0.03262\)</span>. The run then continues: at row <span class="math inline">\(16\)</span> (<span class="math inline">\(t = 0.525\)</span>) the profile leaves the fixed axis <span class="math inline">\([-1.25, 1.25]\)</span> with <span class="math inline">\(\max|u| = 1.553\)</span>, and at row <span class="math inline">\(21\)</span> (<span class="math inline">\(t = 0.70\)</span>) the largest computed value is <span class="math inline">\(5.569\)</span>, while the exact solution is at most <span class="math inline">\(0.001031\)</span>.</p>
+<p><a href="cranknicolsonbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="cranknicolsonbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Forward-difference solution of u_t = u_xx with u(x, 0) = 4x − 4x², h = 0.2, k = 0.035 and r = 0.875, advanced one time row per frame from t = 0 past Mathews’ last row t = 0.35 to t = 0.70 against the exact solution, with the previous row dashed: the profile flips between zigzag shapes, grows, and leaves the axis at t = 0.525; a log-scale panel shows the coefficient of sin πx shrinking by 0.665780 per step and the coefficient of sin 3πx growing by 1.290780 per step with alternating sign, against the true decay rates, until it reaches 5.855 at t = 0.70</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-examples-3-and-4-crank-nicolson-with-r-1-and-r-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-examples-3-and-4-crank-nicolson-with-r-1-and-r-2">Case 3 — Examples 3 and 4: Crank-Nicolson with <span class="math inline">\(r = 1\)</span> and <span class="math inline">\(r = 2\)</span></h3>
+<p><strong>Behavior:</strong> The two examples run side by side, one time step of each per frame, so Example 4 covers twice the time. In both, the two humps of the initial temperature flatten into a single hump shaped like <span class="math inline">\(\sin(\pi x)\)</span>, the computed values stay positive and smooth, and no oscillation appears. With <span class="math inline">\(r = 1\)</span> (left) the computed profile follows the exact one closely from the first step: the largest error in a row is <span class="math inline">\(0.004998\)</span> after one step, falls to <span class="math inline">\(0.002028\)</span> at <span class="math inline">\(t = 0.05\)</span> and rises slowly to <span class="math inline">\(0.002716\)</span> at <span class="math inline">\(t = 0.1\)</span>. With <span class="math inline">\(r = 2\)</span> (right) the first step flattens the humps too much, and the largest error is <span class="math inline">\(0.0738\)</span>, at <span class="math inline">\(x = 0.5\)</span>. After that the error falls at every step, to <span class="math inline">\(0.001381\)</span> at <span class="math inline">\(t = 0.2\)</span>. From <span class="math inline">\(t = 0.08\)</span> on it is below Example 3’s error at the same time, for the reason given in Example 4 (<span class="math inline">\(0.001979\)</span> against <span class="math inline">\(0.002716\)</span> at <span class="math inline">\(t = 0.1\)</span>).</p>
+<p><a href="cranknicolsoncc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="cranknicolsoncc.gif" class="img-fluid figure-img"></p>
+<figcaption>Crank-Nicolson solutions of u_t = u_xx with u(x, 0) = sin πx + sin 3πx and h = 0.1, Example 3 with k = 0.01 and r = 1 and Example 4 with k = 0.02 and r = 2, advanced one step per frame for ten steps against the exact solution, the two humps flattening into one; a log-scale panel tracks the largest error in each row: for r = 1 it is 0.004998 after one step, 0.002028 at t = 0.05 and 0.002716 at t = 0.1, and for r = 2 it is 0.0738 after one step and falls at every step to 0.001381 at t = 0.2</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-4-what-stability-buys-a-sawtooth-of-size-0.001-on-example-4s-grid-r-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-4-what-stability-buys-a-sawtooth-of-size-0.001-on-example-4s-grid-r-2">Case 4 — What stability buys: a sawtooth of size <span class="math inline">\(0.001\)</span> on Example 4’s grid, <span class="math inline">\(r = 2\)</span></h3>
+<p><strong>Behavior:</strong> Both methods start from Example 4’s data with <span class="math inline">\(\mp 0.001\)</span> added at the interior grid points (<span class="math inline">\(-0.001\)</span> at <span class="math inline">\(x = 0.1\)</span>, <span class="math inline">\(+0.001\)</span> at <span class="math inline">\(x = 0.2\)</span>, and so on), and each is also run without it; <span class="math inline">\(\delta\)</span> is the difference between the two runs, drawn in the lower panels on an axis rescaled every step. In both methods <span class="math inline">\(\delta\)</span> changes sign at every interior grid point at every step. Under forward differences, at four times their stability limit, the size of <span class="math inline">\(\delta\)</span> is multiplied by exactly <span class="math inline">\(7\)</span> in each of the first four steps and by between <span class="math inline">\(6.85\)</span> and <span class="math inline">\(7\)</span> in the later ones, close to <span class="math inline">\(|G_9| = 6.804226\)</span>, the size of the factor of the mode <span class="math inline">\(p = 9\)</span>. The perturbed run leaves the axis at <span class="math inline">\(t = 0.08\)</span> (<span class="math inline">\(\max|u| = 2.679\)</span>), and by <span class="math inline">\(t = 0.2\)</span> the largest <span class="math inline">\(|\delta|\)</span> is <span class="math inline">\(2.611 \times 10^{5}\)</span>. The forward-difference run without the sawtooth (dashed) stays bounded but is inaccurate, as Example 4 notes. Under Crank-Nicolson, the size of <span class="math inline">\(\delta\)</span> is multiplied by between <span class="math inline">\(0.586\)</span> and <span class="math inline">\(0.694\)</span> per step, to <span class="math inline">\(1.055 \times 10^{-5}\)</span> at <span class="math inline">\(t = 0.2\)</span>, and the perturbed and unperturbed runs cannot be told apart at the scale of the profile.</p>
+<p><a href="cranknicolsondd.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="cranknicolsondd.gif" class="img-fluid figure-img"></p>
+<figcaption>Forward-difference and Crank-Nicolson solutions of Example 4 (h = 0.1, k = 0.02, r = 2) with a sawtooth of size 0.001 added to the initial values, advanced one step per frame to t = 0.2 against the exact solution and each method’s run without the sawtooth; the lower panels show the difference δ between the runs, which changes sign at every grid point at every step, and a log-scale panel shows its largest size growing about sevenfold per step to 2.611 × 10⁵ for forward differences and shrinking to 1.055 × 10⁻⁵ for Crank-Nicolson</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="the-heat-equation-and-the-grid" class="level2">
+<h2 class="anchored" data-anchor-id="the-heat-equation-and-the-grid">The Heat Equation and the Grid</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Problem — heat equation with fixed end temperatures
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Find <span class="math inline">\(u(x, t)\)</span> on <span class="math inline">\(R = \{(x, t) : 0 \le x \le a,\ 0 \le t \le b\}\)</span> with</p>
+<p><span class="math display">\[
+u_t(x, t) = c^2\, u_{xx}(x, t) \quad \text{for } 0 &lt; x &lt; a,\ 0 &lt; t &lt; b,
+\tag{1}
+\]</span></p>
+<p>the initial condition <span class="math inline">\(u(x, 0) = f(x)\)</span> for <span class="math inline">\(0 \le x \le a\)</span>, and the boundary conditions <span class="math inline">\(u(0, t) = c_1\)</span> and <span class="math inline">\(u(a, t) = c_2\)</span> for <span class="math inline">\(0 \le t \le b\)</span>.</p>
+</div>
+</div>
+<p>The heat equation can be solved analytically with Fourier series. Mathews uses it as the prototype of a parabolic equation for numerical solution, and the series solution then serves as the check on the numerical one.</p>
+<p>Following Mathews, the grid has <span class="math inline">\(n\)</span> columns and <span class="math inline">\(m\)</span> rows:</p>
+<p><span class="math display">\[
+h = \frac{a}{n - 1}, \qquad k = \frac{b}{m - 1}, \qquad x_i = (i - 1)h,\ i = 1, \ldots, n, \qquad t_j = (j - 1)k,\ j = 1, \ldots, m,
+\]</span></p>
+<p>and <span class="math inline">\(u_{i,j}\)</span> approximates <span class="math inline">\(u(x_i, t_j)\)</span>. The first row holds the initial values <span class="math inline">\(u_{i,1} = f(x_i)\)</span>, and the first and last columns hold the boundary values <span class="math inline">\(u_{1,j} = c_1\)</span> and <span class="math inline">\(u_{n,j} = c_2\)</span>. The methods below compute the interior values <span class="math inline">\(u_{2,j}, \ldots, u_{n-1,j}\)</span> one row at a time, and the ratio</p>
+<p><span class="math display">\[
+r = \frac{c^2 k}{h^2}
+\tag{2}
+\]</span></p>
+<p>appears in all of them.</p>
+<p>All four of Mathews’ examples use <span class="math inline">\(a = 1\)</span>, <span class="math inline">\(c = 1\)</span> and <span class="math inline">\(c_1 = c_2 = 0\)</span>: a rod of length one whose ends are held at temperature zero.</p>
+</section>
+<section id="the-forward-difference-method" class="level2">
+<h2 class="anchored" data-anchor-id="the-forward-difference-method">The Forward-Difference Method</h2>
+<p>At a grid point <span class="math inline">\((x, t)\)</span>, replace <span class="math inline">\(u_t\)</span> by the forward difference and <span class="math inline">\(u_{xx}\)</span> by the central second difference:</p>
+<p><span class="math display">\[
+u_t(x, t) = \frac{u(x, t + k) - u(x, t)}{k} + O(k), \qquad
+u_{xx}(x, t) = \frac{u(x - h, t) - 2u(x, t) + u(x + h, t)}{h^2} + O(h^2).
+\]</span></p>
+<p>Substituting both into (1), dropping the error terms and multiplying by <span class="math inline">\(k\)</span> gives the forward-difference (explicit) method.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Forward-difference formula
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+u_{i,j+1} = (1 - 2r)\,u_{i,j} + r\,\bigl(u_{i-1,j} + u_{i+1,j}\bigr), \qquad i = 2, \ldots, n - 1.
+\tag{3}
+\]</span></p>
+</div>
+</div>
+<p>Each new value comes directly from three values in the row below, so no equations have to be solved. When <span class="math inline">\(r \le \tfrac12\)</span>, the three weights <span class="math inline">\(r\)</span>, <span class="math inline">\(1 - 2r\)</span> and <span class="math inline">\(r\)</span> are nonnegative and add up to <span class="math inline">\(1\)</span>, so each new value is a weighted average of old ones and can be neither larger than the largest old value nor smaller than the smallest. When <span class="math inline">\(r &gt; \tfrac12\)</span> the centre weight <span class="math inline">\(1 - 2r\)</span> is negative and this argument fails.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Stability of the forward-difference method (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For the problem (1) with fixed end temperatures, write the error at the interior grid points of a row as a combination of the discrete sine modes <span class="math inline">\(\sin(p\pi x_i/a)\)</span>, <span class="math inline">\(p = 1, \ldots, n - 2\)</span>. Formula (3) multiplies the coefficient of mode <span class="math inline">\(p\)</span> by</p>
+<p><span class="math display">\[
+G_p = 1 - 4r \sin^2\!\Bigl(\frac{p\pi h}{2a}\Bigr)
+\]</span></p>
+<p>at each step. Every <span class="math inline">\(|G_p| \le 1\)</span> on every grid exactly when <span class="math inline">\(r \le \tfrac12\)</span>. For <span class="math inline">\(r &gt; \tfrac12\)</span> the highest modes of a fine enough grid have <span class="math inline">\(G_p &lt; -1\)</span>, so they grow and change sign at every step. The method’s local truncation error is <span class="math inline">\(O(k + h^2)\)</span>.</p>
+</div>
+</div>
+<section id="example-1-forward-differences-with-r-0.5" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-forward-differences-with-r-0.5">Example 1 — Forward differences with <span class="math inline">\(r = 0.5\)</span></h3>
+<p>Solve <span class="math inline">\(u_t = u_{xx}\)</span> for <span class="math inline">\(0 \le x \le 1\)</span>, <span class="math inline">\(0 \le t \le 0.2\)</span>, with <span class="math inline">\(u(0, t) = u(1, t) = 0\)</span> and initial temperature</p>
+<p><span class="math display">\[
+u(x, 0) = f(x) = 4x - 4x^2.
+\]</span></p>
+<p>Use the forward-difference method with <span class="math inline">\(h = 0.2\)</span> and <span class="math inline">\(k = 0.02\)</span>, and find the temperatures for <span class="math inline">\(t = 0.02, 0.04, \ldots, 0.20\)</span>.</p>
+<p>Mathews’ grid has <span class="math inline">\(n = 6\)</span> columns and <span class="math inline">\(m = 11\)</span> rows, so <span class="math inline">\(h = 1/5\)</span>, <span class="math inline">\(k = 0.2/10 = 0.02\)</span> and</p>
+<p><span class="math display">\[
+r = \frac{c^2 k}{h^2} = \frac{1\,(0.02)}{(0.2)^2} = 0.5.
+\]</span></p>
+<p>(The module’s statement of this example says “<span class="math inline">\(r = 1\)</span>”, but the parameters it then uses give <span class="math inline">\(r = 0.5\)</span>, which is what Mathews’ program computes. The “<span class="math inline">\(r = 1\)</span>” is probably meant to be <span class="math inline">\(c = 1\)</span>.)</p>
+<p><strong>Step 1</strong>: with <span class="math inline">\(r = \tfrac12\)</span> the centre weight <span class="math inline">\(1 - 2r\)</span> vanishes, and (3) becomes the average of the two neighbours:</p>
+<p><span class="math display">\[
+u_{i,j+1} = \tfrac12\bigl(u_{i-1,j} + u_{i+1,j}\bigr).
+\]</span></p>
+<p><strong>Step 2</strong>: the initial row is <span class="math inline">\(f(0), f(0.2), \ldots, f(1) = 0,\ 0.64,\ 0.96,\ 0.96,\ 0.64,\ 0\)</span>. The first time step gives</p>
+<p><span class="math display">\[
+u_{2,2} = \tfrac12(0 + 0.96) = 0.48, \qquad u_{3,2} = \tfrac12(0.64 + 0.96) = 0.80,
+\]</span></p>
+<p>and by symmetry <span class="math inline">\(u_{4,2} = 0.80\)</span>, <span class="math inline">\(u_{5,2} = 0.48\)</span>.</p>
+<p><strong>Step 3</strong>: the second time step gives <span class="math inline">\(u_{2,3} = \tfrac12(0 + 0.80) = 0.40\)</span> and <span class="math inline">\(u_{3,3} = \tfrac12(0.48 + 0.80) = 0.64\)</span>, and so on.</p>
+<p>Because <span class="math inline">\(f\)</span> is symmetric about <span class="math inline">\(x = \tfrac12\)</span>, so is every row: the values at <span class="math inline">\(x = 0.6\)</span> and <span class="math inline">\(0.8\)</span> equal those at <span class="math inline">\(0.4\)</span> and <span class="math inline">\(0.2\)</span>, and the end values are <span class="math inline">\(0\)</span>. The table lists the two independent columns. With <span class="math inline">\(r = \tfrac12\)</span> every value is a terminating decimal, and the table gives them exactly (Mathews prints six significant digits, for example <span class="math inline">\(0.117813\)</span> for <span class="math inline">\(0.1178125\)</span>). The last two columns are the exact solution, from the Fourier series below.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 22%">
+<col style="width: 22%">
+<col style="width: 22%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(u(0.2, t)\)</span>, numerical</th>
+<th style="text-align: right;"><span class="math inline">\(u(0.4, t)\)</span>, numerical</th>
+<th style="text-align: right;"><span class="math inline">\(u(0.2, t)\)</span>, exact</th>
+<th style="text-align: right;"><span class="math inline">\(u(0.4, t)\)</span>, exact</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.64</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">0.640000</td>
+<td style="text-align: right;">0.960000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">0.504110</td>
+<td style="text-align: right;">0.801911</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.64</td>
+<td style="text-align: right;">0.409799</td>
+<td style="text-align: right;">0.660741</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">0.335713</td>
+<td style="text-align: right;">0.542801</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">0.275461</td>
+<td style="text-align: right;">0.445639</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.21</td>
+<td style="text-align: right;">0.34</td>
+<td style="text-align: right;">0.226098</td>
+<td style="text-align: right;">0.365823</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.12</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">0.275</td>
+<td style="text-align: right;">0.185594</td>
+<td style="text-align: right;">0.300295</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">0.1375</td>
+<td style="text-align: right;">0.2225</td>
+<td style="text-align: right;">0.152348</td>
+<td style="text-align: right;">0.246503</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">0.11125</td>
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">0.125057</td>
+<td style="text-align: right;">0.202347</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.145625</td>
+<td style="text-align: right;">0.102656</td>
+<td style="text-align: right;">0.166100</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.0728125</td>
+<td style="text-align: right;">0.1178125</td>
+<td style="text-align: right;">0.084267</td>
+<td style="text-align: right;">0.136346</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> the Fourier sine coefficients of <span class="math inline">\(4x - 4x^2\)</span> on <span class="math inline">\([0, 1]\)</span> are <span class="math inline">\(32/(p^3\pi^3)\)</span> for odd <span class="math inline">\(p\)</span> and <span class="math inline">\(0\)</span> for even <span class="math inline">\(p\)</span>, so the exact solution is</p>
+<p><span class="math display">\[
+u(x, t) = \sum_{p \text{ odd}} \frac{32}{p^3 \pi^3}\, \sin(p\pi x)\, e^{-p^2 \pi^2 t}.
+\]</span></p>
+<p>The table’s exact values were summed to <span class="math inline">\(30\)</span> digits with the odd terms up to <span class="math inline">\(p = 1999\)</span>, and at <span class="math inline">\(t = 0\)</span> this truncated sum reproduces <span class="math inline">\(f\)</span> to within <span class="math inline">\(1.1 \times 10^{-10}\)</span>. The numerical temperatures decrease at every interior grid point from each row to the next, as the true temperatures do, and the method’s values lie below the true ones at every interior grid point with <span class="math inline">\(t &gt; 0\)</span>. The largest error is <span class="math inline">\(0.0258\)</span>, at <span class="math inline">\(x = 0.4\)</span> and <span class="math inline">\(0.6\)</span> when <span class="math inline">\(t = 0.10\)</span>; at <span class="math inline">\(t = 0.20\)</span> the errors are <span class="math inline">\(-0.0115\)</span> at <span class="math inline">\(x = 0.2\)</span> and <span class="math inline">\(-0.0185\)</span> at <span class="math inline">\(x = 0.4\)</span>. The grid is coarse (<span class="math inline">\(h = 0.2\)</span>), and the forward difference in <span class="math inline">\(t\)</span> is only first-order accurate.</p>
+<p>Mathews displays the result in two ways: a table of all <span class="math inline">\(m \times n = 11 \times 6\)</span> values, printed one row per time level to six significant digits, and a three-dimensional plot of the values <span class="math inline">\(u_{i,j}\)</span> against the column index <span class="math inline">\(i\)</span> (axis “x(i)”, <span class="math inline">\(1\)</span> to <span class="math inline">\(6\)</span>) and the row index <span class="math inline">\(j\)</span> (axis “t(j)”, <span class="math inline">\(1\)</span> to <span class="math inline">\(11\)</span>), viewed from the point <span class="math inline">\((4, 2, 3)\)</span>.</p>
+</section>
+<section id="example-2-forward-differences-with-r-0.875-the-step-is-too-large" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-forward-differences-with-r-0.875-the-step-is-too-large">Example 2 — Forward differences with <span class="math inline">\(r = 0.875\)</span>: the step is too large</h3>
+<p>Solve the same problem, <span class="math inline">\(u_t = u_{xx}\)</span> with <span class="math inline">\(u(0, t) = u(1, t) = 0\)</span> and <span class="math inline">\(f(x) = 4x - 4x^2\)</span>, now on the longer interval <span class="math inline">\(0 \le t \le 0.35\)</span>, with <span class="math inline">\(h = 0.2\)</span> and <span class="math inline">\(k = 0.035\)</span>, and find the temperatures for <span class="math inline">\(t = 0.035, 0.070, \ldots, 0.35\)</span>.</p>
+<p>Again <span class="math inline">\(n = 6\)</span> and <span class="math inline">\(m = 11\)</span>, so <span class="math inline">\(h = 0.2\)</span>, <span class="math inline">\(k = 0.35/10 = 0.035\)</span> and</p>
+<p><span class="math display">\[
+r = \frac{1\,(0.035)}{(0.2)^2} = 0.875 &gt; \tfrac12.
+\]</span></p>
+<p>(As in Example 1, the statement in the module says “<span class="math inline">\(r = 1\)</span>”, while the parameters give <span class="math inline">\(r = 0.875\)</span>, which is the value Mathews’ program uses.)</p>
+<p><strong>Step 1</strong>: with <span class="math inline">\(r = \tfrac78\)</span>, formula (3) is</p>
+<p><span class="math display">\[
+u_{i,j+1} = -0.75\,u_{i,j} + 0.875\,\bigl(u_{i-1,j} + u_{i+1,j}\bigr).
+\]</span></p>
+<p>The centre weight is negative.</p>
+<p><strong>Step 2</strong>: the first time step gives</p>
+<p><span class="math display">\[
+u_{2,2} = -0.75(0.64) + 0.875(0 + 0.96) = 0.36, \qquad
+u_{3,2} = -0.75(0.96) + 0.875(0.64 + 0.96) = 0.68.
+\]</span></p>
+<p>Continuing gives the table, which agrees with Mathews’ printed values in every entry. The values are exact rational numbers, rounded here to six decimal places.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 22%">
+<col style="width: 22%">
+<col style="width: 22%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(u(0.2, t)\)</span>, numerical</th>
+<th style="text-align: right;"><span class="math inline">\(u(0.4, t)\)</span>, numerical</th>
+<th style="text-align: right;"><span class="math inline">\(u(0.2, t)\)</span>, exact</th>
+<th style="text-align: right;"><span class="math inline">\(u(0.4, t)\)</span>, exact</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">0.640000</td>
+<td style="text-align: right;">0.960000</td>
+<td style="text-align: right;">0.640000</td>
+<td style="text-align: right;">0.960000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.035</td>
+<td style="text-align: right;">0.360000</td>
+<td style="text-align: right;">0.680000</td>
+<td style="text-align: right;">0.431059</td>
+<td style="text-align: right;">0.693838</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.070</td>
+<td style="text-align: right;">0.325000</td>
+<td style="text-align: right;">0.400000</td>
+<td style="text-align: right;">0.304075</td>
+<td style="text-align: right;">0.491841</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.105</td>
+<td style="text-align: right;">0.106250</td>
+<td style="text-align: right;">0.334375</td>
+<td style="text-align: right;">0.215210</td>
+<td style="text-align: right;">0.348210</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.140</td>
+<td style="text-align: right;">0.212891</td>
+<td style="text-align: right;">0.134766</td>
+<td style="text-align: right;">0.152348</td>
+<td style="text-align: right;">0.246503</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.175</td>
+<td style="text-align: right;">−0.041748</td>
+<td style="text-align: right;">0.203125</td>
+<td style="text-align: right;">0.107848</td>
+<td style="text-align: right;">0.174502</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.210</td>
+<td style="text-align: right;">0.209045</td>
+<td style="text-align: right;">−0.011139</td>
+<td style="text-align: right;">0.076347</td>
+<td style="text-align: right;">0.123532</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.245</td>
+<td style="text-align: right;">−0.166531</td>
+<td style="text-align: right;">0.181522</td>
+<td style="text-align: right;">0.054047</td>
+<td style="text-align: right;">0.087450</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.280</td>
+<td style="text-align: right;">0.283730</td>
+<td style="text-align: right;">−0.123024</td>
+<td style="text-align: right;">0.038261</td>
+<td style="text-align: right;">0.061907</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.315</td>
+<td style="text-align: right;">−0.320444</td>
+<td style="text-align: right;">0.232886</td>
+<td style="text-align: right;">0.027085</td>
+<td style="text-align: right;">0.043825</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.350</td>
+<td style="text-align: right;">0.444108</td>
+<td style="text-align: right;">−0.251277</td>
+<td style="text-align: right;">0.019174</td>
+<td style="text-align: right;">0.031024</td>
+</tr>
+</tbody>
+</table>
+<p>The true temperatures are positive and decrease steadily. The computed ones do not. From <span class="math inline">\(t = 0.14\)</span> on, the value at <span class="math inline">\(x = 0.2\)</span> changes sign at every step, and from <span class="math inline">\(t = 0.175\)</span> on so does the value at <span class="math inline">\(x = 0.4\)</span>, always with the opposite sign. Negative temperatures appear although no temperature in the problem is below <span class="math inline">\(0\)</span>. At <span class="math inline">\(t = 0.35\)</span> the computed value at <span class="math inline">\(x = 0.2\)</span> is <span class="math inline">\(0.444108\)</span>, while the true temperature there is <span class="math inline">\(0.019174\)</span>.</p>
+<p><strong>Why it fails.</strong> On this grid the initial values are exactly a combination of two discrete sine modes (<span class="math inline">\(f\)</span> is symmetric about <span class="math inline">\(x = \tfrac12\)</span>, so the even modes are absent):</p>
+<p><span class="math display">\[
+f(x_i) = 1.031357\,\sin(\pi x_i) + 0.035522\,\sin(3\pi x_i), \qquad i = 1, \ldots, 6.
+\]</span></p>
+<p>Formula (3) multiplies the two coefficients by <span class="math inline">\(G_1 = 0.665780\)</span> and <span class="math inline">\(G_3 = -1.290780\)</span> at every step. So the computed solution is exactly</p>
+<p><span class="math display">\[
+u_{i,j} = 1.031357\,(0.665780)^{j-1} \sin(\pi x_i) + 0.035522\,(-1.290780)^{j-1} \sin(3\pi x_i).
+\]</span></p>
+<p>The first term decays faster than the true mode <span class="math inline">\(e^{-\pi^2 t}\)</span>, whose factor per step is <span class="math inline">\(0.707912\)</span>. The second term should decay by the factor <span class="math inline">\(e^{-9\pi^2 k} = 0.044649\)</span> per step; instead it grows by <span class="math inline">\(1.290780\)</span> in size and changes sign. Ten steps multiply it by <span class="math inline">\((-1.290780)^{10} = 12.8387\)</span>, and at <span class="math inline">\(t = 0.35\)</span> it contributes <span class="math inline">\(0.433734\)</span> of the <span class="math inline">\(0.444108\)</span> at <span class="math inline">\(x = 0.2\)</span>. For the mode <span class="math inline">\(p = 3\)</span> on this grid, <span class="math inline">\(|G_3| \le 1\)</span> requires <span class="math inline">\(r \le 0.763932\)</span>, and Mathews’ <span class="math inline">\(r = 0.875\)</span> is past that. Continuing the run past Mathews’ last row, the largest computed value in size reaches <span class="math inline">\(1.55\)</span> at <span class="math inline">\(t = 0.525\)</span> (row <span class="math inline">\(16\)</span>) and <span class="math inline">\(5.57\)</span> at <span class="math inline">\(t = 0.70\)</span> (row <span class="math inline">\(21\)</span>).</p>
+<p>Mathews shows the same table and the same three-dimensional plot as in Example 1. In his plot the surface turns jagged at the later time rows.</p>
+</section>
+</section>
+<section id="the-crank-nicolson-method" class="level2">
+<h2 class="anchored" data-anchor-id="the-crank-nicolson-method">The Crank-Nicolson Method</h2>
+<p>The forward-difference method evaluates <span class="math inline">\(u_{xx}\)</span> on the old row only, and that is the source of both its first-order accuracy in <span class="math inline">\(t\)</span> and its stability limit. Crank and Nicolson instead centred the approximation at the point <span class="math inline">\((x, t + k/2)\)</span>, halfway between the rows <span class="math inline">\(t\)</span> and <span class="math inline">\(t + k\)</span>. There the forward difference becomes a central difference, and it is second-order accurate:</p>
+<p><span class="math display">\[
+u_t\Bigl(x, t + \frac{k}{2}\Bigr) = \frac{u(x, t + k) - u(x, t)}{k} + O(k^2).
+\tag{4}
+\]</span></p>
+<p>For <span class="math inline">\(u_{xx}(x, t + k/2)\)</span> they used the average of the central second differences on the two rows. The average of the values at <span class="math inline">\(t\)</span> and <span class="math inline">\(t + k\)</span> also differs from the value at <span class="math inline">\(t + k/2\)</span> by <span class="math inline">\(O(k^2)\)</span>:</p>
+<p><span class="math display">\[
+u_{xx}\Bigl(x, t + \frac{k}{2}\Bigr) = \frac{1}{2h^2}\Bigl[\bigl(u(x - h, t + k) - 2u(x, t + k) + u(x + h, t + k)\bigr) + \bigl(u(x - h, t) - 2u(x, t) + u(x + h, t)\bigr)\Bigr] + O(h^2 + k^2).
+\tag{5}
+\]</span></p>
+<p>Setting (4) equal to <span class="math inline">\(c^2\)</span> times (5), dropping the error terms and multiplying by <span class="math inline">\(2k\)</span> gives</p>
+<p><span class="math display">\[
+2\bigl(u_{i,j+1} - u_{i,j}\bigr) = r\bigl(u_{i-1,j+1} - 2u_{i,j+1} + u_{i+1,j+1}\bigr) + r\bigl(u_{i-1,j} - 2u_{i,j} + u_{i+1,j}\bigr).
+\]</span></p>
+<p>Collecting the unknown values of row <span class="math inline">\(j + 1\)</span> on the left:</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Crank-Nicolson formula
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+-r\,u_{i-1,j+1} + (2 + 2r)\,u_{i,j+1} - r\,u_{i+1,j+1} = r\,u_{i-1,j} + (2 - 2r)\,u_{i,j} + r\,u_{i+1,j}, \qquad i = 2, \ldots, n - 1.
+\tag{6}
+\]</span></p>
+</div>
+</div>
+<p>Mathews’ program divides (6) by <span class="math inline">\(r\)</span>, so its matrix has <span class="math inline">\(2 + 2/r\)</span> on the diagonal and <span class="math inline">\(-1\)</span> beside it, and its right-hand side is <span class="math inline">\(u_{i-1,j} + (2/r - 2)\,u_{i,j} + u_{i+1,j}\)</span>. With <span class="math inline">\(r = 1\)</span> the formula is especially simple:</p>
+<p><span class="math display">\[
+-u_{i-1,j+1} + 4u_{i,j+1} - u_{i+1,j+1} = u_{i-1,j} + u_{i+1,j}.
+\]</span></p>
+<section id="the-tridiagonal-system" class="level3">
+<h3 class="anchored" data-anchor-id="the-tridiagonal-system">The tridiagonal system</h3>
+<p>The values <span class="math inline">\(u_{1,j+1} = c_1\)</span> and <span class="math inline">\(u_{n,j+1} = c_2\)</span> are known, so their terms in (6) move to the right-hand side. That leaves a system of <span class="math inline">\(n - 2\)</span> equations in the <span class="math inline">\(n - 2\)</span> unknowns <span class="math inline">\(u_{2,j+1}, \ldots, u_{n-1,j+1}\)</span>:</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+2 + 2r &amp; -r &amp; &amp; &amp; \\
+-r &amp; 2 + 2r &amp; -r &amp; &amp; \\
+&amp; \ddots &amp; \ddots &amp; \ddots &amp; \\
+&amp; &amp; -r &amp; 2 + 2r &amp; -r \\
+&amp; &amp; &amp; -r &amp; 2 + 2r
+\end{pmatrix}
+\begin{pmatrix} u_{2,j+1} \\ u_{3,j+1} \\ \vdots \\ u_{n-2,j+1} \\ u_{n-1,j+1} \end{pmatrix}
+=
+\begin{pmatrix} b_2 + r c_1 \\ b_3 \\ \vdots \\ b_{n-2} \\ b_{n-1} + r c_2 \end{pmatrix},
+\tag{7}
+\]</span></p>
+<p>where <span class="math inline">\(b_i = r\,u_{i-1,j} + (2 - 2r)\,u_{i,j} + r\,u_{i+1,j}\)</span> is the right side of (6). The matrix is the same at every time step. It is strictly diagonally dominant (<span class="math inline">\(2 + 2r &gt; 2r\)</span>) and symmetric with eigenvalues <span class="math inline">\(2 + 2r - 2r\cos\bigl(p\pi/(n - 1)\bigr) &gt; 2\)</span>, so it is nonsingular for every <span class="math inline">\(r &gt; 0\)</span>. A tridiagonal system is solved by Gaussian elimination without pivoting in <span class="math inline">\(O(n)\)</span> operations: one forward sweep eliminates the subdiagonal, and back substitution finds the unknowns (see <a href="../../../pages/numerical-methods/tri-diagonal-matrices.html">Tri-Diagonal Matrices</a>). Mathews’ <code>TriDiagonal</code> routine does exactly this. His program keeps all <span class="math inline">\(n\)</span> rows, including the two boundary rows, which become the trivial equations <span class="math inline">\(u_{1,j+1} = c_1\)</span> and <span class="math inline">\(u_{n,j+1} = c_2\)</span>. As he remarks, <span class="math inline">\(n - 2\)</span> rows would do.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Accuracy and stability of Crank-Nicolson (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the solution <span class="math inline">\(u\)</span> is smooth, the local truncation error of (6) is <span class="math inline">\(O(h^2 + k^2)\)</span>. With fixed end temperatures, formula (6) multiplies the coefficient of the discrete sine mode <span class="math inline">\(p\)</span> by</p>
+<p><span class="math display">\[
+G_p = \frac{1 - 2r\, s_p}{1 + 2r\, s_p}, \qquad s_p = \sin^2\!\Bigl(\frac{p\pi h}{2a}\Bigr),
+\]</span></p>
+<p>at each step. Since <span class="math inline">\(r s_p &gt; 0\)</span>, <span class="math inline">\(-1 &lt; G_p &lt; 1\)</span> for every mode and every <span class="math inline">\(r &gt; 0\)</span>. The method is <em>unconditionally stable</em>: no restriction on <span class="math inline">\(r\)</span> is needed for stability.</p>
+</div>
+</div>
+<p>Stability does not mean accuracy. A larger <span class="math inline">\(k\)</span> still gives a larger error, and when <span class="math inline">\(2r s_p &gt; 1\)</span> the factor <span class="math inline">\(G_p\)</span> is negative. Such a mode is not amplified, but it changes sign at every step while it decays. For large <span class="math inline">\(r\)</span> the factors of the highest modes approach <span class="math inline">\(-1\)</span>, so these modes die out slowly, while the true solution damps them almost at once. When the initial data are rough, for example a discontinuity or a mismatch between <span class="math inline">\(f\)</span> and the end temperatures, Crank-Nicolson with a large <span class="math inline">\(r\)</span> can therefore show slowly fading oscillations. This is a general property of the method; Example 4 below checks it on a computed perturbation.</p>
+</section>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Crank-Nicolson method for the heat equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(c\)</span>, <span class="math inline">\(f\)</span>, <span class="math inline">\(c_1\)</span>, <span class="math inline">\(c_2\)</span> and the grid sizes <span class="math inline">\(n\)</span> and <span class="math inline">\(m\)</span>:</p>
+<ol type="1">
+<li>Set <span class="math inline">\(h = a/(n - 1)\)</span>, <span class="math inline">\(k = b/(m - 1)\)</span> and <span class="math inline">\(r = c^2 k/h^2\)</span>.</li>
+<li>Fill the first row with <span class="math inline">\(u_{i,1} = f(x_i)\)</span>, <span class="math inline">\(i = 1, \ldots, n\)</span>, and the end columns with <span class="math inline">\(u_{1,j} = c_1\)</span>, <span class="math inline">\(u_{n,j} = c_2\)</span>, <span class="math inline">\(j = 1, \ldots, m\)</span>.</li>
+<li>Form the tridiagonal matrix of (7): <span class="math inline">\(2 + 2r\)</span> on the diagonal and <span class="math inline">\(-r\)</span> on the sub- and superdiagonals.</li>
+<li>For <span class="math inline">\(j = 1, \ldots, m - 1\)</span>: compute the right-hand side of (7) from row <span class="math inline">\(j\)</span>, and solve the tridiagonal system for row <span class="math inline">\(j + 1\)</span>.</li>
+</ol>
+</div>
+</div>
+</section>
+<section id="example-3-crank-nicolson-with-r-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-crank-nicolson-with-r-1">Example 3 — Crank-Nicolson with <span class="math inline">\(r = 1\)</span></h3>
+<p>Solve <span class="math inline">\(u_t = u_{xx}\)</span> for <span class="math inline">\(0 \le x \le 1\)</span>, <span class="math inline">\(0 \le t \le 0.1\)</span>, with <span class="math inline">\(u(0, t) = u(1, t) = 0\)</span> and initial temperature</p>
+<p><span class="math display">\[
+u(x, 0) = f(x) = \sin(\pi x) + \sin(3\pi x).
+\]</span></p>
+<p>Use the Crank-Nicolson method with <span class="math inline">\(h = 0.1\)</span> and <span class="math inline">\(k = 0.01\)</span>, find the temperatures for <span class="math inline">\(t = 0.01, 0.02, \ldots, 0.10\)</span>, and compare them with the exact solution</p>
+<p><span class="math display">\[
+u(x, t) = \sin(\pi x)\, e^{-\pi^2 t} + \sin(3\pi x)\, e^{-9\pi^2 t}.
+\]</span></p>
+<p>Mathews’ grid has <span class="math inline">\(n = 11\)</span> columns and <span class="math inline">\(m = 11\)</span> rows, so <span class="math inline">\(h = 0.1\)</span>, <span class="math inline">\(k = 0.01\)</span> and</p>
+<p><span class="math display">\[
+r = \frac{1\,(0.01)}{(0.1)^2} = 1.
+\]</span></p>
+<p><strong>Step 1</strong>: with <span class="math inline">\(r = 1\)</span>, formula (6) is <span class="math inline">\(-u_{i-1,j+1} + 4u_{i,j+1} - u_{i+1,j+1} = u_{i-1,j} + u_{i+1,j}\)</span> for <span class="math inline">\(i = 2, \ldots, 10\)</span>, a <span class="math inline">\(9 \times 9\)</span> system with <span class="math inline">\(4\)</span> on the diagonal and <span class="math inline">\(-1\)</span> beside it.</p>
+<p><strong>Step 2</strong>: the initial row is symmetric about <span class="math inline">\(x = 0.5\)</span>, because <span class="math inline">\(\sin(\pi(1 - x)) = \sin(\pi x)\)</span> and <span class="math inline">\(\sin(3\pi(1 - x)) = \sin(3\pi x)\)</span>. At <span class="math inline">\(x = 0.1, \ldots, 0.5\)</span> it is</p>
+<p><span class="math display">\[
+f(0.1) = f(0.3) = \tfrac{\sqrt5}{2} = 1.118034, \quad f(0.2) = 1.538842, \quad f(0.4) = 0.363271, \quad f(0.5) = 0.
+\]</span></p>
+<p>The right-hand sides <span class="math inline">\(b_i = u_{i-1,1} + u_{i+1,1}\)</span> for the first step, at <span class="math inline">\(x = 0.1, 0.2, 0.3, 0.4, 0.5\)</span>, are</p>
+<p><span class="math display">\[
+1.538842, \quad 2.236068, \quad 1.902113, \quad 1.118034, \quad 0.726543,
+\]</span></p>
+<p>and the values at <span class="math inline">\(x = 0.6, \ldots, 0.9\)</span> repeat these in reverse order.</p>
+<p><strong>Step 3</strong>: solving the tridiagonal system gives the second row, at <span class="math inline">\(x = 0.1, \ldots, 0.5\)</span>:</p>
+<p><span class="math display">\[
+u(x, 0.01) \approx 0.616905, \quad 0.928778, \quad 0.862137, \quad 0.617659, \quad 0.490465.
+\]</span></p>
+<p>The residual of the system at the computed solution is below <span class="math inline">\(5 \times 10^{-16}\)</span>.</p>
+<p><strong>Step 4</strong>: repeating with the same matrix for nine more rows gives the table. Each row is symmetric about <span class="math inline">\(x = 0.5\)</span>, so only <span class="math inline">\(x = 0.1, \ldots, 0.5\)</span> are listed; the last column is the largest error <span class="math inline">\(|u_{i,j} - u(x_i, t_j)|\)</span> in the row.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.5\)</span></th>
+<th style="text-align: right;">max error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">1.118034</td>
+<td style="text-align: right;">1.538842</td>
+<td style="text-align: right;">1.118034</td>
+<td style="text-align: right;">0.363271</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.616905</td>
+<td style="text-align: right;">0.928778</td>
+<td style="text-align: right;">0.862137</td>
+<td style="text-align: right;">0.617659</td>
+<td style="text-align: right;">0.490465</td>
+<td style="text-align: right;">0.00500</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.394184</td>
+<td style="text-align: right;">0.647957</td>
+<td style="text-align: right;">0.718601</td>
+<td style="text-align: right;">0.680009</td>
+<td style="text-align: right;">0.648834</td>
+<td style="text-align: right;">0.00452</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.288660</td>
+<td style="text-align: right;">0.506682</td>
+<td style="text-align: right;">0.625285</td>
+<td style="text-align: right;">0.666493</td>
+<td style="text-align: right;">0.673251</td>
+<td style="text-align: right;">0.00333</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.233112</td>
+<td style="text-align: right;">0.425766</td>
+<td style="text-align: right;">0.556006</td>
+<td style="text-align: right;">0.625082</td>
+<td style="text-align: right;">0.645788</td>
+<td style="text-align: right;">0.00247</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.199450</td>
+<td style="text-align: right;">0.372035</td>
+<td style="text-align: right;">0.499571</td>
+<td style="text-align: right;">0.575402</td>
+<td style="text-align: right;">0.600242</td>
+<td style="text-align: right;">0.00203</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.175881</td>
+<td style="text-align: right;">0.331490</td>
+<td style="text-align: right;">0.451058</td>
+<td style="text-align: right;">0.525306</td>
+<td style="text-align: right;">0.550354</td>
+<td style="text-align: right;">0.00210</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.157405</td>
+<td style="text-align: right;">0.298131</td>
+<td style="text-align: right;">0.408178</td>
+<td style="text-align: right;">0.477784</td>
+<td style="text-align: right;">0.501545</td>
+<td style="text-align: right;">0.00240</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.141858</td>
+<td style="text-align: right;">0.269300</td>
+<td style="text-align: right;">0.369759</td>
+<td style="text-align: right;">0.433821</td>
+<td style="text-align: right;">0.455802</td>
+<td style="text-align: right;">0.00258</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.128262</td>
+<td style="text-align: right;">0.243749</td>
+<td style="text-align: right;">0.335117</td>
+<td style="text-align: right;">0.393597</td>
+<td style="text-align: right;">0.413709</td>
+<td style="text-align: right;">0.00268</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.116144</td>
+<td style="text-align: right;">0.220827</td>
+<td style="text-align: right;">0.303787</td>
+<td style="text-align: right;">0.356974</td>
+<td style="text-align: right;">0.375286</td>
+<td style="text-align: right;">0.00272</td>
+</tr>
+</tbody>
+</table>
+<p>The two humps of the initial temperature, which peak at <span class="math inline">\(x \approx 0.196\)</span> and <span class="math inline">\(x \approx 0.804\)</span>, flatten out quickly because the exponent of the <span class="math inline">\(\sin(3\pi x)\)</span> term is nine times that of the <span class="math inline">\(\sin(\pi x)\)</span> term. From <span class="math inline">\(t = 0.03\)</span> on, each row rises from <span class="math inline">\(x = 0\)</span> to its largest value at the centre <span class="math inline">\(x = 0.5\)</span>, and the profile approaches the shape of <span class="math inline">\(\sin(\pi x)\)</span>: the ratio <span class="math inline">\(u(0.1, t)/u(0.5, t)\)</span> is <span class="math inline">\(0.3095\)</span> at <span class="math inline">\(t = 0.1\)</span>, against <span class="math inline">\(\sin(0.1\pi) = 0.3090\)</span>. At every interior grid point the computed temperature rises or falls from one row to the next exactly when the true temperature does.</p>
+<p><strong>Verification:</strong> at <span class="math inline">\(t = 0.1\)</span> the method and the exact solution compare as follows.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th style="text-align: right;">0.1</th>
+<th style="text-align: right;">0.2</th>
+<th style="text-align: right;">0.3</th>
+<th style="text-align: right;">0.4</th>
+<th style="text-align: right;">0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Crank-Nicolson</td>
+<td style="text-align: right;">0.116144</td>
+<td style="text-align: right;">0.220827</td>
+<td style="text-align: right;">0.303787</td>
+<td style="text-align: right;">0.356974</td>
+<td style="text-align: right;">0.375286</td>
+</tr>
+<tr class="even">
+<td>exact</td>
+<td style="text-align: right;">0.115285</td>
+<td style="text-align: right;">0.219204</td>
+<td style="text-align: right;">0.301570</td>
+<td style="text-align: right;">0.354385</td>
+<td style="text-align: right;">0.372569</td>
+</tr>
+<tr class="odd">
+<td>error</td>
+<td style="text-align: right;"><span class="math inline">\(8.6 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.6 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.2 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.6 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.7 \times 10^{-3}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The largest error over the whole run is <span class="math inline">\(0.00500\)</span>, at <span class="math inline">\(x = 0.2\)</span> and <span class="math inline">\(x = 0.8\)</span> in the first step. It falls to <span class="math inline">\(0.00203\)</span> at <span class="math inline">\(t = 0.05\)</span> and then rises slowly to <span class="math inline">\(0.00272\)</span> at <span class="math inline">\(t = 0.1\)</span>.</p>
+<p>These numbers can be explained exactly. The vectors <span class="math inline">\(\sin(p\pi x_i)\)</span> are eigenvectors of the tridiagonal matrix, and the initial data contain only <span class="math inline">\(p = 1\)</span> and <span class="math inline">\(p = 3\)</span>, so the computed solution is</p>
+<p><span class="math display">\[
+u_{i,j} = G_1^{\,j-1} \sin(\pi x_i) + G_3^{\,j-1} \sin(3\pi x_i), \qquad G_1 = 0.906680, \quad G_3 = 0.416215,
+\]</span></p>
+<p>against the exact factors per step <span class="math inline">\(e^{-\pi^2 k} = 0.906018\)</span> and <span class="math inline">\(e^{-9\pi^2 k} = 0.411369\)</span>. This formula reproduces the table to within <span class="math inline">\(4 \times 10^{-16}\)</span>. The <span class="math inline">\(\sin(3\pi x)\)</span> term is negligible by <span class="math inline">\(t = 0.1\)</span> (its exact size is <span class="math inline">\(e^{-0.9\pi^2} = 0.000139\)</span>). The error that remains is almost all in the <span class="math inline">\(\sin(\pi x)\)</span> term, whose computed amplitude <span class="math inline">\(G_1^{10}\)</span> is <span class="math inline">\(0.73\%\)</span> larger than <span class="math inline">\(e^{-\pi^2 (0.1)} = 0.372708\)</span>. That excess is <span class="math inline">\(0.00273\)</span> at <span class="math inline">\(x = 0.5\)</span>, and the small error in the <span class="math inline">\(\sin(3\pi x)\)</span> term takes off <span class="math inline">\(0.00002\)</span>, leaving <span class="math inline">\(0.00272\)</span>.</p>
+<p><strong>Second-order convergence.</strong> Halving <span class="math inline">\(h\)</span> and <span class="math inline">\(k\)</span> together, with <span class="math inline">\(k = h/10\)</span>, and comparing at <span class="math inline">\(t = 0.1\)</span> shows the <span class="math inline">\(O(h^2 + k^2)\)</span> accuracy:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(h\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(r\)</span></th>
+<th style="text-align: right;">max error at <span class="math inline">\(t = 0.1\)</span></th>
+<th style="text-align: right;">ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.1</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;"><span class="math inline">\(2.7165 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.005</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><span class="math inline">\(6.7920 \times 10^{-4}\)</span></td>
+<td style="text-align: right;">4.000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.025</td>
+<td style="text-align: right;">0.0025</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;"><span class="math inline">\(1.6979 \times 10^{-4}\)</span></td>
+<td style="text-align: right;">4.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.0125</td>
+<td style="text-align: right;">0.00125</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;"><span class="math inline">\(4.2448 \times 10^{-5}\)</span></td>
+<td style="text-align: right;">4.000</td>
+</tr>
+</tbody>
+</table>
+<p>Each halving divides the error by <span class="math inline">\(4\)</span>, and <span class="math inline">\(r\)</span> doubles each time without any loss of stability. This refinement is not in Mathews’ module.</p>
+<p>Mathews shows two three-dimensional plots, viewed from the point <span class="math inline">\((4, 2, 3)\)</span>: the computed values <span class="math inline">\(u_{i,j}\)</span> against the indices <span class="math inline">\(i\)</span> (axis “x(i)”, <span class="math inline">\(1\)</span> to <span class="math inline">\(11\)</span>) and <span class="math inline">\(j\)</span> (axis “t(j)”, <span class="math inline">\(1\)</span> to <span class="math inline">\(11\)</span>), and the exact solution over <span class="math inline">\(0 \le t \le 0.1\)</span>, <span class="math inline">\(0 \le x \le 1\)</span>, drawn with an <span class="math inline">\(11 \times 11\)</span> mesh of plot points. He compares the two pictures by eye and gives no table for this example.</p>
+</section>
+<section id="example-4-crank-nicolson-with-r-2-is-the-method-stable-when-r-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-crank-nicolson-with-r-2-is-the-method-stable-when-r-1">Example 4 — Crank-Nicolson with <span class="math inline">\(r = 2\)</span>: is the method stable when <span class="math inline">\(r &gt; 1\)</span>?</h3>
+<p>Solve the problem of Example 3, <span class="math inline">\(u_t = u_{xx}\)</span> with <span class="math inline">\(u(0, t) = u(1, t) = 0\)</span> and <span class="math inline">\(f(x) = \sin(\pi x) + \sin(3\pi x)\)</span>, over the longer interval <span class="math inline">\(0 \le t \le 0.2\)</span> with the same <span class="math inline">\(n = 11\)</span> columns and <span class="math inline">\(m = 11\)</span> rows. Now <span class="math inline">\(h = 0.1\)</span>, <span class="math inline">\(k = 0.2/10 = 0.02\)</span> and</p>
+<p><span class="math display">\[
+r = \frac{1\,(0.02)}{(0.1)^2} = 2.
+\]</span></p>
+<p>The temperatures are found for <span class="math inline">\(t = 0.02, 0.04, \ldots, 0.20\)</span> and compared with the same exact solution.</p>
+<p>(The module’s statement of this example repeats that of Example 3, with “<span class="math inline">\(r = 1\)</span>” and <span class="math inline">\(t = 0.01, \ldots, 0.10\)</span>. Mathews’ program for it uses <span class="math inline">\(b = 0.2\)</span> and <span class="math inline">\(n = m = 11\)</span> and prints <span class="math inline">\(c^2 k / h^2 = 2\)</span>, and the page follows the program.)</p>
+<p><strong>Step 1</strong>: with <span class="math inline">\(r = 2\)</span>, Mathews’ divided form of (6) has <span class="math inline">\(2 + 2/r = 3\)</span> on the diagonal and <span class="math inline">\(2/r - 2 = -1\)</span> on the right:</p>
+<p><span class="math display">\[
+-u_{i-1,j+1} + 3u_{i,j+1} - u_{i+1,j+1} = u_{i-1,j} - u_{i,j} + u_{i+1,j}.
+\]</span></p>
+<p><strong>Step 2</strong>: from the initial row of Example 3, the right-hand sides at <span class="math inline">\(x = 0.1, \ldots, 0.5\)</span> are</p>
+<p><span class="math display">\[
+0.420808, \quad 0.697226, \quad 0.784079, \quad 0.754763, \quad 0.726543.
+\]</span></p>
+<p><strong>Step 3</strong>: solving the <span class="math inline">\(9 \times 9\)</span> system gives</p>
+<p><span class="math display">\[
+u(x, 0.02) \approx 0.331768, \quad 0.574495, \quad 0.694492, \quad 0.724901, \quad 0.725448 \qquad (x = 0.1, \ldots, 0.5).
+\]</span></p>
+<p><strong>Step 4</strong>: nine more steps give the table.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x = 0.5\)</span></th>
+<th style="text-align: right;">max error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">1.118034</td>
+<td style="text-align: right;">1.538842</td>
+<td style="text-align: right;">1.118034</td>
+<td style="text-align: right;">0.363271</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.331768</td>
+<td style="text-align: right;">0.574495</td>
+<td style="text-align: right;">0.694492</td>
+<td style="text-align: right;">0.724901</td>
+<td style="text-align: right;">0.725448</td>
+<td style="text-align: right;">0.0738</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.216128</td>
+<td style="text-align: right;">0.405657</td>
+<td style="text-align: right;">0.549078</td>
+<td style="text-align: right;">0.636672</td>
+<td style="text-align: right;">0.665899</td>
+<td style="text-align: right;">0.0207</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.172153</td>
+<td style="text-align: right;">0.326931</td>
+<td style="text-align: right;">0.449091</td>
+<td style="text-align: right;">0.527090</td>
+<td style="text-align: right;">0.553875</td>
+<td style="text-align: right;">0.00560</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.140932</td>
+<td style="text-align: right;">0.268018</td>
+<td style="text-align: right;">0.368810</td>
+<td style="text-align: right;">0.433480</td>
+<td style="text-align: right;">0.455755</td>
+<td style="text-align: right;">0.00253</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.115751</td>
+<td style="text-align: right;">0.220166</td>
+<td style="text-align: right;">0.303025</td>
+<td style="text-align: right;">0.356219</td>
+<td style="text-align: right;">0.374548</td>
+<td style="text-align: right;">0.00198</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.12</td>
+<td style="text-align: right;">0.095105</td>
+<td style="text-align: right;">0.180901</td>
+<td style="text-align: right;">0.248988</td>
+<td style="text-align: right;">0.292702</td>
+<td style="text-align: right;">0.307765</td>
+<td style="text-align: right;">0.00184</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">0.078146</td>
+<td style="text-align: right;">0.148642</td>
+<td style="text-align: right;">0.204588</td>
+<td style="text-align: right;">0.240508</td>
+<td style="text-align: right;">0.252885</td>
+<td style="text-align: right;">0.00175</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">0.064211</td>
+<td style="text-align: right;">0.122136</td>
+<td style="text-align: right;">0.168106</td>
+<td style="text-align: right;">0.197621</td>
+<td style="text-align: right;">0.207791</td>
+<td style="text-align: right;">0.00164</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">0.052761</td>
+<td style="text-align: right;">0.100357</td>
+<td style="text-align: right;">0.138130</td>
+<td style="text-align: right;">0.162381</td>
+<td style="text-align: right;">0.170738</td>
+<td style="text-align: right;">0.00151</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.043353</td>
+<td style="text-align: right;">0.082462</td>
+<td style="text-align: right;">0.113499</td>
+<td style="text-align: right;">0.133426</td>
+<td style="text-align: right;">0.140292</td>
+<td style="text-align: right;">0.00138</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Is it stable?</strong> Yes. With <span class="math inline">\(r = 2\)</span> (four times the forward-difference limit) the computed temperatures stay positive at every interior grid point and show no oscillation. At every interior grid point they rise or fall from one row to the next exactly when the true temperatures do, and from the second row on they decrease at every step. The error is largest after the first step, <span class="math inline">\(0.0738\)</span> at <span class="math inline">\(x = 0.5\)</span>. There the two humps have been flattened too much: the factor applied to the <span class="math inline">\(\sin(3\pi x)\)</span> term is <span class="math inline">\(G_3 = 0.096233\)</span>, against the true <span class="math inline">\(e^{-9\pi^2 k} = 0.169225\)</span>. After that the error falls at every step, to <span class="math inline">\(0.00138\)</span> at <span class="math inline">\(t = 0.2\)</span>. The <span class="math inline">\(\sin(\pi x)\)</span> term is again accurate, with <span class="math inline">\(G_1 = 0.821681\)</span> against <span class="math inline">\(e^{-\pi^2 k} = 0.820869\)</span>.</p>
+<p><strong>Verification:</strong> at <span class="math inline">\(t = 0.2\)</span> the comparison with the exact solution is:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th style="text-align: right;">0.1</th>
+<th style="text-align: right;">0.2</th>
+<th style="text-align: right;">0.3</th>
+<th style="text-align: right;">0.4</th>
+<th style="text-align: right;">0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Crank-Nicolson</td>
+<td style="text-align: right;">0.043353</td>
+<td style="text-align: right;">0.082462</td>
+<td style="text-align: right;">0.113499</td>
+<td style="text-align: right;">0.133426</td>
+<td style="text-align: right;">0.140292</td>
+</tr>
+<tr class="even">
+<td>exact</td>
+<td style="text-align: right;">0.042926</td>
+<td style="text-align: right;">0.081650</td>
+<td style="text-align: right;">0.112381</td>
+<td style="text-align: right;">0.132112</td>
+<td style="text-align: right;">0.138911</td>
+</tr>
+<tr class="odd">
+<td>error</td>
+<td style="text-align: right;"><span class="math inline">\(4.3 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.1 \times 10^{-4}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.1 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.3 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.4 \times 10^{-3}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>As in Example 3, the table equals <span class="math inline">\(G_1^{\,j-1}\sin(\pi x_i) + G_3^{\,j-1}\sin(3\pi x_i)\)</span> to within <span class="math inline">\(5 \times 10^{-16}\)</span>. At <span class="math inline">\(t = 0.1\)</span> the largest error, <span class="math inline">\(0.00198\)</span>, is slightly smaller than Example 3’s <span class="math inline">\(0.00272\)</span> with half the time step. The reason is that the two errors in the <span class="math inline">\(\sin(\pi x)\)</span> term partly cancel. The spatial error slows the decay: the discrete eigenvalue <span class="math inline">\(4\sin^2(\pi h/2)/h^2 = 9.788697\)</span> is smaller than <span class="math inline">\(\pi^2 = 9.869604\)</span>. The time error speeds it up: the factor <span class="math inline">\((1 - z/2)/(1 + z/2)\)</span> is smaller than <span class="math inline">\(e^{-z}\)</span>. With the larger <span class="math inline">\(k\)</span> the time error is larger and cancels more of the spatial error.</p>
+<p><strong>What stability buys.</strong> On these smooth initial data the forward-difference method would not blow up either, at least not visibly in ten steps. The data contain only the modes <span class="math inline">\(p = 1\)</span> and <span class="math inline">\(p = 3\)</span>, whose explicit factors are <span class="math inline">\(0.902113\)</span> and <span class="math inline">\(0.175571\)</span> for <span class="math inline">\(r = 1\)</span> and <span class="math inline">\(0.804226\)</span> and <span class="math inline">\(-0.648859\)</span> for <span class="math inline">\(r = 2\)</span>, all less than <span class="math inline">\(1\)</span> in size. Run on the grid of this example it stays bounded but is far less accurate (largest error <span class="math inline">\(0.80\)</span>, compared with <span class="math inline">\(0.074\)</span> for Crank-Nicolson). The difference shows as soon as the data contain high modes. Add the sawtooth perturbation <span class="math inline">\(\pm 0.001\)</span>, alternating in sign, to the interior initial values. With <span class="math inline">\(r = 2\)</span> the forward-difference method amplifies the perturbation to about <span class="math inline">\(2.6 \times 10^{5}\)</span> by <span class="math inline">\(t = 0.2\)</span>, because its factor for the mode <span class="math inline">\(p = 9\)</span> is <span class="math inline">\(-6.804226\)</span>. Crank-Nicolson damps the same perturbation to <span class="math inline">\(1.1 \times 10^{-5}\)</span>: its factors for <span class="math inline">\(p = 4, \ldots, 9\)</span> are negative, from <span class="math inline">\(-0.160357\)</span> to <span class="math inline">\(-0.592013\)</span>, so these components change sign at every step, but they shrink. (With <span class="math inline">\(r = 1\)</span> on Example 3’s grid the figures are <span class="math inline">\(53\)</span> for forward differences and <span class="math inline">\(1.2 \times 10^{-5}\)</span> for Crank-Nicolson.)</p>
+<p>Mathews shows the same two plots as in Example 3, the computed values against the indices <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> and the exact solution over <span class="math inline">\(0 \le t \le 0.2\)</span>, <span class="math inline">\(0 \le x \le 1\)</span> with an <span class="math inline">\(11 \times 11\)</span> mesh, both viewed from <span class="math inline">\((4, 2, 3)\)</span>, and leaves the comparison to the eye.</p>
+</section>
+</section>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Forward difference (3)</th>
+<th>Crank-Nicolson (6)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>work per time step</td>
+<td>explicit, <span class="math inline">\(O(n)\)</span></td>
+<td>tridiagonal solve, <span class="math inline">\(O(n)\)</span></td>
+</tr>
+<tr class="even">
+<td>local truncation error (general)</td>
+<td><span class="math inline">\(O(k + h^2)\)</span></td>
+<td><span class="math inline">\(O(h^2 + k^2)\)</span></td>
+</tr>
+<tr class="odd">
+<td>stability (general)</td>
+<td>only for <span class="math inline">\(r \le \tfrac12\)</span></td>
+<td>for every <span class="math inline">\(r &gt; 0\)</span></td>
+</tr>
+<tr class="even">
+<td>Mathews’ runs</td>
+<td><span class="math inline">\(r = 0.5\)</span> (Example 1): stable; <span class="math inline">\(r = 0.875\)</span> (Example 2): oscillates and grows</td>
+<td><span class="math inline">\(r = 1\)</span> (Example 3) and <span class="math inline">\(r = 2\)</span> (Example 4): stable, largest error <span class="math inline">\(0.0050\)</span> and <span class="math inline">\(0.074\)</span></td>
+</tr>
+</tbody>
+</table>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

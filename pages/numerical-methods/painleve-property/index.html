@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Painleve Property – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-a-pole-on-a-grid-point-y-y2-y0-1-on-0-2-with-h-0.004-example-7" id="toc-case-1-a-pole-on-a-grid-point-y-y2-y0-1-on-0-2-with-h-0.004-example-7" class="nav-link" data-scroll-target="#case-1-a-pole-on-a-grid-point-y-y2-y0-1-on-0-2-with-h-0.004-example-7">Case 1 — A pole on a grid point: <span class="math inline">\(y' = y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 2]\)</span> with <span class="math inline">\(h = 0.004\)</span> (Example 7)</a></li>
+  <li><a href="#case-2-two-poles-y-1-y2-y0-0-on-0-5-with-h-0.005-example-8" id="toc-case-2-two-poles-y-1-y2-y0-0-on-0-5-with-h-0.005-example-8" class="nav-link" data-scroll-target="#case-2-two-poles-y-1-y2-y0-0-on-0-5-with-h-0.005-example-8">Case 2 — Two poles: <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0) = 0\)</span>, on <span class="math inline">\([0, 5]\)</span> with <span class="math inline">\(h = 0.005\)</span> (Example 8)</a></li>
+  <li><a href="#case-3-two-poles-of-a-riccati-equation-y-x-y2-y0-1-on-0-3.5-with-h-0.00875-example-11" id="toc-case-3-two-poles-of-a-riccati-equation-y-x-y2-y0-1-on-0-3.5-with-h-0.00875-example-11" class="nav-link" data-scroll-target="#case-3-two-poles-of-a-riccati-equation-y-x-y2-y0-1-on-0-3.5-with-h-0.00875-example-11">Case 3 — Two poles of a Riccati equation: <span class="math inline">\(y' = x + y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 3.5]\)</span> with <span class="math inline">\(h = 0.00875\)</span> (Example 11)</a></li>
+  </ul></li>
+  <li><a href="#singularities" id="toc-singularities" class="nav-link" data-scroll-target="#singularities">Singularities</a>
+  <ul class="collapse">
+  <li><a href="#example-1-singularities-at-x-0-and-at-x-pi2" id="toc-example-1-singularities-at-x-0-and-at-x-pi2" class="nav-link" data-scroll-target="#example-1-singularities-at-x-0-and-at-x-pi2">Example 1 — Singularities at <span class="math inline">\(x = 0\)</span> and at <span class="math inline">\(x = \pi/2\)</span></a></li>
+  <li><a href="#example-2-fx-sin-x-x-has-a-removable-singularity-at-x-0" id="toc-example-2-fx-sin-x-x-has-a-removable-singularity-at-x-0" class="nav-link" data-scroll-target="#example-2-fx-sin-x-x-has-a-removable-singularity-at-x-0">Example 2 — <span class="math inline">\(f(x) = \sin x / x\)</span> has a removable singularity at <span class="math inline">\(x = 0\)</span></a></li>
+  <li><a href="#example-3a-poles-at-x-0" id="toc-example-3a-poles-at-x-0" class="nav-link" data-scroll-target="#example-3a-poles-at-x-0">Example 3(a) — Poles at <span class="math inline">\(x = 0\)</span></a></li>
+  <li><a href="#example-3b-poles-at-x-pi2" id="toc-example-3b-poles-at-x-pi2" class="nav-link" data-scroll-target="#example-3b-poles-at-x-pi2">Example 3(b) — Poles at <span class="math inline">\(x = \pi/2\)</span></a></li>
+  <li><a href="#branch-points" id="toc-branch-points" class="nav-link" data-scroll-target="#branch-points">Branch points</a></li>
+  </ul></li>
+  <li><a href="#the-painlevé-property" id="toc-the-painlevé-property" class="nav-link" data-scroll-target="#the-painlevé-property">The Painlevé Property</a>
+  <ul class="collapse">
+  <li><a href="#example-4-y-y2-y0-1c" id="toc-example-4-y-y2-y0-1c" class="nav-link" data-scroll-target="#example-4-y-y2-y0-1c">Example 4 — <span class="math inline">\(y' = y^2\)</span>, <span class="math inline">\(y(0) = 1/c\)</span></a></li>
+  <li><a href="#example-5-y-y3-y0-1sqrt2c" id="toc-example-5-y-y3-y0-1sqrt2c" class="nav-link" data-scroll-target="#example-5-y-y3-y0-1sqrt2c">Example 5 — <span class="math inline">\(y' = y^3\)</span>, <span class="math inline">\(y(0) = 1/\sqrt{2c}\)</span></a></li>
+  <li><a href="#example-6-y-y2-x-y1-1ln-c" id="toc-example-6-y-y2-x-y1-1ln-c" class="nav-link" data-scroll-target="#example-6-y-y2-x-y1-1ln-c">Example 6 — <span class="math inline">\(y' = y^2 / x\)</span>, <span class="math inline">\(y(1) = 1/\ln c\)</span></a></li>
+  </ul></li>
+  <li><a href="#pole-vaulting-computed-solution-curves" id="toc-pole-vaulting-computed-solution-curves" class="nav-link" data-scroll-target="#pole-vaulting-computed-solution-curves">Pole Vaulting: Computed Solution Curves</a>
+  <ul class="collapse">
+  <li><a href="#the-companion-differential-equation" id="toc-the-companion-differential-equation" class="nav-link" data-scroll-target="#the-companion-differential-equation">The companion differential equation</a></li>
+  <li><a href="#the-extended-runge-kutta-method" id="toc-the-extended-runge-kutta-method" class="nav-link" data-scroll-target="#the-extended-runge-kutta-method">The extended Runge-Kutta method</a></li>
+  <li><a href="#example-7-y-y2-y0-1-on-0-2" id="toc-example-7-y-y2-y0-1-on-0-2" class="nav-link" data-scroll-target="#example-7-y-y2-y0-1-on-0-2">Example 7 — <span class="math inline">\(y' = y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 2]\)</span></a></li>
+  <li><a href="#example-8-y-1-y2-y0-0-on-0-5" id="toc-example-8-y-1-y2-y0-0-on-0-5" class="nav-link" data-scroll-target="#example-8-y-1-y2-y0-0-on-0-5">Example 8 — <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0) = 0\)</span>, on <span class="math inline">\([0, 5]\)</span></a></li>
+  <li><a href="#example-9-y-2xy2-y0-1-on-0-1.5" id="toc-example-9-y-2xy2-y0-1-on-0-1.5" class="nav-link" data-scroll-target="#example-9-y-2xy2-y0-1-on-0-1.5">Example 9 — <span class="math inline">\(y' = 2xy^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 1.5]\)</span></a></li>
+  <li><a href="#example-10-y-y2-x-y1-1-on-0-3" id="toc-example-10-y-y2-x-y1-1-on-0-3" class="nav-link" data-scroll-target="#example-10-y-y2-x-y1-1-on-0-3">Example 10 — <span class="math inline">\(y' = y^2 / x\)</span>, <span class="math inline">\(y(1) = 1\)</span>, on <span class="math inline">\([0, 3]\)</span></a></li>
+  <li><a href="#example-11-y-x-y2-y0-1-on-0-3.5" id="toc-example-11-y-x-y2-y0-1-on-0-3.5" class="nav-link" data-scroll-target="#example-11-y-x-y2-y0-1-on-0-3.5">Example 11 — <span class="math inline">\(y' = x + y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 3.5]\)</span></a></li>
+  <li><a href="#example-12-y-x2-y2-y0-1-on-0-3" id="toc-example-12-y-x2-y2-y0-1-on-0-3" class="nav-link" data-scroll-target="#example-12-y-x2-y2-y0-1-on-0-3">Example 12 — <span class="math inline">\(y' = x^2 + y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 3]\)</span></a></li>
+  </ul></li>
+  <li><a href="#further-reading" id="toc-further-reading" class="nav-link" data-scroll-target="#further-reading">Further Reading</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Painleve Property</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>The solution of an initial value problem <span class="math inline">\(y' = f(x, y)\)</span>, <span class="math inline">\(y(x_0) = y_0\)</span>, can become infinite at a point <span class="math inline">\(x = c\)</span> even when <span class="math inline">\(f\)</span> is a polynomial: the solution of <span class="math inline">\(y' = y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, is <span class="math inline">\(y = 1/(1 - x)\)</span>, which has a vertical asymptote at <span class="math inline">\(x = 1\)</span>. A fixed-step method such as the Runge-Kutta method cannot follow the curve there, because it computes each rise as a huge slope times a small run. The location <span class="math inline">\(c\)</span> of such a singularity depends on the initial value, so it cannot be read off the equation in advance; it is a <em>movable</em> singularity. An equation has the <strong>Painlevé property</strong> when every movable singularity of every solution is a pole, the kind of singularity that <span class="math inline">\(1/x\)</span> has at <span class="math inline">\(0\)</span>.</p>
+<p>At a pole, <span class="math inline">\(y\)</span> becomes infinite but its reciprocal <span class="math inline">\(Y = 1/y\)</span> is smooth and has a zero there. Mathews’ pole-vaulting method exploits this. It tracks <span class="math inline">\(y\)</span> while <span class="math inline">\(\lvert y \rvert\)</span> is at most a bound <span class="math inline">\(B\)</span>, and tracks <span class="math inline">\(Y\)</span> while <span class="math inline">\(\lvert y \rvert &gt; B\)</span>, using the <strong>companion equation</strong></p>
+<p><span class="math display">\[
+Y' = g(x, Y) = -Y^2 f\!\left(x, \frac{1}{Y}\right), \qquad Y = \frac{1}{y},
+\]</span></p>
+<p>so each Runge-Kutta step is taken on whichever of <span class="math inline">\(y\)</span> and <span class="math inline">\(Y\)</span> is of moderate size. At each pole in Mathews’ runs (all of them simple), <span class="math inline">\(Y\)</span> crosses zero from positive to negative, so <span class="math inline">\(y = 1/Y\)</span> jumps from <span class="math inline">\(+\infty\)</span> to <span class="math inline">\(-\infty\)</span>; the computed curve vaults the vertical asymptote and continues on its other side. Mathews uses <span class="math inline">\(B = 3\)</span> with the fourth-order Runge-Kutta method.</p>
+<p>The page first sets out the kinds of singularity (removable singularities, poles, logarithmic and algebraic branch points) and the Painlevé property, with Mathews’ examples of removable singularities and poles (Examples 1 to 3) and three equations whose solutions can be found in closed form (Examples 4 to 6). Then it derives the companion equation and the extended Runge-Kutta method and runs it on six initial value problems (Examples 7 to 12). Every number below was recomputed. The runs were made in two independent double-precision implementations (Python and Julia), which agree on every switch point, sign change and final value given, and were checked against the exact solutions.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation runs Mathews’ pole-vaulting method (the extended fourth-order Runge-Kutta method with <span class="math inline">\(B = 3\)</span>) on one of his examples, with his step size and his vertical range <span class="math inline">\(-15 \le y \le 15\)</span>. The <strong>top panel</strong> shows the computed points <span class="math inline">\((x_j, y_j)\)</span> joined, each step coloured by the equation it was taken on: magenta for a Runge-Kutta step on <span class="math inline">\(y' = f(x, y)\)</span>, orange for a step on the companion equation <span class="math inline">\(Y' = g(x, Y)\)</span>, after which <span class="math inline">\(y_j = 1/Y_j\)</span>. The shaded bands are the region <span class="math inline">\(\lvert y \rvert &gt; 3\)</span>, and a step that starts there is taken on the companion equation. Behind the computed curve is the exact solution in light blue, with its poles dashed, and the dotted black curve is the plain fourth-order Runge-Kutta method with the same step. The <strong>bottom panel</strong> shows <span class="math inline">\(Y_j = 1/y_j\)</span>, the exact <span class="math inline">\(Y = 1/y\)</span> and the same region, now the band <span class="math inline">\(\lvert Y \rvert &lt; 1/3\)</span>. Each pole of <span class="math inline">\(y\)</span> is a zero of <span class="math inline">\(Y\)</span>, and the × marks where linear interpolation of <span class="math inline">\(Y_j\)</span> across its sign change puts it, with its value.</p>
+<p>The titles give the step number <span class="math inline">\(j\)</span>, the point <span class="math inline">\(x_j\)</span>, the values <span class="math inline">\(y_j\)</span> and <span class="math inline">\(Y_j\)</span> to four significant figures, and the equation the next step will use. A point with <span class="math inline">\(\lvert y_j \rvert &gt; 15\)</span> is drawn as an arrowhead on the edge of the frame, and its true value is in the title; in the bottom panel a point with <span class="math inline">\(\lvert Y_j \rvert &gt; 2\)</span> is not marked. A new frame comes every <span class="math inline">\(10\)</span>, <span class="math inline">\(20\)</span> or <span class="math inline">\(8\)</span> steps (Cases 1, 2 and 3), and at every step within three steps of a change of equation, of the first point past a sign change of <span class="math inline">\(Y_j\)</span>, and of the overflow of plain Runge-Kutta. The animation pauses at those three kinds of point and at the end. Mathews joins all his points with one line, so his plots draw a near-vertical line from the top of the window to the bottom at each pole. Here the computed curve is broken between the two grid points where <span class="math inline">\(Y_j\)</span> changes sign, and the exact curve is broken at each pole; in the bottom panel the curves are broken instead where <span class="math inline">\(y\)</span> changes sign, at the poles of <span class="math inline">\(Y\)</span>.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for this module, so all three animations are new, with no Mathews original. They animate Examples 7, 8 and 11; each top panel shows what Mathews’ static plots of that example show, the computed points and the analytic solution, on his window. Not animated: Examples 1 to 6, which classify singularities and solve three equations in closed form (including Mathews’ graphs of <span class="math inline">\(\tan x\)</span>, <span class="math inline">\(\sec x\)</span> and <span class="math inline">\(\sec^2 x\)</span> in Example 3(b)), and the runs of Examples 9, 10 and 12, which look like the ones animated (one pole in Examples 9 and 10, two in Example 12).</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-a-pole-on-a-grid-point-y-y2-y0-1-on-0-2-with-h-0.004-example-7" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-a-pole-on-a-grid-point-y-y2-y0-1-on-0-2-with-h-0.004-example-7">Case 1 — A pole on a grid point: <span class="math inline">\(y' = y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 2]\)</span> with <span class="math inline">\(h = 0.004\)</span> (Example 7)</h3>
+<p><strong>Behavior:</strong> The method takes steps <span class="math inline">\(0\)</span> to <span class="math inline">\(166\)</span> on <span class="math inline">\(y' = y^2\)</span>. At <span class="math inline">\(x = 0.668\)</span> the value <span class="math inline">\(y = 3.012\)</span> exceeds <span class="math inline">\(B = 3\)</span>, and from there it integrates <span class="math inline">\(Y' = -1\)</span>, whose solution <span class="math inline">\(Y = 1 - x\)</span> is the straight line in the bottom panel. The grid point <span class="math inline">\(x = 1\)</span> is the pole itself: there <span class="math inline">\(Y = 9.358 \times 10^{-11}\)</span> and <span class="math inline">\(y = 1.069 \times 10^{10}\)</span>, drawn as an arrowhead at the top of the frame, and one step later <span class="math inline">\(Y = -0.004000\)</span> and <span class="math inline">\(y = -250.0\)</span>. Interpolation puts the zero of <span class="math inline">\(Y\)</span> at <span class="math inline">\(1.0000000001\)</span>. At <span class="math inline">\(x = 1.336\)</span>, where <span class="math inline">\(y = -2.976\)</span>, the method returns to <span class="math inline">\(y' = y^2\)</span>, and it ends with <span class="math inline">\(y = -1.000\)</span> at <span class="math inline">\(x = 2\)</span>. Plain Runge-Kutta with the same step follows the left branch of the solution, then gives <span class="math inline">\(2050\)</span> at <span class="math inline">\(x = 1\)</span>, <span class="math inline">\(2.525 \times 10^{13}\)</span> at <span class="math inline">\(x = 1.004\)</span> and <span class="math inline">\(1.194 \times 10^{174}\)</span> at <span class="math inline">\(x = 1.008\)</span>, and overflows at <span class="math inline">\(x = 1.012\)</span>. All its values are positive, so it never reaches the lower branch.</p>
+<p><a href="painleveaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="painleveaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Pole vaulting on y′ = y², y(0) = 1, with h = 0.004 on [0, 2] × [−15, 15]. Top: the computed points joined, magenta for steps on y′ = y² and orange for steps on Y′ = −1, over the exact solution 1/(1 − x) with its pole x = 1 dashed and shaded bands where |y| &gt; 3; the method switches at x = 0.668, stores y = 1.069×10¹⁰ at the pole x = 1, continues from y = −250.0 at x = 1.004, switches back at x = 1.336 and ends at y = −1.000, while plain Runge-Kutta overflows at x = 1.012. Bottom: Y = 1/y following the line 1 − x through zero at the interpolated pole 1.0000000001</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-two-poles-y-1-y2-y0-0-on-0-5-with-h-0.005-example-8" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-two-poles-y-1-y2-y0-0-on-0-5-with-h-0.005-example-8">Case 2 — Two poles: <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0) = 0\)</span>, on <span class="math inline">\([0, 5]\)</span> with <span class="math inline">\(h = 0.005\)</span> (Example 8)</h3>
+<p><strong>Behavior:</strong> The exact solution is <span class="math inline">\(y = \tan x\)</span>, so <span class="math inline">\(Y = \cot x\)</span>. The method changes equation at <span class="math inline">\(x = 1.25\)</span>, <span class="math inline">\(1.895\)</span> and <span class="math inline">\(4.395\)</span>, and it vaults both poles on the companion equation <span class="math inline">\(Y' = -1 - Y^2\)</span>. <span class="math inline">\(Y_j\)</span> changes sign between <span class="math inline">\(1.570\)</span> and <span class="math inline">\(1.575\)</span> and between <span class="math inline">\(4.710\)</span> and <span class="math inline">\(4.715\)</span>, and interpolation gives <span class="math inline">\(1.5707963231\)</span> and <span class="math inline">\(4.7123889802\)</span>, against <span class="math inline">\(\pi/2 = 1.5707963268\)</span> and <span class="math inline">\(3\pi/2 = 4.7123889804\)</span>. The run ends during its second <span class="math inline">\(Y\)</span> phase, with <span class="math inline">\(y = -3.381\)</span> at <span class="math inline">\(x = 5\)</span>, since <span class="math inline">\(\lvert \tan 5 \rvert &gt; 3\)</span>. Between <span class="math inline">\(x = 3.14\)</span> and <span class="math inline">\(3.145\)</span> the computed <span class="math inline">\(y\)</span> crosses zero during a <span class="math inline">\(y\)</span> phase. There <span class="math inline">\(Y = \cot x\)</span> has a pole of its own at <span class="math inline">\(x = \pi\)</span>, and the bottom panel’s curves are broken, but the method is integrating <span class="math inline">\(y\)</span> there and is not affected. At <span class="math inline">\(x = 0\)</span>, <span class="math inline">\(Y_0 = 1/y_0\)</span> is infinite (Mathews’ subroutine stores complex infinity) and is not drawn. Plain Runge-Kutta gives <span class="math inline">\(868.7\)</span> at <span class="math inline">\(x = 1.570\)</span>, <span class="math inline">\(3.234 \times 10^{9}\)</span> at <span class="math inline">\(x = 1.575\)</span> and <span class="math inline">\(1.781 \times 10^{113}\)</span> at <span class="math inline">\(x = 1.58\)</span>, and overflows at <span class="math inline">\(x = 1.585\)</span>. The tick marks at multiples of <span class="math inline">\(\pi/4\)</span> are Mathews’.</p>
+<p><a href="painlevebb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="painlevebb.gif" class="img-fluid figure-img"></p>
+<figcaption>Pole vaulting on y′ = 1 + y², y(0) = 0, with h = 0.005 on [0, 5] × [−15, 15], x ticks at multiples of π/4. Top: the computed points joined, magenta for steps on y′ = 1 + y² and orange for steps on Y′ = −1 − Y², over the exact solution tan x with its poles π/2 and 3π/2 dashed; the method switches at x = 1.25, 1.895 and 4.395, vaults both poles and ends at y = −3.381 at x = 5, while plain Runge-Kutta overflows at x = 1.585. Bottom: Y = 1/y following cot x through zero at the interpolated poles 1.5707963231 and 4.7123889802, with the curves broken at x = π, where y crosses zero</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-two-poles-of-a-riccati-equation-y-x-y2-y0-1-on-0-3.5-with-h-0.00875-example-11" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-two-poles-of-a-riccati-equation-y-x-y2-y0-1-on-0-3.5-with-h-0.00875-example-11">Case 3 — Two poles of a Riccati equation: <span class="math inline">\(y' = x + y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 3.5]\)</span> with <span class="math inline">\(h = 0.00875\)</span> (Example 11)</h3>
+<p><strong>Behavior:</strong> The exact solution is <span class="math inline">\(y = -u'/u\)</span> with <span class="math inline">\(u(x) = a\,\mathrm{Ai}(-x) + b\,\mathrm{Bi}(-x)\)</span>, whose poles are the zeros <span class="math inline">\(0.9306\)</span> and <span class="math inline">\(3.1235\)</span> of <span class="math inline">\(u\)</span>. The method changes equation at <span class="math inline">\(x = 0.6125\)</span>, <span class="math inline">\(1.25125\)</span>, <span class="math inline">\(2.82625\)</span> and <span class="math inline">\(3.43\)</span>. <span class="math inline">\(Y_j\)</span> changes sign on <span class="math inline">\([0.9275, 0.93625]\)</span> and on <span class="math inline">\([3.115, 3.12375]\)</span>, and interpolation gives <span class="math inline">\(0.9305644959\)</span> and <span class="math inline">\(3.1234930240\)</span>, against the exact poles <span class="math inline">\(0.9305645085\)</span> and <span class="math inline">\(3.1234930040\)</span>. Between <span class="math inline">\(x = 2.10875\)</span> and <span class="math inline">\(2.1175\)</span> the computed <span class="math inline">\(y\)</span> crosses zero during a <span class="math inline">\(y\)</span> phase; the exact <span class="math inline">\(Y = -u/u'\)</span> has a pole at <span class="math inline">\(x = 2.113\)</span>, where <span class="math inline">\(u' = 0\)</span>, and as in Case 2 the bottom panel’s curves are broken there. The run ends with <span class="math inline">\(y = -2.215\)</span> at <span class="math inline">\(x = 3.5\)</span>. Plain Runge-Kutta gives <span class="math inline">\(294.2\)</span> at <span class="math inline">\(x = 0.9275\)</span>, where the solution is <span class="math inline">\(326.3\)</span>. Its next value, <span class="math inline">\(3.046 \times 10^{6}\)</span> at <span class="math inline">\(x = 0.93625\)</span>, is already past the pole, where the solution is <span class="math inline">\(-175.9\)</span>, and it overflows at <span class="math inline">\(x = 0.95375\)</span>. All its values are positive, so, as in Cases 1 and 2, it never reaches the branch beyond the first pole.</p>
+<p><a href="painlevecc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="painlevecc.gif" class="img-fluid figure-img"></p>
+<figcaption>Pole vaulting on y′ = x + y², y(0) = 1, with h = 0.00875 on [0, 3.5] × [−15, 15]. Top: the computed points joined, magenta for steps on y′ = x + y² and orange for steps on Y′ = −1 − xY², over the exact Airy-function solution with its poles 0.9306 and 3.1235 dashed; the method switches at x = 0.6125, 1.25125, 2.82625 and 3.43, vaults both poles and ends at y = −2.215 at x = 3.5, while plain Runge-Kutta overflows at x = 0.95375. Bottom: Y = 1/y through zero at the interpolated poles 0.9305644959 and 3.1234930240, with the curves broken at x = 2.113, where y crosses zero</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="singularities" class="level2">
+<h2 class="anchored" data-anchor-id="singularities">Singularities</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Singularity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <em>singularity</em> of <span class="math inline">\(f(x)\)</span> is a point <span class="math inline">\(x = c\)</span> at which <span class="math inline">\(f(x)\)</span> “blows up” or is not defined.</p>
+</div>
+</div>
+<section id="example-1-singularities-at-x-0-and-at-x-pi2" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-singularities-at-x-0-and-at-x-pi2">Example 1 — Singularities at <span class="math inline">\(x = 0\)</span> and at <span class="math inline">\(x = \pi/2\)</span></h3>
+<p>The functions</p>
+<p><span class="math display">\[
+f(x) = \frac{\sin x}{x}, \quad \frac{1}{x}, \quad \cot x, \quad \csc x, \quad \frac{1}{x^2}, \quad \csc^2 x, \quad \ln x
+\]</span></p>
+<p>have singularities at <span class="math inline">\(x = 0\)</span>, and the functions <span class="math inline">\(\tan x\)</span>, <span class="math inline">\(\sec x\)</span> and <span class="math inline">\(\sec^2 x\)</span> have singularities at <span class="math inline">\(x = \pi/2\)</span>. None of them is defined at its singular point, but the singularities are of different kinds, which the definitions below separate:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Singular point</th>
+<th>Kind</th>
+<th>Shown in</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\sin x / x\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>removable</td>
+<td>Example 2</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1/x\)</span>, <span class="math inline">\(\cot x\)</span>, <span class="math inline">\(\csc x\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>simple pole</td>
+<td>Example 3(a)</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(1/x^2\)</span>, <span class="math inline">\(\csc^2 x\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>pole of order 2</td>
+<td>Example 3(a)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\tan x\)</span>, <span class="math inline">\(\sec x\)</span></td>
+<td><span class="math inline">\(\pi/2\)</span></td>
+<td>simple pole</td>
+<td>Example 3(b)</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\sec^2 x\)</span></td>
+<td><span class="math inline">\(\pi/2\)</span></td>
+<td>pole of order 2</td>
+<td>Example 3(b)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\ln x\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>logarithmic singularity</td>
+<td>definition below</td>
+</tr>
+</tbody>
+</table>
+<p>Mathews’ own solution to Example 1 does not survive in the archive (its images are missing); the classification in the table comes from the series computed in Examples 2 and 3.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Removable singularity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A singular point <span class="math inline">\(x = c\)</span> is a <em>removable singularity</em> of <span class="math inline">\(f(x)\)</span> if <span class="math inline">\(f(x)\)</span> has a Taylor series expansion about <span class="math inline">\(x = c\)</span>, that is, a representation</p>
+<p><span class="math display">\[
+f(x) = a_0 + a_1 (x - c) + a_2 (x - c)^2 + \cdots + a_n (x - c)^n + \cdots = \sum_{i=0}^{\infty} a_i (x - c)^i
+\]</span></p>
+<p>valid for <span class="math inline">\(\lvert x - c \rvert &lt; r\)</span>. A common situation is that <span class="math inline">\(f(c)\)</span> is not defined, and we only need to define <span class="math inline">\(f(c) = a_0\)</span> to “remove the singularity”.</p>
+</div>
+</div>
+</section>
+<section id="example-2-fx-sin-x-x-has-a-removable-singularity-at-x-0" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-fx-sin-x-x-has-a-removable-singularity-at-x-0">Example 2 — <span class="math inline">\(f(x) = \sin x / x\)</span> has a removable singularity at <span class="math inline">\(x = 0\)</span></h3>
+<p><strong>Step 1</strong> (the difficulty): <span class="math inline">\(f(0) = \sin 0 / 0\)</span> is the indeterminate form <span class="math inline">\(0/0\)</span>.</p>
+<p><strong>Step 2</strong> (the limit): the correct way to remove the singularity is to take the limit as <span class="math inline">\(x \to 0\)</span>:</p>
+<p><span class="math display">\[
+\lim_{x \to 0} \frac{\sin x}{x} = 1.
+\]</span></p>
+<p><strong>Step 3</strong> (the series): expand <span class="math inline">\(\sin x\)</span> in its Maclaurin series and divide through by <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[
+\frac{\sin x}{x} = 1 - \frac{x^2}{6} + \frac{x^4}{120} - \frac{x^6}{5040} + \frac{x^8}{362880} - \frac{x^{10}}{39916800} + \frac{x^{12}}{6227020800} - \frac{x^{14}}{1307674368000} + \cdots
+\]</span></p>
+<p>whose denominators are <span class="math inline">\(3!, 5!, \ldots, 15!\)</span>. The series has constant term <span class="math inline">\(a_0 = 1\)</span>, so defining <span class="math inline">\(f(0) = 1\)</span> removes the singularity, in agreement with Step 2.</p>
+<p><strong>Verification:</strong> the series and the limit agree with a symbolic computation (sympy), and with Mathews’ printed series up to the <span class="math inline">\(x^{14}\)</span> term.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Pole
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A singular point <span class="math inline">\(x = c\)</span> is a <em>pole</em> of <span class="math inline">\(f(x)\)</span> if <span class="math inline">\(f(x)\)</span> has a series expansion about <span class="math inline">\(x = c\)</span> that includes only a finite number of negative powers <span class="math inline">\((x - c)^j\)</span>, <span class="math inline">\(j &lt; 0\)</span>:</p>
+<p><span class="math display">\[
+f(x) = \frac{a_{-m}}{(x - c)^m} + \cdots + \frac{a_{-1}}{x - c} + a_0 + a_1 (x - c) + a_2 (x - c)^2 + \cdots = \sum_{i=-m}^{\infty} a_i (x - c)^i
+\]</span></p>
+<p>valid for <span class="math inline">\(0 &lt; \lvert x - c \rvert &lt; r\)</span>. The leading coefficient must be nonzero, <span class="math inline">\(a_{-m} \neq 0\)</span>, and we say that <span class="math inline">\(f(x)\)</span> has a <em>pole of order</em> <span class="math inline">\(m\)</span> at <span class="math inline">\(x = c\)</span>. When <span class="math inline">\(m = 1\)</span> it is a <em>simple pole</em>. On the graph of <span class="math inline">\(y = f(x)\)</span>, a pole at <span class="math inline">\(x = c\)</span> is a vertical asymptote <span class="math inline">\(x = c\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Poles and zeros
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f(x)\)</span> has a pole at <span class="math inline">\(x = c\)</span>, then <span class="math inline">\(g(x) = 1/f(x)\)</span> has a removable singularity at <span class="math inline">\(x = c\)</span>. If we define <span class="math inline">\(g(c) = 0\)</span>, then the equation <span class="math inline">\(g(x) = 0\)</span> has a root at <span class="math inline">\(x = c\)</span>; in general, a pole of order <span class="math inline">\(m\)</span> of <span class="math inline">\(f\)</span> is a zero of order <span class="math inline">\(m\)</span> of <span class="math inline">\(g\)</span>.</p>
+</div>
+</div>
+<p>This theorem is the basis of the pole-vaulting method: near a pole, <span class="math inline">\(1/f\)</span> is smooth and has a zero.</p>
+</section>
+<section id="example-3a-poles-at-x-0" class="level3">
+<h3 class="anchored" data-anchor-id="example-3a-poles-at-x-0">Example 3(a) — Poles at <span class="math inline">\(x = 0\)</span></h3>
+<p>The functions <span class="math inline">\(1/x\)</span>, <span class="math inline">\(1/x^2\)</span>, <span class="math inline">\(\cot x\)</span>, <span class="math inline">\(\csc x\)</span> and <span class="math inline">\(\csc^2 x\)</span> have poles at <span class="math inline">\(x = 0\)</span>. Their series about <span class="math inline">\(0\)</span> are</p>
+<p><span class="math display">\[
+\begin{aligned}
+\cot x &amp;= \frac{1}{x} - \frac{x}{3} - \frac{x^3}{45} - \frac{2x^5}{945} - \cdots, \\
+\csc x &amp;= \frac{1}{x} + \frac{x}{6} + \frac{7x^3}{360} + \frac{31x^5}{15120} + \cdots, \\
+\csc^2 x &amp;= \frac{1}{x^2} + \frac{1}{3} + \frac{x^2}{15} + \frac{2x^4}{189} + \cdots,
+\end{aligned}
+\]</span></p>
+<p>while <span class="math inline">\(1/x\)</span> and <span class="math inline">\(1/x^2\)</span> are their own series. So <span class="math inline">\(1/x\)</span>, <span class="math inline">\(\cot x\)</span> and <span class="math inline">\(\csc x\)</span> have simple poles (<span class="math inline">\(m = 1\)</span>), and each begins with the same term <span class="math inline">\(1/x\)</span>, which is why their graphs look alike near <span class="math inline">\(x = 0\)</span>; <span class="math inline">\(1/x^2\)</span> and <span class="math inline">\(\csc^2 x\)</span> have poles of order <span class="math inline">\(m = 2\)</span>, both beginning with <span class="math inline">\(1/x^2\)</span>. Mathews’ computer output and graphs for this part are missing from the archive; the series above were computed with sympy.</p>
+</section>
+<section id="example-3b-poles-at-x-pi2" class="level3">
+<h3 class="anchored" data-anchor-id="example-3b-poles-at-x-pi2">Example 3(b) — Poles at <span class="math inline">\(x = \pi/2\)</span></h3>
+<p>The functions <span class="math inline">\(\tan x\)</span>, <span class="math inline">\(\sec x\)</span> and <span class="math inline">\(\sec^2 x\)</span> have poles at <span class="math inline">\(x = \pi/2\)</span>. Mathews expands each to order <span class="math inline">\(5\)</span> about <span class="math inline">\(c = \pi/2\)</span> and reads the order <span class="math inline">\(m\)</span> off the most negative power. With <span class="math inline">\(t = x - \pi/2\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\tan x &amp;= -\frac{1}{t} + \frac{t}{3} + \frac{t^3}{45} + \frac{2t^5}{945} + \cdots, &amp;&amp; m = 1, \\
+\sec x &amp;= -\frac{1}{t} - \frac{t}{6} - \frac{7t^3}{360} - \frac{31t^5}{15120} + \cdots, &amp;&amp; m = 1, \\
+\sec^2 x &amp;= \frac{1}{t^2} + \frac{1}{3} + \frac{t^2}{15} + \frac{2t^4}{189} + \cdots, &amp;&amp; m = 2.
+\end{aligned}
+\]</span></p>
+<p>Mathews graphs <span class="math inline">\(\tan x\)</span> and <span class="math inline">\(\sec x\)</span> in red on <span class="math inline">\([0, \pi] \times [-40, 40]\)</span> and <span class="math inline">\(\sec^2 x\)</span> in blue on <span class="math inline">\([0, \pi] \times [0, 500]\)</span>, with tick marks every <span class="math inline">\(\pi/4\)</span> on the <span class="math inline">\(x\)</span>-axis and leaving out <span class="math inline">\(\lvert x - \pi/2 \rvert &lt; 0.0001\)</span>. The graphs of <span class="math inline">\(\tan x\)</span> and <span class="math inline">\(\sec x\)</span> look alike near <span class="math inline">\(\pi/2\)</span> because both are simple poles beginning with the same term <span class="math inline">\(-1/(x - \pi/2)\)</span>: each tends to <span class="math inline">\(+\infty\)</span> as <span class="math inline">\(x \to \pi/2^-\)</span> and to <span class="math inline">\(-\infty\)</span> as <span class="math inline">\(x \to \pi/2^+\)</span>. <strong>Verification:</strong> all three expansions agree with sympy and with Mathews’ printed series.</p>
+</section>
+<section id="branch-points" class="level3">
+<h3 class="anchored" data-anchor-id="branch-points">Branch points</h3>
+<p>Two other kinds of singularity are <em>not</em> poles.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Logarithmic singularity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <em>logarithmic singularity</em> involves a logarithmic branch point in the complex plane. For example, <span class="math inline">\(f(x) = \ln x\)</span> has a logarithmic singularity at <span class="math inline">\(x = 0\)</span>: <span class="math inline">\(\ln x \to -\infty\)</span> as <span class="math inline">\(x \to 0^+\)</span>, yet <span class="math inline">\(x^m \ln x \to 0\)</span> for every <span class="math inline">\(m \geq 1\)</span>, so no finite number of negative powers can describe it.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Algebraic branch point
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <em>algebraic branch point</em> is a singular point associated with a fractional power. For example, the “multivalued function” <span class="math inline">\(f(x) = \pm x^{1/2}\)</span> has an algebraic branch point at <span class="math inline">\(x = 0\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Restriction
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Painlevé property excludes logarithmic branch points and algebraic branch points. The solution must be analytic except at isolated points where it has poles. It is not necessary to dwell on the definitions above, but it is important to know which kinds of singularity are allowed.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="the-painlevé-property" class="level2">
+<h2 class="anchored" data-anchor-id="the-painlevé-property">The Painlevé Property</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Movable singularity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the singularities of the solutions of a differential equation depend on the initial conditions, they are called <em>movable singularities</em>. Singular points that are the same for every solution, such as the points where a coefficient of the equation is singular, are <em>fixed</em>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 1 — Painlevé property (second order)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The second-order ordinary differential equation <span class="math inline">\(y'' = F(y', y, x)\)</span> has the <em>Painlevé property</em> if all movable singularities of all solutions are poles.</p>
+</div>
+</div>
+<p>Mathews takes the liberty of extending the concept to first-order equations.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 2 — Painlevé property (first order)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The first-order ordinary differential equation <span class="math inline">\(y' = F(y, x)\)</span> has the <em>Painlevé property</em> if all movable singularities of all solutions are poles.</p>
+</div>
+</div>
+<p>Movable singularities depend on the initial condition, and in general their location is hard to predict. Examples 4 to 6 were chosen because their solutions can be found in closed form, with a parameter <span class="math inline">\(c &gt; 0\)</span> in the initial condition that turns out to be the location of the singularity. In each, the test is the theorem on poles and zeros: <span class="math inline">\(y\)</span> has a pole at <span class="math inline">\(x = c\)</span> exactly when <span class="math inline">\(1/y\)</span> has a Taylor series about <span class="math inline">\(c\)</span> that starts with a zero.</p>
+<section id="example-4-y-y2-y0-1c" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-y-y2-y0-1c">Example 4 — <span class="math inline">\(y' = y^2\)</span>, <span class="math inline">\(y(0) = 1/c\)</span></h3>
+<p><strong>Step 1</strong> (solve): separating variables gives</p>
+<p><span class="math display">\[
+y = f(x) = \frac{1}{c - x},
+\]</span></p>
+<p>and indeed <span class="math inline">\(f' = 1/(c - x)^2 = f^2\)</span> and <span class="math inline">\(f(0) = 1/c\)</span>.</p>
+<p><strong>Step 2</strong> (reciprocal): <span class="math inline">\(g(x) = 1/f(x) = c - x = -(x - c)\)</span> is its own Taylor series about <span class="math inline">\(x = c\)</span> and has a simple zero there, so <span class="math inline">\(g\)</span> has a removable singularity at <span class="math inline">\(x = c\)</span> and <span class="math inline">\(f\)</span> has a simple pole at <span class="math inline">\(x = c\)</span>.</p>
+<p><strong>Conclusion:</strong> the singularity of the solution is at <span class="math inline">\(x = c\)</span>, which moves with the initial value <span class="math inline">\(y(0) = 1/c\)</span>. It is a pole, so <span class="math inline">\(y' = y^2\)</span> has the Painlevé property. The companion equation of Example 7 is <span class="math inline">\(Y' = -1\)</span>, with nothing singular in it.</p>
+</section>
+<section id="example-5-y-y3-y0-1sqrt2c" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-y-y3-y0-1sqrt2c">Example 5 — <span class="math inline">\(y' = y^3\)</span>, <span class="math inline">\(y(0) = 1/\sqrt{2c}\)</span></h3>
+<p><strong>Step 1</strong> (solve): separating variables gives</p>
+<p><span class="math display">\[
+y = f(x) = \frac{1}{\sqrt{2(c - x)}},
+\]</span></p>
+<p>with <span class="math inline">\(f' = (2(c - x))^{-3/2} = f^3\)</span> and <span class="math inline">\(f(0) = 1/\sqrt{2c}\)</span>.</p>
+<p><strong>Step 2</strong> (reciprocal): <span class="math inline">\(g(x) = 1/f(x) = \sqrt{2(c - x)}\)</span> vanishes at <span class="math inline">\(x = c\)</span> but has no Taylor series about <span class="math inline">\(c\)</span>, since <span class="math inline">\(g'(x) = -1/\sqrt{2(c - x)}\)</span> is unbounded there. So <span class="math inline">\(g\)</span> does not have a removable singularity at <span class="math inline">\(x = c\)</span>. Regarded as a multivalued function, <span class="math inline">\(\pm\sqrt{2(c - x)}\)</span> has an algebraic branch point at <span class="math inline">\(x = c\)</span>, and so does <span class="math inline">\(f\)</span>.</p>
+<p><strong>Conclusion:</strong> the movable singularity at <span class="math inline">\(x = c\)</span> is an algebraic branch point, not a pole, so <span class="math inline">\(y' = y^3\)</span> does <strong>not</strong> have the Painlevé property. The companion equation shows the same thing: <span class="math inline">\(g(x, Y) = -Y^2 (1/Y)^3 = -1/Y\)</span>, which is itself unbounded as <span class="math inline">\(Y \to 0\)</span>, so pole vaulting cannot step through <span class="math inline">\(Y = 0\)</span> here. (Mathews’ computer output for this example is missing from the archive; his text survives.)</p>
+</section>
+<section id="example-6-y-y2-x-y1-1ln-c" class="level3">
+<h3 class="anchored" data-anchor-id="example-6-y-y2-x-y1-1ln-c">Example 6 — <span class="math inline">\(y' = y^2 / x\)</span>, <span class="math inline">\(y(1) = 1/\ln c\)</span></h3>
+<p><strong>Step 1</strong> (solve): with <span class="math inline">\(c &gt; 0\)</span>, <span class="math inline">\(c \neq 1\)</span>,</p>
+<p><span class="math display">\[
+y = f(x) = \frac{1}{\ln c - \ln x},
+\]</span></p>
+<p>and <span class="math inline">\(f' = \dfrac{1}{x(\ln c - \ln x)^2} = f^2 / x\)</span>, <span class="math inline">\(f(1) = 1/\ln c\)</span>.</p>
+<p><strong>Step 2</strong> (reciprocal): <span class="math inline">\(g(x) = 1/f(x) = \ln c - \ln x\)</span> has the Taylor series</p>
+<p><span class="math display">\[
+g(x) = -\frac{x - c}{c} + \frac{(x - c)^2}{2c^2} - \frac{(x - c)^3}{3c^3} + \frac{(x - c)^4}{4c^4} - \cdots
+\]</span></p>
+<p>about <span class="math inline">\(x = c\)</span>, which starts with a simple zero. So <span class="math inline">\(f\)</span> has a simple pole at <span class="math inline">\(x = c\)</span>.</p>
+<p><strong>Conclusion:</strong> the singularity at <span class="math inline">\(x = c\)</span> moves with the initial value and is a pole, so Mathews concludes that <span class="math inline">\(y' = y^2 / x\)</span> has the Painlevé property. The point <span class="math inline">\(x = 0\)</span>, where <span class="math inline">\(\ln x\)</span> and the coefficient <span class="math inline">\(1/x\)</span> of the equation are singular, is the same for every solution: it is a fixed singularity, which the definition does not count.</p>
+<p><strong>Verification (Examples 4 to 6):</strong> each solution was substituted into its equation and initial condition with sympy (residuals simplify to <span class="math inline">\(0\)</span>), and each series of <span class="math inline">\(1/y\)</span> about <span class="math inline">\(x = c\)</span> was recomputed with sympy; the series of Example 6 agrees with Mathews’ printed expansion through the <span class="math inline">\((x - c)^9\)</span> term that he prints.</p>
+</section>
+</section>
+<section id="pole-vaulting-computed-solution-curves" class="level2">
+<h2 class="anchored" data-anchor-id="pole-vaulting-computed-solution-curves">Pole Vaulting: Computed Solution Curves</h2>
+<section id="the-companion-differential-equation" class="level3">
+<h3 class="anchored" data-anchor-id="the-companion-differential-equation">The companion differential equation</h3>
+<p>An important problem in numerical analysis is to compute approximate solutions of</p>
+<p><span class="math display">\[
+y'(x) = f\bigl(x, y(x)\bigr).
+\tag{1}
+\]</span></p>
+<p>Under modest assumptions on <span class="math inline">\(f\)</span>, the “general solution” of (1) is an infinite family of functions, each distinguished by an initial point <span class="math inline">\((a, y(a))\)</span>. Starting from this point, a numerical method approximates the solution <span class="math inline">\(y = y(x)\)</span> on an interval <span class="math inline">\(a \leq x \leq b\)</span>. But continuity of <span class="math inline">\(f(x, y)\)</span> does not ensure continuity of <span class="math inline">\(y(x)\)</span>.</p>
+<p>Suppose that <span class="math inline">\(y(x)\)</span> has an infinite discontinuity at <span class="math inline">\(x = c\)</span>, that is, <span class="math inline">\(\lim_{x \to c} \lvert y(x) \rvert = \infty\)</span>. Then the reciprocal <span class="math inline">\(Y(x) = 1/y(x)\)</span> tends to zero as <span class="math inline">\(x \to c\)</span>, and <span class="math inline">\(Y(x)\)</span> has a removable singularity at <span class="math inline">\(x = c\)</span> once we define <span class="math inline">\(Y(c) = 0\)</span>. Make the change of variable</p>
+<p><span class="math display">\[
+Y(x) = \frac{1}{y(x)}.
+\tag{2}
+\]</span></p>
+<p>Differentiating each side of (2) gives</p>
+<p><span class="math display">\[
+Y'(x) = -\frac{y'(x)}{(y(x))^2} = -\bigl(Y(x)\bigr)^2\, y'(x),
+\]</span></p>
+<p>and substituting <span class="math inline">\(y'(x)\)</span> from (1) gives</p>
+<p><span class="math display">\[
+Y'(x) = -\bigl(Y(x)\bigr)^2 f\!\left(x, \frac{1}{Y(x)}\right).
+\tag{3}
+\]</span></p>
+<p>Equation (3) is equivalent to (1) in this sense: given a neighbourhood <span class="math inline">\(N\)</span> of <span class="math inline">\(x_0\)</span> and a number <span class="math inline">\(y_0 \neq 0\)</span>, equation (1) has a solution with <span class="math inline">\(y(x_0) = y_0\)</span> and <span class="math inline">\(y(x) \neq 0\)</span> for all <span class="math inline">\(x\)</span> in <span class="math inline">\(N\)</span> if and only if equation (3) has a solution with <span class="math inline">\(Y(x_0) = 1/y_0\)</span> and <span class="math inline">\(Y(x) \neq 0\)</span> for all <span class="math inline">\(x\)</span> in <span class="math inline">\(N\)</span>. Equation (3) is the <strong>companion differential equation</strong>, written</p>
+<p><span class="math display">\[
+Y'(x) = g\bigl(x, Y(x)\bigr), \qquad g(x, Y) = -Y^2 f\!\left(x, \frac{1}{Y}\right).
+\tag{4}
+\]</span></p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Simplify <span class="math inline">\(g\)</span> before computing
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Before (4) is used for numerical computations, the formula for <span class="math inline">\(g(x, Y)\)</span> should be simplified by hand so that the forms <span class="math inline">\(0/0\)</span> or <span class="math inline">\(\infty/\infty\)</span> cannot occur at <span class="math inline">\(Y = 0\)</span>. For example, <span class="math inline">\(f(x, y) = 1 + y^2\)</span> gives <span class="math inline">\(-Y^2\bigl(1 + 1/Y^2\bigr)\)</span>, which must be simplified to <span class="math inline">\(g(x, Y) = -1 - Y^2\)</span>.</p>
+</div>
+</div>
+</section>
+<section id="the-extended-runge-kutta-method" class="level3">
+<h3 class="anchored" data-anchor-id="the-extended-runge-kutta-method">The extended Runge-Kutta method</h3>
+<p>A numerical method “tracks” the solution curve through the starting point <span class="math inline">\((x_0, y_0)\)</span>. Equation (4) can track it near a singularity because <span class="math inline">\(\lvert y(x) \rvert \to \infty\)</span> as <span class="math inline">\(x \to c\)</span> if and only if <span class="math inline">\(\lvert Y(x) \rvert \to 0\)</span> as <span class="math inline">\(x \to c\)</span>. A numerical solution <span class="math inline">\(Y(x)\)</span> of (4) can be computed over a small interval containing <span class="math inline">\(c\)</span>, and then (2) gives a solution curve for (1) on both sides of the vertical asymptote <span class="math inline">\(x = c\)</span>.</p>
+<p>The Runge-Kutta method uses a fixed step size <span class="math inline">\(h = (b - a)/m\)</span>, and for each <span class="math inline">\(x_j = a + jh\)</span>, <span class="math inline">\(j = 1, 2, \ldots, m\)</span>, it computes an approximation <span class="math inline">\(y_j\)</span> to <span class="math inline">\(y(x_j)\)</span>. If <span class="math inline">\(\lvert y(x) \rvert \to \infty\)</span> as <span class="math inline">\(x \to c\)</span>, the method fails to follow the true solution, because of the inherent instability of computing a “rise” as the product of a very large slope and a very small “run”, which magnifies the error already present in <span class="math inline">\(y_{j-1}\)</span>. One way to reduce this error is to choose a bound <span class="math inline">\(B\)</span> and change strategy as soon as a value <span class="math inline">\(y_L\)</span> with <span class="math inline">\(\lvert y_L \rvert &gt; B\)</span> is computed, that is, as soon as a singularity is “sensed”: stop using (1), take <span class="math inline">\((x_L, 1/y_L)\)</span> as the initial point for (4), and track the reciprocal <span class="math inline">\(Y(x)\)</span>, which does not suffer from steep slopes.</p>
+<p>The strategy extends any single-step method. Use (1) with <span class="math inline">\(y(x_0) = y_0\)</span> to compute <span class="math inline">\(\{(x_j, y_j)\}_{j=1}^{L}\)</span>, where <span class="math inline">\(\lvert y_j \rvert \leq B\)</span> for <span class="math inline">\(j = 1, 2, \ldots, L - 1\)</span> and <span class="math inline">\(\lvert y_L \rvert &gt; B\)</span>. Then switch to (4) with <span class="math inline">\(Y(x_L) = 1/y_L\)</span> and compute <span class="math inline">\(\{(x_j, Y_j)\}_{j=L+1}^{N}\)</span>, where <span class="math inline">\(\lvert y_j \rvert &gt; B\)</span> for <span class="math inline">\(j = L, L+1, \ldots, N - 1\)</span> and <span class="math inline">\(\lvert y_N \rvert \leq B\)</span>. Continue in the same way, alternating between (1) and (4), until <span class="math inline">\(j = m\)</span>.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Extended Runge-Kutta step (pole vaulting)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">\(j = 0, 1, \ldots, m - 1\)</span>:</p>
+<ul>
+<li><strong>if</strong> <span class="math inline">\(\lvert y_j \rvert \leq B\)</span>: perform one Runge-Kutta step on <span class="math inline">\(y' = f(x, y)\)</span> from <span class="math inline">\((x_j, y_j)\)</span> to compute <span class="math inline">\(y_{j+1}\)</span>, and set <span class="math inline">\(Y_{j+1} = 1/y_{j+1}\)</span>;</li>
+<li><strong>else</strong>: perform one Runge-Kutta step on <span class="math inline">\(Y' = g(x, Y)\)</span> from <span class="math inline">\((x_j, Y_j)\)</span>, <span class="math inline">\(Y_j = 1/y_j\)</span>, to compute <span class="math inline">\(Y_{j+1}\)</span>, and set <span class="math inline">\(y_{j+1} = 1/Y_{j+1}\)</span>.</li>
+</ul>
+<p>Mathews’ subroutine (PoleVault Runge-Kutta) uses the fourth-order Runge-Kutta step,</p>
+<p><span class="math display">\[
+\begin{aligned}
+k_1 &amp;= h F(x_j, u_j), &amp; k_2 &amp;= h F\bigl(x_j + \tfrac{h}{2}, u_j + \tfrac{k_1}{2}\bigr), \\
+k_3 &amp;= h F\bigl(x_j + \tfrac{h}{2}, u_j + \tfrac{k_2}{2}\bigr), &amp; k_4 &amp;= h F(x_j + h, u_j + k_3), \\
+u_{j+1} &amp;= u_j + \tfrac16 (k_1 + 2k_2 + 2k_3 + k_4),
+\end{aligned}
+\]</span></p>
+<p>with <span class="math inline">\((F, u) = (f, y)\)</span> or <span class="math inline">\((g, Y)\)</span>, and the bound <span class="math inline">\(B = 3\)</span>. Its inputs are <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(y(a) = \alpha\)</span> and the number of steps <span class="math inline">\(m\)</span>; it keeps both <span class="math inline">\(y_j\)</span> and <span class="math inline">\(Y_j\)</span> and returns the points <span class="math inline">\((x_j, y_j)\)</span>. A reciprocal of exactly zero is stored as complex infinity.</p>
+</div>
+</div>
+<p>Since the method switches as soon as <span class="math inline">\(\lvert y \rvert\)</span> passes <span class="math inline">\(3\)</span>, each <span class="math inline">\(Y\)</span> phase starts with <span class="math inline">\(\lvert Y_L \rvert\)</span> just under <span class="math inline">\(1/3\)</span> and ends when <span class="math inline">\(\lvert Y \rvert\)</span> is back to at least <span class="math inline">\(1/3\)</span>. In every run below, <span class="math inline">\(Y\)</span> changes sign during each <span class="math inline">\(Y\)</span> phase, and <span class="math inline">\(y\)</span> with it, as the curve vaults the pole. The six examples below are Mathews’ runs. For each, the table lists where the method changes equations, the grid interval where <span class="math inline">\(Y_j\)</span> changes sign, the pole estimated by linear interpolation of <span class="math inline">\(Y\)</span> across that interval, the exact pole, and the computed value at <span class="math inline">\(x = b\)</span> against the exact solution. For each run that survives in the archive (all but Example 10), Mathews plots the points <span class="math inline">\((x_j, y_j)\)</span> joined in magenta and the analytic solution in blue, on the vertical range <span class="math inline">\(-15 \leq y \leq 15\)</span>.</p>
+<p>Every pole in Examples 7 to 12 is simple, and near it <span class="math inline">\(y \approx -k/(x - c)\)</span> with <span class="math inline">\(k = 1\)</span> in Examples 7, 8, 11 and 12, <span class="math inline">\(k = \tfrac12\)</span> in Example 9 and <span class="math inline">\(k = e\)</span> in Example 10. So in each example <span class="math inline">\(y \to +\infty\)</span> as <span class="math inline">\(x \to c^-\)</span> and <span class="math inline">\(y \to -\infty\)</span> as <span class="math inline">\(x \to c^+\)</span>, and <span class="math inline">\(Y\)</span> goes from positive to negative across the pole.</p>
+</section>
+<section id="example-7-y-y2-y0-1-on-0-2" class="level3">
+<h3 class="anchored" data-anchor-id="example-7-y-y2-y0-1-on-0-2">Example 7 — <span class="math inline">\(y' = y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 2]\)</span></h3>
+<p><strong>Step 1</strong> (companion equation): with <span class="math inline">\(f(x, y) = y^2\)</span>,</p>
+<p><span class="math display">\[
+g(x, Y) = -Y^2 \left(\frac{1}{Y}\right)^2 = -1, \qquad Y' = -1.
+\]</span></p>
+<p><strong>Step 2</strong> (exact solution): <span class="math inline">\(y = 1/(1 - x)\)</span>, with a simple pole at <span class="math inline">\(x = 1\)</span>; and <span class="math inline">\(Y = 1 - x\)</span>.</p>
+<p><strong>Step 3</strong> (run): Mathews’ call uses <span class="math inline">\(a = 0\)</span>, <span class="math inline">\(b = 2\)</span>, <span class="math inline">\(\alpha = 1\)</span>, <span class="math inline">\(m = 500\)</span>, so <span class="math inline">\(h = 0.004\)</span>, and plots on <span class="math inline">\([0, 2] \times [-15, 15]\)</span>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Steps</th>
+<th>Equation</th>
+<th>From <span class="math inline">\(x\)</span></th>
+<th>To <span class="math inline">\(x\)</span></th>
+<th>Number of steps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(j = 0, \ldots, 166\)</span></td>
+<td><span class="math inline">\(y' = y^2\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.668\)</span></td>
+<td><span class="math inline">\(167\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 167, \ldots, 333\)</span></td>
+<td><span class="math inline">\(Y' = -1\)</span></td>
+<td><span class="math inline">\(0.668\)</span></td>
+<td><span class="math inline">\(1.336\)</span></td>
+<td><span class="math inline">\(167\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(j = 334, \ldots, 499\)</span></td>
+<td><span class="math inline">\(y' = y^2\)</span></td>
+<td><span class="math inline">\(1.336\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\(166\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The switch happens at <span class="math inline">\(x_L = 0.668\)</span>, where <span class="math inline">\(y_L = 3.012048192\)</span> (the step before gave <span class="math inline">\(y = 2.976190475\)</span>), so the <span class="math inline">\(Y\)</span> phase starts from <span class="math inline">\(Y_L = 1/y_L = 0.3320000001\)</span>. It ends at <span class="math inline">\(x = 1.336\)</span> with <span class="math inline">\(y = -2.976190477\)</span>. The grid point <span class="math inline">\(x = 1\)</span> is the pole itself: there <span class="math inline">\(Y_{250} = 9.36 \times 10^{-11}\)</span>, so the stored value is <span class="math inline">\(y_{250} = 1.07 \times 10^{10}\)</span>, and at the next point, <span class="math inline">\(x = 1.004\)</span>, <span class="math inline">\(Y = -0.004\)</span> and <span class="math inline">\(y = -250.0\)</span>. Linear interpolation of <span class="math inline">\(Y\)</span> puts the zero at <span class="math inline">\(x = 1.0000000001\)</span>.</p>
+<p>Because the fourth-order Runge-Kutta step reduces to Simpson’s rule when <span class="math inline">\(g\)</span> does not depend on <span class="math inline">\(Y\)</span>, it integrates <span class="math inline">\(Y' = -1\)</span> exactly; the error in <span class="math inline">\(Y\)</span> stays at <span class="math inline">\(9.36 \times 10^{-11}\)</span>, the error carried in at <span class="math inline">\(x_L\)</span>, throughout the <span class="math inline">\(Y\)</span> phase.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y_{500} = -1.00000000018\)</span> against <span class="math inline">\(y(2) = -1\)</span>, an error of <span class="math inline">\(-1.8 \times 10^{-10}\)</span>. The largest error at points with <span class="math inline">\(\lvert y_j \rvert \leq 3\)</span> is <span class="math inline">\(8.6 \times 10^{-10}\)</span>, at <span class="math inline">\(x = 1.364\)</span>.</p>
+<p>For comparison, the plain fourth-order Runge-Kutta method with the same <span class="math inline">\(h\)</span> stays within <span class="math inline">\(1\%\)</span> of the solution up to <span class="math inline">\(x = 0.996\)</span> (<span class="math inline">\(248.2\)</span> against <span class="math inline">\(250\)</span>), gives <span class="math inline">\(2049.8\)</span> at <span class="math inline">\(x = 1\)</span>, then <span class="math inline">\(2.5 \times 10^{13}\)</span> at <span class="math inline">\(x = 1.004\)</span> where the true value is <span class="math inline">\(-250\)</span>, and overflows to infinity at <span class="math inline">\(x = 1.012\)</span>. It never reaches the branch of the curve beyond the pole.</p>
+</section>
+<section id="example-8-y-1-y2-y0-0-on-0-5" class="level3">
+<h3 class="anchored" data-anchor-id="example-8-y-1-y2-y0-0-on-0-5">Example 8 — <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0) = 0\)</span>, on <span class="math inline">\([0, 5]\)</span></h3>
+<p><strong>Step 1</strong> (companion equation): <span class="math inline">\(-Y^2\bigl(1 + 1/Y^2\bigr)\)</span> simplifies to</p>
+<p><span class="math display">\[
+g(x, Y) = -1 - Y^2.
+\]</span></p>
+<p><strong>Step 2</strong> (exact solution): <span class="math inline">\(y = \tan x\)</span>, with simple poles at <span class="math inline">\(\pi/2 = 1.570796327\)</span> and <span class="math inline">\(3\pi/2 = 4.712388980\)</span> in <span class="math inline">\([0, 5]\)</span>.</p>
+<p><strong>Step 3</strong> (run): <span class="math inline">\(a = 0\)</span>, <span class="math inline">\(b = 5\)</span>, <span class="math inline">\(\alpha = 0\)</span>, <span class="math inline">\(m = 1000\)</span>, <span class="math inline">\(h = 0.005\)</span>; Mathews plots on <span class="math inline">\([0, 5] \times [-15, 15]\)</span> with <span class="math inline">\(x\)</span> tick marks every <span class="math inline">\(\pi/4\)</span>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Steps</th>
+<th>Equation</th>
+<th>From <span class="math inline">\(x\)</span></th>
+<th>To <span class="math inline">\(x\)</span></th>
+<th>Number of steps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(j = 0, \ldots, 249\)</span></td>
+<td><span class="math inline">\(y' = 1 + y^2\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(1.25\)</span></td>
+<td><span class="math inline">\(250\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 250, \ldots, 378\)</span></td>
+<td><span class="math inline">\(Y' = -1 - Y^2\)</span></td>
+<td><span class="math inline">\(1.25\)</span></td>
+<td><span class="math inline">\(1.895\)</span></td>
+<td><span class="math inline">\(129\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(j = 379, \ldots, 878\)</span></td>
+<td><span class="math inline">\(y' = 1 + y^2\)</span></td>
+<td><span class="math inline">\(1.895\)</span></td>
+<td><span class="math inline">\(4.395\)</span></td>
+<td><span class="math inline">\(500\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 879, \ldots, 999\)</span></td>
+<td><span class="math inline">\(Y' = -1 - Y^2\)</span></td>
+<td><span class="math inline">\(4.395\)</span></td>
+<td><span class="math inline">\(5\)</span></td>
+<td><span class="math inline">\(121\)</span></td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pole</th>
+<th>Switch to <span class="math inline">\(Y\)</span> at</th>
+<th><span class="math inline">\(Y_j\)</span> changes sign on</th>
+<th>Interpolated zero of <span class="math inline">\(Y\)</span></th>
+<th>Exact pole</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>first</td>
+<td><span class="math inline">\(x = 1.25\)</span>, <span class="math inline">\(y = 3.009569673\)</span></td>
+<td><span class="math inline">\([1.570, 1.575]\)</span></td>
+<td><span class="math inline">\(1.5707963231\)</span></td>
+<td><span class="math inline">\(1.5707963268\)</span></td>
+</tr>
+<tr class="even">
+<td>second</td>
+<td><span class="math inline">\(x = 4.395\)</span>, <span class="math inline">\(y = 3.044194287\)</span></td>
+<td><span class="math inline">\([4.710, 4.715]\)</span></td>
+<td><span class="math inline">\(4.7123889802\)</span></td>
+<td><span class="math inline">\(4.7123889804\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The first <span class="math inline">\(Y\)</span> phase ends at <span class="math inline">\(x = 1.895\)</span> with <span class="math inline">\(y = -2.975647979\)</span>. The second is still running at <span class="math inline">\(x = 5\)</span>, since <span class="math inline">\(\lvert y \rvert = 3.38 &gt; 3\)</span> there.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y_{1000} = -3.38051501028\)</span> against <span class="math inline">\(\tan 5 = -3.38051500625\)</span>, an error of <span class="math inline">\(-4.0 \times 10^{-9}\)</span>. The largest error at points with <span class="math inline">\(\lvert y_j \rvert \leq 3\)</span> is <span class="math inline">\(3.1 \times 10^{-9}\)</span>, and the largest error in <span class="math inline">\(Y_j\)</span> at points with <span class="math inline">\(\lvert y_j \rvert &gt; 3\)</span> is <span class="math inline">\(3.6 \times 10^{-10}\)</span>. The plain Runge-Kutta method with the same <span class="math inline">\(h\)</span> gives <span class="math inline">\(868.7\)</span> at <span class="math inline">\(x = 1.570\)</span> (true value <span class="math inline">\(1255.8\)</span>), <span class="math inline">\(3.2 \times 10^{9}\)</span> at <span class="math inline">\(x = 1.575\)</span> (true value <span class="math inline">\(-237.9\)</span>), and overflows at <span class="math inline">\(x = 1.585\)</span>.</p>
+</section>
+<section id="example-9-y-2xy2-y0-1-on-0-1.5" class="level3">
+<h3 class="anchored" data-anchor-id="example-9-y-2xy2-y0-1-on-0-1.5">Example 9 — <span class="math inline">\(y' = 2xy^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 1.5]\)</span></h3>
+<p><strong>Step 1</strong> (companion equation): <span class="math inline">\(g(x, Y) = -Y^2 \cdot 2x / Y^2 = -2x\)</span>.</p>
+<p><strong>Step 2</strong> (exact solution): <span class="math inline">\(y = 1/(1 - x^2)\)</span>, with a simple pole at <span class="math inline">\(x = 1\)</span> in <span class="math inline">\([0, 1.5]\)</span>; and <span class="math inline">\(Y = 1 - x^2\)</span>.</p>
+<p><strong>Step 3</strong> (run): <span class="math inline">\(a = 0\)</span>, <span class="math inline">\(b = 1.5\)</span>, <span class="math inline">\(\alpha = 1\)</span>, <span class="math inline">\(m = 300\)</span>, <span class="math inline">\(h = 0.005\)</span>; plot window <span class="math inline">\([0, 1.5] \times [-15, 15]\)</span>. (Mathews states the problem with <span class="math inline">\(t\)</span> as the variable, <span class="math inline">\(y' = 2ty^2\)</span>; his program uses <span class="math inline">\(x\)</span>.)</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Steps</th>
+<th>Equation</th>
+<th>From <span class="math inline">\(x\)</span></th>
+<th>To <span class="math inline">\(x\)</span></th>
+<th>Number of steps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(j = 0, \ldots, 163\)</span></td>
+<td><span class="math inline">\(y' = 2xy^2\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.82\)</span></td>
+<td><span class="math inline">\(164\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 164, \ldots, 230\)</span></td>
+<td><span class="math inline">\(Y' = -2x\)</span></td>
+<td><span class="math inline">\(0.82\)</span></td>
+<td><span class="math inline">\(1.155\)</span></td>
+<td><span class="math inline">\(67\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(j = 231, \ldots, 299\)</span></td>
+<td><span class="math inline">\(y' = 2xy^2\)</span></td>
+<td><span class="math inline">\(1.155\)</span></td>
+<td><span class="math inline">\(1.5\)</span></td>
+<td><span class="math inline">\(69\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The switch happens at <span class="math inline">\(x_L = 0.82\)</span> with <span class="math inline">\(y_L = 3.052503046\)</span> and <span class="math inline">\(Y_L = 0.3276000007\)</span> (exact <span class="math inline">\(1 - 0.82^2 = 0.3276\)</span>); the <span class="math inline">\(Y\)</span> phase ends at <span class="math inline">\(x = 1.155\)</span> with <span class="math inline">\(y = -2.993787896\)</span>. As in Example 7 the pole is a grid point: <span class="math inline">\(Y_{200} = 6.97 \times 10^{-10}\)</span> at <span class="math inline">\(x = 1\)</span>, so <span class="math inline">\(y_{200} = 1.43 \times 10^{9}\)</span>, and at <span class="math inline">\(x = 1.005\)</span>, <span class="math inline">\(Y = -0.010025\)</span> and <span class="math inline">\(y = -99.75\)</span>. Interpolation puts the zero of <span class="math inline">\(Y\)</span> at <span class="math inline">\(x = 1.0000000003\)</span>. Again <span class="math inline">\(g\)</span> does not depend on <span class="math inline">\(Y\)</span> and is linear in <span class="math inline">\(x\)</span>, so the Runge-Kutta step integrates it exactly and the error in <span class="math inline">\(Y\)</span> stays at <span class="math inline">\(6.97 \times 10^{-10}\)</span> throughout the <span class="math inline">\(Y\)</span> phase.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y_{300} = -0.800000006442\)</span> against <span class="math inline">\(y(1.5) = -0.8\)</span>, an error of <span class="math inline">\(-6.4 \times 10^{-9}\)</span>; the largest error at points with <span class="math inline">\(\lvert y_j \rvert \leq 3\)</span> is <span class="math inline">\(2.7 \times 10^{-8}\)</span>, at <span class="math inline">\(x = 1.205\)</span>.</p>
+</section>
+<section id="example-10-y-y2-x-y1-1-on-0-3" class="level3">
+<h3 class="anchored" data-anchor-id="example-10-y-y2-x-y1-1-on-0-3">Example 10 — <span class="math inline">\(y' = y^2 / x\)</span>, <span class="math inline">\(y(1) = 1\)</span>, on <span class="math inline">\([0, 3]\)</span></h3>
+<p>This is Example 6 with <span class="math inline">\(c = e\)</span>.</p>
+<p><strong>Step 1</strong> (companion equation): <span class="math inline">\(g(x, Y) = -Y^2 \cdot \dfrac{1}{xY^2} = -\dfrac{1}{x}\)</span>.</p>
+<p><strong>Step 2</strong> (exact solution): <span class="math inline">\(y = 1/(1 - \ln x)\)</span>, with a simple pole at <span class="math inline">\(x = e = 2.718281828\)</span>; and <span class="math inline">\(Y = 1 - \ln x\)</span>. On <span class="math inline">\((0, 1]\)</span> the solution has no singularity: it increases from <span class="math inline">\(y \to 0\)</span> as <span class="math inline">\(x \to 0^+\)</span> to <span class="math inline">\(y(1) = 1\)</span>; <span class="math inline">\(x = 0\)</span> is the fixed singular point of the equation.</p>
+<p><strong>Step 3</strong> (run): Mathews’ solution to this example is missing from the archive, so the step count and the treatment of <span class="math inline">\(x = 0\)</span> here are this page’s choices. The equation cannot be evaluated at <span class="math inline">\(x = 0\)</span>, so the run starts at the initial point <span class="math inline">\(x = 1\)</span> and goes forward to <span class="math inline">\(x = 3\)</span> with <span class="math inline">\(m = 200\)</span>, <span class="math inline">\(h = 0.01\)</span>, the same step size as Example 12.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Steps</th>
+<th>Equation</th>
+<th>From <span class="math inline">\(x\)</span></th>
+<th>To <span class="math inline">\(x\)</span></th>
+<th>Number of steps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(j = 0, \ldots, 94\)</span></td>
+<td><span class="math inline">\(y' = y^2/x\)</span></td>
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(1.95\)</span></td>
+<td><span class="math inline">\(95\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 95, \ldots, 199\)</span></td>
+<td><span class="math inline">\(Y' = -1/x\)</span></td>
+<td><span class="math inline">\(1.95\)</span></td>
+<td><span class="math inline">\(3\)</span></td>
+<td><span class="math inline">\(105\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The switch happens at <span class="math inline">\(x_L = 1.95\)</span> with <span class="math inline">\(y_L = 3.010500976\)</span>. <span class="math inline">\(Y_j\)</span> changes sign between <span class="math inline">\(x = 2.71\)</span> (<span class="math inline">\(y = 327.7\)</span>) and <span class="math inline">\(x = 2.72\)</span> (<span class="math inline">\(y = -1582.6\)</span>), and linear interpolation puts the zero at <span class="math inline">\(2.7182844\)</span>, against <span class="math inline">\(e = 2.7182818\)</span>; the interpolation error, <span class="math inline">\(2.6 \times 10^{-6}\)</span>, is larger than in Examples 7 to 9 because <span class="math inline">\(Y = 1 - \ln x\)</span> is curved and <span class="math inline">\(h\)</span> is larger. The <span class="math inline">\(Y\)</span> phase is still running at <span class="math inline">\(x = 3\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y_{200} = -10.14072405\)</span> against <span class="math inline">\(y(3) = 1/(1 - \ln 3) = -10.14072398\)</span>, an error of <span class="math inline">\(-7.0 \times 10^{-8}\)</span>. The largest error at points with <span class="math inline">\(\lvert y_j \rvert \leq 3\)</span> is <span class="math inline">\(5.8 \times 10^{-9}\)</span>.</p>
+<p>The left part of the interval can be covered by running backward from <span class="math inline">\(x = 1\)</span> with <span class="math inline">\(h = -0.01\)</span>: <span class="math inline">\(99\)</span> steps reach <span class="math inline">\(x = 0.01\)</span>, all with the <span class="math inline">\(y\)</span> equation since <span class="math inline">\(\lvert y_j \rvert \leq 1\)</span>, and give <span class="math inline">\(0.1783555\)</span> against <span class="math inline">\(y(0.01) = 0.1784067\)</span>. The error is far larger near <span class="math inline">\(x = 0\)</span>, where the coefficient <span class="math inline">\(1/x\)</span> of the equation is unbounded: its size is <span class="math inline">\(7.8 \times 10^{-11}\)</span> at <span class="math inline">\(x = 0.5\)</span>, <span class="math inline">\(2.0 \times 10^{-8}\)</span> at <span class="math inline">\(x = 0.1\)</span> and <span class="math inline">\(5.1 \times 10^{-5}\)</span> at <span class="math inline">\(x = 0.01\)</span>.</p>
+</section>
+<section id="example-11-y-x-y2-y0-1-on-0-3.5" class="level3">
+<h3 class="anchored" data-anchor-id="example-11-y-x-y2-y0-1-on-0-3.5">Example 11 — <span class="math inline">\(y' = x + y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 3.5]\)</span></h3>
+<p><strong>Step 1</strong> (companion equation): <span class="math inline">\(-Y^2\bigl(x + 1/Y^2\bigr)\)</span> simplifies to</p>
+<p><span class="math display">\[
+g(x, Y) = -1 - xY^2.
+\]</span></p>
+<p><strong>Step 2</strong> (exact solution): this Riccati equation is linearised by <span class="math inline">\(y = -u'/u\)</span>, which turns <span class="math inline">\(y' = x + y^2\)</span> into <span class="math inline">\(u'' + xu = 0\)</span> with <span class="math inline">\(u(0) = 1\)</span>, <span class="math inline">\(u'(0) = -1\)</span>. So</p>
+<p><span class="math display">\[
+y = -\frac{u'(x)}{u(x)}, \qquad u(x) = a\,\mathrm{Ai}(-x) + b\,\mathrm{Bi}(-x), \quad a = \pi\bigl(\mathrm{Bi}'(0) - \mathrm{Bi}(0)\bigr), \quad b = \pi\bigl(\mathrm{Ai}(0) - \mathrm{Ai}'(0)\bigr),
+\]</span></p>
+<p>with <span class="math inline">\(a = -0.523510\)</span> and <span class="math inline">\(b = 1.928459\)</span>. Mathews’ DSolve output writes the same solution with Bessel functions of orders <span class="math inline">\(\pm\tfrac13\)</span> and <span class="math inline">\(\pm\tfrac23\)</span> of <span class="math inline">\(\tfrac23 x^{3/2}\)</span>; the two forms agree to <span class="math inline">\(15\)</span> digits at <span class="math inline">\(x = 0.0001\)</span>, <span class="math inline">\(0.5\)</span>, <span class="math inline">\(2\)</span> and <span class="math inline">\(3.5\)</span>. The poles of <span class="math inline">\(y\)</span> are the zeros of <span class="math inline">\(u\)</span>, which are simple, so every pole is simple. In <span class="math inline">\([0, 3.5]\)</span> there are two:</p>
+<p><span class="math display">\[
+c_1 = 0.930564508526, \qquad c_2 = 3.123493003957.
+\]</span></p>
+<p>They were found from the Airy form, and again (to all <span class="math inline">\(15\)</span> digits) from a high-precision Taylor-series solution of <span class="math inline">\(u'' + xu = 0\)</span> and from the zeros of the denominator of Mathews’ formula.</p>
+<p><strong>Step 3</strong> (run): <span class="math inline">\(a = 0\)</span>, <span class="math inline">\(b = 3.5\)</span>, <span class="math inline">\(\alpha = 1\)</span>, <span class="math inline">\(m = 400\)</span>, <span class="math inline">\(h = 0.00875\)</span>; plot window <span class="math inline">\([0, 3.5] \times [-15, 15]\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Steps</th>
+<th>Equation</th>
+<th>From <span class="math inline">\(x\)</span></th>
+<th>To <span class="math inline">\(x\)</span></th>
+<th>Number of steps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(j = 0, \ldots, 69\)</span></td>
+<td><span class="math inline">\(y' = x + y^2\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.6125\)</span></td>
+<td><span class="math inline">\(70\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 70, \ldots, 142\)</span></td>
+<td><span class="math inline">\(Y' = -1 - xY^2\)</span></td>
+<td><span class="math inline">\(0.6125\)</span></td>
+<td><span class="math inline">\(1.25125\)</span></td>
+<td><span class="math inline">\(73\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(j = 143, \ldots, 322\)</span></td>
+<td><span class="math inline">\(y' = x + y^2\)</span></td>
+<td><span class="math inline">\(1.25125\)</span></td>
+<td><span class="math inline">\(2.82625\)</span></td>
+<td><span class="math inline">\(180\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 323, \ldots, 391\)</span></td>
+<td><span class="math inline">\(Y' = -1 - xY^2\)</span></td>
+<td><span class="math inline">\(2.82625\)</span></td>
+<td><span class="math inline">\(3.43\)</span></td>
+<td><span class="math inline">\(69\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(j = 392, \ldots, 399\)</span></td>
+<td><span class="math inline">\(y' = x + y^2\)</span></td>
+<td><span class="math inline">\(3.43\)</span></td>
+<td><span class="math inline">\(3.5\)</span></td>
+<td><span class="math inline">\(8\)</span></td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pole</th>
+<th>Switch to <span class="math inline">\(Y\)</span> at</th>
+<th><span class="math inline">\(Y_j\)</span> changes sign on</th>
+<th>Interpolated zero of <span class="math inline">\(Y\)</span></th>
+<th>Exact pole</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>first</td>
+<td><span class="math inline">\(x = 0.6125\)</span>, <span class="math inline">\(y = 3.070261105\)</span></td>
+<td><span class="math inline">\([0.9275, 0.93625]\)</span></td>
+<td><span class="math inline">\(0.9305644959\)</span></td>
+<td><span class="math inline">\(0.9305645085\)</span></td>
+</tr>
+<tr class="even">
+<td>second</td>
+<td><span class="math inline">\(x = 2.82625\)</span>, <span class="math inline">\(y = 3.071693526\)</span></td>
+<td><span class="math inline">\([3.115, 3.12375]\)</span></td>
+<td><span class="math inline">\(3.1234930240\)</span></td>
+<td><span class="math inline">\(3.1234930040\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The <span class="math inline">\(Y\)</span> phases end at <span class="math inline">\(x = 1.25125\)</span> (<span class="math inline">\(y = -2.992188995\)</span>) and <span class="math inline">\(x = 3.43\)</span> (<span class="math inline">\(y = -2.912711856\)</span>).</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y_{400} = -2.21453762533\)</span> against <span class="math inline">\(y(3.5) = -2.21453761415\)</span>, an error of <span class="math inline">\(-1.1 \times 10^{-8}\)</span>. The largest error at points with <span class="math inline">\(\lvert y_j \rvert \leq 3\)</span> is <span class="math inline">\(1.7 \times 10^{-8}\)</span>, and the largest error in <span class="math inline">\(Y_j\)</span> at points with <span class="math inline">\(\lvert y_j \rvert &gt; 3\)</span> is <span class="math inline">\(1.9 \times 10^{-9}\)</span>.</p>
+</section>
+<section id="example-12-y-x2-y2-y0-1-on-0-3" class="level3">
+<h3 class="anchored" data-anchor-id="example-12-y-x2-y2-y0-1-on-0-3">Example 12 — <span class="math inline">\(y' = x^2 + y^2\)</span>, <span class="math inline">\(y(0) = 1\)</span>, on <span class="math inline">\([0, 3]\)</span></h3>
+<p><strong>Step 1</strong> (companion equation): <span class="math inline">\(-Y^2\bigl(x^2 + 1/Y^2\bigr)\)</span> simplifies to</p>
+<p><span class="math display">\[
+g(x, Y) = -1 - x^2 Y^2.
+\]</span></p>
+<p><strong>Step 2</strong> (exact solution): <span class="math inline">\(y = -u'/u\)</span> with <span class="math inline">\(u'' + x^2 u = 0\)</span>, <span class="math inline">\(u(0) = 1\)</span>, <span class="math inline">\(u'(0) = -1\)</span>. Mathews’ DSolve output writes <span class="math inline">\(y\)</span> with Bessel functions of orders <span class="math inline">\(\pm\tfrac14\)</span> and <span class="math inline">\(\pm\tfrac34\)</span> of <span class="math inline">\(x^2/2\)</span>; it agrees to <span class="math inline">\(15\)</span> digits with a high-precision Taylor-series solution of the linear equation at <span class="math inline">\(x = 0.0001\)</span>, <span class="math inline">\(0.5\)</span>, <span class="math inline">\(2\)</span> and <span class="math inline">\(3\)</span>. The poles of <span class="math inline">\(y\)</span> in <span class="math inline">\([0, 3]\)</span> are the two zeros of <span class="math inline">\(u\)</span> there,</p>
+<p><span class="math display">\[
+c_1 = 0.969810653931, \qquad c_2 = 2.651806921117,
+\]</span></p>
+<p>found from the Taylor-series solution and again, to all <span class="math inline">\(15\)</span> digits, from the denominator of Mathews’ formula; the next zero, <span class="math inline">\(3.645776\)</span>, lies outside the interval. Mathews plots the analytic solution on <span class="math inline">\([0, 3.3]\)</span>, which contains no further pole.</p>
+<p><strong>Step 3</strong> (run): <span class="math inline">\(a = 0\)</span>, <span class="math inline">\(b = 3\)</span>, <span class="math inline">\(\alpha = 1\)</span>, <span class="math inline">\(m = 300\)</span>, <span class="math inline">\(h = 0.01\)</span>; plot window <span class="math inline">\([0, 3] \times [-15, 15]\)</span>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Steps</th>
+<th>Equation</th>
+<th>From <span class="math inline">\(x\)</span></th>
+<th>To <span class="math inline">\(x\)</span></th>
+<th>Number of steps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(j = 0, \ldots, 64\)</span></td>
+<td><span class="math inline">\(y' = x^2 + y^2\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.65\)</span></td>
+<td><span class="math inline">\(65\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 65, \ldots, 128\)</span></td>
+<td><span class="math inline">\(Y' = -1 - x^2Y^2\)</span></td>
+<td><span class="math inline">\(0.65\)</span></td>
+<td><span class="math inline">\(1.29\)</span></td>
+<td><span class="math inline">\(64\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(j = 129, \ldots, 237\)</span></td>
+<td><span class="math inline">\(y' = x^2 + y^2\)</span></td>
+<td><span class="math inline">\(1.29\)</span></td>
+<td><span class="math inline">\(2.38\)</span></td>
+<td><span class="math inline">\(109\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(j = 238, \ldots, 291\)</span></td>
+<td><span class="math inline">\(Y' = -1 - x^2Y^2\)</span></td>
+<td><span class="math inline">\(2.38\)</span></td>
+<td><span class="math inline">\(2.92\)</span></td>
+<td><span class="math inline">\(54\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(j = 292, \ldots, 299\)</span></td>
+<td><span class="math inline">\(y' = x^2 + y^2\)</span></td>
+<td><span class="math inline">\(2.92\)</span></td>
+<td><span class="math inline">\(3\)</span></td>
+<td><span class="math inline">\(8\)</span></td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pole</th>
+<th>Switch to <span class="math inline">\(Y\)</span> at</th>
+<th><span class="math inline">\(Y_j\)</span> changes sign on</th>
+<th>Interpolated zero of <span class="math inline">\(Y\)</span></th>
+<th>Exact pole</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>first</td>
+<td><span class="math inline">\(x = 0.65\)</span>, <span class="math inline">\(y = 3.069377113\)</span></td>
+<td><span class="math inline">\([0.96, 0.97]\)</span></td>
+<td><span class="math inline">\(0.9698106626\)</span></td>
+<td><span class="math inline">\(0.9698106539\)</span></td>
+</tr>
+<tr class="even">
+<td>second</td>
+<td><span class="math inline">\(x = 2.38\)</span>, <span class="math inline">\(y = 3.118149455\)</span></td>
+<td><span class="math inline">\([2.65, 2.66]\)</span></td>
+<td><span class="math inline">\(2.6518066978\)</span></td>
+<td><span class="math inline">\(2.6518069211\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The <span class="math inline">\(Y\)</span> phases end at <span class="math inline">\(x = 1.29\)</span> (<span class="math inline">\(y = -2.965094427\)</span>) and <span class="math inline">\(x = 2.92\)</span> (<span class="math inline">\(y = -2.972132579\)</span>). The largest <span class="math inline">\(\lvert y_j \rvert\)</span> on the grid is <span class="math inline">\(5281.4\)</span>, at <span class="math inline">\(x = 0.97\)</span>, just past the first pole.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(y_{300} = -1.81637998729\)</span> against <span class="math inline">\(y(3) = -1.81638002727\)</span>, an error of <span class="math inline">\(4.0 \times 10^{-8}\)</span>. The largest error at points with <span class="math inline">\(\lvert y_j \rvert \leq 3\)</span> is <span class="math inline">\(4.0 \times 10^{-8}\)</span>, and the largest error in <span class="math inline">\(Y_j\)</span> at points with <span class="math inline">\(\lvert y_j \rvert &gt; 3\)</span> is <span class="math inline">\(3.6 \times 10^{-9}\)</span>.</p>
+</section>
+</section>
+<section id="further-reading" class="level2">
+<h2 class="anchored" data-anchor-id="further-reading">Further Reading</h2>
+<ul>
+<li>John H. Mathews, “Computed Solution Curves for Differential Equations”, <em>The AMATYC Review</em>, Vol. 11, No.&nbsp;1 (Part I), Fall 1989, pp.&nbsp;30–33.</li>
+<li>George F. Corliss, “Integrating ODE’s in the Complex Plane — Pole Vaulting”, <em>Mathematics of Computation</em>, Vol. 35, No.&nbsp;152 (Oct.&nbsp;1980), pp.&nbsp;1181–1189.</li>
+<li>John H. Mathews and Kurtis D. Fink, <em>Numerical Methods Using MATLAB</em>, 4th edition, Prentice-Hall, 2004.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

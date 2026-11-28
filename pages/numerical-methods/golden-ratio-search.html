@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Golden Ratio Search – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#unimodal-functions-and-bracketing" id="toc-unimodal-functions-and-bracketing" class="nav-link" data-scroll-target="#unimodal-functions-and-bracketing">Unimodal Functions and Bracketing</a></li>
+  <li><a href="#derivation-of-the-golden-ratio" id="toc-derivation-of-the-golden-ratio" class="nav-link" data-scroll-target="#derivation-of-the-golden-ratio">Derivation of the Golden Ratio</a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  <li><a href="#example-1-minimise-x2---sin-x-on-0-1" id="toc-example-1-minimise-x2---sin-x-on-0-1" class="nav-link" data-scroll-target="#example-1-minimise-x2---sin-x-on-0-1">Example 1 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span></a>
+  <ul class="collapse">
+  <li><a href="#comparison-with-the-secant-method" id="toc-comparison-with-the-secant-method" class="nav-link" data-scroll-target="#comparison-with-the-secant-method">Comparison with the secant method</a></li>
+  </ul></li>
+  <li><a href="#example-2-local-minimum-of-ex---sin-2x-over--1-1" id="toc-example-2-local-minimum-of-ex---sin-2x-over--1-1" class="nav-link" data-scroll-target="#example-2-local-minimum-of-ex---sin-2x-over--1-1">Example 2 — Local minimum of <span class="math inline">\(e^x - \sin 2x\)</span> over <span class="math inline">\([-1, 1]\)</span></a></li>
+  <li><a href="#example-3-local-maximum-of-ex---sin-2x-in--3-1" id="toc-example-3-local-maximum-of-ex---sin-2x-in--3-1" class="nav-link" data-scroll-target="#example-3-local-maximum-of-ex---sin-2x-in--3-1">Example 3 — Local maximum of <span class="math inline">\(e^x - \sin 2x\)</span> in <span class="math inline">\([-3, 1]\)</span></a></li>
+  <li><a href="#example-4-maximum-of-140e-x9-sin-x-for-x-ge-0" id="toc-example-4-maximum-of-140e-x9-sin-x-for-x-ge-0" class="nav-link" data-scroll-target="#example-4-maximum-of-140e-x9-sin-x-for-x-ge-0">Example 4 — Maximum of <span class="math inline">\(140\,e^{-x/9} \sin x\)</span> for <span class="math inline">\(x \ge 0\)</span></a></li>
+  <li><a href="#example-5-will-the-component-burn-out" id="toc-example-5-will-the-component-burn-out" class="nav-link" data-scroll-target="#example-5-will-the-component-burn-out">Example 5 — Will the component burn out?</a></li>
+  <li><a href="#example-6-graphical-search-for-tfrac12-x5---tfrac45-x-on-0-1" id="toc-example-6-graphical-search-for-tfrac12-x5---tfrac45-x-on-0-1" class="nav-link" data-scroll-target="#example-6-graphical-search-for-tfrac12-x5---tfrac45-x-on-0-1">Example 6 — Graphical search for <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span></a></li>
+  <li><a href="#fibonacci-versus-golden-ratio-search" id="toc-fibonacci-versus-golden-ratio-search" class="nav-link" data-scroll-target="#fibonacci-versus-golden-ratio-search">Fibonacci Versus Golden Ratio Search</a></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Golden Ratio Search</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Golden ratio search finds the minimum of a function <span class="math inline">\(f\)</span> on an interval <span class="math inline">\([a_0, b_0]\)</span> using only function values, no derivatives. It needs <span class="math inline">\(f\)</span> to be <strong>unimodal</strong> on the interval: decreasing up to a single minimiser <span class="math inline">\(p\)</span> and increasing after it. Each step evaluates <span class="math inline">\(f\)</span> at two interior points <span class="math inline">\(c_k &lt; d_k\)</span> and throws away the part of the interval that cannot contain <span class="math inline">\(p\)</span>. If <span class="math inline">\(f(c_k) \le f(d_k)\)</span> the minimiser lies in <span class="math inline">\([a_k, d_k]\)</span>, otherwise it lies in <span class="math inline">\([c_k, b_k]\)</span>.</p>
+<p>The interior points divide every interval in the same proportions:</p>
+<p><span class="math display">\[
+c_k = a_k + (1 - \rho)(b_k - a_k), \qquad d_k = a_k + \rho\,(b_k - a_k), \qquad \rho = \frac{\sqrt5 - 1}{2} \approx 0.618034.
+\]</span></p>
+<p>Because <span class="math inline">\(\rho^2 = 1 - \rho\)</span>, the interior point that survives a step is exactly an interior point of the next interval, so every step after the first costs one new function evaluation, and every step shrinks the interval by the same factor: <span class="math inline">\(b_k - a_k = \rho^k (b_0 - a_0)\)</span>. Unlike <a href="fibonacci-search/">Fibonacci search</a>, which fixes the number of steps in advance and changes the ratio at every step, the golden ratio search can simply run until the interval is shorter than a tolerance <span class="math inline">\(\delta\)</span>.</p>
+</section>
+<section id="unimodal-functions-and-bracketing" class="level2">
+<h2 class="anchored" data-anchor-id="unimodal-functions-and-bracketing">Unimodal Functions and Bracketing</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Unimodal function
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The function <span class="math inline">\(f\)</span> is <em>unimodal</em> on <span class="math inline">\(I = [a, b]\)</span> if there is a unique number <span class="math inline">\(p \in I\)</span> such that <span class="math inline">\(f\)</span> is decreasing on <span class="math inline">\([a, p]\)</span> and increasing on <span class="math inline">\([p, b]\)</span>.</p>
+</div>
+</div>
+<p>A bracketing search keeps an interval <span class="math inline">\([a_k, b_k]\)</span> that is known to contain <span class="math inline">\(p\)</span> and shrinks it by comparing <span class="math inline">\(f\)</span> at two interior points <span class="math inline">\(c_k &lt; d_k\)</span>:</p>
+<ul>
+<li>If <span class="math inline">\(f(c_k) \le f(d_k)\)</span>, the minimum cannot lie to the right of <span class="math inline">\(d_k\)</span>. <em>Squeeze from the right</em>: set <span class="math inline">\(a_{k+1} = a_k\)</span>, <span class="math inline">\(b_{k+1} = d_k\)</span>.</li>
+<li>If <span class="math inline">\(f(c_k) &gt; f(d_k)\)</span>, the minimum cannot lie to the left of <span class="math inline">\(c_k\)</span>. <em>Squeeze from the left</em>: set <span class="math inline">\(a_{k+1} = c_k\)</span>, <span class="math inline">\(b_{k+1} = b_k\)</span>.</li>
+</ul>
+<p>A tie <span class="math inline">\(f(c_k) = f(d_k)\)</span> puts <span class="math inline">\(p\)</span> between <span class="math inline">\(c_k\)</span> and <span class="math inline">\(d_k\)</span>, so either choice is safe; the rule above keeps <span class="math inline">\([a_k, d_k]\)</span>. Mathews’ programs keep <span class="math inline">\([c_k, b_k]\)</span> in a tie. No comparison in the examples below is a tie, so both rules give the same steps. The method uses only comparisons of function values, so it also works when <span class="math inline">\(f\)</span> is not differentiable.</p>
+</section>
+<section id="derivation-of-the-golden-ratio" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-of-the-golden-ratio">Derivation of the Golden Ratio</h2>
+<p>Place the interior points of <span class="math inline">\([a, b]\)</span> symmetrically, so that <span class="math inline">\(c - a = b - d\)</span>:</p>
+<p><span class="math display">\[
+c = a + (1 - r)(b - a), \qquad d = a + r\,(b - a), \qquad \tfrac12 &lt; r &lt; 1,
+\tag{1}
+\]</span></p>
+<p>where <span class="math inline">\(r &gt; \tfrac12\)</span> keeps <span class="math inline">\(c &lt; d\)</span>. We want the same <span class="math inline">\(r\)</span> on every interval, and one of the old interior points must become an interior point of the new interval, so that each step needs only one new function value.</p>
+<p>Suppose <span class="math inline">\(f(c) \le f(d)\)</span>, so the new interval is <span class="math inline">\([a, d]\)</span>, of length <span class="math inline">\(r(b - a)\)</span>. Its right interior point is <span class="math inline">\(a + r(d - a)\)</span>, and for this to be the old point <span class="math inline">\(c\)</span> we need <span class="math inline">\(c - a = r(d - a)\)</span>, that is</p>
+<p><span class="math display">\[
+(1 - r)(b - a) = r \cdot r\,(b - a)
+\qquad\Longrightarrow\qquad
+r^2 + r - 1 = 0.
+\tag{2}
+\]</span></p>
+<p>If instead <span class="math inline">\(f(c) &gt; f(d)\)</span>, the new interval is <span class="math inline">\([c, b]\)</span>, also of length <span class="math inline">\(r(b - a)\)</span>, and its left interior point <span class="math inline">\(c + (1 - r)(b - c)\)</span> must be the old point <span class="math inline">\(d\)</span>. Since <span class="math inline">\(d - c = (2r - 1)(b - a)\)</span> and <span class="math inline">\(b - c = r(b - a)\)</span>, this gives <span class="math inline">\(2r - 1 = (1 - r)\,r\)</span>, which is the same equation (2). Its roots are <span class="math inline">\(r = (-1 \pm \sqrt5)/2\)</span>, and the root in <span class="math inline">\((\tfrac12, 1)\)</span> is</p>
+<p><span class="math display">\[
+\rho = \frac{\sqrt5 - 1}{2} = 0.6180339887\ldots, \qquad \rho^2 = 1 - \rho = 0.3819660113\ldots
+\tag{3}
+\]</span></p>
+<p>Mathews calls <span class="math inline">\(\rho\)</span> the golden ratio. The name is more often given to its reciprocal <span class="math inline">\(\phi = 1/\rho = (1 + \sqrt5)/2 = 1.6180339887\ldots\)</span>; either way, <span class="math inline">\(\rho\)</span> is the factor by which the interval shrinks. Equation (2) is the special case <span class="math inline">\(r_1 = r_0\)</span> of the equation <span class="math inline">\(r_1 = (1 - r_0)/r_0\)</span> on the <a href="fibonacci-search/">Fibonacci search</a> page.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Interval lengths in golden ratio search
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f\)</span> is unimodal on <span class="math inline">\([a_0, b_0]\)</span> (and the comparisons are exact), every interval <span class="math inline">\([a_k, b_k]\)</span> contains the minimiser <span class="math inline">\(p\)</span>, and</p>
+<p><span class="math display">\[
+b_k - a_k = \rho^k\,(b_0 - a_0).
+\tag{4}
+\]</span></p>
+<p>The midpoint <span class="math inline">\((a_k + b_k)/2\)</span> is within <span class="math inline">\(\tfrac12 \rho^k (b_0 - a_0)\)</span> of <span class="math inline">\(p\)</span>. The interval is shorter than a tolerance <span class="math inline">\(\delta\)</span> once</p>
+<p><span class="math display">\[
+k \ge \frac{\ln\bigl(\delta / (b_0 - a_0)\bigr)}{\ln \rho}.
+\tag{5}
+\]</span></p>
+</div>
+</div>
+<p>This is a general result. The interval shrinks by the same factor <span class="math inline">\(\rho \approx 0.618\)</span> at every step whatever <span class="math inline">\(f\)</span> is, so the convergence is linear, and each extra decimal digit of accuracy costs <span class="math inline">\(\ln 10 / \ln \phi \approx 4.78\)</span> steps.</p>
+</section>
+<section id="algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="algorithm">Algorithm</h2>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Golden ratio search for a minimum
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(f\)</span> unimodal on <span class="math inline">\([a_0, b_0]\)</span> and a tolerance <span class="math inline">\(\delta\)</span> (or a number of steps):</p>
+<ol type="1">
+<li>Compute <span class="math inline">\(c_0 = a_0 + (1 - \rho)(b_0 - a_0)\)</span> and <span class="math inline">\(d_0 = a_0 + \rho(b_0 - a_0)\)</span>, and evaluate <span class="math inline">\(f(c_0)\)</span>, <span class="math inline">\(f(d_0)\)</span>.</li>
+<li>For <span class="math inline">\(k = 0, 1, 2, \ldots\)</span> until <span class="math inline">\(b_k - a_k \le \delta\)</span>:
+<ul>
+<li>if <span class="math inline">\(f(c_k) \le f(d_k)\)</span>: set <span class="math inline">\(a_{k+1} = a_k\)</span>, <span class="math inline">\(b_{k+1} = d_k\)</span>, <span class="math inline">\(d_{k+1} = c_k\)</span>, and compute the new point <span class="math inline">\(c_{k+1} = a_{k+1} + (1 - \rho)(b_{k+1} - a_{k+1})\)</span>;</li>
+<li>otherwise: set <span class="math inline">\(a_{k+1} = c_k\)</span>, <span class="math inline">\(b_{k+1} = b_k\)</span>, <span class="math inline">\(c_{k+1} = d_k\)</span>, and compute the new point <span class="math inline">\(d_{k+1} = a_{k+1} + \rho(b_{k+1} - a_{k+1})\)</span>;</li>
+<li>evaluate <span class="math inline">\(f\)</span> at the one new point.</li>
+</ul></li>
+<li>Return an approximation to <span class="math inline">\(p\)</span> from the last interval, for example its midpoint.</li>
+</ol>
+</div>
+</div>
+<p>After <span class="math inline">\(K\)</span> steps the method has used <span class="math inline">\(K + 2\)</span> function evaluations and the interval has length <span class="math inline">\(\rho^K (b_0 - a_0)\)</span>. The values <span class="math inline">\(f(c_K)\)</span> and <span class="math inline">\(f(d_K)\)</span> are already known, so one more comparison shrinks the interval to <span class="math inline">\(\rho^{K+1}(b_0 - a_0)\)</span> for free. With <span class="math inline">\(N = K + 2\)</span> evaluations the bracket is therefore <span class="math inline">\(\rho^{N-1}(b_0 - a_0)\)</span>, the figure used on the Fibonacci search page.</p>
+<p>Mathews gives two programs:</p>
+<ul>
+<li><code>GoldenSearch[a0, b0, max]</code> makes exactly <code>max</code> steps.</li>
+<li><code>GoldenSearch[a0, b0, δ, ε]</code> continues while <span class="math inline">\(\lvert f(b_k) - f(a_k) \rvert &gt; \varepsilon\)</span> or <span class="math inline">\(b_k - a_k &gt; \delta\)</span>, so it stops once both <span class="math inline">\(b_k - a_k \le \delta\)</span> and <span class="math inline">\(\lvert f(b_k) - f(a_k) \rvert \le \varepsilon\)</span>.</li>
+</ul>
+<p>Both also evaluate <span class="math inline">\(f(a_0)\)</span> and <span class="math inline">\(f(b_0)\)</span> (so <span class="math inline">\(K + 4\)</span> evaluations in all), keep <span class="math inline">\([c_k, b_k]\)</span> in a tie, print the list <span class="math inline">\(\{a_k, c_k, d_k, b_k\}\)</span> at every step, and return whichever endpoint, <span class="math inline">\(a_k\)</span> or <span class="math inline">\(b_k\)</span>, has the smaller function value. The returned endpoint is within <span class="math inline">\(b_k - a_k\)</span> of <span class="math inline">\(p\)</span>. The midpoint has half that error bound.</p>
+</section>
+<section id="example-1-minimise-x2---sin-x-on-0-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-minimise-x2---sin-x-on-0-1">Example 1 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span></h2>
+<p>Find the minimum of the unimodal function</p>
+<p><span class="math display">\[
+f(x) = x^2 - \sin x
+\]</span></p>
+<p>on <span class="math inline">\([0, 1]\)</span>. Mathews runs this example for <span class="math inline">\(25\)</span> steps. The function is unimodal on <span class="math inline">\([0, 1]\)</span> because <span class="math inline">\(f''(x) = 2 + \sin x \ge 2 &gt; 0\)</span> there.</p>
+<p><strong>Step 1</strong> (first interior points):</p>
+<p><span class="math display">\[
+c_0 = 0 + (1 - \rho)(1 - 0) = \frac{3 - \sqrt5}{2} \approx 0.3819660, \qquad d_0 = 0 + \rho\,(1 - 0) = \frac{\sqrt5 - 1}{2} \approx 0.6180340,
+\]</span></p>
+<p><span class="math display">\[
+f(c_0) = -0.2268474828, \qquad f(d_0) = -0.1974679332.
+\]</span></p>
+<p><strong>Step 2</strong> (first squeeze): <span class="math inline">\(f(c_0) \le f(d_0)\)</span>, so squeeze from the right: <span class="math inline">\([a_1, b_1] = [0, 0.6180340]\)</span> and <span class="math inline">\(d_1 = c_0 = 0.3819660\)</span>. The new point is</p>
+<p><span class="math display">\[
+c_1 = 0 + (1 - \rho)(0.6180340 - 0) = 0.2360680, \qquad f(c_1) = -0.1781533860.
+\]</span></p>
+<p><strong>Step 3</strong> (second squeeze): <span class="math inline">\(f(c_1) = -0.1781533860 &gt; f(d_1) = -0.2268474828\)</span>, so squeeze from the left: <span class="math inline">\([a_2, b_2] = [0.2360680, 0.6180340]\)</span>, <span class="math inline">\(c_2 = d_1 = 0.3819660\)</span>, and the new point is</p>
+<p><span class="math display">\[
+d_2 = 0.2360680 + \rho\,(0.6180340 - 0.2360680) = 0.4721360, \qquad f(d_2) = -0.2318772406.
+\]</span></p>
+<p>Continuing in the same way gives the full table. The last column says which part is kept for the next row; <span class="math inline">\([a_k, d_k]\)</span> is a squeeze from the right and <span class="math inline">\([c_k, b_k]\)</span> one from the left. The interval in row <span class="math inline">\(k\)</span> has length <span class="math inline">\(\rho^k\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(f(c_k)\)</span></th>
+<th><span class="math inline">\(f(d_k)\)</span></th>
+<th><span class="math inline">\(f(c_k) - f(d_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.0000000</td>
+<td>0.3819660</td>
+<td>0.6180340</td>
+<td>1.0000000</td>
+<td>-0.2268474828</td>
+<td>-0.1974679332</td>
+<td><span class="math inline">\(-2.94 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.0000000</td>
+<td>0.2360680</td>
+<td>0.3819660</td>
+<td>0.6180340</td>
+<td>-0.1781533860</td>
+<td>-0.2268474828</td>
+<td><span class="math inline">\(4.87 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.2360680</td>
+<td>0.3819660</td>
+<td>0.4721360</td>
+<td>0.6180340</td>
+<td>-0.2268474828</td>
+<td>-0.2318772406</td>
+<td><span class="math inline">\(5.03 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.3819660</td>
+<td>0.4721360</td>
+<td>0.5278640</td>
+<td>0.6180340</td>
+<td>-0.2318772406</td>
+<td>-0.2250488223</td>
+<td><span class="math inline">\(-6.83 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.3819660</td>
+<td>0.4376941</td>
+<td>0.4721360</td>
+<td>0.5278640</td>
+<td>-0.2322759425</td>
+<td>-0.2318772406</td>
+<td><span class="math inline">\(-3.99 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>0.3819660</td>
+<td>0.4164079</td>
+<td>0.4376941</td>
+<td>0.4721360</td>
+<td>-0.2310823806</td>
+<td>-0.2322759425</td>
+<td><span class="math inline">\(1.19 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>0.4164079</td>
+<td>0.4376941</td>
+<td>0.4508497</td>
+<td>0.4721360</td>
+<td>-0.2322759425</td>
+<td>-0.2324650349</td>
+<td><span class="math inline">\(1.89 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>0.4376941</td>
+<td>0.4508497</td>
+<td>0.4589803</td>
+<td>0.4721360</td>
+<td>-0.2324650349</td>
+<td>-0.2323712550</td>
+<td><span class="math inline">\(-9.38 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>0.4376941</td>
+<td>0.4458247</td>
+<td>0.4508497</td>
+<td>0.4589803</td>
+<td>-0.2324424539</td>
+<td>-0.2324650349</td>
+<td><span class="math inline">\(2.26 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>0.4458247</td>
+<td>0.4508497</td>
+<td>0.4539553</td>
+<td>0.4589803</td>
+<td>-0.2324650349</td>
+<td>-0.2324482461</td>
+<td><span class="math inline">\(-1.68 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td>0.4458247</td>
+<td>0.4489303</td>
+<td>0.4508497</td>
+<td>0.4539553</td>
+<td>-0.2324636630</td>
+<td>-0.2324650349</td>
+<td><span class="math inline">\(1.37 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>11</td>
+<td>0.4489303</td>
+<td>0.4508497</td>
+<td>0.4520360</td>
+<td>0.4539553</td>
+<td>-0.2324650349</td>
+<td>-0.2324613965</td>
+<td><span class="math inline">\(-3.64 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td>0.4489303</td>
+<td>0.4501166</td>
+<td>0.4508497</td>
+<td>0.4520360</td>
+<td>-0.2324655697</td>
+<td>-0.2324650349</td>
+<td><span class="math inline">\(-5.35 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>13</td>
+<td>0.4489303</td>
+<td>0.4496635</td>
+<td>0.4501166</td>
+<td>0.4508497</td>
+<td>-0.2324652458</td>
+<td>-0.2324655697</td>
+<td><span class="math inline">\(3.24 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>14</td>
+<td>0.4496635</td>
+<td>0.4501166</td>
+<td>0.4503966</td>
+<td>0.4508497</td>
+<td>-0.2324655697</td>
+<td>-0.2324655199</td>
+<td><span class="math inline">\(-4.98 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>15</td>
+<td>0.4496635</td>
+<td>0.4499435</td>
+<td>0.4501166</td>
+<td>0.4503966</td>
+<td>-0.2324655050</td>
+<td>-0.2324655697</td>
+<td><span class="math inline">\(6.47 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>16</td>
+<td>0.4499435</td>
+<td>0.4501166</td>
+<td>0.4502235</td>
+<td>0.4503966</td>
+<td>-0.2324655697</td>
+<td>-0.2324655732</td>
+<td><span class="math inline">\(3.53 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>17</td>
+<td>0.4501166</td>
+<td>0.4502235</td>
+<td>0.4502897</td>
+<td>0.4503966</td>
+<td>-0.2324655732</td>
+<td>-0.2324655615</td>
+<td><span class="math inline">\(-1.17 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>18</td>
+<td>0.4501166</td>
+<td>0.4501827</td>
+<td>0.4502235</td>
+<td>0.4502897</td>
+<td>-0.2324655752</td>
+<td>-0.2324655732</td>
+<td><span class="math inline">\(-1.94 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>19</td>
+<td>0.4501166</td>
+<td>0.4501574</td>
+<td>0.4501827</td>
+<td>0.4502235</td>
+<td>-0.2324655743</td>
+<td>-0.2324655752</td>
+<td><span class="math inline">\(8.33 \times 10^{-10}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>20</td>
+<td>0.4501574</td>
+<td>0.4501827</td>
+<td>0.4501983</td>
+<td>0.4502235</td>
+<td>-0.2324655752</td>
+<td>-0.2324655749</td>
+<td><span class="math inline">\(-2.61 \times 10^{-10}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>21</td>
+<td>0.4501574</td>
+<td>0.4501730</td>
+<td>0.4501827</td>
+<td>0.4501983</td>
+<td>-0.2324655750</td>
+<td>-0.2324655752</td>
+<td><span class="math inline">\(1.35 \times 10^{-10}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>22</td>
+<td>0.4501730</td>
+<td>0.4501827</td>
+<td>0.4501886</td>
+<td>0.4501983</td>
+<td>-0.2324655752</td>
+<td>-0.2324655751</td>
+<td><span class="math inline">\(-2.99 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>23</td>
+<td>0.4501730</td>
+<td>0.4501790</td>
+<td>0.4501827</td>
+<td>0.4501886</td>
+<td>-0.2324655751</td>
+<td>-0.2324655752</td>
+<td><span class="math inline">\(2.48 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>24</td>
+<td>0.4501790</td>
+<td>0.4501827</td>
+<td>0.4501850</td>
+<td>0.4501886</td>
+<td>-0.2324655752</td>
+<td>-0.2324655752</td>
+<td><span class="math inline">\(-1.19 \times 10^{-12}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>25</td>
+<td>0.4501790</td>
+<td>0.4501813</td>
+<td>0.4501827</td>
+<td>0.4501850</td>
+<td>-0.2324655752</td>
+<td>-0.2324655752</td>
+<td><span class="math inline">\(5.57 \times 10^{-12}\)</span></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>From <span class="math inline">\(k = 18\)</span> on, <span class="math inline">\(f(c_k)\)</span> and <span class="math inline">\(f(d_k)\)</span> share at least their first eight decimals, and at <span class="math inline">\(k = 24\)</span> and <span class="math inline">\(25\)</span> they are equal to the ten decimals shown; the difference column shows which is smaller. A run of the search in 50-digit arithmetic makes the same choice at every step.</p>
+<p><strong>Result</strong>: after <span class="math inline">\(25\)</span> steps and <span class="math inline">\(27\)</span> function evaluations at interior points,</p>
+<p><span class="math display">\[
+[a_{25}, b_{25}] = [0.4501790,\ 0.4501850], \qquad b_{25} - a_{25} = \rho^{25} = 5.96 \times 10^{-6},
+\]</span></p>
+<p><span class="math display">\[
+f(a_{25}) = -0.232465575132, \qquad f(b_{25}) = -0.232465575156.
+\]</span></p>
+<p>The two endpoint values agree in their first ten decimals (they differ by <span class="math inline">\(2.4 \times 10^{-11}\)</span>). Mathews’ program returns the endpoint with the smaller value,</p>
+<p><span class="math display">\[
+\boxed{\,p \approx b_{25} = 0.4501850, \qquad f(p) \approx -0.232465575156\,}
+\]</span></p>
+<p>and the midpoint of the last interval is <span class="math inline">\(0.4501820\)</span>.</p>
+<p><strong>Verification:</strong> the minimiser solves <span class="math inline">\(f'(x) = 2x - \cos x = 0\)</span>. Solving this to high precision gives</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>True minimiser <span class="math inline">\(p\)</span></td>
+<td><span class="math inline">\(0.4501836113\)</span></td>
+</tr>
+<tr class="even">
+<td>True minimum <span class="math inline">\(f(p)\)</span></td>
+<td><span class="math inline">\(-0.2324655752\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(f''(p) = 2 + \sin p\)</span></td>
+<td><span class="math inline">\(2.435 &gt; 0\)</span></td>
+</tr>
+<tr class="even">
+<td>Error of the returned endpoint <span class="math inline">\(\lvert b_{25} - p \rvert\)</span></td>
+<td><span class="math inline">\(1.35 \times 10^{-6} \le b_{25} - a_{25} = 5.96 \times 10^{-6}\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td>Error of the midpoint</td>
+<td><span class="math inline">\(1.63 \times 10^{-6} \le \tfrac12 (b_{25} - a_{25}) = 2.98 \times 10^{-6}\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(f(b_{25}) - f(p)\)</span></td>
+<td><span class="math inline">\(2.2 \times 10^{-12}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(f'\)</span> at the last interval ends</td>
+<td><span class="math inline">\(f'(a_{25}) = -1.12 \times 10^{-5} &lt; 0\)</span>, <span class="math inline">\(f'(b_{25}) = 3.30 \times 10^{-6} &gt; 0\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The sign change of <span class="math inline">\(f'\)</span> confirms that the last interval contains the minimiser, and <span class="math inline">\(p\)</span> lies inside every interval <span class="math inline">\([a_k, b_k]\)</span> of the table.</p>
+<p><strong>Why the function values agree so closely.</strong> Near the minimum, <span class="math inline">\(f(x) - f(p) \approx \tfrac12 f''(p)(x - p)^2\)</span> (a general Taylor estimate). The endpoint <span class="math inline">\(a_{25}\)</span> is <span class="math inline">\(4.6 \times 10^{-6}\)</span> from <span class="math inline">\(p\)</span>, yet <span class="math inline">\(f(a_{25}) - f(p) = 2.6 \times 10^{-11}\)</span>: the function is <em>flat</em> near its minimum, so the function values pin down <span class="math inline">\(p\)</span> much less precisely than they pin down <span class="math inline">\(f(p)\)</span>. Mathews notes that this flatness limits the accuracy a search method can reach.</p>
+<section id="comparison-with-the-secant-method" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-with-the-secant-method">Comparison with the secant method</h3>
+<p>Mathews also finds this minimum by solving <span class="math inline">\(f'(x) = 2x - \cos x = 0\)</span> with the secant method,</p>
+<p><span class="math display">\[
+p_{k+1} = p_k - \frac{f'(p_k)\,(p_k - p_{k-1})}{f'(p_k) - f'(p_{k-1})}, \qquad k = 1, 2, \ldots,
+\]</span></p>
+<p>starting from <span class="math inline">\(p_0 = 0\)</span> and <span class="math inline">\(p_1 = 1\)</span>, where <span class="math inline">\(f'(0) = -1 &lt; 0\)</span> and <span class="math inline">\(f'(1) = 1.4596977 &gt; 0\)</span> bracket a root.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(p_k\)</span></th>
+<th><span class="math inline">\(f'(p_k) = 2p_k - \cos p_k\)</span></th>
+<th><span class="math inline">\(\lvert p_k - p \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.0000000000000</td>
+<td><span class="math inline">\(-1.000\)</span></td>
+<td><span class="math inline">\(4.50 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>1.0000000000000</td>
+<td><span class="math inline">\(1.460\)</span></td>
+<td><span class="math inline">\(5.50 \times 10^{-1}\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.4065540258812</td>
+<td><span class="math inline">\(-1.054 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\(4.36 \times 10^{-2}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.4465123272894</td>
+<td><span class="math inline">\(-8.934 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(3.67 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.4502137087060</td>
+<td><span class="math inline">\(7.329 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(3.01 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>0.4501835908417</td>
+<td><span class="math inline">\(-4.981 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(2.05 \times 10^{-8}\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>0.4501836112948</td>
+<td><span class="math inline">\(-2.771 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\(1.14 \times 10^{-13}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>After five secant steps <span class="math inline">\(p_6\)</span> is within <span class="math inline">\(1.1 \times 10^{-13}\)</span> of <span class="math inline">\(p\)</span>, and <span class="math inline">\(f''(p_6) = 2.435 &gt; 0\)</span> confirms a minimum by the second derivative test. The golden ratio search is much slower here: after <span class="math inline">\(25\)</span> steps its interval is still <span class="math inline">\(6 \times 10^{-6}\)</span> wide. Its advantage, as Mathews points out, is that it needs only values of <span class="math inline">\(f\)</span>, so it applies when <span class="math inline">\(f\)</span> is not differentiable.</p>
+<p><strong>Notes on Mathews’ numbers.</strong> The module’s printed list for this example agrees with the table above at all <span class="math inline">\(26\)</span> rows (to the six decimals it prints for the points and eight for the function values). The textbook version of the example (Mathews and Fink, <em>Numerical Methods Using Matlab</em>, 4th ed., Section 8.1, linked from the module as its proof page) stops at <span class="math inline">\(k = 23\)</span>; the rows it shows agree with the table up to <span class="math inline">\(k = 22\)</span>. Its row <span class="math inline">\(k = 23\)</span>, however, is <span class="math inline">\(\{0.4501827, 0.4501886, 0.4501923, 0.4501983\}\)</span>, the result of a squeeze from the left at <span class="math inline">\(k = 22\)</span>. Since <span class="math inline">\(f(c_{22}) - f(d_{22}) = -3.0 \times 10^{-11} &lt; 0\)</span>, the correct step is a squeeze from the right, which gives the row <span class="math inline">\(\{0.4501730, 0.4501790, 0.4501827, 0.4501886\}\)</span> above. Both intervals have length <span class="math inline">\(1.56 \times 10^{-5}\)</span> and both contain <span class="math inline">\(p\)</span>. The book also prints <span class="math inline">\(c_0 \approx 0.38919660\)</span>, a typo for <span class="math inline">\((3 - \sqrt5)/2 \approx 0.3819660\)</span>.</p>
+<p>This is also Example 1 of the <a href="fibonacci-search/">Fibonacci search</a> page. That search (<span class="math inline">\(n = 21\)</span>) makes <span class="math inline">\(18\)</span> comparisons, <span class="math inline">\(k = 0, \ldots, 17\)</span>, and keeps the same side as the golden ratio search at every one of them.</p>
+</section>
+</section>
+<section id="example-2-local-minimum-of-ex---sin-2x-over--1-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-local-minimum-of-ex---sin-2x-over--1-1">Example 2 — Local minimum of <span class="math inline">\(e^x - \sin 2x\)</span> over <span class="math inline">\([-1, 1]\)</span></h2>
+<p>Find the local minimum of</p>
+<p><span class="math display">\[
+f(x) = e^x - \sin 2x
+\]</span></p>
+<p>over <span class="math inline">\([-1, 1]\)</span>. Here <span class="math inline">\(f'(x) = e^x - 2\cos 2x\)</span>, and <span class="math inline">\(f\)</span> is <strong>not</strong> unimodal on <span class="math inline">\([-1, 1]\)</span>: it has a local maximum at <span class="math inline">\(x \approx -0.6539\)</span> and a local minimum at <span class="math inline">\(x \approx 0.3770\)</span>. Mathews plots <span class="math inline">\(f\)</span> and picks a smaller interval for the search, but the image with his interval and his call to the program are lost. We search <span class="math inline">\([0, 1]\)</span>, where <span class="math inline">\(f'(0) = -1 &lt; 0 &lt; f'(1) = 3.55\)</span> and <span class="math inline">\(f''(x) = e^x + 4\sin 2x \ge 1\)</span> (both terms are non-negative, and <span class="math inline">\(e^x \ge 1\)</span>), so <span class="math inline">\(f\)</span> is unimodal there. We stop with <span class="math inline">\(\delta = \varepsilon = 10^{-6}\)</span>, the tolerances of Mathews’ Examples 3–5.</p>
+<p><strong>Number of steps</strong>: by (5), <span class="math inline">\(k \ge \ln(10^{-6}) / \ln\rho = 28.71\)</span>, so the interval first becomes shorter than <span class="math inline">\(10^{-6}\)</span> at <span class="math inline">\(k = 29\)</span> (<span class="math inline">\(\rho^{28} = 1.41 \times 10^{-6}\)</span>, <span class="math inline">\(\rho^{29} = 8.70 \times 10^{-7}\)</span>). By then <span class="math inline">\(\lvert f(b_k) - f(a_k) \rvert\)</span> is far below <span class="math inline">\(\varepsilon\)</span>, so the search makes <span class="math inline">\(K = 29\)</span> steps.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(f(c_k)\)</span></th>
+<th><span class="math inline">\(f(d_k)\)</span></th>
+<th><span class="math inline">\(f(c_k) - f(d_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.0000000</td>
+<td>0.3819660</td>
+<td>0.6180340</td>
+<td>1.0000000</td>
+<td>0.773396102</td>
+<td>0.910777373</td>
+<td><span class="math inline">\(-1.37 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.0000000</td>
+<td>0.2360680</td>
+<td>0.3819660</td>
+<td>0.6180340</td>
+<td>0.811470784</td>
+<td>0.773396102</td>
+<td><span class="math inline">\(3.81 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.2360680</td>
+<td>0.3819660</td>
+<td>0.4721360</td>
+<td>0.6180340</td>
+<td>0.773396102</td>
+<td>0.793345116</td>
+<td><span class="math inline">\(-1.99 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.2360680</td>
+<td>0.3262379</td>
+<td>0.3819660</td>
+<td>0.4721360</td>
+<td>0.778589501</td>
+<td>0.773396102</td>
+<td><span class="math inline">\(5.19 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.3262379</td>
+<td>0.3819660</td>
+<td>0.4164079</td>
+<td>0.4721360</td>
+<td>0.773396102</td>
+<td>0.776675561</td>
+<td><span class="math inline">\(-3.28 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\vdots\)</span></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>26</td>
+<td>0.3769998</td>
+<td>0.3770012</td>
+<td>0.3770020</td>
+<td>0.3770034</td>
+<td>0.773344255</td>
+<td>0.773344255</td>
+<td><span class="math inline">\(1.69 \times 10^{-12}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>27</td>
+<td>0.3770012</td>
+<td>0.3770020</td>
+<td>0.3770026</td>
+<td>0.3770034</td>
+<td>0.773344255</td>
+<td>0.773344255</td>
+<td><span class="math inline">\(-5.44 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>28</td>
+<td>0.3770012</td>
+<td>0.3770017</td>
+<td>0.3770020</td>
+<td>0.3770026</td>
+<td>0.773344255</td>
+<td>0.773344255</td>
+<td><span class="math inline">\(2.70 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>29</td>
+<td>0.3770017</td>
+<td>0.3770020</td>
+<td>0.3770022</td>
+<td>0.3770026</td>
+<td>0.773344255</td>
+<td>0.773344255</td>
+<td><span class="math inline">\(-6.47 \times 10^{-14}\)</span></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result</strong>: after <span class="math inline">\(29\)</span> steps (<span class="math inline">\(31\)</span> evaluations at interior points) the interval is <span class="math inline">\([a_{29}, b_{29}] = [0.3770017,\ 0.3770026]\)</span>, of length <span class="math inline">\(8.70 \times 10^{-7}\)</span>. Mathews’ rule returns <span class="math inline">\(a_{29}\)</span>, since <span class="math inline">\(f(b_{29})\)</span> is not smaller than <span class="math inline">\(f(a_{29})\)</span>:</p>
+<p><span class="math display">\[
+\boxed{\,p \approx 0.3770017, \qquad f(p) \approx 0.773344255\,}
+\]</span></p>
+<p><strong>Verification:</strong> solving <span class="math inline">\(f'(x) = e^x - 2\cos 2x = 0\)</span> to high precision gives <span class="math inline">\(p = 0.3770020557\)</span> and <span class="math inline">\(f(p) = 0.7733442548\)</span>. The returned point is <span class="math inline">\(3.6 \times 10^{-7}\)</span> from <span class="math inline">\(p\)</span>, less than the interval length, and <span class="math inline">\(p\)</span> lies in every interval of the search.</p>
+<p><strong>Starting on all of <span class="math inline">\([-1, 1]\)</span>.</strong> Run on <span class="math inline">\([-1, 1]\)</span> directly, the search also finds this minimum. Its first comparison, <span class="math inline">\(f(c_0) = f(-0.2360680) = 1.2445 &gt; f(d_0) = f(0.2360680) = 0.8115\)</span>, throws away <span class="math inline">\([-1, -0.2360680]\)</span>, which contains the local maximum, and the remaining <span class="math inline">\(30\)</span> steps (31 in all, since the interval is twice as long) close in on <span class="math inline">\(p \approx 0.3770\)</span>, with <span class="math inline">\(p\)</span> in every interval. That is luck, not a guarantee: on an interval where <span class="math inline">\(f\)</span> is not unimodal, a comparison can discard the part that holds the minimum one wants.</p>
+</section>
+<section id="example-3-local-maximum-of-ex---sin-2x-in--3-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-local-maximum-of-ex---sin-2x-in--3-1">Example 3 — Local maximum of <span class="math inline">\(e^x - \sin 2x\)</span> in <span class="math inline">\([-3, 1]\)</span></h2>
+<p>Find the local maximum of <span class="math inline">\(f(x) = e^x - \sin 2x\)</span> in <span class="math inline">\([-3, 1]\)</span>. On <span class="math inline">\([-3, 1]\)</span> the derivative <span class="math inline">\(f'(x) = e^x - 2\cos 2x\)</span> vanishes at three points:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Critical point</th>
+<th><span class="math inline">\(f\)</span></th>
+<th><span class="math inline">\(f''\)</span></th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(-2.3794\)</span></td>
+<td><span class="math inline">\(-0.9063\)</span></td>
+<td><span class="math inline">\(4.09\)</span></td>
+<td>local minimum</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(-0.6539\)</span></td>
+<td><span class="math inline">\(1.4856\)</span></td>
+<td><span class="math inline">\(-3.34\)</span></td>
+<td>local maximum</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(0.3770\)</span></td>
+<td><span class="math inline">\(0.7733\)</span></td>
+<td><span class="math inline">\(4.20\)</span></td>
+<td>local minimum</td>
+</tr>
+</tbody>
+</table>
+<p>The local maximum lies in <span class="math inline">\([-1, 0]\)</span>. It is not the largest value of <span class="math inline">\(f\)</span> on <span class="math inline">\([-3, 1]\)</span>, since <span class="math inline">\(f(1) = 1.809\)</span> is larger. A maximum of <span class="math inline">\(f\)</span> is a minimum of <span class="math inline">\(g = -f\)</span>, so we search for the minimum of</p>
+<p><span class="math display">\[
+g(x) = -e^x + \sin 2x
+\]</span></p>
+<p>on <span class="math inline">\([-1, 0]\)</span> with <span class="math inline">\(\delta = \varepsilon = 10^{-6}\)</span>, as Mathews does. The function <span class="math inline">\(g\)</span> is unimodal there: <span class="math inline">\(g'(-1) = -1.20 &lt; 0\)</span>, <span class="math inline">\(g'(0) = 1 &gt; 0\)</span>, and <span class="math inline">\(g'\)</span> has only the one zero <span class="math inline">\(-0.6539\)</span> in <span class="math inline">\([-1, 0]\)</span>. (It is not convex on the whole interval, since <span class="math inline">\(g''(0) = -1\)</span>; unimodality comes from the single sign change of <span class="math inline">\(g'\)</span>.) As in Example 2, <span class="math inline">\(K = 29\)</span> steps.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(g(c_k)\)</span></th>
+<th><span class="math inline">\(g(d_k)\)</span></th>
+<th><span class="math inline">\(g(c_k) - g(d_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>-1.0000000</td>
+<td>-0.6180340</td>
+<td>-0.3819660</td>
+<td>0.0000000</td>
+<td>-1.483502668</td>
+<td>-1.374284434</td>
+<td><span class="math inline">\(-1.09 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>-1.0000000</td>
+<td>-0.7639320</td>
+<td>-0.6180340</td>
+<td>-0.3819660</td>
+<td>-1.464909714</td>
+<td>-1.483502668</td>
+<td><span class="math inline">\(1.86 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>-0.7639320</td>
+<td>-0.6180340</td>
+<td>-0.5278640</td>
+<td>-0.3819660</td>
+<td>-1.483502668</td>
+<td>-1.460122658</td>
+<td><span class="math inline">\(-2.34 \times 10^{-2}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>-0.7639320</td>
+<td>-0.6737621</td>
+<td>-0.6180340</td>
+<td>-0.5278640</td>
+<td>-1.484965248</td>
+<td>-1.483502668</td>
+<td><span class="math inline">\(-1.46 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>-0.7639320</td>
+<td>-0.7082039</td>
+<td>-0.6737621</td>
+<td>-0.6180340</td>
+<td>-1.480633772</td>
+<td>-1.484965248</td>
+<td><span class="math inline">\(4.33 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\vdots\)</span></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>26</td>
+<td>-0.6538834</td>
+<td>-0.6538820</td>
+<td>-0.6538811</td>
+<td>-0.6538797</td>
+<td>-1.485629108</td>
+<td>-1.485629108</td>
+<td><span class="math inline">\(1.76 \times 10^{-12}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>27</td>
+<td>-0.6538820</td>
+<td>-0.6538811</td>
+<td>-0.6538806</td>
+<td>-0.6538797</td>
+<td>-1.485629108</td>
+<td>-1.485629108</td>
+<td><span class="math inline">\(-1.77 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>28</td>
+<td>-0.6538820</td>
+<td>-0.6538814</td>
+<td>-0.6538811</td>
+<td>-0.6538806</td>
+<td>-1.485629108</td>
+<td>-1.485629108</td>
+<td><span class="math inline">\(3.73 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>29</td>
+<td>-0.6538814</td>
+<td>-0.6538811</td>
+<td>-0.6538809</td>
+<td>-0.6538806</td>
+<td>-1.485629108</td>
+<td>-1.485629108</td>
+<td><span class="math inline">\(4.64 \times 10^{-14}\)</span></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result</strong>: the last interval is <span class="math inline">\([-0.6538814,\ -0.6538806]\)</span>. Mathews’ rule returns <span class="math inline">\(b_{29} = -0.65388056\)</span>, where <span class="math inline">\(g = -1.485629108\)</span>, so the local maximum of <span class="math inline">\(f\)</span> is</p>
+<p><span class="math display">\[
+\boxed{\,p \approx -0.65388056, \qquad f(p) \approx 1.48562910767\,}
+\]</span></p>
+<p>which is exactly what Mathews reports.</p>
+<p><strong>Verification:</strong> solving <span class="math inline">\(f'(x) = 0\)</span> to high precision gives <span class="math inline">\(p = -0.6538809313\)</span> and <span class="math inline">\(f(p) = 1.4856291077\)</span>. The returned point is <span class="math inline">\(3.7 \times 10^{-7}\)</span> from <span class="math inline">\(p\)</span>, and <span class="math inline">\(p\)</span> lies in every interval of the search.</p>
+</section>
+<section id="example-4-maximum-of-140e-x9-sin-x-for-x-ge-0" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-maximum-of-140e-x9-sin-x-for-x-ge-0">Example 4 — Maximum of <span class="math inline">\(140\,e^{-x/9} \sin x\)</span> for <span class="math inline">\(x \ge 0\)</span></h2>
+<p>This is Mathews’ Exercise 4. Find the maximum of</p>
+<p><span class="math display">\[
+f(x) = 140\,e^{-x/9} \sin x, \qquad x \ge 0.
+\]</span></p>
+<p><strong>Where the extremes are.</strong> <span class="math inline">\(f'(x) = 140\,e^{-x/9}\left(\cos x - \tfrac19 \sin x\right)\)</span> vanishes exactly where <span class="math inline">\(\tan x = 9\)</span>, at <span class="math inline">\(x_n = \arctan 9 + n\pi\)</span>, <span class="math inline">\(n = 0, 1, 2, \ldots\)</span> At these points <span class="math inline">\(\sin x_n = (-1)^n\, 9/\sqrt{82}\)</span>, so</p>
+<p><span class="math display">\[
+f(x_n) = (-1)^n\,\frac{1260}{\sqrt{82}}\,e^{-x_n/9},
+\]</span></p>
+<p>and the size of these extreme values shrinks by the factor <span class="math inline">\(e^{-\pi/9} = 0.7053\)</span> from one to the next. The largest value for <span class="math inline">\(x \ge 0\)</span> is therefore at <span class="math inline">\(x_0 = \arctan 9 \approx 1.4601\)</span>, which lies in <span class="math inline">\([0, 3]\)</span>, and the smallest is at <span class="math inline">\(x_1 \approx 4.6017\)</span>, which lies in <span class="math inline">\([3, 6]\)</span> (Example 5).</p>
+<p><strong>Search.</strong> Mathews minimises <span class="math inline">\(g = -f\)</span> on <span class="math inline">\([0, 3]\)</span> with <span class="math inline">\(\delta = \varepsilon = 10^{-6}\)</span>. On <span class="math inline">\([0, 3]\)</span> the only critical point is <span class="math inline">\(x_0\)</span>, and <span class="math inline">\(g\)</span> decreases before it and increases after it, so <span class="math inline">\(g\)</span> is unimodal there. By (5), <span class="math inline">\(k \ge \ln(10^{-6}/3)/\ln\rho = 30.99\)</span>, so <span class="math inline">\(K = 31\)</span> (<span class="math inline">\(3\rho^{30} = 1.61 \times 10^{-6}\)</span>, <span class="math inline">\(3\rho^{31} = 9.97 \times 10^{-7}\)</span>).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(g(c_k)\)</span></th>
+<th><span class="math inline">\(g(d_k)\)</span></th>
+<th><span class="math inline">\(g(c_k) - g(d_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.0000000</td>
+<td>1.1458980</td>
+<td>1.8541020</td>
+<td>3.0000000</td>
+<td>-112.3025510</td>
+<td>-109.3934963</td>
+<td><span class="math inline">\(-2.91 \times 10^{0}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.0000000</td>
+<td>0.7082039</td>
+<td>1.1458980</td>
+<td>1.8541020</td>
+<td>-84.1746660</td>
+<td>-112.3025510</td>
+<td><span class="math inline">\(2.81 \times 10^{1}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.7082039</td>
+<td>1.1458980</td>
+<td>1.4164079</td>
+<td>1.8541020</td>
+<td>-112.3025510</td>
+<td>-118.1905584</td>
+<td><span class="math inline">\(5.89 \times 10^{0}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>1.1458980</td>
+<td>1.4164079</td>
+<td>1.5835921</td>
+<td>1.8541020</td>
+<td>-118.1905584</td>
+<td>-117.4022265</td>
+<td><span class="math inline">\(-7.88 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>1.1458980</td>
+<td>1.3130823</td>
+<td>1.4164079</td>
+<td>1.5835921</td>
+<td>-116.9985907</td>
+<td>-118.1905584</td>
+<td><span class="math inline">\(1.19 \times 10^{0}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\vdots\)</span></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>28</td>
+<td>1.4601373</td>
+<td>1.4601389</td>
+<td>1.4601399</td>
+<td>1.4601415</td>
+<td>-118.3054333</td>
+<td>-118.3054333</td>
+<td><span class="math inline">\(-3.78 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>29</td>
+<td>1.4601373</td>
+<td>1.4601383</td>
+<td>1.4601389</td>
+<td>1.4601399</td>
+<td>-118.3054333</td>
+<td>-118.3054333</td>
+<td><span class="math inline">\(3.61 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>30</td>
+<td>1.4601383</td>
+<td>1.4601389</td>
+<td>1.4601393</td>
+<td>1.4601399</td>
+<td>-118.3054333</td>
+<td>-118.3054333</td>
+<td><span class="math inline">\(-4.12 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>31</td>
+<td>1.4601383</td>
+<td>1.4601387</td>
+<td>1.4601389</td>
+<td>1.4601393</td>
+<td>-118.3054333</td>
+<td>-118.3054333</td>
+<td><span class="math inline">\(8.41 \times 10^{-12}\)</span></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result</strong>: the last interval is <span class="math inline">\([1.4601383,\ 1.4601393]\)</span>, and Mathews’ rule returns <span class="math inline">\(b_{31} = 1.4601393\)</span>, so</p>
+<p><span class="math display">\[
+\boxed{\,\max_{x \ge 0} f(x) \approx f(1.4601393) = 118.3054333\,}
+\]</span></p>
+<p>Mathews reports <span class="math inline">\(p = 1.46014\)</span> and <span class="math inline">\(f(p) = 118.305\)</span>, which agrees.</p>
+<p><strong>Verification:</strong> the exact maximiser is <span class="math inline">\(x_0 = \arctan 9 = 1.4601391056\)</span>, with <span class="math inline">\(f(x_0) = 1260\,e^{-x_0/9}/\sqrt{82} = 118.3054332802\)</span>. The returned point is <span class="math inline">\(2.0 \times 10^{-7}\)</span> from <span class="math inline">\(x_0\)</span>.</p>
+</section>
+<section id="example-5-will-the-component-burn-out" class="level2">
+<h2 class="anchored" data-anchor-id="example-5-will-the-component-burn-out">Example 5 — Will the component burn out?</h2>
+<p>This is Mathews’ Exercise 5. The voltage input to an electrical component is</p>
+<p><span class="math display">\[
+V(t) = 140\,e^{-t/9} \sin t, \qquad t \ge 0,
+\]</span></p>
+<p>and the manufacturer states that the voltage must stay within <span class="math inline">\(\pm 120\)</span>, or the component will burn out. Will it?</p>
+<p>The largest voltage was found in Example 4. For the most negative voltage, Mathews searches for the minimum of <span class="math inline">\(V\)</span> on <span class="math inline">\([3, 6]\)</span>, where by the analysis of Example 4 the only critical point is <span class="math inline">\(t_1 = \arctan 9 + \pi\)</span>, so <span class="math inline">\(V\)</span> is unimodal there. With <span class="math inline">\(\delta = \varepsilon = 10^{-6}\)</span> the search again takes <span class="math inline">\(K = 31\)</span> steps.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(V(c_k)\)</span></th>
+<th><span class="math inline">\(V(d_k)\)</span></th>
+<th><span class="math inline">\(V(c_k) - V(d_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>3.0000000</td>
+<td>4.1458980</td>
+<td>4.8541020</td>
+<td>6.0000000</td>
+<td>-74.5250065</td>
+<td>-80.8198565</td>
+<td><span class="math inline">\(6.29 \times 10^{0}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>4.1458980</td>
+<td>4.8541020</td>
+<td>5.2917961</td>
+<td>6.0000000</td>
+<td>-80.8198565</td>
+<td>-65.0710584</td>
+<td><span class="math inline">\(-1.57 \times 10^{1}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>4.1458980</td>
+<td>4.5835921</td>
+<td>4.8541020</td>
+<td>5.2917961</td>
+<td>-83.4324281</td>
+<td>-80.8198565</td>
+<td><span class="math inline">\(-2.61 \times 10^{0}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>4.1458980</td>
+<td>4.4164079</td>
+<td>4.5835921</td>
+<td>4.8541020</td>
+<td>-81.9798206</td>
+<td>-83.4324281</td>
+<td><span class="math inline">\(1.45 \times 10^{0}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>4.4164079</td>
+<td>4.5835921</td>
+<td>4.6869177</td>
+<td>4.8541020</td>
+<td>-83.4324281</td>
+<td>-83.1419478</td>
+<td><span class="math inline">\(-2.90 \times 10^{-1}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\vdots\)</span></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>28</td>
+<td>4.6017287</td>
+<td>4.6017304</td>
+<td>4.6017314</td>
+<td>4.6017330</td>
+<td>-83.4463448</td>
+<td>-83.4463448</td>
+<td><span class="math inline">\(7.58 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>29</td>
+<td>4.6017304</td>
+<td>4.6017314</td>
+<td>4.6017320</td>
+<td>4.6017330</td>
+<td>-83.4463448</td>
+<td>-83.4463448</td>
+<td><span class="math inline">\(4.89 \times 10^{-12}\)</span></td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>30</td>
+<td>4.6017314</td>
+<td>4.6017320</td>
+<td>4.6017324</td>
+<td>4.6017330</td>
+<td>-83.4463448</td>
+<td>-83.4463448</td>
+<td><span class="math inline">\(-1.30 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>31</td>
+<td>4.6017314</td>
+<td>4.6017317</td>
+<td>4.6017320</td>
+<td>4.6017324</td>
+<td>-83.4463448</td>
+<td>-83.4463448</td>
+<td><span class="math inline">\(-1.89 \times 10^{-12}\)</span></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result</strong>: Mathews’ rule returns <span class="math inline">\(a_{31} = 4.6017314\)</span>, with <span class="math inline">\(V = -83.4463448\)</span> (Mathews reports <span class="math inline">\(4.60173\)</span> and <span class="math inline">\(-83.4463\)</span>). Combined with Example 4,</p>
+<p><span class="math display">\[
+\boxed{\,-83.4463 \le V(t) \le 118.3054 \quad \text{for all } t \ge 0\,}
+\]</span></p>
+<p>so <span class="math inline">\(\lvert V(t) \rvert &lt; 120\)</span> and the component will be fine, with a margin of only <span class="math inline">\(1.69\)</span> at the first peak.</p>
+<p><strong>Verification:</strong> the exact minimiser is <span class="math inline">\(t_1 = \arctan 9 + \pi = 4.6017317592\)</span>, with <span class="math inline">\(V(t_1) = -83.4463447534\)</span>; the returned point is <span class="math inline">\(4.0 \times 10^{-7}\)</span> from it. Sampling <span class="math inline">\(V\)</span> at <span class="math inline">\(4 \times 10^6\)</span> equally spaced points of <span class="math inline">\([0, 200]\)</span> gives the same extremes, <span class="math inline">\(118.30543\)</span> near <span class="math inline">\(t = 1.460\)</span> and <span class="math inline">\(-83.44634\)</span> near <span class="math inline">\(t = 4.602\)</span>.</p>
+</section>
+<section id="example-6-graphical-search-for-tfrac12-x5---tfrac45-x-on-0-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-graphical-search-for-tfrac12-x5---tfrac45-x-on-0-1">Example 6 — Graphical search for <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span></h2>
+<p>Find the minimum of</p>
+<p><span class="math display">\[
+f(x) = \frac12 + x^5 - \frac45\,x
+\]</span></p>
+<p>on <span class="math inline">\([0, 1]\)</span>. This is the example Mathews animated. The function is unimodal on <span class="math inline">\([0, 1]\)</span> because <span class="math inline">\(f''(x) = 20x^3 &gt; 0\)</span> for <span class="math inline">\(0 &lt; x \le 1\)</span>, and <span class="math inline">\(f'(x) = 5x^4 - \tfrac45 = 0\)</span> gives the minimiser exactly: <span class="math inline">\(p = (4/25)^{1/4} = \sqrt{10}/5 = 0.6324555320\)</span>, with <span class="math inline">\(f(p) = 0.0952284595\)</span>. It is also Example 2 of the <a href="fibonacci-search/">Fibonacci search</a> page.</p>
+<p>For this example Mathews uses a version of his program that draws a picture at every step: the graph of <span class="math inline">\(f\)</span> in magenta over the window <span class="math inline">\([-0.05, 1.05] \times [0, 0.72]\)</span>, the part of the graph over the current interval <span class="math inline">\([a_k, b_k]\)</span> in red with the region beneath it filled pink, red dots at <span class="math inline">\((a_k, f(a_k))\)</span> and <span class="math inline">\((b_k, f(b_k))\)</span>, and blue dots at <span class="math inline">\((c_k, f(c_k))\)</span> and <span class="math inline">\((d_k, f(d_k))\)</span>. With <code>max</code> as its argument this version draws the starting picture and makes <code>max</code> − 1 steps. His solution has ten such pictures (the image files are lost), which corresponds to <code>max</code> = 10, so the table shows the starting interval and nine steps.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(f(a_k)\)</span></th>
+<th><span class="math inline">\(f(c_k)\)</span></th>
+<th><span class="math inline">\(f(d_k)\)</span></th>
+<th><span class="math inline">\(f(b_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.000000</td>
+<td>0.381966</td>
+<td>0.618034</td>
+<td>1.000000</td>
+<td>0.5000000</td>
+<td>0.2025578</td>
+<td>0.0957428</td>
+<td>0.7000000</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.381966</td>
+<td>0.618034</td>
+<td>0.763932</td>
+<td>1.000000</td>
+<td>0.2025578</td>
+<td>0.0957428</td>
+<td>0.1490342</td>
+<td>0.7000000</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.381966</td>
+<td>0.527864</td>
+<td>0.618034</td>
+<td>0.763932</td>
+<td>0.2025578</td>
+<td>0.1186924</td>
+<td>0.0957428</td>
+<td>0.1490342</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.527864</td>
+<td>0.618034</td>
+<td>0.673762</td>
+<td>0.763932</td>
+<td>0.1186924</td>
+<td>0.0957428</td>
+<td>0.0998362</td>
+<td>0.1490342</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0.527864</td>
+<td>0.583592</td>
+<td>0.618034</td>
+<td>0.673762</td>
+<td>0.1186924</td>
+<td>0.1008198</td>
+<td>0.0957428</td>
+<td>0.0998362</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>0.583592</td>
+<td>0.618034</td>
+<td>0.639320</td>
+<td>0.673762</td>
+<td>0.1008198</td>
+<td>0.0957428</td>
+<td>0.0953490</td>
+<td>0.0998362</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>0.618034</td>
+<td>0.639320</td>
+<td>0.652476</td>
+<td>0.673762</td>
+<td>0.0957428</td>
+<td>0.0953490</td>
+<td>0.0962751</td>
+<td>0.0998362</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>0.618034</td>
+<td>0.631190</td>
+<td>0.639320</td>
+<td>0.652476</td>
+<td>0.0957428</td>
+<td>0.0952325</td>
+<td>0.0953490</td>
+<td>0.0962751</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>0.618034</td>
+<td>0.626165</td>
+<td>0.631190</td>
+<td>0.639320</td>
+<td>0.0957428</td>
+<td>0.0953276</td>
+<td>0.0952325</td>
+<td>0.0953490</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>0.626165</td>
+<td>0.631190</td>
+<td>0.634295</td>
+<td>0.639320</td>
+<td>0.0953276</td>
+<td>0.0952325</td>
+<td>0.0952370</td>
+<td>0.0953490</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>The bracket is squeezed from the left at <span class="math inline">\(k = 0, 2, 4, 5, 8\)</span> and from the right at <span class="math inline">\(k = 1, 3, 6, 7\)</span>, the same sequence as the Fibonacci search of this function. In the last two comparisons the values differ by <span class="math inline">\(\lvert f(c_7) - f(d_7) \rvert = 1.2 \times 10^{-4}\)</span> and <span class="math inline">\(\lvert f(c_8) - f(d_8) \rvert = 9.5 \times 10^{-5}\)</span>, less than <span class="math inline">\(1/6000\)</span> of the plotted height <span class="math inline">\(0.72\)</span>, so at Mathews’ scale the two blue dots look level.</p>
+<p><strong>Result</strong>: after nine steps (<span class="math inline">\(11\)</span> evaluations at interior points)</p>
+<p><span class="math display">\[
+[a_9, b_9] = [0.626165,\ 0.639320], \qquad b_9 - a_9 = \rho^9 = 0.013156,
+\]</span></p>
+<p>which contains <span class="math inline">\(p = 0.632456\)</span>. The points of the last row are at these distances from <span class="math inline">\(p\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Point</th>
+<th>Value</th>
+<th>Distance from <span class="math inline">\(p\)</span></th>
+<th><span class="math inline">\(f - f(p)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(a_9\)</span></td>
+<td>0.626165</td>
+<td><span class="math inline">\(6.29 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(9.9 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(c_9\)</span></td>
+<td>0.631190</td>
+<td><span class="math inline">\(1.27 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(4.0 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(d_9\)</span></td>
+<td>0.634295</td>
+<td><span class="math inline">\(1.84 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(8.6 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(b_9\)</span></td>
+<td>0.639320</td>
+<td><span class="math inline">\(6.87 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(1.2 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td>midpoint</td>
+<td>0.632742</td>
+<td><span class="math inline">\(2.9 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(2.1 \times 10^{-7}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Mathews’ rule returns the endpoint <span class="math inline">\(a_9 = 0.626165\)</span>, since <span class="math inline">\(f(a_9) &lt; f(b_9)\)</span>; the interior point <span class="math inline">\(c_9\)</span>, with the smallest value of all the points evaluated, and the midpoint are both closer to <span class="math inline">\(p\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(p\)</span> lies inside every interval of the table, a run in 50-digit arithmetic makes the same choice at every step, and continuing with <span class="math inline">\(\delta = \varepsilon = 10^{-6}\)</span> ends after <span class="math inline">\(29\)</span> steps at <span class="math inline">\([0.6324553,\ 0.6324562]\)</span>, which still contains <span class="math inline">\(p = 0.6324555\)</span>.</p>
+</section>
+<section id="fibonacci-versus-golden-ratio-search" class="level2">
+<h2 class="anchored" data-anchor-id="fibonacci-versus-golden-ratio-search">Fibonacci Versus Golden Ratio Search</h2>
+<p>Both methods use the same squeeze rule and one new function evaluation per step. The Fibonacci ratios <span class="math inline">\(r_k = F_{n-1-k}/F_{n-k}\)</span> tend to <span class="math inline">\(\rho\)</span>, and on the two functions both pages use, the two searches keep the same side at every comparison the Fibonacci search makes: <span class="math inline">\(18\)</span> of them in Example 1 and <span class="math inline">\(9\)</span> in Example 6. The differences are:</p>
+<ul>
+<li><strong>Planning.</strong> Fibonacci search fixes the number of evaluations before it starts, and a tighter tolerance means starting again. The golden ratio search uses the same ratio at every step, so it can be stopped by a tolerance, or continued, at any time.</li>
+<li><strong>Efficiency.</strong> With <span class="math inline">\(N\)</span> evaluations the golden ratio search leaves a bracket of length <span class="math inline">\(\rho^{N-1}(b_0 - a_0)\)</span>, and Fibonacci search, with Mathews’ final split (<span class="math inline">\(e = 0.01\)</span>), leaves one about <span class="math inline">\(0.871\)</span> times as long (the ratio tends to <span class="math inline">\((1 + 2e)\sqrt5/\phi^2\)</span> as <span class="math inline">\(N\)</span> grows; see the <a href="fibonacci-search/">Fibonacci search</a> page). Apart from the last few Fibonacci steps, both shrink the bracket by a factor close to <span class="math inline">\(0.618\)</span> per evaluation.</li>
+</ul>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Reuse the surviving point.</strong> Keep the surviving interior point and its function value, and evaluate <span class="math inline">\(f\)</span> only at the new point. This is what makes each step cost one evaluation.</li>
+<li><strong>Choosing the stopping rule.</strong> The width test <span class="math inline">\(b_k - a_k \le \delta\)</span> fixes the number of steps in advance through (5). A test on function values alone can be met while the interval is still wide, because <span class="math inline">\(f\)</span> is flat near <span class="math inline">\(p\)</span> and because <span class="math inline">\(f(a_k)\)</span> and <span class="math inline">\(f(b_k)\)</span> can be close when <span class="math inline">\(p\)</span> is near the middle of the interval. In Example 1, <span class="math inline">\(\lvert f(b_k) - f(a_k) \rvert \le 10^{-6}\)</span> already holds at <span class="math inline">\(k = 14\)</span>, when the interval is still <span class="math inline">\(1.19 \times 10^{-3}\)</span> wide. Mathews’ second program requires both tests.</li>
+<li><strong>Precision limit.</strong> Near <span class="math inline">\(p\)</span> the compared values differ by roughly <span class="math inline">\(\tfrac12 f''(p)\)</span> times the square of the spacing of the points, so in floating point the comparisons eventually fail. For Example 1 in double precision, from <span class="math inline">\(k = 37\)</span> (interval <span class="math inline">\(1.9 \times 10^{-8}\)</span>) every computed difference <span class="math inline">\(f(c_k) - f(d_k)\)</span> is at most two units of the spacing <span class="math inline">\(2.8 \times 10^{-17}\)</span> of double-precision numbers near <span class="math inline">\(f(p)\)</span>, so its sign is decided by rounding. The first wrong comparison comes at <span class="math inline">\(k = 42\)</span>, and from <span class="math inline">\(k = 43\)</span> (interval <span class="math inline">\(1.0 \times 10^{-9}\)</span>) the interval no longer contains <span class="math inline">\(p\)</span>. As a general rule of thumb, an interval much shorter than about <span class="math inline">\(\sqrt{u} \approx 1.5 \times 10^{-8}\)</span> times the size of <span class="math inline">\(p\)</span>, where <span class="math inline">\(u = 2^{-52}\)</span>, cannot be trusted in double precision.</li>
+<li><strong>Unimodality is required.</strong> If <span class="math inline">\(f\)</span> has several local minima in <span class="math inline">\([a_0, b_0]\)</span>, the comparisons can discard the part containing the minimum wanted. The method still returns a point, but there is no guarantee which minimum it approaches (Example 2 started on <span class="math inline">\([-1, 1]\)</span> works only because the first comparison happens to discard the local maximum).</li>
+<li><strong>Maxima.</strong> To find a maximum of <span class="math inline">\(f\)</span>, minimise <span class="math inline">\(-f\)</span>, as in Examples 3 and 4.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

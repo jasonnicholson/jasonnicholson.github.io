@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Pendulum – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-examples-1-3-and-4-x-tfrac110x-2x-0-against-x-tfrac110x-2sin-x-0-x0-1-x0-2-m-100-h-0.2" id="toc-case-1-examples-1-3-and-4-x-tfrac110x-2x-0-against-x-tfrac110x-2sin-x-0-x0-1-x0-2-m-100-h-0.2" class="nav-link" data-scroll-target="#case-1-examples-1-3-and-4-x-tfrac110x-2x-0-against-x-tfrac110x-2sin-x-0-x0-1-x0-2-m-100-h-0.2">Case 1 — Examples 1, 3 and 4: <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span> against <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2\sin x = 0\)</span>, <span class="math inline">\(x(0) = 1\)</span>, <span class="math inline">\(x'(0) = 2\)</span>, <span class="math inline">\(m = 100\)</span>, <span class="math inline">\(h = 0.2\)</span></a></li>
+  <li><a href="#case-2-example-6-x-2sin-x-0-four-closed-loops-and-four-rotations" id="toc-case-2-example-6-x-2sin-x-0-four-closed-loops-and-four-rotations" class="nav-link" data-scroll-target="#case-2-example-6-x-2sin-x-0-four-closed-loops-and-four-rotations">Case 2 — Example 6: <span class="math inline">\(x'' + 2\sin x = 0\)</span>, four closed loops and four rotations</a></li>
+  <li><a href="#case-3-example-7-the-damped-pendulum-x-tfrac110x-2sin-x-0-mathews-fourteen-curves" id="toc-case-3-example-7-the-damped-pendulum-x-tfrac110x-2sin-x-0-mathews-fourteen-curves" class="nav-link" data-scroll-target="#case-3-example-7-the-damped-pendulum-x-tfrac110x-2sin-x-0-mathews-fourteen-curves">Case 3 — Example 7: the damped pendulum <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2\sin x = 0\)</span>, Mathews’ fourteen curves</a></li>
+  </ul></li>
+  <li><a href="#the-pendulum-equation" id="toc-the-pendulum-equation" class="nav-link" data-scroll-target="#the-pendulum-equation">The Pendulum Equation</a>
+  <ul class="collapse">
+  <li><a href="#the-nonlinear-pendulum" id="toc-the-nonlinear-pendulum" class="nav-link" data-scroll-target="#the-nonlinear-pendulum">The nonlinear pendulum</a></li>
+  <li><a href="#the-linear-pendulum" id="toc-the-linear-pendulum" class="nav-link" data-scroll-target="#the-linear-pendulum">The linear pendulum</a></li>
+  <li><a href="#energy-and-the-phase-plane" id="toc-energy-and-the-phase-plane" class="nav-link" data-scroll-target="#energy-and-the-phase-plane">Energy and the phase plane</a></li>
+  </ul></li>
+  <li><a href="#runge-kutta-method-for-second-order-equations" id="toc-runge-kutta-method-for-second-order-equations" class="nav-link" data-scroll-target="#runge-kutta-method-for-second-order-equations">Runge-Kutta Method for Second-Order Equations</a></li>
+  <li><a href="#example-1-runge-kutta-solution-of-x-tfrac110x-2x-0" id="toc-example-1-runge-kutta-solution-of-x-tfrac110x-2x-0" class="nav-link" data-scroll-target="#example-1-runge-kutta-solution-of-x-tfrac110x-2x-0">Example 1 — Runge-Kutta solution of <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span></a></li>
+  <li><a href="#example-2-the-analytic-solution-of-x-tfrac110x-2x-0" id="toc-example-2-the-analytic-solution-of-x-tfrac110x-2x-0" class="nav-link" data-scroll-target="#example-2-the-analytic-solution-of-x-tfrac110x-2x-0">Example 2 — The analytic solution of <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span></a></li>
+  <li><a href="#example-3-the-nonlinear-pendulum-x-tfrac110x-2sin-x-0" id="toc-example-3-the-nonlinear-pendulum-x-tfrac110x-2sin-x-0" class="nav-link" data-scroll-target="#example-3-the-nonlinear-pendulum-x-tfrac110x-2sin-x-0">Example 3 — The nonlinear pendulum <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2\sin x = 0\)</span></a></li>
+  <li><a href="#example-4-linear-or-nonlinear-comparing-the-two-models" id="toc-example-4-linear-or-nonlinear-comparing-the-two-models" class="nav-link" data-scroll-target="#example-4-linear-or-nonlinear-comparing-the-two-models">Example 4 — Linear or nonlinear: comparing the two models</a></li>
+  <li><a href="#phase-portraits" id="toc-phase-portraits" class="nav-link" data-scroll-target="#phase-portraits">Phase Portraits</a></li>
+  <li><a href="#example-5-the-undamped-pendulum-with-g-32-and-l-32" id="toc-example-5-the-undamped-pendulum-with-g-32-and-l-32" class="nav-link" data-scroll-target="#example-5-the-undamped-pendulum-with-g-32-and-l-32">Example 5 — The undamped pendulum with <span class="math inline">\(g = 32\)</span> and <span class="math inline">\(l = 32\)</span></a></li>
+  <li><a href="#example-6-the-undamped-pendulum-x-2sin-x-0" id="toc-example-6-the-undamped-pendulum-x-2sin-x-0" class="nav-link" data-scroll-target="#example-6-the-undamped-pendulum-x-2sin-x-0">Example 6 — The undamped pendulum <span class="math inline">\(x'' + 2\sin x = 0\)</span></a></li>
+  <li><a href="#example-7-the-damped-nonlinear-pendulum" id="toc-example-7-the-damped-nonlinear-pendulum" class="nav-link" data-scroll-target="#example-7-the-damped-nonlinear-pendulum">Example 7 — The damped nonlinear pendulum</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Pendulum</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>A simple pendulum is a point mass <span class="math inline">\(m\)</span> on a rigid rod of length <span class="math inline">\(l\)</span> and negligible weight, swinging about a fixed pivot. If <span class="math inline">\(\theta(t)\)</span> is the angle of the rod measured from the downward vertical, Newton’s second law for rotation gives the <strong>nonlinear pendulum equation</strong></p>
+<p><span class="math display">\[
+\theta'' + \frac{g}{l}\sin\theta = 0 .
+\]</span></p>
+<p>For small swings <span class="math inline">\(\sin\theta \approx \theta\)</span>, and the equation becomes the linear equation of simple harmonic motion, whose solutions are sines and cosines with period <span class="math inline">\(2\pi\sqrt{l/g}\)</span> whatever the amplitude. The nonlinear equation has no solution in elementary functions, so Mathews solves it numerically: the substitution <span class="math inline">\(y = x'\)</span> turns the second-order equation <span class="math inline">\(x'' = f(t, x, x')\)</span> into the first-order system <span class="math inline">\(x' = y\)</span>, <span class="math inline">\(y' = f(t, x, y)\)</span>, and the classical fourth-order <a href="../runge-kutta-method/">Runge-Kutta method</a> is applied to that system in vector form, <span class="math inline">\(\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4)\)</span> with <span class="math inline">\(\mathbf{Z}_j = (x_j, y_j)\)</span>. With a damping term <span class="math inline">\(\tfrac{1}{10}x'\)</span> added, the module compares the linear and the nonlinear model in the <span class="math inline">\((t, x)\)</span> plane (Examples 1 to 4).</p>
+<p>The second half of the module draws <strong>phase portraits</strong>: curves <span class="math inline">\((x(t), y(t))\)</span> in the plane of angle and angular velocity. Without damping (Examples 5 and 6) the energy <span class="math inline">\(E = \tfrac12 y^2 + \tfrac{g}{l}(1 - \cos x)\)</span> is constant along every solution, so small swings are closed loops around the rest positions <span class="math inline">\(x = 2k\pi\)</span>, and swings with enough energy run over the top, round and round the pivot. With damping (Example 7) the energy decreases, the loops become spirals, and every curve of Example 7 tends to rest at one of the points <span class="math inline">\((2k\pi, 0)\)</span>. Every number on this page was recomputed: the Runge-Kutta runs with Mathews’ step counts (<span class="math inline">\(m = 100\)</span>; for Examples 5 and 6, whose inputs are lost, the <span class="math inline">\(m = 100\)</span> of his Example 7), and the reference solutions with an adaptive eighth-order integrator at a tolerance of <span class="math inline">\(10^{-13}\)</span>.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below draws <strong>Runge-Kutta solutions (8) of the pendulum three ways at once</strong>: as a swinging pendulum, a rod and a bob at the computed angle <span class="math inline">\(x_j\)</span> measured from the downward vertical; as a curve in the phase plane of angle <span class="math inline">\(x\)</span> and angular velocity <span class="math inline">\(y = x'\)</span>, with the computed points <span class="math inline">\(\mathbf{Z}_j\)</span> joined by straight segments as in Mathews’ graphs; and against time. The gray dashed curve in the phase plane is the level <span class="math inline">\(E = 2\omega_0^2\)</span> of the energy, the energy of the pendulum at rest at the top. Every curve is computed with <span class="math inline">\(m = 100\)</span> steps, Mathews’ step count (for Examples 5 and 6, whose inputs are lost, the <span class="math inline">\(m = 100\)</span> of his Example 7). In Case 1 and in the first part of Case 3 the frames advance by steps; where several curves with different step sizes move together, the frames advance by time, and each curve shows its points with <span class="math inline">\(t_j \le t\)</span>.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for the pendulum, so all three animations are new, with no Mathews original. Case 1 animates Examples 1, 3 and 4, Case 2 the phase portrait of Example 6 with the curves this page chose, and Case 3 all fourteen curves of Example 7 with Mathews’ starting points, time intervals, plot windows and colours. Not animated are the analytic solution of Example 2, which differs from the Runge-Kutta values of Case 1 by less than <span class="math inline">\(10^{-3}\)</span> at every grid point and could not be told apart from them, together with Example 1’s first step, error table and step-halving check; Example 5, whose portrait is Example 6’s with <span class="math inline">\(y\)</span> divided by <span class="math inline">\(\sqrt2\)</span> and time multiplied by <span class="math inline">\(\sqrt2\)</span> (Example 6, Step 1); and the separatrix runs of Examples 5 and 6, which are drawn only as the dashed level curve.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-examples-1-3-and-4-x-tfrac110x-2x-0-against-x-tfrac110x-2sin-x-0-x0-1-x0-2-m-100-h-0.2" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-examples-1-3-and-4-x-tfrac110x-2x-0-against-x-tfrac110x-2sin-x-0-x0-1-x0-2-m-100-h-0.2">Case 1 — Examples 1, 3 and 4: <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span> against <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2\sin x = 0\)</span>, <span class="math inline">\(x(0) = 1\)</span>, <span class="math inline">\(x'(0) = 2\)</span>, <span class="math inline">\(m = 100\)</span>, <span class="math inline">\(h = 0.2\)</span></h3>
+<p><strong>Behavior:</strong> The linear pendulum (blue, the colour of Mathews’ analytic solution in Example 2) and the nonlinear one (red, his colour for Example 3) leave <span class="math inline">\(x = 1\)</span> together, but the restoring term <span class="math inline">\(2\sin x\)</span> is weaker than <span class="math inline">\(2x\)</span>, so the nonlinear pendulum swings wider at first and comes back later: its first swing reaches <span class="math inline">\(1.9766\)</span> (<span class="math inline">\(113.25°\)</span>) at <span class="math inline">\(t = 0.9963\)</span>, against <span class="math inline">\(1.7036\)</span> at <span class="math inline">\(t = 0.6593\)</span> for the linear one. Its first four extremes are wider than the linear ones; from the fifth on, the damping has had longer to act and they are slightly narrower. Each zero is marked in the time panel as it is passed: the linear solution crosses zero every <span class="math inline">\(\pi/\omega = 2.223\)</span> time units, nine times on <span class="math inline">\([0, 20]\)</span>, the nonlinear one eight times, after half-swings that shorten from <span class="math inline">\(2.681\)</span> to <span class="math inline">\(2.305\)</span> as its amplitude decays (the last frame lists all seven). At <span class="math inline">\(t = 20\)</span> the two pendulums hang on opposite sides of the vertical, at <span class="math inline">\(x_{100} = -0.3629\)</span> (<span class="math inline">\(-20.79°\)</span>) and <span class="math inline">\(0.3838\)</span> (<span class="math inline">\(21.99°\)</span>). In the phase plane both curves spiral in towards <span class="math inline">\((0, 0)\)</span>; the energy of the nonlinear run falls from <span class="math inline">\(2.919\)</span> to <span class="math inline">\(0.4484\)</span>, below the dashed level <span class="math inline">\(E = 4\)</span> throughout, so the nonlinear pendulum never goes over the top.</p>
+<p><a href="pendulumaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pendulumaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta solutions of the damped linear pendulum x″ + x′/10 + 2x = 0 (blue) and the damped nonlinear pendulum x″ + x′/10 + 2 sin x = 0 (red) from x(0) = 1, x′(0) = 2 on [0, 20] with m = 100 steps, one step per frame: two pendulums swinging from one pivot, x(t) of both with each zero marked as it is passed, nine for the linear and eight for the nonlinear solution, and both phase curves spiralling in inside the dashed energy level E = 4; the last frame lists the times between zeros, 2.223 every time for the linear and 2.681 down to 2.305 for the nonlinear pendulum</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-example-6-x-2sin-x-0-four-closed-loops-and-four-rotations" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-example-6-x-2sin-x-0-four-closed-loops-and-four-rotations">Case 2 — Example 6: <span class="math inline">\(x'' + 2\sin x = 0\)</span>, four closed loops and four rotations</h3>
+<p><strong>Behavior:</strong> First, four pendulums start together at the bottom with speeds <span class="math inline">\(y_0 = 2\sqrt2\,k = 0.7071\)</span>, <span class="math inline">\(1.414\)</span>, <span class="math inline">\(2.121\)</span> and <span class="math inline">\(2.687\)</span> (<span class="math inline">\(k = 0.25\)</span>, <span class="math inline">\(0.5\)</span>, <span class="math inline">\(0.75\)</span>, <span class="math inline">\(0.95\)</span>), swing out to <span class="math inline">\(28.96°\)</span>, <span class="math inline">\(60.00°\)</span>, <span class="math inline">\(97.18°\)</span> and <span class="math inline">\(143.6°\)</span>, and come back to the start after one period, <span class="math inline">\(T = 4.515\)</span>, <span class="math inline">\(4.768\)</span>, <span class="math inline">\(5.405\)</span> and <span class="math inline">\(7.326\)</span> (diamonds in the time panel). Every period is longer than the linear period <span class="math inline">\(2\pi/\sqrt2 = 4.443\)</span> (dotted), the widest swing by a factor of <span class="math inline">\(1.649\)</span>, so the pendulums fall out of step. Each loop closes on itself to within <span class="math inline">\(1.8 \times 10^{-5}\)</span>. Next, four rotations outside the dashed separatrix: from <span class="math inline">\((0, 3.536)\)</span> and <span class="math inline">\((0, 4.243)\)</span> the pendulum turns one way, from <span class="math inline">\((4\pi, -3.536)\)</span> and <span class="math inline">\((4\pi, -4.243)\)</span> the other way, a mirror image. Each run goes over the top twice, in <span class="math inline">\(2T_{\text{rot}} = 4.515\)</span> and <span class="math inline">\(3.412\)</span> time units, and is slowest at the tops, where <span class="math inline">\(|y|\)</span> drops to <span class="math inline">\(2.121\)</span> and <span class="math inline">\(3.162\)</span>. The last frame adds the loops of the first part started at <span class="math inline">\((2\pi, y_0)\)</span> and <span class="math inline">\((4\pi, y_0)\)</span>: the same swings, with the angle counted after one and two full turns; their points are those of the first loops shifted by <span class="math inline">\(2\pi\)</span> and <span class="math inline">\(4\pi\)</span>, to <span class="math inline">\(7 \times 10^{-14}\)</span>. The colours are those of Mathews’ Example 7 curves 1 to 8, which start at the same speeds except the widest loop (<span class="math inline">\(1.9\sqrt2\)</span> here, <span class="math inline">\(2\sqrt2\)</span> in his curve 4).</p>
+<p><a href="pendulumbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pendulumbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta solutions of the undamped pendulum x″ + 2 sin x = 0 with m = 100 steps per curve, on a common clock: four pendulums started at the bottom with speeds 0.7071, 1.414, 2.121 and 2.687 swing on closed loops around (0, 0) inside the dashed separatrix and return after periods 4.515, 4.768, 5.405 and 7.326, longer than the linear period 4.443, so they fall out of step; then four rotations, two from x = 0 and two in the opposite direction from x = 4π, go over the top twice, slowest at the tops; the last frame adds the same loops around (2π, 0) and (4π, 0)</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-example-7-the-damped-pendulum-x-tfrac110x-2sin-x-0-mathews-fourteen-curves" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-example-7-the-damped-pendulum-x-tfrac110x-2sin-x-0-mathews-fourteen-curves">Case 3 — Example 7: the damped pendulum <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2\sin x = 0\)</span>, Mathews’ fourteen curves</h3>
+<p><strong>Behavior:</strong> The portrait is built curve by curve in Mathews’ order, each curve with his start, interval <span class="math inline">\([0, b]\)</span>, <span class="math inline">\(m = 100\)</span> and colour, and with his plot window dotted around it while it is drawn (curve 4 has none: his window there is automatic); every curve stays inside its window. Curves 1 to 4 spiral towards <span class="math inline">\((0, 0)\)</span> inside the dashed level <span class="math inline">\(E = 4\)</span>; curve 4 starts on it, with <span class="math inline">\(E_0 = 4\)</span>, and the damping takes it inside at once. Curves 5 and 6 start at the bottom with <span class="math inline">\(E_0 = 6.25\)</span> and <span class="math inline">\(9\)</span> and go over two and three tops. The energy panel marks the moment the energy falls below <span class="math inline">\(4\)</span>, at <span class="math inline">\(t = 6.554\)</span> and <span class="math inline">\(t = 7.471\)</span>: from then on the pendulum can no longer pass a top, since <span class="math inline">\(E\)</span> never increases, and it swings about <span class="math inline">\(x = 4\pi\)</span> and <span class="math inline">\(x = 6\pi\)</span>. Curves 7 and 8 start at <span class="math inline">\(x_0 = 6\pi\)</span> moving left, cross two and three tops, fall below <span class="math inline">\(E = 4\)</span> at the same times, and are still swinging when their shorter intervals end. Curves 9 to 12 are curves 1 to 4 started at <span class="math inline">\(x_0 = 2\pi\)</span>, drawn together in their combined window. The last part redraws Mathews’ final figure, curves 5, 6, 7′ and 8′ on the longer intervals, with the other curves faded: 7′ and 8′ are 5 and 6 reflected through <span class="math inline">\((3\pi, 0)\)</span>, so their pendulums are mirror images and their energy curves coincide. The tops crossed are counted on the Runge-Kutta points, and the counts and the times at which <span class="math inline">\(E\)</span> falls below <span class="math inline">\(4\)</span> agree with the reference solution.</p>
+<p><a href="pendulumcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pendulumcc.gif" class="img-fluid figure-img"></p>
+<figcaption>The phase portrait of the damped pendulum x″ + x′/10 + 2 sin x = 0 built from Mathews’ fourteen Runge-Kutta curves with m = 100 steps each, in his colours and with his plot windows dotted: four spirals around (0, 0); curves 5 and 6 from the bottom over two and three tops, settling about 4π and 6π; curves 7 and 8 from 6π moving left; four spirals around (2π, 0); and his final figure of curves 5, 6, 7′ and 8′; beside it the pendulum with the number of tops crossed, and the energy, which falls below the dashed level E = 4 of the tops at t = 6.554 and t = 7.471</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="the-pendulum-equation" class="level2">
+<h2 class="anchored" data-anchor-id="the-pendulum-equation">The Pendulum Equation</h2>
+<section id="the-nonlinear-pendulum" class="level3">
+<h3 class="anchored" data-anchor-id="the-nonlinear-pendulum">The nonlinear pendulum</h3>
+<p>The torque of gravity about the pivot is</p>
+<p><span class="math display">\[
+\tau = -m g l \sin\theta,
+\tag{1}
+\]</span></p>
+<p>where <span class="math inline">\(\theta\)</span> is the angle of the rod measured downward from the vertical; the minus sign says the torque turns the mass back toward <span class="math inline">\(\theta = 0\)</span>. The moment of inertia of the point mass is <span class="math inline">\(I = m l^2\)</span>, and Newton’s second law for rotation, <span class="math inline">\(\tau = I\alpha\)</span> with angular acceleration <span class="math inline">\(\alpha = \theta''\)</span>, gives</p>
+<p><span class="math display">\[
+\tau = I \frac{d^2\theta}{dt^2}.
+\tag{2}
+\]</span></p>
+<p>Equating (1) and (2):</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>The nonlinear pendulum equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\frac{d^2\theta}{dt^2} + \frac{m g l}{I}\sin\theta = 0,
+\qquad\text{and with } I = m l^2:\qquad
+\frac{d^2\theta}{dt^2} + \frac{g}{l}\sin\theta = 0 .
+\tag{3}
+\]</span></p>
+</div>
+</div>
+<p>The mass cancels: the motion depends only on <span class="math inline">\(g/l\)</span>.</p>
+</section>
+<section id="the-linear-pendulum" class="level3">
+<h3 class="anchored" data-anchor-id="the-linear-pendulum">The linear pendulum</h3>
+<p>If the angle stays small, the approximation <span class="math inline">\(\sin\theta \approx \theta\)</span> in (3) gives the familiar linear equation of simple harmonic motion,</p>
+<p><span class="math display">\[
+\frac{d^2\theta}{dt^2} + \frac{m g l}{I}\,\theta = 0 .
+\tag{4}
+\]</span></p>
+<p>With <span class="math inline">\(\omega_0 = \sqrt{m g l / I} = \sqrt{g/l}\)</span> its general solution is</p>
+<p><span class="math display">\[
+\theta(t) = a_1 \cos(\omega_0 t) + a_2 \sin(\omega_0 t),
+\tag{5}
+\]</span></p>
+<p>which has period <span class="math inline">\(T = 2\pi\sqrt{I/(g l m)} = 2\pi\sqrt{l/g}\)</span>. Written with a phase shift, the solution is</p>
+<p><span class="math display">\[
+\theta(t) = A \cos(\omega_0 t + \delta).
+\tag{6}
+\]</span></p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The linear period does not depend on the amplitude; the nonlinear one does
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In (5) the period <span class="math inline">\(2\pi/\omega_0\)</span> is the same for every swing. For the nonlinear equation (3) with amplitude <span class="math inline">\(\theta_{\max} &lt; \pi\)</span> the period is (a general result, derived from the energy below)</p>
+<p><span class="math display">\[
+T = \frac{4}{\omega_0} K(k), \qquad k = \sin\frac{\theta_{\max}}{2}, \qquad K(k) = \int_0^{\pi/2} \frac{d\phi}{\sqrt{1 - k^2 \sin^2\phi}},
+\]</span></p>
+<p>and <span class="math inline">\(K(k)\)</span> grows from <span class="math inline">\(\pi/2\)</span> at <span class="math inline">\(k = 0\)</span> to <span class="math inline">\(\infty\)</span> as <span class="math inline">\(k \to 1\)</span>. A swing to <span class="math inline">\(29°\)</span> takes <span class="math inline">\(1.6\%\)</span> longer than the linear period, a swing to <span class="math inline">\(60°\)</span> <span class="math inline">\(7.3\%\)</span> longer, and a swing to <span class="math inline">\(143.6°\)</span> <span class="math inline">\(65\%\)</span> longer (Example 5).</p>
+</div>
+</div>
+</section>
+<section id="energy-and-the-phase-plane" class="level3">
+<h3 class="anchored" data-anchor-id="energy-and-the-phase-plane">Energy and the phase plane</h3>
+<p>With <span class="math inline">\(x = \theta\)</span> and <span class="math inline">\(y = \theta'\)</span>, equation (3) is the system <span class="math inline">\(x' = y\)</span>, <span class="math inline">\(y' = -\omega_0^2 \sin x\)</span>. A solution traced in the <span class="math inline">\(xy\)</span>-plane is a <strong>phase curve</strong>, and a set of phase curves is a <strong>phase portrait</strong>. Mathews puts the angle <span class="math inline">\(x\)</span> on the horizontal axis and the angular velocity <span class="math inline">\(y\)</span> on the vertical axis; since <span class="math inline">\(x\)</span> increases where <span class="math inline">\(y &gt; 0\)</span>, curves are traversed clockwise.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Energy of the pendulum
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">\(x'' + c\,x' + \omega_0^2 \sin x = 0\)</span> with <span class="math inline">\(c \ge 0\)</span>, the energy (per unit <span class="math inline">\(m l^2\)</span>) of the state <span class="math inline">\((x, y) = (x, x')\)</span> is</p>
+<p><span class="math display">\[
+E(x, y) = \tfrac12 y^2 + \omega_0^2 (1 - \cos x),
+\]</span></p>
+<p>kinetic energy plus potential energy, with <span class="math inline">\(E = 0\)</span> at rest at the bottom and <span class="math inline">\(E = 2\omega_0^2\)</span> at rest at the top.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Energy is conserved without damping and decreases with damping
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Along any solution of <span class="math inline">\(x' = y\)</span>, <span class="math inline">\(y' = -c\,y - \omega_0^2 \sin x\)</span>,</p>
+<p><span class="math display">\[
+\frac{d}{dt} E\bigl(x(t), y(t)\bigr) = y\,y' + \omega_0^2 \sin x \; x' = -c\, y^2 .
+\]</span></p>
+<p>So for <span class="math inline">\(c = 0\)</span> every phase curve lies on a level curve <span class="math inline">\(E = E_0\)</span>, and for <span class="math inline">\(c &gt; 0\)</span> the energy never increases.</p>
+</div>
+</div>
+<p>For <span class="math inline">\(c = 0\)</span> the level curves give the whole picture. The equilibria are <span class="math inline">\((k\pi, 0)\)</span>. If <span class="math inline">\(E_0 &lt; 2\omega_0^2\)</span> and the start has <span class="math inline">\(|x_0| &lt; \pi\)</span>, the pendulum swings back and forth, <span class="math inline">\(|x|\)</span> never reaches <span class="math inline">\(\pi\)</span>, and the phase curve is a closed loop around <span class="math inline">\((0, 0)\)</span> (and, since the equation is <span class="math inline">\(2\pi\)</span>-periodic in <span class="math inline">\(x\)</span>, the same loops appear around every <span class="math inline">\((2k\pi, 0)\)</span>). If <span class="math inline">\(E_0 &gt; 2\omega_0^2\)</span>, <span class="math inline">\(y\)</span> never vanishes and the pendulum runs over the top and round the pivot forever, <span class="math inline">\(y = \pm\sqrt{2E_0 - 2\omega_0^2(1-\cos x)}\)</span>. The level <span class="math inline">\(E_0 = 2\omega_0^2\)</span> is the <strong>separatrix</strong> <span class="math inline">\(y = \pm 2\omega_0 \cos(x/2)\)</span>, which separates the two kinds of motion: a pendulum started on it at the bottom with speed exactly <span class="math inline">\(2\omega_0\)</span> creeps toward the top <span class="math inline">\((\pi, 0)\)</span> and never reaches it in finite time. Starting at <span class="math inline">\(x = 0\)</span> with speed <span class="math inline">\(y_0\)</span>, the energy is <span class="math inline">\(E_0 = \tfrac12 y_0^2\)</span>, so the swing is a closed loop when <span class="math inline">\(y_0 &lt; 2\omega_0\)</span>, a rotation when <span class="math inline">\(y_0 &gt; 2\omega_0\)</span>, and the modulus in the period formula is <span class="math inline">\(k = y_0/(2\omega_0)\)</span>.</p>
+<p>For <span class="math inline">\(c &gt; 0\)</span> the energy leaks away. The rest positions at the bottom, <span class="math inline">\((2k\pi, 0)\)</span>, attract nearby curves: there the linearised equation is <span class="math inline">\(u'' + c\,u' + \omega_0^2 u = 0\)</span>, and when <span class="math inline">\(c &lt; 2\omega_0\)</span> (as in Example 7, where <span class="math inline">\(c = \tfrac{1}{10}\)</span> and <span class="math inline">\(2\omega_0 = 2.83\)</span>) its solutions oscillate as they decay, so the curves spiral in. The tops <span class="math inline">\(((2k+1)\pi, 0)\)</span> are saddle points. A curve with enough energy still runs over one or more tops, but each pass costs energy, and once the energy is below <span class="math inline">\(2\omega_0^2\)</span> the curve is trapped in one well between two tops and tends to the rest position at its bottom.</p>
+</section>
+</section>
+<section id="runge-kutta-method-for-second-order-equations" class="level2">
+<h2 class="anchored" data-anchor-id="runge-kutta-method-for-second-order-equations">Runge-Kutta Method for Second-Order Equations</h2>
+<p>To approximate the solution of the initial value problem</p>
+<p><span class="math display">\[
+x'' = f(t, x, x'), \qquad x(a) = \alpha, \qquad x'(a) = \beta, \qquad a \le t \le b,
+\]</span></p>
+<p>substitute <span class="math inline">\(y = x'\)</span>. The second-order problem becomes the first-order system</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = f(t, x, y), \qquad x(a) = \alpha, \quad y(a) = \beta .
+\tag{7}
+\]</span></p>
+<p>More generally, the module’s two-dimensional solver handles any system <span class="math inline">\(x' = f_1(t, x, y)\)</span>, <span class="math inline">\(y' = f_2(t, x, y)\)</span> with <span class="math inline">\(x(a) = \alpha\)</span>, <span class="math inline">\(y(a) = \beta\)</span>. It is the one-dimensional Runge-Kutta method in vector form, with the scalar <span class="math inline">\(f\)</span> replaced by <span class="math inline">\(\mathbf{F}(t, \mathbf{Z}) = \bigl(f_1(t, x, y), f_2(t, x, y)\bigr)\)</span>, <span class="math inline">\(\mathbf{Z} = (x, y)\)</span>.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Algorithm — Runge-Kutta method in two dimensions (Mathews’ Runge2D)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(\mathbf{Z}_0 = (\alpha, \beta)\)</span> and a number of steps <span class="math inline">\(m\)</span>, set <span class="math inline">\(h = (b - a)/m\)</span> and <span class="math inline">\(t_j = a + j h\)</span>. For <span class="math inline">\(j = 0, 1, \ldots, m - 1\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{k}_1 &amp;= h\,\mathbf{F}(t_j, \mathbf{Z}_j), &amp;
+\mathbf{k}_2 &amp;= h\,\mathbf{F}\bigl(t_j + \tfrac{h}{2}, \mathbf{Z}_j + \tfrac12 \mathbf{k}_1\bigr), \\
+\mathbf{k}_3 &amp;= h\,\mathbf{F}\bigl(t_j + \tfrac{h}{2}, \mathbf{Z}_j + \tfrac12 \mathbf{k}_2\bigr), &amp;
+\mathbf{k}_4 &amp;= h\,\mathbf{F}(t_j + h, \mathbf{Z}_j + \mathbf{k}_3),
+\end{aligned}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr).
+\tag{8}
+\]</span></p>
+<p>The output is the list of points <span class="math inline">\(\mathbf{Z}_0, \ldots, \mathbf{Z}_m\)</span>. The first coordinates <span class="math inline">\(x_j\)</span> approximate the solution <span class="math inline">\(x(t_j)\)</span> of the second-order problem; plotting <span class="math inline">\((t_j, x_j)\)</span> gives the solution curve, and plotting <span class="math inline">\((x_j, y_j)\)</span> gives the phase curve.</p>
+</div>
+</div>
+<p>The global error of the method is <span class="math inline">\(O(h^4)\)</span> for a smooth <span class="math inline">\(\mathbf{F}\)</span> (a general result), so halving the step should divide the error by about <span class="math inline">\(16\)</span>; Example 1 checks this.</p>
+</section>
+<section id="example-1-runge-kutta-solution-of-x-tfrac110x-2x-0" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-runge-kutta-solution-of-x-tfrac110x-2x-0">Example 1 — Runge-Kutta solution of <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span></h2>
+<p>Solve</p>
+<p><span class="math display">\[
+x'' + \tfrac{1}{10}x' + 2x = 0, \qquad x(0) = 1, \qquad x'(0) = 2,
+\]</span></p>
+<p>over <span class="math inline">\([0, 20]\)</span> with the Runge-Kutta method. This is a linear pendulum (or a mass on a spring) with <span class="math inline">\(\omega_0^2 = 2\)</span> and a light damping term.</p>
+<p><strong>Step 1</strong>: Write the equation as <span class="math inline">\(x'' = f(t, x, x')\)</span> with</p>
+<p><span class="math display">\[
+f(t, x, x') = -\tfrac{1}{10}x' - 2x .
+\]</span></p>
+<p><strong>Step 2</strong>: With <span class="math inline">\(y = x'\)</span> the system (7) is</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = -\tfrac{1}{10}y - 2x, \qquad x(0) = 1, \quad y(0) = 2,
+\qquad \mathbf{F}(t, (x, y)) = \bigl(y,\ -2x - \tfrac{y}{10}\bigr).
+\]</span></p>
+<p><strong>Step 3</strong>: Mathews takes <span class="math inline">\(m = 100\)</span> steps on <span class="math inline">\([0, 20]\)</span>, so <span class="math inline">\(h = 0.2\)</span>. The first step, from <span class="math inline">\(\mathbf{Z}_0 = (1, 2)\)</span>, is</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{k}_1 &amp;= 0.2\,\mathbf{F}(0, (1, 2)) = (0.4,\ -0.44), \\
+\mathbf{k}_2 &amp;= 0.2\,\mathbf{F}(0.1, (1.2, 1.78)) = (0.356,\ -0.5156), \\
+\mathbf{k}_3 &amp;= 0.2\,\mathbf{F}(0.1, (1.178, 1.7422)) = (0.34844,\ -0.506044), \\
+\mathbf{k}_4 &amp;= 0.2\,\mathbf{F}(0.2, (1.34844, 1.493956)) = (0.2987912,\ -0.56925512),
+\end{aligned}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{Z}_1 = (1, 2) + \tfrac16(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4) = (1.3512785,\ 1.4912428).
+\]</span></p>
+<p>The exact values (from Example 2) are <span class="math inline">\(x(0.2) = 1.3512965\)</span> and <span class="math inline">\(x'(0.2) = 1.4912143\)</span>, so the first step is off by <span class="math inline">\(-1.8 \times 10^{-5}\)</span> in <span class="math inline">\(x\)</span>.</p>
+<p><strong>Step 4</strong>: The remaining 99 steps are the same computation. The solution we want is the first coordinate <span class="math inline">\(x_j\)</span>; Mathews plots the points <span class="math inline">\((t_j, x_j)\)</span> joined by line segments. The computed <span class="math inline">\(x_j\)</span> range from <span class="math inline">\(-1.5140\)</span> to <span class="math inline">\(1.6976\)</span>.</p>
+<p><strong>Verification:</strong> Example 2 finds the exact solution, and the table compares it with the Runge-Kutta values.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;">Runge-Kutta <span class="math inline">\(x_j\)</span></th>
+<th style="text-align: right;">exact <span class="math inline">\(x(t)\)</span></th>
+<th style="text-align: right;">error <span class="math inline">\(x_j - x(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">−0.038327</td>
+<td style="text-align: right;">−0.037891</td>
+<td style="text-align: right;"><span class="math inline">\(-4.37 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">−0.721000</td>
+<td style="text-align: right;">−0.720458</td>
+<td style="text-align: right;"><span class="math inline">\(-5.42 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">−0.928139</td>
+<td style="text-align: right;">−0.927942</td>
+<td style="text-align: right;"><span class="math inline">\(-1.97 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">−0.744575</td>
+<td style="text-align: right;">−0.744953</td>
+<td style="text-align: right;"><span class="math inline">\(3.79 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">−0.362889</td>
+<td style="text-align: right;">−0.363735</td>
+<td style="text-align: right;"><span class="math inline">\(8.47 \times 10^{-4}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The largest error over the 101 grid points is <span class="math inline">\(9.84 \times 10^{-4}\)</span>, at <span class="math inline">\(t = 19.6\)</span>. With <span class="math inline">\(m = 200\)</span> steps (<span class="math inline">\(h = 0.1\)</span>) the error at <span class="math inline">\(t = 20\)</span> falls from <span class="math inline">\(8.47 \times 10^{-4}\)</span> to <span class="math inline">\(4.87 \times 10^{-5}\)</span>, a factor of <span class="math inline">\(17.4\)</span>, close to the factor <span class="math inline">\(16\)</span> of a fourth-order method.</p>
+</section>
+<section id="example-2-the-analytic-solution-of-x-tfrac110x-2x-0" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-the-analytic-solution-of-x-tfrac110x-2x-0">Example 2 — The analytic solution of <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span></h2>
+<p>Find the analytic solution of the initial value problem of Example 1,</p>
+<p><span class="math display">\[
+x'' + \tfrac{1}{10}x' + 2x = 0, \qquad x(0) = 1, \qquad x'(0) = 2,
+\]</span></p>
+<p>and plot it over <span class="math inline">\([0, 20]\)</span>.</p>
+<p><strong>Step 1</strong>: The characteristic equation <span class="math inline">\(r^2 + \tfrac{1}{10} r + 2 = 0\)</span> has the complex roots</p>
+<p><span class="math display">\[
+r = -\frac{1}{20} \pm \frac{\sqrt{799}}{20}\, i .
+\]</span></p>
+<p>Mathematica’s <code>DSolve</code> returns the solution in terms of the complex exponentials <span class="math inline">\(e^{\frac{1}{20}(-1 \pm i\sqrt{799})t}\)</span>, divided by <span class="math inline">\(1598\)</span>.</p>
+<p><strong>Step 2</strong>: In terms of real functions, with <span class="math inline">\(\omega = \sqrt{799}/20 = 1.413329\)</span>,</p>
+<p><span class="math display">\[
+x(t) = e^{-t/20}\cos\!\Bigl(\frac{\sqrt{799}}{20}\,t\Bigr) + \frac{41}{\sqrt{799}}\, e^{-t/20}\sin\!\Bigl(\frac{\sqrt{799}}{20}\,t\Bigr).
+\]</span></p>
+<p><strong>Step 3</strong>: In the phase-shift form (6), with a decaying amplitude,</p>
+<p><span class="math display">\[
+x(t) = A\, e^{-t/20} \cos(\omega t + \delta), \qquad A = \sqrt{\tfrac{2480}{799}} = 1.761783, \qquad \delta = -\arctan\frac{41}{\sqrt{799}} = -0.967200 .
+\]</span></p>
+<p>The solution oscillates with the constant quasi-period <span class="math inline">\(2\pi/\omega = 4.445662\)</span> inside the envelope <span class="math inline">\(\pm A e^{-t/20}\)</span>. On <span class="math inline">\([0, 20]\)</span> its largest value is <span class="math inline">\(1.703585\)</span> at <span class="math inline">\(t = 0.6593\)</span> and its smallest is <span class="math inline">\(-1.524389\)</span> at <span class="math inline">\(t = 2.8822\)</span>.</p>
+<p><strong>Verification:</strong> Substituting <span class="math inline">\(x(t)\)</span> into the equation gives <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span> identically, <span class="math inline">\(x(0) = 1\)</span>, and <span class="math inline">\(x'(0) = -\tfrac{1}{20} + \tfrac{41}{\sqrt{799}}\cdot\tfrac{\sqrt{799}}{20} = 2\)</span>. The phase form agrees: <span class="math inline">\(A\cos\delta = 1\)</span> and <span class="math inline">\(-A\sin\delta = 41/\sqrt{799} = 1.450476\)</span>.</p>
+</section>
+<section id="example-3-the-nonlinear-pendulum-x-tfrac110x-2sin-x-0" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-the-nonlinear-pendulum-x-tfrac110x-2sin-x-0">Example 3 — The nonlinear pendulum <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2\sin x = 0\)</span></h2>
+<p>Solve</p>
+<p><span class="math display">\[
+x'' + \tfrac{1}{10}x' + 2\sin x = 0, \qquad x(0) = 1, \qquad x'(0) = 2,
+\]</span></p>
+<p>the damped nonlinear pendulum with <span class="math inline">\(g/l = 2\)</span> and the same damping and starting values as Example 1.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\(f(t, x, x') = -\tfrac{1}{10}x' - 2\sin x\)</span>, so the system is</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = -\tfrac{1}{10}y - 2\sin x, \qquad x(0) = 1, \quad y(0) = 2 .
+\]</span></p>
+<p><strong>Step 2</strong>: As in Example 1, Mathews runs the Runge-Kutta method on <span class="math inline">\([0, 20]\)</span> with <span class="math inline">\(m = 100\)</span> steps, <span class="math inline">\(h = 0.2\)</span>, and plots <span class="math inline">\((t_j, x_j)\)</span>. The computed <span class="math inline">\(x_j\)</span> range from <span class="math inline">\(-1.6613\)</span> to <span class="math inline">\(1.9766\)</span>.</p>
+<p><strong>Step 3</strong>: The energy at the start is <span class="math inline">\(E_0 = \tfrac12 \cdot 2^2 + 2(1 - \cos 1) = 2.919395\)</span>, less than the energy <span class="math inline">\(2\omega_0^2 = 4\)</span> needed to reach the top, and by the theorem above the energy can only decrease. So the pendulum swings back and forth and never goes over the top: the largest angle, <span class="math inline">\(x = 1.976621\)</span> at <span class="math inline">\(t = 0.9963\)</span>, is <span class="math inline">\(113.25°\)</span>, below <span class="math inline">\(\pi\)</span>. By <span class="math inline">\(t = 20\)</span> the energy has fallen to <span class="math inline">\(0.448391\)</span>.</p>
+<p>There is no formula for the solution, so the check is against a reference solution computed with an adaptive eighth-order method at tolerance <span class="math inline">\(10^{-13}\)</span>.</p>
+<p><strong>Verification:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;">Runge-Kutta <span class="math inline">\(x_j\)</span></th>
+<th style="text-align: right;">reference <span class="math inline">\(x(t)\)</span></th>
+<th style="text-align: right;">error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">−1.624627</td>
+<td style="text-align: right;">−1.624579</td>
+<td style="text-align: right;"><span class="math inline">\(-4.76 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">−0.459815</td>
+<td style="text-align: right;">−0.460190</td>
+<td style="text-align: right;"><span class="math inline">\(3.75 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0.744494</td>
+<td style="text-align: right;">0.744188</td>
+<td style="text-align: right;"><span class="math inline">\(3.06 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">0.845528</td>
+<td style="text-align: right;">0.845631</td>
+<td style="text-align: right;"><span class="math inline">\(-1.03 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">0.383776</td>
+<td style="text-align: right;">0.384286</td>
+<td style="text-align: right;"><span class="math inline">\(-5.10 \times 10^{-4}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The largest error over the grid is <span class="math inline">\(5.89 \times 10^{-4}\)</span>, at <span class="math inline">\(t = 19.6\)</span>.</p>
+</section>
+<section id="example-4-linear-or-nonlinear-comparing-the-two-models" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-linear-or-nonlinear-comparing-the-two-models">Example 4 — Linear or nonlinear: comparing the two models</h2>
+<p>Compare the graphs of the solutions of</p>
+<p><span class="math display">\[
+\text{(i)}\quad x'' + \tfrac{1}{10}x' + 2x = 0, \qquad \text{(ii)}\quad x'' + \tfrac{1}{10}x' + 2\sin x = 0, \qquad x(0) = 1, \quad x'(0) = 2 .
+\]</span></p>
+<p>Mathews draws the two curves of Examples 1 to 3 together and asks: from the graphs, can you tell which is the solution of (ii)? How? (The archive has lost his figure and the command that drew it; the comparison below uses <span class="math inline">\([0, 20]\)</span>, the interval of Examples 1 to 3.)</p>
+<p><strong>Answer:</strong> The nonlinear pendulum (ii) swings more slowly. At the start the two curves leave <span class="math inline">\(x = 1\)</span> together, but the restoring term <span class="math inline">\(2\sin x\)</span> is weaker than <span class="math inline">\(2x\)</span> for <span class="math inline">\(0 &lt; x &lt; \pi\)</span> (at the first maximum <span class="math inline">\(\sin x / x = 0.465\)</span>), so the nonlinear pendulum swings higher and takes longer to come back:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;">linear (i)</th>
+<th style="text-align: right;">nonlinear (ii)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>first maximum</td>
+<td style="text-align: right;"><span class="math inline">\(1.7036\)</span> at <span class="math inline">\(t = 0.659\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.9766\)</span> at <span class="math inline">\(t = 0.996\)</span></td>
+</tr>
+<tr class="even">
+<td>first minimum</td>
+<td style="text-align: right;"><span class="math inline">\(-1.5244\)</span> at <span class="math inline">\(t = 2.882\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.6614\)</span> at <span class="math inline">\(t = 3.807\)</span></td>
+</tr>
+<tr class="odd">
+<td>first zero</td>
+<td style="text-align: right;"><span class="math inline">\(t = 1.7958\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(t = 2.4998\)</span></td>
+</tr>
+<tr class="even">
+<td>zeros on <span class="math inline">\([0, 20]\)</span></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x(20)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-0.3637\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.3843\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The time between successive zeros is the same for every swing of the linear solution, <span class="math inline">\(\pi/\omega = 2.2228\)</span>. For the nonlinear solution it depends on the amplitude: between its eight zeros the seven half-swings last</p>
+<p><span class="math display">\[
+2.681,\ 2.545,\ 2.459,\ 2.400,\ 2.359,\ 2.328,\ 2.305,
+\]</span></p>
+<p>shorter at every swing as the damping shrinks the amplitude, approaching the linear value <span class="math inline">\(2.2228\)</span> (near <span class="math inline">\(x = 0\)</span> the linearisation of (ii) is (i)). By <span class="math inline">\(t = 20\)</span> the nonlinear solution is one half-swing behind: its eighth zero, at <span class="math inline">\(t = 19.576\)</span>, comes at almost the same time as the linear solution’s ninth, at <span class="math inline">\(t = 19.578\)</span>, and at <span class="math inline">\(t = 20\)</span> the two have opposite signs. Mathews’ conclusion is that the nonlinear equation of Example 3 is the better model; for angles as large as these, up to <span class="math inline">\(113°\)</span>, the approximation <span class="math inline">\(\sin x \approx x\)</span> is poor.</p>
+</section>
+<section id="phase-portraits" class="level2">
+<h2 class="anchored" data-anchor-id="phase-portraits">Phase Portraits</h2>
+<p>The pendulum can also be explored with phase curves in the phase plane. Mathews solves the system (7) with the two-dimensional Runge-Kutta method (8) and plots the points <span class="math inline">\((x_j, y_j)\)</span>, joined by line segments, for several starting points; together the curves form a phase portrait that shows the features of the nonlinear pendulum that a graph of <span class="math inline">\(x(t)\)</span> hides.</p>
+</section>
+<section id="example-5-the-undamped-pendulum-with-g-32-and-l-32" class="level2">
+<h2 class="anchored" data-anchor-id="example-5-the-undamped-pendulum-with-g-32-and-l-32">Example 5 — The undamped pendulum with <span class="math inline">\(g = 32\)</span> and <span class="math inline">\(l = 32\)</span></h2>
+<p>Solve <span class="math inline">\(x'' + \dfrac{g}{l}\sin x = 0\)</span> by the Runge-Kutta method applied to the system</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = -\frac{g}{l}\sin x,
+\]</span></p>
+<p>with <span class="math inline">\(g = 32\)</span> and <span class="math inline">\(l = 32\)</span>, so that <span class="math inline">\(g/l = 1\)</span> and <span class="math inline">\(\omega_0 = 1\)</span>: <span class="math inline">\(x'' + \sin x = 0\)</span>. The linear period is <span class="math inline">\(2\pi\sqrt{l/g} = 2\pi = 6.283185\)</span>, the separatrix speed at the bottom is <span class="math inline">\(2\omega_0 = 2\)</span>, and the energy at the top is <span class="math inline">\(2\omega_0^2 = 2\)</span>.</p>
+<p>Mathews draws, in order: four closed loops around the origin; two curves where the initial velocity is large enough to make the pendulum keep turning about its pivot; two such curves turning in the opposite direction, started at a shifted point “to keep these curves from plotting in quadrant III” (in Example 7 the same remark reads <span class="math inline">\(x_0 = 6\pi\)</span> instead of <span class="math inline">\(x_0 = 0\)</span>; here both values are among the lost images); then four closed loops around each of two further points. The archive has lost the Mathematica input and the figures of this example, and with them the starting points, the time intervals and the two further centres. The curves below are this page’s choice, made to match his description: they start at <span class="math inline">\(x_0 = 0\)</span> with speed <span class="math inline">\(y_0 = 2\omega_0 k\)</span>, where <span class="math inline">\(k\)</span> is the modulus of the period formula, for <span class="math inline">\(k = 0.25, 0.5, 0.75, 0.95\)</span> (loops) and <span class="math inline">\(k = 1.25, 1.5\)</span> (rotations), and each is computed with 100 Runge-Kutta steps, as in Mathews’ Example 7.</p>
+<p><strong>Step 1 — four closed loops around the origin.</strong> Each loop is run for exactly one period <span class="math inline">\(T = 4K(k)/\omega_0\)</span>, so the curve should close on itself.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_0\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\theta_{\max} = 2\arcsin k\)</span></th>
+<th style="text-align: right;">period <span class="math inline">\(T\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(T \,/\, 2\pi\)</span></th>
+<th style="text-align: right;">RK4 closure error</th>
+<th style="text-align: right;">largest <span class="math inline">\(\lvert E - E_0 \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.5054 <span class="math inline">\((28.96°)\)</span></td>
+<td style="text-align: right;">6.384969</td>
+<td style="text-align: right;">1.0162</td>
+<td style="text-align: right;"><span class="math inline">\(4.0 \times 10^{-7}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.1 \times 10^{-8}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">1.0472 <span class="math inline">\((60.00°)\)</span></td>
+<td style="text-align: right;">6.743001</td>
+<td style="text-align: right;">1.0732</td>
+<td style="text-align: right;"><span class="math inline">\(7.3 \times 10^{-7}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.4 \times 10^{-8}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">1.5</td>
+<td style="text-align: right;">1.6961 <span class="math inline">\((97.18°)\)</span></td>
+<td style="text-align: right;">7.643959</td>
+<td style="text-align: right;">1.2166</td>
+<td style="text-align: right;"><span class="math inline">\(8.7 \times 10^{-7}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.0 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.95</td>
+<td style="text-align: right;">1.9</td>
+<td style="text-align: right;">2.5065 <span class="math inline">\((143.61°)\)</span></td>
+<td style="text-align: right;">10.360045</td>
+<td style="text-align: right;">1.6489</td>
+<td style="text-align: right;"><span class="math inline">\(1.7 \times 10^{-5}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.1 \times 10^{-6}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The periods from the elliptic integral agree to all six decimals with the time between successive upward crossings of <span class="math inline">\(x = 0\)</span> in a reference solution. The closure error is the largest coordinate of <span class="math inline">\(\mathbf{Z}_{100} - \mathbf{Z}_0\)</span>, and the last column is the largest drift of the energy over the 101 points. Each loop reaches <span class="math inline">\(|x| = \theta_{\max}\)</span> and <span class="math inline">\(|y| = y_0\)</span>.</p>
+<p><strong>Step 2 — two curves that keep turning.</strong> With <span class="math inline">\(y_0 = 2.5\)</span> (<span class="math inline">\(k = 1.25\)</span>) and <span class="math inline">\(y_0 = 3\)</span> (<span class="math inline">\(k = 1.5\)</span>) the energy is above <span class="math inline">\(2\)</span>, <span class="math inline">\(y\)</span> stays positive, and the pendulum goes over the top. The time to advance by <span class="math inline">\(2\pi\)</span> is</p>
+<p><span class="math display">\[
+T_{\text{rot}} = \frac{2}{k\,\omega_0} K\!\Bigl(\frac1k\Bigr): \qquad 3.192484 \text{ for } k = 1.25, \qquad 2.412890 \text{ for } k = 1.5,
+\]</span></p>
+<p>again in agreement with a reference solution to six decimals. Run for <span class="math inline">\(2T_{\text{rot}}\)</span> with 100 steps, the curves go from <span class="math inline">\((0, y_0)\)</span> to within <span class="math inline">\(4 \times 10^{-6}\)</span> of <span class="math inline">\((4\pi, y_0)\)</span>, slowing at each top to <span class="math inline">\(y = 2\omega_0\sqrt{k^2 - 1}\)</span>, that is <span class="math inline">\(1.5\)</span> and <span class="math inline">\(\sqrt5 = 2.2361\)</span>, and the energy drifts by at most <span class="math inline">\(8.8 \times 10^{-7}\)</span>.</p>
+<p><strong>Step 3 — two curves turning the other way.</strong> Started at <span class="math inline">\((4\pi, -y_0)\)</span> for the same <span class="math inline">\(y_0\)</span> and time, the curves run from <span class="math inline">\(x = 4\pi\)</span> back to <span class="math inline">\(x = 0\)</span> in the lower half-plane. They are the curves of Step 2 reflected through the point <span class="math inline">\((2\pi, 0)\)</span>: the system is unchanged by <span class="math inline">\((x, y) \to (-x, -y)\)</span> and by <span class="math inline">\(x \to x + 2\pi\)</span>, and the computed points agree with the reflected ones to <span class="math inline">\(2 \times 10^{-14}\)</span>.</p>
+<p><strong>Step 4 — loops around other centres.</strong> Because <span class="math inline">\(\sin x\)</span> has period <span class="math inline">\(2\pi\)</span>, the loops of Step 1 shifted by <span class="math inline">\(2k\pi\)</span> are loops around <span class="math inline">\((2k\pi, 0)\)</span>; with the start shifted by <span class="math inline">\(2\pi\)</span> the Runge-Kutta points shift by <span class="math inline">\(2\pi\)</span>, to rounding error (about <span class="math inline">\(10^{-14}\)</span>).</p>
+<p><strong>The separatrix.</strong> Started at <span class="math inline">\((0, 2)\)</span>, exactly on the separatrix, a reference solution approaches the top without reaching it: <span class="math inline">\(\pi - x\)</span> is <span class="math inline">\(0.538\)</span>, <span class="math inline">\(0.0733\)</span>, <span class="math inline">\(0.00991\)</span> and <span class="math inline">\(0.00134\)</span> at <span class="math inline">\(t = 2, 4, 6, 8\)</span>, with <span class="math inline">\(y = 2\cos(x/2)\)</span> throughout.</p>
+</section>
+<section id="example-6-the-undamped-pendulum-x-2sin-x-0" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-the-undamped-pendulum-x-2sin-x-0">Example 6 — The undamped pendulum <span class="math inline">\(x'' + 2\sin x = 0\)</span></h2>
+<p>Solve <span class="math inline">\(x'' + 2\sin x = 0\)</span> by the Runge-Kutta method applied to the system</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = -2\sin x .
+\]</span></p>
+<p>Here <span class="math inline">\(\omega_0 = \sqrt2 = 1.414214\)</span>, the linear period is <span class="math inline">\(2\pi/\sqrt2 = 4.442883\)</span>, the separatrix speed at the bottom is <span class="math inline">\(2\sqrt2 = 2.828427\)</span>, and the energy at the top is <span class="math inline">\(4\)</span>. Mathews’ text for this example repeats that of Example 5 (four closed loops around the origin, two rotations each way, loops around two further centres), and the archive has again lost his input and figures. This page uses the same moduli as Example 5. For the loops they give the starting speeds <span class="math inline">\(\tfrac12\sqrt2\)</span>, <span class="math inline">\(\sqrt2\)</span>, <span class="math inline">\(\tfrac32\sqrt2\)</span>, which are the first three starting speeds of Mathews’ Example 7, and <span class="math inline">\(1.9\sqrt2 = 2.687006\)</span> in place of his fourth, <span class="math inline">\(2\sqrt2\)</span>, which for this undamped equation lies exactly on the separatrix and would not give a closed loop. For the rotations they give <span class="math inline">\(\tfrac52\sqrt2\)</span> and <span class="math inline">\(3\sqrt2\)</span>, his speeds in Example 7.</p>
+<p><strong>Step 1 — scaling.</strong> If <span class="math inline">\(x(t)\)</span> solves <span class="math inline">\(x'' + \sin x = 0\)</span>, then <span class="math inline">\(X(t) = x(\sqrt2\,t)\)</span> solves <span class="math inline">\(X'' + 2\sin X = 0\)</span>, with <span class="math inline">\(X'(t) = \sqrt2\, x'(\sqrt2\, t)\)</span>. So every phase curve of Example 6 is a phase curve of Example 5 stretched by <span class="math inline">\(\sqrt2\)</span> in the <span class="math inline">\(y\)</span> direction, traversed in <span class="math inline">\(1/\sqrt2\)</span> of the time. (A reference computation confirms this to <span class="math inline">\(2 \times 10^{-12}\)</span>.)</p>
+<p><strong>Step 2 — the loops and rotations.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_0\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\theta_{\max}\)</span></th>
+<th style="text-align: right;">period <span class="math inline">\(T\)</span> (loops) or <span class="math inline">\(T_{\text{rot}}\)</span></th>
+<th style="text-align: right;">largest <span class="math inline">\(\lvert E - E_0 \rvert\)</span>, 100 RK4 steps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;"><span class="math inline">\(\tfrac12\sqrt2 = 0.707107\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(28.96°\)</span></td>
+<td style="text-align: right;">4.514855</td>
+<td style="text-align: right;"><span class="math inline">\(2.2 \times 10^{-8}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;"><span class="math inline">\(\sqrt2 = 1.414214\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(60.00°\)</span></td>
+<td style="text-align: right;">4.768022</td>
+<td style="text-align: right;"><span class="math inline">\(1.5 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;"><span class="math inline">\(\tfrac32\sqrt2 = 2.121320\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(97.18°\)</span></td>
+<td style="text-align: right;">5.405095</td>
+<td style="text-align: right;"><span class="math inline">\(8.0 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.95</td>
+<td style="text-align: right;"><span class="math inline">\(1.9\sqrt2 = 2.687006\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(143.61°\)</span></td>
+<td style="text-align: right;">7.325658</td>
+<td style="text-align: right;"><span class="math inline">\(6.2 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1.25</td>
+<td style="text-align: right;"><span class="math inline">\(\tfrac52\sqrt2 = 3.535534\)</span></td>
+<td style="text-align: right;">rotation</td>
+<td style="text-align: right;">2.257427</td>
+<td style="text-align: right;"><span class="math inline">\(1.8 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.50</td>
+<td style="text-align: right;"><span class="math inline">\(3\sqrt2 = 4.242641\)</span></td>
+<td style="text-align: right;">rotation</td>
+<td style="text-align: right;">1.706171</td>
+<td style="text-align: right;"><span class="math inline">\(9.8 \times 10^{-7}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The periods are those of Example 5 divided by <span class="math inline">\(\sqrt2\)</span>, and they agree with a reference solution to six decimals. The angles <span class="math inline">\(\theta_{\max}\)</span> are the same as in Example 5, since they depend only on <span class="math inline">\(k\)</span>. The loops are run for one period and close to within <span class="math inline">\(1.8 \times 10^{-5}\)</span>; the rotations, run for <span class="math inline">\(2T_{\text{rot}}\)</span> from <span class="math inline">\((0, y_0)\)</span>, end within <span class="math inline">\(4 \times 10^{-6}\)</span> of <span class="math inline">\((4\pi, y_0)\)</span>, and their minimum speeds at the tops are <span class="math inline">\(\tfrac32\sqrt2 = 2.1213\)</span> and <span class="math inline">\(\sqrt{10} = 3.1623\)</span>. The rotations in the other direction and the loops around <span class="math inline">\((2k\pi, 0)\)</span> follow by the same symmetry and periodicity as in Example 5.</p>
+<p><strong>The separatrix.</strong> From <span class="math inline">\((0, 2\sqrt2)\)</span> a reference solution creeps toward the top: <span class="math inline">\(\pi - x\)</span> is <span class="math inline">\(0.236\)</span>, <span class="math inline">\(0.0140\)</span>, <span class="math inline">\(8.3 \times 10^{-4}\)</span> and <span class="math inline">\(4.9 \times 10^{-5}\)</span> at <span class="math inline">\(t = 2, 4, 6, 8\)</span>.</p>
+</section>
+<section id="example-7-the-damped-nonlinear-pendulum" class="level2">
+<h2 class="anchored" data-anchor-id="example-7-the-damped-nonlinear-pendulum">Example 7 — The damped nonlinear pendulum</h2>
+<p>Solve <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2\sin x = 0\)</span> by the Runge-Kutta method applied to the system</p>
+<p><span class="math display">\[
+x' = y, \qquad y' = -\tfrac{1}{10}y - 2\sin x .
+\]</span></p>
+<p>(Mathews’ statement of this example prints the linear equation <span class="math inline">\(x'' + \tfrac{1}{10}x' + 2x = 0\)</span>, but his system and his code use <span class="math inline">\(2\sin x\)</span>, with <span class="math inline">\(g = 32\)</span> and <span class="math inline">\(l = 16\)</span>; this page follows the system.) This is the equation of Example 3, now drawn in the phase plane. The energy <span class="math inline">\(E = \tfrac12 y^2 + 2(1 - \cos x)\)</span> decreases at the rate <span class="math inline">\(-y^2/10\)</span>. At the rest positions <span class="math inline">\((2k\pi, 0)\)</span> the linearised equation is Example 2’s, with eigenvalues <span class="math inline">\(-\tfrac{1}{20} \pm \tfrac{\sqrt{799}}{20} i\)</span>, so they attract nearby curves, which spiral into them; at the tops <span class="math inline">\(((2k+1)\pi, 0)\)</span> the eigenvalues are <span class="math inline">\(1.365097\)</span> and <span class="math inline">\(-1.465097\)</span>, real and of opposite sign, so the tops are saddle points.</p>
+<p>Every curve is computed with <span class="math inline">\(m = 100\)</span> Runge-Kutta steps, <span class="math inline">\(h = b/100\)</span>, on <span class="math inline">\([0, b]\)</span>. The table lists all of Mathews’ curves in his order, with his plot windows (“All” means Mathematica chose a window that holds the whole curve).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 18%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>curve</th>
+<th>start <span class="math inline">\((x_0, y_0)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(b\)</span></th>
+<th>Mathews’ window <span class="math inline">\(x\)</span>; <span class="math inline">\(y\)</span></th>
+<th>turns about its rest point, or tops crossed</th>
+<th>at <span class="math inline">\(t = b\)</span> (reference)</th>
+<th>rest position approached</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\((0, \tfrac12\sqrt2)\)</span></td>
+<td style="text-align: right;">9.0</td>
+<td><span class="math inline">\([-2, 2]\)</span>; <span class="math inline">\([-2.2, 2.2]\)</span></td>
+<td>spirals 2.00 turns</td>
+<td><span class="math inline">\((0.0065, 0.4515)\)</span></td>
+<td><span class="math inline">\((0, 0)\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\((0, \sqrt2)\)</span></td>
+<td style="text-align: right;">9.3</td>
+<td><span class="math inline">\([-2, 2]\)</span>; <span class="math inline">\([-2.2, 2.2]\)</span></td>
+<td>spirals 2.00 turns</td>
+<td><span class="math inline">\((0.0023, 0.8976)\)</span></td>
+<td><span class="math inline">\((0, 0)\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\((0, \tfrac32\sqrt2)\)</span></td>
+<td style="text-align: right;">5.2</td>
+<td><span class="math inline">\([-2, 2]\)</span>; <span class="math inline">\([-2.2, 2.2]\)</span></td>
+<td>spirals 1.01 turns</td>
+<td><span class="math inline">\((0.1091, 1.6547)\)</span></td>
+<td><span class="math inline">\((0, 0)\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><span class="math inline">\((0, 2\sqrt2)\)</span></td>
+<td style="text-align: right;">6.4</td>
+<td>All</td>
+<td>spirals 1.00 turn</td>
+<td><span class="math inline">\((-0.0420, 2.1917)\)</span></td>
+<td><span class="math inline">\((0, 0)\)</span></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><span class="math inline">\((0, \tfrac52\sqrt2)\)</span></td>
+<td style="text-align: right;">19.9</td>
+<td><span class="math inline">\([0, 22]\)</span>; <span class="math inline">\([-2.5, 4.5]\)</span></td>
+<td>over the tops at <span class="math inline">\(\pi\)</span> and <span class="math inline">\(3\pi\)</span></td>
+<td><span class="math inline">\((13.712, 0.082)\)</span></td>
+<td><span class="math inline">\((4\pi, 0)\)</span></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><span class="math inline">\((0, 3\sqrt2)\)</span></td>
+<td style="text-align: right;">20.2</td>
+<td><span class="math inline">\([0, 22]\)</span>; <span class="math inline">\([-2.5, 4.5]\)</span></td>
+<td>over the tops at <span class="math inline">\(\pi\)</span>, <span class="math inline">\(3\pi\)</span>, <span class="math inline">\(5\pi\)</span></td>
+<td><span class="math inline">\((20.046, 0.084)\)</span></td>
+<td><span class="math inline">\((6\pi, 0)\)</span></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><span class="math inline">\((6\pi, -\tfrac52\sqrt2)\)</span></td>
+<td style="text-align: right;">11.0</td>
+<td><span class="math inline">\([0, 19]\)</span>; <span class="math inline">\([-4.5, 2.5]\)</span></td>
+<td>over the tops at <span class="math inline">\(5\pi\)</span> and <span class="math inline">\(3\pi\)</span></td>
+<td><span class="math inline">\((6.458, 2.295)\)</span></td>
+<td><span class="math inline">\((2\pi, 0)\)</span></td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td><span class="math inline">\((6\pi, -3\sqrt2)\)</span></td>
+<td style="text-align: right;">11.2</td>
+<td><span class="math inline">\([-3, 19]\)</span>; <span class="math inline">\([-4.5, 2.5]\)</span></td>
+<td>over the tops at <span class="math inline">\(5\pi\)</span>, <span class="math inline">\(3\pi\)</span>, <span class="math inline">\(\pi\)</span></td>
+<td><span class="math inline">\((0.337, 2.342)\)</span></td>
+<td><span class="math inline">\((0, 0)\)</span></td>
+</tr>
+<tr class="odd">
+<td>9–12</td>
+<td>curves 1–4 started at <span class="math inline">\(x_0 = 2\pi\)</span></td>
+<td style="text-align: right;">as 1–4</td>
+<td>combined: <span class="math inline">\([2.8, 9.5]\)</span>; <span class="math inline">\([-3, 3]\)</span></td>
+<td>as 1–4</td>
+<td>as 1–4, plus <span class="math inline">\(2\pi\)</span> in <span class="math inline">\(x\)</span></td>
+<td><span class="math inline">\((2\pi, 0)\)</span></td>
+</tr>
+<tr class="even">
+<td>7′</td>
+<td><span class="math inline">\((6\pi, -\tfrac52\sqrt2)\)</span></td>
+<td style="text-align: right;">19.9</td>
+<td><span class="math inline">\([0, 19]\)</span>; <span class="math inline">\([-4.5, 2.5]\)</span></td>
+<td>over the tops at <span class="math inline">\(5\pi\)</span> and <span class="math inline">\(3\pi\)</span></td>
+<td><span class="math inline">\((5.137, -0.082)\)</span></td>
+<td><span class="math inline">\((2\pi, 0)\)</span></td>
+</tr>
+<tr class="odd">
+<td>8′</td>
+<td><span class="math inline">\((6\pi, -3\sqrt2)\)</span></td>
+<td style="text-align: right;">20.2</td>
+<td><span class="math inline">\([-3, 19]\)</span>; <span class="math inline">\([-4.5, 2.5]\)</span></td>
+<td>over the tops at <span class="math inline">\(5\pi\)</span>, <span class="math inline">\(3\pi\)</span>, <span class="math inline">\(\pi\)</span></td>
+<td><span class="math inline">\((-1.196, -0.084)\)</span></td>
+<td><span class="math inline">\((0, 0)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The turns are counted clockwise about <span class="math inline">\((0, 0)\)</span> (curves 1 to 4) and the tops crossed are counted on <span class="math inline">\([0, b]\)</span>; the last column is where the reference solution sits at <span class="math inline">\(t = 400\)</span>, with <span class="math inline">\(|y| &lt; 10^{-8}\)</span>. Mathews also shows the combinations: curves 1 to 4; curves 1 to 6; curves 1 to 8; curves 9 to 12 in the window above; all twelve; and finally curves 5, 6, 7′ and 8′ (all but the curves 9 to 12 with automatic windows).</p>
+<p><strong>Step 1 — four spirals around the origin (curves 1 to 4).</strong> Mathews’ time intervals carry each spiral round about twice (curves 1 and 2) or about once (curves 3 and 4). Curve 4 starts with <span class="math inline">\(E_0 = 4\)</span>, exactly the energy of the top, but the damping removes energy at once, so it never reaches <span class="math inline">\(x = \pm\pi\)</span>: its <span class="math inline">\(x\)</span> stays in <span class="math inline">\([-1.94, 2.43]\)</span> and its <span class="math inline">\(y\)</span> in <span class="math inline">\([-2.48, 2.83]\)</span>, beyond Mathews’ window <span class="math inline">\([-2, 2] \times [-2.2, 2.2]\)</span> for the first three, and it is the one curve of the four that he plots with an automatic window.</p>
+<p><strong>Step 2 — turning twice and three times (curves 5 and 6).</strong> Starting from the bottom with <span class="math inline">\(y_0 = \tfrac52\sqrt2\)</span> (<span class="math inline">\(E_0 = 6.25\)</span>), the pendulum goes over the top twice, at <span class="math inline">\(x = \pi\)</span> and <span class="math inline">\(x = 3\pi\)</span>, and then swings back and forth about <span class="math inline">\(x = 4\pi\)</span>; with <span class="math inline">\(y_0 = 3\sqrt2\)</span> (<span class="math inline">\(E_0 = 9\)</span>) it goes over three times and settles about <span class="math inline">\(x = 6\pi\)</span>. Mathews’ words “turn twice” and “turn three [times]” match these counts.</p>
+<p><strong>Step 3 — turning in the opposite direction (curves 7 and 8).</strong> Mathews starts these at <span class="math inline">\(x_0 = 6\pi\)</span> instead of <span class="math inline">\(x_0 = 0\)</span> “to keep these curves from plotting in quadrant III”, so that, moving left, they stay mostly in <span class="math inline">\(x &gt; 0\)</span>; curve 8 still swings past <span class="math inline">\(x = 0\)</span> to <span class="math inline">\(x = -2.31\)</span> before it settles at <span class="math inline">\((0, 0)\)</span>. On <span class="math inline">\([0, 11]\)</span> and <span class="math inline">\([0, 11.2]\)</span> the curves pass over two and three tops and are still swinging at <span class="math inline">\(t = b\)</span>.</p>
+<p><strong>Step 4 — four spirals around <span class="math inline">\((2\pi, 0)\)</span> (curves 9 to 12).</strong> These are curves 1 to 4 started at <span class="math inline">\(x_0 = 2\pi\)</span>. Since the right side is <span class="math inline">\(2\pi\)</span>-periodic in <span class="math inline">\(x\)</span>, the Runge-Kutta points are those of curves 1 to 4 shifted by <span class="math inline">\(2\pi\)</span>, to <span class="math inline">\(1.2 \times 10^{-14}\)</span>.</p>
+<p><strong>Step 5 — a longer time interval (curves 7′ and 8′).</strong> Mathews repeats curves 7 and 8 on <span class="math inline">\([0, 19.9]\)</span> and <span class="math inline">\([0, 20.2]\)</span>, the intervals of curves 5 and 6. With the same intervals and steps, curves 7′ and 8′ are exactly curves 5 and 6 reflected through the point <span class="math inline">\((3\pi, 0)\)</span> (the system is unchanged by <span class="math inline">\((x, y) \to (6\pi - x, -y)\)</span>), and the computed points agree with the reflected ones to <span class="math inline">\(2 \times 10^{-13}\)</span>.</p>
+<p><strong>Verification:</strong> Each Runge-Kutta curve was compared at <span class="math inline">\(t = b\)</span> with the reference solution. For curves 1 to 4 and 9 to 12 the difference is at most <span class="math inline">\(1.6 \times 10^{-5}\)</span>; for the curves that go over the tops it is larger, <span class="math inline">\(2.2 \times 10^{-4}\)</span> (curve 8), <span class="math inline">\(6.9 \times 10^{-4}\)</span> (curve 7), <span class="math inline">\(2.2 \times 10^{-3}\)</span> (curves 6 and 8′) and <span class="math inline">\(1.0 \times 10^{-2}\)</span> (curves 5 and 7′); the end points in the table are given to three decimals for these curves. In all of them the energy at <span class="math inline">\(t = b\)</span> is below its starting value, as the theorem requires.</p>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

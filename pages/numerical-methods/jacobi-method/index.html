@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Jacobi method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-classical-jacobi-on-the-4-times-4-matrix-of-example-1-epsilon-10-11-20-rotations" id="toc-case-1-classical-jacobi-on-the-4-times-4-matrix-of-example-1-epsilon-10-11-20-rotations" class="nav-link" data-scroll-target="#case-1-classical-jacobi-on-the-4-times-4-matrix-of-example-1-epsilon-10-11-20-rotations">Case 1 — Classical Jacobi on the <span class="math inline">\(4 \times 4\)</span> matrix of Example 1, <span class="math inline">\(\epsilon = 10^{-11}\)</span>, <span class="math inline">\(20\)</span> rotations</a></li>
+  <li><a href="#case-2-cyclic-jacobi-on-the-same-matrix-example-2-epsilon-10-11-20-rotations-in-5-sweeps" id="toc-case-2-cyclic-jacobi-on-the-same-matrix-example-2-epsilon-10-11-20-rotations-in-5-sweeps" class="nav-link" data-scroll-target="#case-2-cyclic-jacobi-on-the-same-matrix-example-2-epsilon-10-11-20-rotations-in-5-sweeps">Case 2 — Cyclic Jacobi on the same matrix (Example 2), <span class="math inline">\(\epsilon = 10^{-11}\)</span>, <span class="math inline">\(20\)</span> rotations in <span class="math inline">\(5\)</span> sweeps</a></li>
+  <li><a href="#case-3-mathews-eigenvalue-movie-example-6-cyclic-jacobi-on-a-5-times-5-matrix-epsilon-0.2-7-rotations" id="toc-case-3-mathews-eigenvalue-movie-example-6-cyclic-jacobi-on-a-5-times-5-matrix-epsilon-0.2-7-rotations" class="nav-link" data-scroll-target="#case-3-mathews-eigenvalue-movie-example-6-cyclic-jacobi-on-a-5-times-5-matrix-epsilon-0.2-7-rotations">Case 3 — Mathews’ eigenvalue movie (Example 6), cyclic Jacobi on a <span class="math inline">\(5 \times 5\)</span> matrix, <span class="math inline">\(\epsilon = 0.2\)</span>, <span class="math inline">\(7\)</span> rotations</a></li>
+  <li><a href="#case-4-the-same-matrix-rerun-with-epsilon-10-11-39-rotations-in-6-sweeps" id="toc-case-4-the-same-matrix-rerun-with-epsilon-10-11-39-rotations-in-6-sweeps" class="nav-link" data-scroll-target="#case-4-the-same-matrix-rerun-with-epsilon-10-11-39-rotations-in-6-sweeps">Case 4 — The same matrix rerun with <span class="math inline">\(\epsilon = 10^{-11}\)</span>, <span class="math inline">\(39\)</span> rotations in <span class="math inline">\(6\)</span> sweeps</a></li>
+  </ul></li>
+  <li><a href="#plane-rotations-and-similarity-transformations" id="toc-plane-rotations-and-similarity-transformations" class="nav-link" data-scroll-target="#plane-rotations-and-similarity-transformations">Plane Rotations and Similarity Transformations</a></li>
+  <li><a href="#the-general-step-zeroing-d_pq" id="toc-the-general-step-zeroing-d_pq" class="nav-link" data-scroll-target="#the-general-step-zeroing-d_pq">The General Step: Zeroing <span class="math inline">\(d_{pq}\)</span></a></li>
+  <li><a href="#convergence-and-the-choice-of-p-q" id="toc-convergence-and-the-choice-of-p-q" class="nav-link" data-scroll-target="#convergence-and-the-choice-of-p-q">Convergence and the Choice of <span class="math inline">\((p, q)\)</span></a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  <li><a href="#example-1-classical-jacobi-on-a-4-times-4-matrix" id="toc-example-1-classical-jacobi-on-a-4-times-4-matrix" class="nav-link" data-scroll-target="#example-1-classical-jacobi-on-a-4-times-4-matrix">Example 1 — Classical Jacobi on a <span class="math inline">\(4 \times 4\)</span> Matrix</a></li>
+  <li><a href="#example-2-cyclic-jacobi-on-the-same-matrix" id="toc-example-2-cyclic-jacobi-on-the-same-matrix" class="nav-link" data-scroll-target="#example-2-cyclic-jacobi-on-the-same-matrix">Example 2 — Cyclic Jacobi on the Same Matrix</a></li>
+  <li><a href="#examples-3-to-5-which-method-is-faster" id="toc-examples-3-to-5-which-method-is-faster" class="nav-link" data-scroll-target="#examples-3-to-5-which-method-is-faster">Examples 3 to 5 — Which Method Is Faster?</a></li>
+  <li><a href="#example-6-an-eigenvalue-movie" id="toc-example-6-an-eigenvalue-movie" class="nav-link" data-scroll-target="#example-6-an-eigenvalue-movie">Example 6 — An Eigenvalue Movie</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Jacobi method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>This page is about <strong>Jacobi’s eigenvalue method</strong>, also called Jacobi’s rotation method or Jacobi iteration for eigenvectors. It finds all the eigenvalues and eigenvectors of a real symmetric matrix. It is not the Jacobi iteration for solving a linear system <span class="math inline">\(\mathbf{A}\mathbf{X} = \mathbf{B}\)</span>, which has its own page, <a href="../jacobi-and-gauss-seidel-iteration/">Jacobi and Gauss-Seidel Iteration</a>.</p>
+<p>The method starts from <span class="math inline">\(\mathbf{D}_0 = \mathbf{A}\)</span> and applies one plane rotation <span class="math inline">\(\mathbf{R}_j\)</span> at a time, as an orthogonal similarity transformation. Each rotation is chosen to make one symmetric pair of off-diagonal entries <span class="math inline">\(d_{pq} = d_{qp}\)</span> exactly zero:</p>
+<p><span class="math display">\[
+\mathbf{D}_j = \mathbf{R}_j^{T}\,\mathbf{D}_{j-1}\,\mathbf{R}_j, \qquad
+\theta = \frac{d_{qq} - d_{pp}}{2\,d_{pq}}, \quad
+t = \frac{\operatorname{sign}(\theta)}{|\theta| + \sqrt{\theta^2 + 1}}, \quad
+c = \frac{1}{\sqrt{t^2 + 1}}, \quad s = c\,t .
+\]</span></p>
+<p>A later rotation can make a zeroed entry nonzero again. Still, every rotation lowers the sum of the squares of the off-diagonal entries by exactly <span class="math inline">\(2d_{pq}^2\)</span>, so the matrices <span class="math inline">\(\mathbf{D}_j\)</span> approach a diagonal matrix. Its diagonal holds the eigenvalues, and the product <span class="math inline">\(\mathbf{V} = \mathbf{R}_1\mathbf{R}_2\cdots\mathbf{R}_j\)</span> holds the unit eigenvectors as its columns. Mathews gives two ways to choose which entry to zero. In the <em>classical</em> method, the one Jacobi used, each rotation zeroes the off-diagonal entry of largest magnitude. In the <em>cyclic</em> method, sweeps go through the entries row by row in a fixed order. Every Jacobi run on this page has been recomputed, rotation by rotation, with Mathews’ own stopping rules.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below follows one of Mathews’ worked examples, one rotation per frame. Cases 1 and 2 draw the <span class="math inline">\(4 \times 4\)</span> matrix <span class="math inline">\(\mathbf{D}_k\)</span> of Examples 1 and 2 as a grid of cells: the off-diagonal cells are coloured by <span class="math inline">\(\log_{10}\lvert d_{ij}\rvert\)</span>, the grey diagonal cells hold the eigenvalue estimates, a white cell is an exact zero, and the pair just zeroed is outlined in red. Cases 3 and 4 draw the <span class="math inline">\(5 \times 5\)</span> matrix of Example 6 as a surface <span class="math inline">\(u = d_{ij}\)</span> over the grid of indices <span class="math inline">\((i, j)\)</span>, as Mathews’ eigenvalue movie does. Beside each matrix, a panel with a logarithmic axis shows <span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span>, the magnitude <span class="math inline">\(\lvert a_{pq}\rvert\)</span> that each rotation removes and Mathews’ stopping threshold <span class="math inline">\(\epsilon\sqrt{T/n}\)</span>. The rotations are computed in 300-bit arithmetic with formulas (4), as in the tables below, so the labels agree with the tables. Each script stores the zeroed pair as an exact <span class="math inline">\(0\)</span>, as (4) prescribes; Mathews’ subroutine computes it, which leaves a rounding residue (below <span class="math inline">\(6 \times 10^{-90}\)</span> in 300-bit arithmetic).</p>
+<p>Case 3 rebuilds Mathews’ eigenvalue movie of Example 6. His notebook drew its eight graphs and had <em>Mathematica</em> flip through them, but the archive keeps them only as eight separate still images, and his collection of animations has none for Jacobi’s method. Cases 1, 2 and 4 are new. Not animated: the eigenvector matrix <span class="math inline">\(\mathbf{V}\)</span> (the scripts compute it but do not draw it), the verification of the eigenpairs and the comparisons with <em>Mathematica</em>’s <code>Eigensystem</code>, and Examples 3 to 5, which compare running times and rotation counts on random matrices.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-classical-jacobi-on-the-4-times-4-matrix-of-example-1-epsilon-10-11-20-rotations" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-classical-jacobi-on-the-4-times-4-matrix-of-example-1-epsilon-10-11-20-rotations">Case 1 — Classical Jacobi on the <span class="math inline">\(4 \times 4\)</span> matrix of Example 1, <span class="math inline">\(\epsilon = 10^{-11}\)</span>, <span class="math inline">\(20\)</span> rotations</h3>
+<p><strong>Behavior:</strong> Each rotation zeroes the largest off-diagonal entry, and the next rotations can make it nonzero again: rotation 2, in the <span class="math inline">\((1, 2)\)</span> plane, turns the zeros at <span class="math inline">\((1, 3)\)</span> and <span class="math inline">\((2, 4)\)</span> into <span class="math inline">\(0.5800\)</span> and <span class="math inline">\(0.9293\)</span>. The largest entry still falls at every rotation, from <span class="math inline">\(3.000\)</span> to <span class="math inline">\(5.107 \times 10^{-11}\)</span> (orange triangles). Over the first ten rotations <span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span> falls by a ratio between <span class="math inline">\(0.448\)</span> and <span class="math inline">\(0.771\)</span> per rotation, inside the general bound (8) (dashed). Later rotations mix ratios between <span class="math inline">\(0.441\)</span> and <span class="math inline">\(0.493\)</span> with much smaller ones, down to <span class="math inline">\(7.49 \times 10^{-4}\)</span> at rotation 17 and <span class="math inline">\(1.62 \times 10^{-7}\)</span> at rotation 20, and the colours of the off-diagonal cells darken from yellow toward purple. From rotation 13 on, the grey diagonal cells show <span class="math inline">\(3.295699\)</span>, <span class="math inline">\(8.407662\)</span>, <span class="math inline">\(11.70430\)</span> and <span class="math inline">\(6.592338\)</span> to seven significant digits. Rotation 20 removes <span class="math inline">\(\lvert a_{12}\rvert = 5.107 \times 10^{-11}\)</span>, below the threshold <span class="math inline">\(8.093 \times 10^{-11}\)</span>, so the run stops. This entry and its mirror were almost all of <span class="math inline">\(\operatorname{off}(\mathbf{D}_{19}) = 7.223 \times 10^{-11} \approx \sqrt2 \times 5.107 \times 10^{-11}\)</span>, so the last rotation drops <span class="math inline">\(\operatorname{off}\)</span> to <span class="math inline">\(1.167 \times 10^{-17}\)</span>. The final matrix has exact zeros at <span class="math inline">\((1, 2)\)</span> and <span class="math inline">\((3, 4)\)</span> and other off-diagonal entries between <span class="math inline">\(6.542 \times 10^{-31}\)</span> and <span class="math inline">\(8.250 \times 10^{-18}\)</span> in magnitude.</p>
+<p><a href="jacobiaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="jacobiaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Classical Jacobi on Mathews’ 4 × 4 Example 1: a grid of the matrix entries, coloured by the logarithm of their size, with the largest off-diagonal pair outlined in red and zeroed at each of 20 rotations, while a log-scale panel shows off(D_k) falling from 5.657 to 1.167 × 10⁻¹⁷ and the run stopping when the entry removed, 5.107 × 10⁻¹¹, is below the threshold 8.093 × 10⁻¹¹</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-cyclic-jacobi-on-the-same-matrix-example-2-epsilon-10-11-20-rotations-in-5-sweeps" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-cyclic-jacobi-on-the-same-matrix-example-2-epsilon-10-11-20-rotations-in-5-sweeps">Case 2 — Cyclic Jacobi on the same matrix (Example 2), <span class="math inline">\(\epsilon = 10^{-11}\)</span>, <span class="math inline">\(20\)</span> rotations in <span class="math inline">\(5\)</span> sweeps</h3>
+<p><strong>Behavior:</strong> The red outline moves through the pairs in the fixed order <span class="math inline">\((1,2), (1,3), (1,4), (2,3), (2,4), (3,4)\)</span>: all six pairs in each of sweeps 1 to 3, only <span class="math inline">\((1, 2)\)</span> and <span class="math inline">\((1, 3)\)</span> in sweep 4. The final frames explain the stop. In sweep 4 the other four pairs are below the threshold <span class="math inline">\(8.093 \times 10^{-11}\)</span>, and sweep 5 rotates nothing. The magnitudes removed do not fall steadily: they rise at rotations 2, 4, 7, 10 and 13. In grey, the classical run of Case 1 is shown for comparison. The cyclic <span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span> lies above it after every rotation, ending at <span class="math inline">\(1.693 \times 10^{-11}\)</span> against <span class="math inline">\(1.167 \times 10^{-17}\)</span>. Rule (9) leaves <span class="math inline">\(d_{14} = -5.957 \times 10^{-12}\)</span> and <span class="math inline">\(d_{23} = -1.038 \times 10^{-11}\)</span> in place. From rotation 15 on, the diagonal shows the eigenvalues of Case 1 in another order, <span class="math inline">\(6.592338\)</span>, <span class="math inline">\(3.295699\)</span>, <span class="math inline">\(11.70430\)</span> and <span class="math inline">\(8.407662\)</span>.</p>
+<p><a href="jacobibb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="jacobibb.gif" class="img-fluid figure-img"></p>
+<figcaption>Cyclic Jacobi on Mathews’ Example 2: the red outline steps through the six pairs of the 4 × 4 matrix in row order, sweep after sweep, while a log-scale panel shows off(D_k) falling to 1.693 × 10⁻¹¹ after 20 rotations in 5 sweeps, above the grey curve of the classical run at every rotation</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-mathews-eigenvalue-movie-example-6-cyclic-jacobi-on-a-5-times-5-matrix-epsilon-0.2-7-rotations" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-mathews-eigenvalue-movie-example-6-cyclic-jacobi-on-a-5-times-5-matrix-epsilon-0.2-7-rotations">Case 3 — Mathews’ eigenvalue movie (Example 6), cyclic Jacobi on a <span class="math inline">\(5 \times 5\)</span> matrix, <span class="math inline">\(\epsilon = 0.2\)</span>, <span class="math inline">\(7\)</span> rotations</h3>
+<p><strong>Behavior:</strong> As in Mathews’ movie, the matrix is drawn as a surface with vertical range <span class="math inline">\(-4\)</span> to <span class="math inline">\(14\)</span>, at the start and after each of the 7 rotations: <span class="math inline">\((1,3)\)</span>, <span class="math inline">\((1,4)\)</span>, <span class="math inline">\((1,5)\)</span>, <span class="math inline">\((2,5)\)</span>, <span class="math inline">\((3,4)\)</span> and <span class="math inline">\((3,5)\)</span> in sweep 1, then <span class="math inline">\((2,3)\)</span> in sweep 2. The red markers, the black line along the diagonal and the two right-hand panels are added. Each rotation brings the surface to <span class="math inline">\(0\)</span> at the pair it zeroes (down from a peak or up from a dip), and <span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span> falls from <span class="math inline">\(12.08\)</span> to <span class="math inline">\(3.716\)</span>. In the final frames the largest off-diagonal entry, <span class="math inline">\(1.600\)</span>, is below the sweep 3 threshold <span class="math inline">\(1.705\)</span>, so the run stops with off-diagonal entries of up to <span class="math inline">\(1.600\)</span> in magnitude still in place. The diagonal dots, <span class="math inline">\(3.728\)</span>, <span class="math inline">\(8.133\)</span>, <span class="math inline">\(13.63\)</span>, <span class="math inline">\(9.166\)</span> and <span class="math inline">\(-3.656\)</span>, have not all reached the eigenvalue ticks: <span class="math inline">\(d_{22}\)</span> and <span class="math inline">\(d_{44}\)</span> are clearly off theirs, <span class="math inline">\(d_{11}\)</span> and <span class="math inline">\(d_{33}\)</span> sit just beside theirs, and <span class="math inline">\(d_{55}\)</span> covers its tick. Each is between <span class="math inline">\(0.13\)</span> and <span class="math inline">\(1.12\)</span> from the nearest eigenvalue. The loose tolerance shows only the first stage of the diagonalisation.</p>
+<p><a href="jacobicc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="jacobicc.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ eigenvalue movie: the 5 × 5 matrix of Example 6 drawn as a surface over the index grid after each of 7 cyclic Jacobi rotations with tolerance 0.2, with a log-scale panel of off(D_k) falling from 12.08 to 3.716 and a number line on which the diagonal entries stop between 0.13 and 1.12 away from the eigenvalues</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-4-the-same-matrix-rerun-with-epsilon-10-11-39-rotations-in-6-sweeps" class="level3">
+<h3 class="anchored" data-anchor-id="case-4-the-same-matrix-rerun-with-epsilon-10-11-39-rotations-in-6-sweeps">Case 4 — The same matrix rerun with <span class="math inline">\(\epsilon = 10^{-11}\)</span>, <span class="math inline">\(39\)</span> rotations in <span class="math inline">\(6\)</span> sweeps</h3>
+<p><strong>Behavior:</strong> With the tight tolerance every entry is above the threshold when the sweep reaches it, so sweeps 1 to 3 rotate all ten pairs. This includes <span class="math inline">\((2, 4)\)</span> and <span class="math inline">\((4, 5)\)</span>, which are <span class="math inline">\(0\)</span> in <span class="math inline">\(\mathbf{A}\)</span> but have become <span class="math inline">\(0.6541\)</span> and <span class="math inline">\(1.768\)</span> by the time sweep 1 reaches them. Sweeps 4, 5 and 6 make 8, 1 and 0 rotations. After each sweep, <span class="math inline">\(\operatorname{off}(\mathbf{D})\)</span> is <span class="math inline">\(4.185\)</span>, <span class="math inline">\(0.4553\)</span>, <span class="math inline">\(0.002857\)</span>, <span class="math inline">\(2.357 \times 10^{-10}\)</span> and <span class="math inline">\(1.591 \times 10^{-11}\)</span>. The off-diagonal part of the surface flattens to <span class="math inline">\(0\)</span>, leaving the five eigenvalues as peaks and a dip along the diagonal. Every diagonal dot is within <span class="math inline">\(0.05\)</span> of an eigenvalue tick from rotation 18 on, and within <span class="math inline">\(0.01\)</span> from rotation 25 on. At the end of the run the largest off-diagonal entry, <span class="math inline">\(8.673 \times 10^{-12}\)</span>, is below the threshold <span class="math inline">\(8.683 \times 10^{-11}\)</span>. The diagonal then agrees with the eigenvalues <span class="math inline">\(3.394496\)</span>, <span class="math inline">\(7.186877\)</span>, <span class="math inline">\(13.92175\)</span>, <span class="math inline">\(10.28074\)</span> and <span class="math inline">\(-3.783859\)</span> to within <span class="math inline">\(10^{-23}\)</span>.</p>
+<p><a href="jacobidd.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="jacobidd.gif" class="img-fluid figure-img"></p>
+<figcaption>The matrix of Mathews’ eigenvalue movie rerun with tolerance 10⁻¹¹: over 39 cyclic Jacobi rotations in 6 sweeps the off-diagonal part of the surface flattens to zero, off(D_k) falls from 12.08 to 1.591 × 10⁻¹¹ on a log scale, and the diagonal entries move onto the five eigenvalues</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="plane-rotations-and-similarity-transformations" class="level2">
+<h2 class="anchored" data-anchor-id="plane-rotations-and-similarity-transformations">Plane Rotations and Similarity Transformations</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Plane rotation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">\(1 \le p &lt; q \le n\)</span> and an angle <span class="math inline">\(\phi\)</span>, with <span class="math inline">\(c = \cos\phi\)</span> and <span class="math inline">\(s = \sin\phi\)</span>, the <em>plane rotation</em> <span class="math inline">\(\mathbf{R}\)</span> is the <span class="math inline">\(n \times n\)</span> identity matrix with four entries changed:</p>
+<p><span class="math display">\[
+r_{pp} = c, \qquad r_{pq} = s, \qquad r_{qp} = -s, \qquad r_{qq} = c .
+\]</span></p>
+<p>The map <span class="math inline">\(\mathbf{Y} = \mathbf{R}\mathbf{X}\)</span> is a rotation of <span class="math inline">\(n\)</span>-dimensional space through the angle <span class="math inline">\(\phi\)</span> in the <span class="math inline">\(x_p x_q\)</span>-plane: <span class="math inline">\(y_p = c\,x_p + s\,x_q\)</span>, <span class="math inline">\(y_q = -s\,x_p + c\,x_q\)</span>, and every other coordinate is unchanged. <span class="math inline">\(\mathbf{R}\)</span> is orthogonal: <span class="math inline">\(\mathbf{R}^{-1} = \mathbf{R}^{T}\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Orthogonal similarity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(\mathbf{R}\)</span> be orthogonal and <span class="math inline">\(\mathbf{D} = \mathbf{R}^T\mathbf{A}\mathbf{R}\)</span>. Then <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{D}\)</span> have the same eigenvalues, and <span class="math inline">\(\mathbf{A}\mathbf{X} = \lambda\mathbf{X}\)</span> exactly when <span class="math inline">\(\mathbf{D}\mathbf{Y} = \lambda\mathbf{Y}\)</span> with <span class="math inline">\(\mathbf{X} = \mathbf{R}\mathbf{Y}\)</span>. If <span class="math inline">\(\mathbf{A}\)</span> is symmetric, so is <span class="math inline">\(\mathbf{D}\)</span>, because <span class="math inline">\(\mathbf{D}^T = \mathbf{R}^T\mathbf{A}^T\mathbf{R} = \mathbf{D}\)</span>.</p>
+</div>
+</div>
+<p>The <strong>Jacobi series of transformations</strong> starts with the real symmetric matrix <span class="math inline">\(\mathbf{A}\)</span> and builds orthogonal matrices <span class="math inline">\(\mathbf{R}_1, \mathbf{R}_2, \ldots\)</span> with</p>
+<p><span class="math display">\[
+\mathbf{D}_0 = \mathbf{A}, \qquad \mathbf{D}_j = \mathbf{R}_j^T\,\mathbf{D}_{j-1}\,\mathbf{R}_j \quad (j = 1, 2, \ldots),
+\tag{1}
+\]</span></p>
+<p>chosen so that</p>
+<p><span class="math display">\[
+\lim_{j \to \infty} \mathbf{D}_j = \mathbf{D} = \operatorname{diag}(\lambda_1, \lambda_2, \ldots, \lambda_n).
+\tag{2}
+\]</span></p>
+<p>(The module page prints the recursion as <span class="math inline">\(\mathbf{D}_j = \mathbf{R}_j^T\mathbf{D}_j\mathbf{R}_j\)</span>, which is a typo. The textbook section it links to has <span class="math inline">\(\mathbf{D}_{j-1}\)</span> on the right.) In practice the iteration stops after <span class="math inline">\(m\)</span> rotations, once the off-diagonal entries are close to zero, so <span class="math inline">\(\mathbf{D}_m \approx \mathbf{D}\)</span>. With <span class="math inline">\(\mathbf{V}_m = \mathbf{R}_1\mathbf{R}_2\cdots\mathbf{R}_m\)</span>, an orthogonal matrix, equation (1) gives <span class="math inline">\(\mathbf{D}_m = \mathbf{V}_m^T\mathbf{A}\mathbf{V}_m\)</span>, so</p>
+<p><span class="math display">\[
+\mathbf{A}\mathbf{V}_m = \mathbf{V}_m\mathbf{D}_m \approx \mathbf{V}_m \operatorname{diag}(\lambda_1, \ldots, \lambda_n).
+\tag{3}
+\]</span></p>
+<p>Column <span class="math inline">\(k\)</span> of (3) reads <span class="math inline">\(\mathbf{A}\mathbf{X}_k \approx \lambda_k\mathbf{X}_k\)</span>. So column <span class="math inline">\(k\)</span> of <span class="math inline">\(\mathbf{V}_m\)</span> is a unit eigenvector for the eigenvalue in diagonal position <span class="math inline">\(k\)</span> of <span class="math inline">\(\mathbf{D}_m\)</span>. The eigenvalues come out in whatever order the rotations leave them, not sorted.</p>
+</section>
+<section id="the-general-step-zeroing-d_pq" class="level2">
+<h2 class="anchored" data-anchor-id="the-general-step-zeroing-d_pq">The General Step: Zeroing <span class="math inline">\(d_{pq}\)</span></h2>
+<p>One rotation in the <span class="math inline">\((p, q)\)</span> plane changes only rows <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> and columns <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span>. Write <span class="math inline">\(\mathbf{A}\)</span> for the current matrix and <span class="math inline">\(\mathbf{D} = \mathbf{R}^T\mathbf{A}\mathbf{R}\)</span> for the next one. Then, for <span class="math inline">\(j \ne p, q\)</span>,</p>
+<p><span class="math display">\[
+\begin{aligned}
+d_{jp} &amp;= c\,a_{jp} - s\,a_{jq}, &amp;\qquad d_{jq} &amp;= s\,a_{jp} + c\,a_{jq},\\
+d_{pp} &amp;= c^2 a_{pp} + s^2 a_{qq} - 2cs\,a_{pq}, &amp;\qquad d_{qq} &amp;= s^2 a_{pp} + c^2 a_{qq} + 2cs\,a_{pq},\\
+d_{pq} &amp;= (c^2 - s^2)\,a_{pq} + cs\,(a_{pp} - a_{qq}),
+\end{aligned}
+\tag{4}
+\]</span></p>
+<p>and the rest of <span class="math inline">\(\mathbf{D}\)</span> follows by symmetry. To make <span class="math inline">\(d_{pq} = 0\)</span> when <span class="math inline">\(a_{pq} \ne 0\)</span>, set the last line to zero and divide by <span class="math inline">\(2cs\)</span>. With <span class="math inline">\(\theta = \cot 2\phi = (c^2 - s^2)/(2cs)\)</span> this gives</p>
+<p><span class="math display">\[
+\theta = \frac{a_{qq} - a_{pp}}{2\,a_{pq}} .
+\tag{5}
+\]</span></p>
+<p>Mathews avoids the angle itself and uses <span class="math inline">\(t = \tan\phi = s/c\)</span>, which spreads less round-off. Dividing the numerator and the denominator of <span class="math inline">\(\theta\)</span> by <span class="math inline">\(c^2\)</span> gives <span class="math inline">\(\theta = (1 - t^2)/(2t)\)</span>, that is, <span class="math inline">\(t^2 + 2t\theta - 1 = 0\)</span>. The root of smaller magnitude belongs to the smaller rotation, with <span class="math inline">\(|\phi| \le \pi/4\)</span>, and is computed without cancellation as in the box below.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Key formulas — one Jacobi rotation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\theta = \frac{a_{qq} - a_{pp}}{2\,a_{pq}}, \qquad
+t = \frac{\operatorname{sign}(\theta)}{|\theta| + \sqrt{\theta^2 + 1}}, \qquad
+c = \frac{1}{\sqrt{t^2 + 1}}, \qquad
+s = c\,t,
+\tag{6}
+\]</span></p>
+<p>with <span class="math inline">\(\operatorname{sign}(\theta) = 1\)</span> for <span class="math inline">\(\theta \ge 0\)</span> and <span class="math inline">\(-1\)</span> for <span class="math inline">\(\theta &lt; 0\)</span>. For very large <span class="math inline">\(\theta\)</span> (<span class="math inline">\(\theta \ge 10^{19}\)</span>), Mathews’ subroutine uses <span class="math inline">\(t = 1/(2\theta)\)</span> instead, which avoids overflow in <span class="math inline">\(\theta^2\)</span>. Then <span class="math inline">\(d_{pq} = d_{qp} = 0\)</span>, the other entries follow from (4), and columns <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> of the eigenvector matrix are updated in the same way as the columns of <span class="math inline">\(\mathbf{A}\)</span>:</p>
+<p><span class="math display">\[
+v_{jp} \leftarrow c\,v_{jp} - s\,v_{jq}, \qquad v_{jq} \leftarrow s\,v_{jp} + c\,v_{jq} \qquad (j = 1, \ldots, n),
+\]</span></p>
+<p>starting from <span class="math inline">\(\mathbf{V} = \mathbf{I}\)</span>. Both right-hand sides use the old values of <span class="math inline">\(v_{jp}\)</span> and <span class="math inline">\(v_{jq}\)</span>.</p>
+</div>
+</div>
+</section>
+<section id="convergence-and-the-choice-of-p-q" class="level2">
+<h2 class="anchored" data-anchor-id="convergence-and-the-choice-of-p-q">Convergence and the Choice of <span class="math inline">\((p, q)\)</span></h2>
+<p>Let <span class="math inline">\(S\)</span> be the sum of the squares of the off-diagonal entries of the current matrix, and <span class="math inline">\(T\)</span> the sum of the squares of its diagonal entries:</p>
+<p><span class="math display">\[
+S = \sum_{j \ne k} a_{jk}^2, \qquad T = \sum_{j=1}^{n} a_{jj}^2, \qquad \operatorname{off}(\mathbf{A}) = \sqrt{S}.
+\]</span></p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — One rotation moves weight onto the diagonal
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\mathbf{D}\)</span> is obtained from <span class="math inline">\(\mathbf{A}\)</span> by the rotation (6) that zeroes <span class="math inline">\(a_{pq}\)</span>, then</p>
+<p><span class="math display">\[
+S(\mathbf{D}) = S(\mathbf{A}) - 2a_{pq}^2, \qquad T(\mathbf{D}) = T(\mathbf{A}) + 2a_{pq}^2,
+\tag{7}
+\]</span></p>
+<p>and <span class="math inline">\(S + T\)</span>, the squared Frobenius norm, does not change. So the sums <span class="math inline">\(S(\mathbf{D}_j)\)</span> decrease strictly at every step that rotates a nonzero entry, and they are bounded below by zero.</p>
+</div>
+</div>
+<p><strong>Classical Jacobi.</strong> Jacobi’s own algorithm of 1846 zeroes, at each step, the off-diagonal entry of largest magnitude, <span class="math inline">\(\max_{p&lt;q} |a_{pq}|\)</span>. The <span class="math inline">\(n(n-1)\)</span> off-diagonal entries have squares that sum to <span class="math inline">\(S\)</span>, so the largest square is at least the average: <span class="math inline">\(a_{pq}^2 \ge S/(n(n-1))\)</span>. Then (7) gives a general bound that holds for every symmetric matrix:</p>
+<p><span class="math display">\[
+S(\mathbf{D}_{j}) \le \Bigl(1 - \frac{2}{n(n-1)}\Bigr) S(\mathbf{D}_{j-1}).
+\tag{8}
+\]</span></p>
+<p>So <span class="math inline">\(S(\mathbf{D}_j) \to 0\)</span>, and <span class="math inline">\(\mathbf{D}_j\)</span> converges to a diagonal matrix. For a <span class="math inline">\(4 \times 4\)</span> matrix the factor in (8) is <span class="math inline">\(5/6\)</span>. The bound guarantees convergence but is pessimistic: it only promises linear convergence. Finding the largest entry needs a search over the off-diagonal entries before every rotation, about <span class="math inline">\(n^2\)</span> entries, and this search costs more and more as <span class="math inline">\(n\)</span> grows.</p>
+<p><strong>Cyclic Jacobi.</strong> The cyclic method drops the search and visits the entries in a fixed order, one <em>sweep</em> at a time: <span class="math inline">\(a_{12}, a_{13}, \ldots, a_{1n}\)</span>, then <span class="math inline">\(a_{23}, \ldots, a_{2n}\)</span>, and so on to <span class="math inline">\(a_{n-1,n}\)</span>. With a tolerance <span class="math inline">\(\epsilon\)</span>, the entry <span class="math inline">\(a_{pq}\)</span> is zeroed only if it is large compared with the root-mean-square diagonal entry:</p>
+<p><span class="math display">\[
+|a_{pq}| &gt; \epsilon \sqrt{T/n}.
+\tag{9}
+\]</span></p>
+<p>The textbook section linked from the module states, as a general theorem it does not prove, that the convergence rate is quadratic for both the classical and the cyclic method. The result is asymptotic. Once the off-diagonal entries are small, one sweep, or one batch of <span class="math inline">\(n(n-1)/2\)</span> classical rotations, reduces <span class="math inline">\(\operatorname{off}(\mathbf{D})\)</span> to at most a constant multiple of its square. Examples 1 and 2 below measure this.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Mathews’ stopping rules
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The examples use Mathews’ two subroutines exactly as written:</p>
+<ul>
+<li><strong>Classical</strong> (tolerance <span class="math inline">\(\epsilon\)</span>): find the entry <span class="math inline">\(a_{pq}\)</span> of largest magnitude, record <span class="math inline">\(|a_{pq}|\)</span>, rotate it to zero, then stop if the recorded <span class="math inline">\(|a_{pq}|\)</span> is less than <span class="math inline">\(\epsilon\sqrt{T/n}\)</span>, with <span class="math inline">\(T\)</span> taken from the matrix <em>after</em> the rotation. The rotation that triggers the stop is always carried out.</li>
+<li><strong>Cyclic</strong> (tolerance <span class="math inline">\(\epsilon\)</span>, at most <span class="math inline">\(m\)</span> sweeps): at the start of each sweep compute <span class="math inline">\(\sqrt{T/n}\)</span>, then visit <span class="math inline">\((p, q)\)</span> in row order and rotate every entry that satisfies (9) when it is reached. Stop after a sweep that makes no rotation, or after <span class="math inline">\(m\)</span> sweeps.</li>
+</ul>
+</div>
+</div>
+<p>Mathews’ module adds a remark. Demmel and Veselić (1992) showed that Jacobi’s method, with a proper stopping criterion, computes the small eigenvalues of symmetric <strong>positive definite</strong> matrices with a uniformly better relative-accuracy bound than QR, divide and conquer, bisection, or any method that first reduces the matrix to tridiagonal form. Mathews also notes that Jacobi’s method converges for every real symmetric matrix. In his 2004 assessment it is competitive with more sophisticated algorithms up to order <span class="math inline">\(10\)</span>, and acceptable up to order <span class="math inline">\(20\)</span> when speed is not a major concern.</p>
+</section>
+<section id="algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="algorithm">Algorithm</h2>
+<p>Given a real symmetric <span class="math inline">\(n \times n\)</span> matrix <span class="math inline">\(\mathbf{A}\)</span> and a tolerance <span class="math inline">\(\epsilon\)</span>:</p>
+<ol type="1">
+<li>Set <span class="math inline">\(\mathbf{D} = \mathbf{A}\)</span> and <span class="math inline">\(\mathbf{V} = \mathbf{I}\)</span>.</li>
+<li>Choose <span class="math inline">\((p, q)\)</span>: the largest <span class="math inline">\(|d_{pq}|\)</span> for the classical method, or the next pair in row order that satisfies (9) for the cyclic method.</li>
+<li>Compute <span class="math inline">\(\theta, t, c, s\)</span> from (6), update rows and columns <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> of <span class="math inline">\(\mathbf{D}\)</span> by (4) with <span class="math inline">\(d_{pq} = d_{qp} = 0\)</span>, and update columns <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> of <span class="math inline">\(\mathbf{V}\)</span>.</li>
+<li>Repeat steps 2 and 3 until the stopping rule above is met.</li>
+<li>The eigenvalues are the diagonal entries <span class="math inline">\(d_{kk}\)</span>, and column <span class="math inline">\(k\)</span> of <span class="math inline">\(\mathbf{V}\)</span> is a unit eigenvector for <span class="math inline">\(d_{kk}\)</span>.</li>
+</ol>
+<p>No starting vector, normalisation or shift is needed. <span class="math inline">\(\mathbf{V}\)</span> stays orthogonal, so its columns are always unit vectors.</p>
+</section>
+<section id="example-1-classical-jacobi-on-a-4-times-4-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-classical-jacobi-on-a-4-times-4-matrix">Example 1 — Classical Jacobi on a <span class="math inline">\(4 \times 4\)</span> Matrix</h2>
+<p>Use the classical Jacobi method to find all the eigenvalues and eigenvectors of</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 8 &amp; -1 &amp; 3 &amp; -1 \\ -1 &amp; 6 &amp; 2 &amp; 0 \\ 3 &amp; 2 &amp; 9 &amp; 1 \\ -1 &amp; 0 &amp; 1 &amp; 7 \end{pmatrix}.
+\]</span></p>
+<p>Mathews runs his classical subroutine with <span class="math inline">\(\epsilon = 10^{-11}\)</span>. At the start, <span class="math inline">\(S(\mathbf{A}) = 2\bigl(1^2 + 3^2 + 1^2 + 2^2 + 0^2 + 1^2\bigr) = 32\)</span>, so <span class="math inline">\(\operatorname{off}(\mathbf{A}) = \sqrt{32} = 5.657\)</span>.</p>
+<p><strong>Step 1</strong>: The largest off-diagonal entry is <span class="math inline">\(a_{13} = 3\)</span>, so <span class="math inline">\((p, q) = (1, 3)\)</span>. Formula (6) gives</p>
+<p><span class="math display">\[
+\theta = \frac{9 - 8}{2 \cdot 3} = \frac{1}{6}, \qquad
+t = \frac{1}{\tfrac16 + \sqrt{\tfrac1{36} + 1}} = \frac{\sqrt{37} - 1}{6} = 0.847127, \qquad
+c = 0.763020, \qquad s = 0.646375,
+\]</span></p>
+<p>a rotation through <span class="math inline">\(\phi = 40.27^\circ\)</span>. By (4), <span class="math inline">\(d_{11} = \tfrac{17}{2} - \tfrac{\sqrt{37}}{2} = 5.458619\)</span>, <span class="math inline">\(d_{33} = \tfrac{17}{2} + \tfrac{\sqrt{37}}{2} = 11.541381\)</span>, <span class="math inline">\(d_{21} = c\,a_{21} - s\,a_{23} = -0.763020 - 2(0.646375) = -2.055770\)</span>, and so on:</p>
+<p><span class="math display">\[
+\mathbf{D}_1 = \begin{pmatrix}
+5.458619 &amp; -2.055770 &amp; 0 &amp; -1.409395 \\
+-2.055770 &amp; 6.000000 &amp; 0.879665 &amp; 0 \\
+0 &amp; 0.879665 &amp; 11.541381 &amp; 0.116645 \\
+-1.409395 &amp; 0 &amp; 0.116645 &amp; 7.000000
+\end{pmatrix}.
+\]</span></p>
+<p>The sum of squares has dropped from <span class="math inline">\(32\)</span> to <span class="math inline">\(32 - 2(3^2) = 14\)</span>, as (7) requires.</p>
+<p><strong>Step 2</strong>: The largest entry is now <span class="math inline">\(d_{12} = -2.055770\)</span>. Then <span class="math inline">\(\theta = (6 - 5.458619)/(2 \cdot (-2.055770)) = -0.131674\)</span>, <span class="math inline">\(t = -0.876958\)</span>, <span class="math inline">\(c = 0.751847\)</span> and <span class="math inline">\(s = -0.659338\)</span>, and</p>
+<p><span class="math display">\[
+\mathbf{D}_2 = \begin{pmatrix}
+3.655795 &amp; 0 &amp; 0.579997 &amp; -1.059649 \\
+0 &amp; 7.802824 &amp; 0.661373 &amp; 0.929268 \\
+0.579997 &amp; 0.661373 &amp; 11.541381 &amp; 0.116645 \\
+-1.059649 &amp; 0.929268 &amp; 0.116645 &amp; 7.000000
+\end{pmatrix}.
+\]</span></p>
+<p>The rotation in the <span class="math inline">\((1, 2)\)</span> plane has made <span class="math inline">\(d_{13}\)</span> and <span class="math inline">\(d_{24}\)</span> nonzero again, but the total <span class="math inline">\(S\)</span> has fallen to <span class="math inline">\(14 - 2(2.055770^2) = 5.547621\)</span>.</p>
+<p><strong>Steps 3 to 20</strong>: The table lists every rotation of the run. It gives the pair <span class="math inline">\((p, q)\)</span> zeroed, the magnitude <span class="math inline">\(|a_{pq}|\)</span> removed, the diagonal of <span class="math inline">\(\mathbf{D}_k\)</span> after the rotation (6 decimals) and <span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 15%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: center;"><span class="math inline">\((p, q)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\lvert a_{pq}\rvert\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{11}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{22}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{33}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{44}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">8.000000</td>
+<td style="text-align: right;">6.000000</td>
+<td style="text-align: right;">9.000000</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;"><span class="math inline">\(5.657\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.000\)</span></td>
+<td style="text-align: right;">5.458619</td>
+<td style="text-align: right;">6.000000</td>
+<td style="text-align: right;">11.541381</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;"><span class="math inline">\(3.742\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.056\)</span></td>
+<td style="text-align: right;">3.655795</td>
+<td style="text-align: right;">7.802824</td>
+<td style="text-align: right;">11.541381</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;"><span class="math inline">\(2.355\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: center;"><span class="math inline">\((1,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.060\)</span></td>
+<td style="text-align: right;">3.348306</td>
+<td style="text-align: right;">7.802824</td>
+<td style="text-align: right;">11.541381</td>
+<td style="text-align: right;">7.307489</td>
+<td style="text-align: right;"><span class="math inline">\(1.817\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: center;"><span class="math inline">\((2,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.8925\)</span></td>
+<td style="text-align: right;">3.348306</td>
+<td style="text-align: right;">8.481337</td>
+<td style="text-align: right;">11.541381</td>
+<td style="text-align: right;">6.628976</td>
+<td style="text-align: right;"><span class="math inline">\(1.307\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.5895\)</span></td>
+<td style="text-align: right;">3.306104</td>
+<td style="text-align: right;">8.481337</td>
+<td style="text-align: right;">11.583583</td>
+<td style="text-align: right;">6.628976</td>
+<td style="text-align: right;"><span class="math inline">\(1.007\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: center;"><span class="math inline">\((2,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.5099\)</span></td>
+<td style="text-align: right;">3.306104</td>
+<td style="text-align: right;">8.399672</td>
+<td style="text-align: right;">11.665248</td>
+<td style="text-align: right;">6.628976</td>
+<td style="text-align: right;"><span class="math inline">\(0.7027\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: center;"><span class="math inline">\((3,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.4442\)</span></td>
+<td style="text-align: right;">3.306104</td>
+<td style="text-align: right;">8.399672</td>
+<td style="text-align: right;">11.704123</td>
+<td style="text-align: right;">6.590100</td>
+<td style="text-align: right;"><span class="math inline">\(0.3151\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1680\)</span></td>
+<td style="text-align: right;">3.300567</td>
+<td style="text-align: right;">8.405210</td>
+<td style="text-align: right;">11.704123</td>
+<td style="text-align: right;">6.590100</td>
+<td style="text-align: right;"><span class="math inline">\(0.2069\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: center;"><span class="math inline">\((1,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1244\)</span></td>
+<td style="text-align: right;">3.295870</td>
+<td style="text-align: right;">8.405210</td>
+<td style="text-align: right;">11.704123</td>
+<td style="text-align: right;">6.594797</td>
+<td style="text-align: right;"><span class="math inline">\(0.1088\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: center;"><span class="math inline">\((2,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.06676\)</span></td>
+<td style="text-align: right;">3.295870</td>
+<td style="text-align: right;">8.407668</td>
+<td style="text-align: right;">11.704123</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(0.05415\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.03786\)</span></td>
+<td style="text-align: right;">3.295700</td>
+<td style="text-align: right;">8.407668</td>
+<td style="text-align: right;">11.704293</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(0.008120\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td style="text-align: center;"><span class="math inline">\((2,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.004995\)</span></td>
+<td style="text-align: right;">3.295700</td>
+<td style="text-align: right;">8.407661</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(0.004005\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.002541\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(0.001767\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14</td>
+<td style="text-align: center;"><span class="math inline">\((3,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.001246\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(1.234 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">15</td>
+<td style="text-align: center;"><span class="math inline">\((1,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(8.715 \times 10^{-5}\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(6.066 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.829 \times 10^{-6}\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(2.732 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">17</td>
+<td style="text-align: center;"><span class="math inline">\((2,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.932 \times 10^{-6}\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(2.047 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">18</td>
+<td style="text-align: center;"><span class="math inline">\((2,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.443 \times 10^{-9}\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(1.603 \times 10^{-10}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">19</td>
+<td style="text-align: center;"><span class="math inline">\((3,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.012 \times 10^{-10}\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(7.223 \times 10^{-11}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.107 \times 10^{-11}\)</span></td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;"><span class="math inline">\(1.167 \times 10^{-17}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The pair <span class="math inline">\((1, 3)\)</span> is zeroed four times, at <span class="math inline">\(k = 1, 5, 11\)</span> and <span class="math inline">\(16\)</span>. In this run the largest off-diagonal entry shrinks at every rotation. The stopping threshold is <span class="math inline">\(\epsilon\sqrt{T/n} = 8.093 \times 10^{-11}\)</span> from rotation 8 on (it grows from <span class="math inline">\(7.874 \times 10^{-11}\)</span> after rotation 1 as weight moves onto the diagonal). Rotation 19 removes <span class="math inline">\(1.012 \times 10^{-10}\)</span>, above the threshold, so the run continues. Rotation 20 removes <span class="math inline">\(5.107 \times 10^{-11}\)</span>, below it, so the run stops after 20 rotations. From rotation 13 on, all four diagonal entries agree with their final values to six decimals.</p>
+<p><strong>Rate.</strong> The ratio <span class="math inline">\(S(\mathbf{D}_k)/S(\mathbf{D}_{k-1})\)</span> never exceeds <span class="math inline">\(0.595\)</span> (at <span class="math inline">\(k = 3\)</span>), well inside the bound <span class="math inline">\(5/6\)</span> of (8). Over batches of <span class="math inline">\(n(n-1)/2 = 6\)</span> rotations, <span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span> goes from <span class="math inline">\(5.657\)</span> to <span class="math inline">\(0.7027\)</span> (<span class="math inline">\(k = 6\)</span>), <span class="math inline">\(0.004005\)</span> (<span class="math inline">\(k = 12\)</span>) and <span class="math inline">\(1.603 \times 10^{-10}\)</span> (<span class="math inline">\(k = 18\)</span>). The ratio <span class="math inline">\(\operatorname{off}(\mathbf{D}_{k+6})/\operatorname{off}(\mathbf{D}_k)^2\)</span> is <span class="math inline">\(0.022\)</span>, <span class="math inline">\(0.0081\)</span> and <span class="math inline">\(1.0 \times 10^{-5}\)</span>, so each batch did at least square the off-diagonal norm, as the quadratic convergence theorem predicts.</p>
+<p><strong>Result.</strong> With <span class="math inline">\(\mathbf{V} = \mathbf{R}_1\mathbf{R}_2\cdots\mathbf{R}_{20}\)</span>,</p>
+<p><span class="math display">\[
+\mathbf{D}_{20} \approx \operatorname{diag}(3.295699,\ 8.407662,\ 11.704301,\ 6.592338),
+\qquad
+\mathbf{V} = \begin{pmatrix}
+0.528779 &amp; -0.573042 &amp; 0.582298 &amp; 0.230097 \\
+0.591967 &amp; 0.472301 &amp; 0.175776 &amp; -0.628975 \\
+-0.536039 &amp; 0.282050 &amp; 0.792487 &amp; -0.071235 \\
+0.287455 &amp; 0.607455 &amp; 0.044680 &amp; 0.739169
+\end{pmatrix}.
+\]</span></p>
+<p>This agrees with Mathews’ printed output, <span class="math inline">\(\Lambda = \operatorname{diag}(3.2957, 8.40766, 11.7043, 6.59234)\)</span> and the same <span class="math inline">\(\mathbf{V}\)</span> to six significant figures.</p>
+<p><strong>Verification:</strong> Column <span class="math inline">\(k\)</span> of <span class="math inline">\(\mathbf{V}\)</span> is <span class="math inline">\(\mathbf{X}_k\)</span>, and <span class="math inline">\(\lambda_k\)</span> is the <span class="math inline">\(k\)</span>th diagonal entry. Each row of the table compares <span class="math inline">\(\mathbf{A}\mathbf{X}_k\)</span> with <span class="math inline">\(\lambda_k\mathbf{X}_k\)</span> (6 decimals). The residual <span class="math inline">\(\lVert\mathbf{A}\mathbf{X}_k - \lambda_k\mathbf{X}_k\rVert\)</span> comes from the same run carried out in 300-bit arithmetic, so it measures how far the iteration was taken, not rounding.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 22%">
+<col style="width: 22%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\lambda_k\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\mathbf{A}\mathbf{X}_k\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(\lambda_k\mathbf{X}_k\)</span></th>
+<th style="text-align: right;">residual</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: center;"><span class="math inline">\((1.742697,\ 1.950944,\ -1.766622,\ 0.947363)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((1.742697,\ 1.950944,\ -1.766622,\ 0.947363)\)</span> ✓</td>
+<td style="text-align: right;"><span class="math inline">\(8.3 \times 10^{-18}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: center;"><span class="math inline">\((-4.817945,\ 3.970949,\ 2.371379,\ 5.107280)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((-4.817945,\ 3.970949,\ 2.371379,\ 5.107280)\)</span> ✓</td>
+<td style="text-align: right;"><span class="math inline">\(4.4 \times 10^{-20}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: center;"><span class="math inline">\((6.815387,\ 2.057330,\ 9.275510,\ 0.522952)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((6.815387,\ 2.057330,\ 9.275510,\ 0.522952)\)</span> ✓</td>
+<td style="text-align: right;"><span class="math inline">\(2.2 \times 10^{-20}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: center;"><span class="math inline">\((1.516875,\ -4.146417,\ -0.469603,\ 4.872855)\)</span></td>
+<td style="text-align: center;"><span class="math inline">\((1.516875,\ -4.146417,\ -0.469603,\ 4.872855)\)</span> ✓</td>
+<td style="text-align: right;"><span class="math inline">\(8.3 \times 10^{-18}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The same run in ordinary double precision takes the same 20 rotations and leaves residuals between <span class="math inline">\(6.7 \times 10^{-16}\)</span> and <span class="math inline">\(2.9 \times 10^{-15}\)</span>. A library eigensolver gives the eigenvalues <span class="math inline">\(3.29569866\)</span>, <span class="math inline">\(6.59233804\)</span>, <span class="math inline">\(8.40766196\)</span> and <span class="math inline">\(11.70430134\)</span>. Mathews compares with Mathematica’s <code>Eigensystem</code>, which lists them in decreasing order and returns the same unit eigenvectors, the one for <span class="math inline">\(11.7043\)</span> with the opposite sign.</p>
+</section>
+<section id="example-2-cyclic-jacobi-on-the-same-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-cyclic-jacobi-on-the-same-matrix">Example 2 — Cyclic Jacobi on the Same Matrix</h2>
+<p>Use the cyclic Jacobi method to find all the eigenvalues and eigenvectors of the same matrix <span class="math inline">\(\mathbf{A}\)</span> as in Example 1.</p>
+<p>Mathews runs his cyclic subroutine with <span class="math inline">\(\epsilon = 10^{-11}\)</span> and at most <span class="math inline">\(m = 50\)</span> sweeps. In the first sweep, <span class="math inline">\(\sqrt{T/n} = \sqrt{(64 + 36 + 81 + 49)/4} = \sqrt{57.5} = 7.582875\)</span>, so an entry is zeroed if its magnitude exceeds <span class="math inline">\(7.583 \times 10^{-11}\)</span>. The thresholds of later sweeps are <span class="math inline">\(8.001 \times 10^{-11}\)</span> and then <span class="math inline">\(8.093 \times 10^{-11}\)</span>.</p>
+<p><strong>Step 1</strong>: The first pair visited is <span class="math inline">\((1, 2)\)</span>, with <span class="math inline">\(a_{12} = -1\)</span>. Then <span class="math inline">\(\theta = (6 - 8)/(2 \cdot (-1)) = 1\)</span>, <span class="math inline">\(t = 1/(1 + \sqrt 2) = 0.414214\)</span>, and the rotation puts the eigenvalues of the leading <span class="math inline">\(2 \times 2\)</span> block, <span class="math inline">\(7 \pm \sqrt 2\)</span>, on the diagonal: <span class="math inline">\(d_{11} = 8.414214\)</span> and <span class="math inline">\(d_{22} = 5.585786\)</span>. This removes only <span class="math inline">\(2(1^2) = 2\)</span> from <span class="math inline">\(S\)</span>, against <span class="math inline">\(18\)</span> for the classical method’s first choice, <span class="math inline">\(a_{13} = 3\)</span>.</p>
+<p><strong>Steps 2 to 20</strong>: Every rotation of the run, in order:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: center;">sweep</th>
+<th style="text-align: center;"><span class="math inline">\((p, q)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\lvert a_{pq}\rvert\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{11}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{22}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{33}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(d_{44}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">8.000000</td>
+<td style="text-align: right;">6.000000</td>
+<td style="text-align: right;">9.000000</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;"><span class="math inline">\(5.657\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.000\)</span></td>
+<td style="text-align: right;">8.414214</td>
+<td style="text-align: right;">5.585786</td>
+<td style="text-align: right;">9.000000</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;"><span class="math inline">\(5.477\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.006\)</span></td>
+<td style="text-align: right;">6.679568</td>
+<td style="text-align: right;">5.585786</td>
+<td style="text-align: right;">10.734645</td>
+<td style="text-align: right;">7.000000</td>
+<td style="text-align: right;"><span class="math inline">\(4.685\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\((1,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.353\)</span></td>
+<td style="text-align: right;">5.477412</td>
+<td style="text-align: right;">5.585786</td>
+<td style="text-align: right;">10.734645</td>
+<td style="text-align: right;">8.202156</td>
+<td style="text-align: right;"><span class="math inline">\(4.277\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\((2,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.266\)</span></td>
+<td style="text-align: right;">5.477412</td>
+<td style="text-align: right;">4.730439</td>
+<td style="text-align: right;">11.589993</td>
+<td style="text-align: right;">8.202156</td>
+<td style="text-align: right;"><span class="math inline">\(2.832\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\((2,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.9098\)</span></td>
+<td style="text-align: right;">5.477412</td>
+<td style="text-align: right;">4.506456</td>
+<td style="text-align: right;">11.589993</td>
+<td style="text-align: right;">8.426139</td>
+<td style="text-align: right;"><span class="math inline">\(2.522\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;"><span class="math inline">\((3,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.4515\)</span></td>
+<td style="text-align: right;">5.477412</td>
+<td style="text-align: right;">4.506456</td>
+<td style="text-align: right;">11.653171</td>
+<td style="text-align: right;">8.362961</td>
+<td style="text-align: right;"><span class="math inline">\(2.440\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.596\)</span></td>
+<td style="text-align: right;">6.660324</td>
+<td style="text-align: right;">3.323544</td>
+<td style="text-align: right;">11.653171</td>
+<td style="text-align: right;">8.362961</td>
+<td style="text-align: right;"><span class="math inline">\(0.9266\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.3859\)</span></td>
+<td style="text-align: right;">6.630674</td>
+<td style="text-align: right;">3.323544</td>
+<td style="text-align: right;">11.682821</td>
+<td style="text-align: right;">8.362961</td>
+<td style="text-align: right;"><span class="math inline">\(0.7489\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\((1,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.2640\)</span></td>
+<td style="text-align: right;">6.591330</td>
+<td style="text-align: right;">3.323544</td>
+<td style="text-align: right;">11.682821</td>
+<td style="text-align: right;">8.402305</td>
+<td style="text-align: right;"><span class="math inline">\(0.6491\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\((2,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.4218\)</span></td>
+<td style="text-align: right;">6.591330</td>
+<td style="text-align: right;">3.302318</td>
+<td style="text-align: right;">11.704047</td>
+<td style="text-align: right;">8.402305</td>
+<td style="text-align: right;"><span class="math inline">\(0.2562\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\((2,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.1691\)</span></td>
+<td style="text-align: right;">6.591330</td>
+<td style="text-align: right;">3.296716</td>
+<td style="text-align: right;">11.704047</td>
+<td style="text-align: right;">8.407908</td>
+<td style="text-align: right;"><span class="math inline">\(0.09174\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;"><span class="math inline">\((3,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.02858\)</span></td>
+<td style="text-align: right;">6.591330</td>
+<td style="text-align: right;">3.296716</td>
+<td style="text-align: right;">11.704294</td>
+<td style="text-align: right;">8.407660</td>
+<td style="text-align: right;"><span class="math inline">\(0.08236\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.05789\)</span></td>
+<td style="text-align: right;">6.592347</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704294</td>
+<td style="text-align: right;">8.407660</td>
+<td style="text-align: right;"><span class="math inline">\(0.008887\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.005908\)</span></td>
+<td style="text-align: right;">6.592340</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">8.407660</td>
+<td style="text-align: right;"><span class="math inline">\(0.003029\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">15</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\((1,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.001866\)</span></td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;"><span class="math inline">\(0.001486\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\((2,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.001051\)</span></td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;"><span class="math inline">\(3.493 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">17</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\((2,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.457 \times 10^{-5}\)</span></td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;"><span class="math inline">\(3.522 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">18</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\((3,4)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.160 \times 10^{-6}\)</span></td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;"><span class="math inline">\(1.753 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">19</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\((1,2)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.240 \times 10^{-6}\)</span></td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;"><span class="math inline">\(3.355 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\((1,3)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.372 \times 10^{-9}\)</span></td>
+<td style="text-align: right;">6.592338</td>
+<td style="text-align: right;">3.295699</td>
+<td style="text-align: right;">11.704301</td>
+<td style="text-align: right;">8.407662</td>
+<td style="text-align: right;"><span class="math inline">\(1.693 \times 10^{-11}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Sweeps 1 to 3 rotate all six pairs. In sweep 4 only <span class="math inline">\((1, 2)\)</span> and <span class="math inline">\((1, 3)\)</span> are above the threshold: the entries left at <span class="math inline">\((1, 4)\)</span> and <span class="math inline">\((2, 3)\)</span> are <span class="math inline">\(5.96 \times 10^{-12}\)</span> and <span class="math inline">\(1.04 \times 10^{-11}\)</span>. Sweep 5 finds nothing to rotate, so the run stops after 5 sweeps and 20 rotations. Unlike the classical run, the magnitudes removed do not decrease steadily: in sweep 2, <span class="math inline">\(|a_{23}| = 0.4218\)</span> comes after <span class="math inline">\(|a_{14}| = 0.2640\)</span>.</p>
+<p><strong>Rate.</strong> Measured after each sweep:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">sweep</th>
+<th style="text-align: right;">rotations</th>
+<th style="text-align: right;"><span class="math inline">\(\operatorname{off}(\mathbf{D})\)</span> after the sweep</th>
+<th style="text-align: right;"><span class="math inline">\(\operatorname{off}_{\text{new}}/\operatorname{off}_{\text{old}}^2\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0 (start)</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;"><span class="math inline">\(5.657\)</span></td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;"><span class="math inline">\(2.440\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.076\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;"><span class="math inline">\(0.08236\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.014\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;"><span class="math inline">\(1.753 \times 10^{-6}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.6 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><span class="math inline">\(1.693 \times 10^{-11}\)</span></td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><span class="math inline">\(1.693 \times 10^{-11}\)</span></td>
+<td style="text-align: right;">—</td>
+</tr>
+</tbody>
+</table>
+<p>Each of the first three sweeps reduces <span class="math inline">\(\operatorname{off}(\mathbf{D})\)</span> to a small multiple of the square of its previous value: quadratic or better. Sweep 4 is a partial sweep, so its ratio is not comparable. The classical method gets more from each rotation on this matrix. After <span class="math inline">\(6\)</span>, <span class="math inline">\(12\)</span> and <span class="math inline">\(18\)</span> rotations, its <span class="math inline">\(\operatorname{off}(\mathbf{D}_k)\)</span> is <span class="math inline">\(0.7027\)</span>, <span class="math inline">\(0.004005\)</span> and <span class="math inline">\(1.603 \times 10^{-10}\)</span>, against <span class="math inline">\(2.440\)</span>, <span class="math inline">\(0.08236\)</span> and <span class="math inline">\(1.753 \times 10^{-6}\)</span> for the cyclic method. Each cyclic rotation, however, skips the search for the largest entry.</p>
+<p><strong>Result.</strong></p>
+<p><span class="math display">\[
+\mathbf{D} \approx \operatorname{diag}(6.592338,\ 3.295699,\ 11.704301,\ 8.407662),
+\qquad
+\mathbf{V} = \begin{pmatrix}
+0.230097 &amp; 0.528779 &amp; 0.582298 &amp; -0.573042 \\
+-0.628975 &amp; 0.591967 &amp; 0.175776 &amp; 0.472301 \\
+-0.071235 &amp; -0.536039 &amp; 0.792487 &amp; 0.282050 \\
+0.739169 &amp; 0.287455 &amp; 0.044680 &amp; 0.607455
+\end{pmatrix}.
+\]</span></p>
+<p>These are the eigenpairs of Example 1 in a different order (the same columns, permuted), as in Mathews’ printed output, <span class="math inline">\(\Lambda = \operatorname{diag}(6.59234, 3.2957, 11.7043, 8.40766)\)</span>.</p>
+<p><strong>Verification:</strong> In 300-bit arithmetic the residuals <span class="math inline">\(\lVert\mathbf{A}\mathbf{X}_k - \lambda_k\mathbf{X}_k\rVert\)</span> are <span class="math inline">\(5.96 \times 10^{-12}\)</span>, <span class="math inline">\(1.04 \times 10^{-11}\)</span>, <span class="math inline">\(1.04 \times 10^{-11}\)</span> and <span class="math inline">\(5.96 \times 10^{-12}\)</span> for <span class="math inline">\(k = 1, \ldots, 4\)</span>, and the double-precision run gives the same values to three digits. These residuals are larger than in Example 1 because the cyclic run stops with off-diagonal entries of up to <span class="math inline">\(1.04 \times 10^{-11}\)</span> still in place: rule (9) leaves them alone. The classical run’s last rotation, by contrast, leaves no off-diagonal entry above <span class="math inline">\(10^{-17}\)</span> (in 300-bit arithmetic). Both pass Mathews’ stopping test <span class="math inline">\(\epsilon\sqrt{T/n} = 8.093 \times 10^{-11}\)</span> with <span class="math inline">\(\epsilon = 10^{-11}\)</span>.</p>
+</section>
+<section id="examples-3-to-5-which-method-is-faster" class="level2">
+<h2 class="anchored" data-anchor-id="examples-3-to-5-which-method-is-faster">Examples 3 to 5 — Which Method Is Faster?</h2>
+<p>The textbook says that the search for the largest entry makes the classical method slow. In Example 3 Mathews asks whether the cost might instead lie in computing <span class="math inline">\(\sqrt{T/n}\)</span> at every step. He times both subroutines in Mathematica on random symmetric matrices, built as <span class="math inline">\(\mathbf{B} + \mathbf{B}^T\)</span> with <span class="math inline">\(\mathbf{B}\)</span> having random integer entries from <span class="math inline">\(-10\)</span> to <span class="math inline">\(10\)</span>. The classical runs use <span class="math inline">\(\epsilon = 10^{-8}\)</span>; the cyclic runs use <span class="math inline">\(\epsilon = 10^{-11}\)</span> and <span class="math inline">\(m = 50\)</span>. Example 4 adds Mathematica’s built-in <code>Eigensystem</code>. Example 5 writes the rotation directly into the cyclic loop instead of calling a separate rotation subroutine. That version performs exactly the same rotations, so only its running time differs. His reported timings (2004 hardware; the matrices were random and differ from run to run, so they cannot be reproduced) were:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Example</th>
+<th style="text-align: center;">size</th>
+<th style="text-align: right;">classical</th>
+<th style="text-align: right;">cyclic</th>
+<th style="text-align: right;">cyclic, rotation inlined</th>
+<th style="text-align: right;"><code>Eigensystem</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(5 \times 5\)</span></td>
+<td style="text-align: right;">0.06 s</td>
+<td style="text-align: right;">0.05 s</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(10 \times 10\)</span></td>
+<td style="text-align: right;">0.16 s</td>
+<td style="text-align: right;">0.17 s</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3</td>
+<td style="text-align: center;"><span class="math inline">\(20 \times 20\)</span></td>
+<td style="text-align: right;">1.98 s</td>
+<td style="text-align: right;">0.77 s</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(10 \times 10\)</span></td>
+<td style="text-align: right;">0.17 s</td>
+<td style="text-align: right;">0.11 s</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0. s</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(20 \times 20\)</span></td>
+<td style="text-align: right;">2.14 s</td>
+<td style="text-align: right;">0.71 s</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0. s</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">4</td>
+<td style="text-align: center;"><span class="math inline">\(30 \times 30\)</span></td>
+<td style="text-align: right;">8.78 s</td>
+<td style="text-align: right;">3.03 s</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0. s</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;"><span class="math inline">\(10 \times 10\)</span></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.11 s</td>
+<td style="text-align: right;">0.06 s</td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">5</td>
+<td style="text-align: center;"><span class="math inline">\(20 \times 20\)</span></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.71 s</td>
+<td style="text-align: right;">0.44 s</td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<p>In Example 3 the two methods took about the same time at <span class="math inline">\(5 \times 5\)</span> and <span class="math inline">\(10 \times 10\)</span>; in Example 4 the cyclic method was faster at <span class="math inline">\(10 \times 10\)</span> (<span class="math inline">\(0.11\)</span> s against <span class="math inline">\(0.17\)</span> s). At <span class="math inline">\(20 \times 20\)</span> and <span class="math inline">\(30 \times 30\)</span> the cyclic method was <span class="math inline">\(2.6\)</span>, <span class="math inline">\(3.0\)</span> and <span class="math inline">\(2.9\)</span> times faster. The built-in routine registered no measurable time. Mathews points out that Mathematica, Maple and MATLAB interpret code like this rather than compiling it, and compiled languages such as FORTRAN and C will always be faster.</p>
+<p>Running times depend on the machine, but the work each method does does not, so it can be recounted. The table below reruns both subroutines, with Mathews’ tolerances, on the two matrices his notebook prints (Example 3’s <span class="math inline">\(5 \times 5\)</span> and Example 4’s <span class="math inline">\(10 \times 10\)</span>), and then on 100 random matrices of each size built his way (seeded generator, so not his matrices). For the classical method it counts the entries searched: Mathews’ subroutine forms the whole <span class="math inline">\(n \times n\)</span> matrix <span class="math inline">\(|\mathbf{A} - \operatorname{diag}(\mathbf{A})|\)</span> before every rotation. For the cyclic method it counts the entries tested by rule (9), which is <span class="math inline">\(n(n-1)/2\)</span> per sweep.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">matrix</th>
+<th style="text-align: right;">classical rotations</th>
+<th style="text-align: right;">entries searched (classical)</th>
+<th style="text-align: right;">cyclic rotations</th>
+<th style="text-align: right;">cyclic sweeps</th>
+<th style="text-align: right;">entries tested (cyclic)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Mathews’ <span class="math inline">\(5 \times 5\)</span></td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">750</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">60</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mathews’ <span class="math inline">\(10 \times 10\)</span></td>
+<td style="text-align: right;">139</td>
+<td style="text-align: right;">13 900</td>
+<td style="text-align: right;">213</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">270</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">random <span class="math inline">\(5 \times 5\)</span> (mean of 100)</td>
+<td style="text-align: right;">28.4</td>
+<td style="text-align: right;">710</td>
+<td style="text-align: right;">37.8</td>
+<td style="text-align: right;">5–6</td>
+<td style="text-align: right;">54</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">random <span class="math inline">\(10 \times 10\)</span> (mean of 100)</td>
+<td style="text-align: right;">139.1</td>
+<td style="text-align: right;">13 914</td>
+<td style="text-align: right;">213.0</td>
+<td style="text-align: right;">6–7</td>
+<td style="text-align: right;">297</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">random <span class="math inline">\(20 \times 20\)</span> (mean of 100)</td>
+<td style="text-align: right;">611.2</td>
+<td style="text-align: right;">244 500</td>
+<td style="text-align: right;">1 062.8</td>
+<td style="text-align: right;">7–8</td>
+<td style="text-align: right;">1 461</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">random <span class="math inline">\(30 \times 30\)</span> (mean of 100)</td>
+<td style="text-align: right;">1 424.5</td>
+<td style="text-align: right;">1 282 059</td>
+<td style="text-align: right;">2 594.7</td>
+<td style="text-align: right;">8–9</td>
+<td style="text-align: right;">3 497</td>
+</tr>
+</tbody>
+</table>
+<p>The classical method needs fewer rotations, about 55% to 75% as many as the cyclic method in these runs (with tighter equal tolerances <span class="math inline">\(\epsilon = 10^{-11}\)</span> the counts for Mathews’ two matrices are 33 and 154 classical against 42 and 213 cyclic). But each rotation rewrites only rows and columns <span class="math inline">\(p\)</span> and <span class="math inline">\(q\)</span> of <span class="math inline">\(\mathbf{D}\)</span> and two columns of <span class="math inline">\(\mathbf{V}\)</span>, about <span class="math inline">\(6n\)</span> numbers. The classical search reads <span class="math inline">\(n^2\)</span> entries before every rotation and <span class="math inline">\(\sqrt{T/n}\)</span> needs only <span class="math inline">\(n\)</span> squares. So the search, not <span class="math inline">\(\sqrt{T/n}\)</span>, is the part of the classical step that grows fastest with <span class="math inline">\(n\)</span>: <span class="math inline">\(400\)</span> entries per rotation at <span class="math inline">\(n = 20\)</span> against about <span class="math inline">\(120\)</span> numbers rewritten. Mathews’ timings agree. Both subroutines return the eigenvalues of the two printed matrices to within <span class="math inline">\(1.1 \times 10^{-13}\)</span> of a library eigensolver’s.</p>
+</section>
+<section id="example-6-an-eigenvalue-movie" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-an-eigenvalue-movie">Example 6 — An Eigenvalue Movie</h2>
+<p>Cleve Moler’s MATLAB demonstration <code>eigmovie</code> shows the computation of the eigenvalues of a symmetric matrix as a movie. Mathews builds a Mathematica version “in the spirit of” it. His cyclic subroutine draws the matrix as a surface <span class="math inline">\(u = a_{ij}\)</span> over the grid of indices <span class="math inline">\((i, j)\)</span>, with vertical range <span class="math inline">\(-4\)</span> to <span class="math inline">\(14\)</span>, once at the start and again after every rotation. His text says the graph is drawn after each “cycle”, but the plotting command sits inside the rotation step. The matrix is</p>
+<p><span class="math display">\[
+\mathbf{A} = \begin{pmatrix} 8 &amp; -1 &amp; 3 &amp; -4 &amp; 4 \\ -1 &amp; 6 &amp; 2 &amp; 0 &amp; 5 \\ 3 &amp; 2 &amp; 9 &amp; 1 &amp; 1 \\ -4 &amp; 0 &amp; 1 &amp; 7 &amp; 0 \\ 4 &amp; 5 &amp; 1 &amp; 0 &amp; 1 \end{pmatrix},
+\]</span></p>
+<p>run with the loose tolerance <span class="math inline">\(\epsilon = 0.2\)</span> and at most <span class="math inline">\(m = 50\)</span> sweeps. Initially <span class="math inline">\(\sqrt{T/n} = 6.797058\)</span> and <span class="math inline">\(\operatorname{off}(\mathbf{A}) = 12.08\)</span>.</p>
+<p><strong>Sweep 1</strong> (threshold <span class="math inline">\(0.2 \times 6.797058 = 1.359\)</span>): six rotations, at <span class="math inline">\((1,3)\)</span>, <span class="math inline">\((1,4)\)</span>, <span class="math inline">\((1,5)\)</span>, <span class="math inline">\((2,5)\)</span>, <span class="math inline">\((3,4)\)</span> and <span class="math inline">\((3,5)\)</span>, removing entries of magnitude <span class="math inline">\(3.000\)</span>, <span class="math inline">\(3.698\)</span>, <span class="math inline">\(1.867\)</span>, <span class="math inline">\(5.027\)</span>, <span class="math inline">\(1.414\)</span> and <span class="math inline">\(3.080\)</span>. The pairs <span class="math inline">\((1,2)\)</span>, <span class="math inline">\((2,3)\)</span>, <span class="math inline">\((2,4)\)</span> and <span class="math inline">\((4,5)\)</span> are below the threshold when they are reached. Afterwards <span class="math inline">\(\operatorname{off}(\mathbf{D}) = 4.489\)</span>.</p>
+<p><strong>Sweep 2</strong> (threshold <span class="math inline">\(1.690\)</span>): one rotation, at <span class="math inline">\((2,3)\)</span>, removing <span class="math inline">\(1.781\)</span>. Afterwards <span class="math inline">\(\operatorname{off}(\mathbf{D}) = 3.716\)</span>.</p>
+<p><strong>Sweep 3</strong> (threshold <span class="math inline">\(1.705\)</span>): the largest off-diagonal entry left is <span class="math inline">\(1.600\)</span>, so nothing is rotated and the run stops.</p>
+<p>That is 7 rotations, so the movie has 8 frames, the initial matrix and one after each rotation. The archive holds exactly these 8 graphs. The final diagonal,</p>
+<p><span class="math display">\[
+(3.7284,\ 8.1326,\ 13.630,\ 9.1656,\ -3.6565),
+\]</span></p>
+<p>is still far from the eigenvalues <span class="math inline">\(3.394496\)</span>, <span class="math inline">\(7.186877\)</span>, <span class="math inline">\(13.921745\)</span>, <span class="math inline">\(10.280740\)</span> and <span class="math inline">\(-3.783859\)</span> (errors <span class="math inline">\(0.33\)</span>, <span class="math inline">\(0.95\)</span>, <span class="math inline">\(0.29\)</span>, <span class="math inline">\(1.12\)</span> and <span class="math inline">\(0.13\)</span>). With <span class="math inline">\(\epsilon = 0.2\)</span> the movie shows the first stage of the diagonalisation, not the converged result. Rerun with <span class="math inline">\(\epsilon = 10^{-11}\)</span>, the same matrix takes 6 sweeps and 39 rotations, and <span class="math inline">\(\operatorname{off}(\mathbf{D})\)</span> falls as follows:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">sweep</th>
+<th style="text-align: right;">rotations</th>
+<th style="text-align: right;"><span class="math inline">\(\operatorname{off}(\mathbf{D})\)</span> after the sweep</th>
+<th style="text-align: left;">diagonal after the sweep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0 (start)</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;"><span class="math inline">\(12.08\)</span></td>
+<td style="text-align: left;"><span class="math inline">\((8,\ 6,\ 9,\ 7,\ 1)\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><span class="math inline">\(4.185\)</span></td>
+<td style="text-align: left;"><span class="math inline">\((3.487821,\ 8.466674,\ 12.718382,\ 10.014176,\ -3.687053)\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><span class="math inline">\(0.4553\)</span></td>
+<td style="text-align: left;"><span class="math inline">\((3.398799,\ 7.196640,\ 13.909721,\ 10.278687,\ -3.783847)\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;"><span class="math inline">\(0.002857\)</span></td>
+<td style="text-align: left;"><span class="math inline">\((3.394498,\ 7.186876,\ 13.921745,\ 10.280740,\ -3.783859)\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;"><span class="math inline">\(2.357 \times 10^{-10}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\((3.394496,\ 7.186877,\ 13.921745,\ 10.280740,\ -3.783859)\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;"><span class="math inline">\(1.591 \times 10^{-11}\)</span></td>
+<td style="text-align: left;">unchanged to 6 decimals</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;"><span class="math inline">\(1.591 \times 10^{-11}\)</span></td>
+<td style="text-align: left;">unchanged</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> The final diagonal matches the eigenvalues of <span class="math inline">\(\mathbf{A}\)</span> from a library eigensolver, <span class="math inline">\(-3.7838588\)</span>, <span class="math inline">\(3.3944965\)</span>, <span class="math inline">\(7.1868772\)</span>, <span class="math inline">\(10.2807400\)</span> and <span class="math inline">\(13.9217451\)</span>. In 300-bit arithmetic the residuals <span class="math inline">\(\lVert\mathbf{A}\mathbf{X}_k - \lambda_k\mathbf{X}_k\rVert\)</span> of the five eigenpairs are at most <span class="math inline">\(1.13 \times 10^{-11}\)</span>.</p>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

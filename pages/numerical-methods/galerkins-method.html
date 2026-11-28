@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Galerkin’s Method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#inner-products" id="toc-inner-products" class="nav-link" data-scroll-target="#inner-products">Inner Products</a>
+  <ul class="collapse">
+  <li><a href="#example-1-a-fx-x2---3x-3-and-gx-2x3-x2-5x---5-over-0-2" id="toc-example-1-a-fx-x2---3x-3-and-gx-2x3-x2-5x---5-over-0-2" class="nav-link" data-scroll-target="#example-1-a-fx-x2---3x-3-and-gx-2x3-x2-5x---5-over-0-2">Example 1 (a) — <span class="math inline">\(f(x) = x^2 - 3x + 3\)</span> and <span class="math inline">\(g(x) = 2x^3 + x^2 + 5x - 5\)</span> over <span class="math inline">\([0, 2]\)</span></a></li>
+  <li><a href="#example-1-b-the-same-f-and-g-over--1-1" id="toc-example-1-b-the-same-f-and-g-over--1-1" class="nav-link" data-scroll-target="#example-1-b-the-same-f-and-g-over--1-1">Example 1 (b) — the same <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> over <span class="math inline">\([-1, 1]\)</span></a></li>
+  <li><a href="#example-1-c-fx-cos-x-sin-2x-and-gx-sin-2x-cos-3x-over-0-2pi" id="toc-example-1-c-fx-cos-x-sin-2x-and-gx-sin-2x-cos-3x-over-0-2pi" class="nav-link" data-scroll-target="#example-1-c-fx-cos-x-sin-2x-and-gx-sin-2x-cos-3x-over-0-2pi">Example 1 (c) — <span class="math inline">\(f(x) = \cos x + \sin 2x\)</span> and <span class="math inline">\(g(x) = \sin 2x + \cos 3x\)</span> over <span class="math inline">\([0, 2\pi]\)</span></a></li>
+  <li><a href="#basis-for-a-vector-space" id="toc-basis-for-a-vector-space" class="nav-link" data-scroll-target="#basis-for-a-vector-space">Basis for a vector space</a></li>
+  </ul></li>
+  <li><a href="#weighted-residual-methods" id="toc-weighted-residual-methods" class="nav-link" data-scroll-target="#weighted-residual-methods">Weighted Residual Methods</a></li>
+  <li><a href="#galerkins-method" id="toc-galerkins-method" class="nav-link" data-scroll-target="#galerkins-method">Galerkin’s Method</a>
+  <ul class="collapse">
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  </ul></li>
+  <li><a href="#galerkins-method-for-an-initial-value-problem" id="toc-galerkins-method-for-an-initial-value-problem" class="nav-link" data-scroll-target="#galerkins-method-for-an-initial-value-problem">Galerkin’s Method for an Initial Value Problem</a>
+  <ul class="collapse">
+  <li><a href="#example-2-y-5y---1---x-sin-2x-0-y0-1-over-0-3" id="toc-example-2-y-5y---1---x-sin-2x-0-y0-1-over-0-3" class="nav-link" data-scroll-target="#example-2-y-5y---1---x-sin-2x-0-y0-1-over-0-3">Example 2 — <span class="math inline">\(y' + 5y - 1 - x + \sin 2x = 0\)</span>, <span class="math inline">\(y(0) = 1\)</span>, over <span class="math inline">\([0, 3]\)</span></a></li>
+  </ul></li>
+  <li><a href="#galerkins-method-for-a-boundary-value-problem" id="toc-galerkins-method-for-a-boundary-value-problem" class="nav-link" data-scroll-target="#galerkins-method-for-a-boundary-value-problem">Galerkin’s Method for a Boundary Value Problem</a>
+  <ul class="collapse">
+  <li><a href="#example-3-a-y-y-2x1---x-0-y0-0-y1-0" id="toc-example-3-a-y-y-2x1---x-0-y0-0-y1-0" class="nav-link" data-scroll-target="#example-3-a-y-y-2x1---x-0-y0-0-y1-0">Example 3 (a) — <span class="math inline">\(y'' + y + 2x(1 - x) = 0\)</span>, <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(1) = 0\)</span></a></li>
+  <li><a href="#example-3-b-the-same-equation-with-y0-0-y1-tfrac12" id="toc-example-3-b-the-same-equation-with-y0-0-y1-tfrac12" class="nav-link" data-scroll-target="#example-3-b-the-same-equation-with-y0-0-y1-tfrac12">Example 3 (b) — the same equation with <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(1) = \tfrac12\)</span></a></li>
+  <li><a href="#example-4-a-y-2y-2xx---pi-0-y0-0-ypi-0" id="toc-example-4-a-y-2y-2xx---pi-0-y0-0-ypi-0" class="nav-link" data-scroll-target="#example-4-a-y-2y-2xx---pi-0-y0-0-ypi-0">Example 4 (a) — <span class="math inline">\(y'' + 2y + 2x(x - \pi) = 0\)</span>, <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(\pi) = 0\)</span></a></li>
+  <li><a href="#example-4-b-the-same-equation-with-y0-0-ypi-1" id="toc-example-4-b-the-same-equation-with-y0-0-ypi-1" class="nav-link" data-scroll-target="#example-4-b-the-same-equation-with-y0-0-ypi-1">Example 4 (b) — the same equation with <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(\pi) = 1\)</span></a></li>
+  </ul></li>
+  <li><a href="#summary-of-the-examples" id="toc-summary-of-the-examples" class="nav-link" data-scroll-target="#summary-of-the-examples">Summary of the Examples</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Galerkin’s Method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Galerkin’s method finds an approximate solution of a linear differential equation <span class="math inline">\(L[y(x)] + f(x) = 0\)</span> on an interval <span class="math inline">\([a, b]\)</span>, where <span class="math inline">\(L\)</span> is a linear differential operator such as <span class="math inline">\(L[y] = y'' + y\)</span>, together with an initial condition or two boundary conditions. Instead of looking for <span class="math inline">\(y\)</span> among all functions, it looks only among the <em>trial functions</em></p>
+<p><span class="math display">\[
+u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x),
+\]</span></p>
+<p>where <span class="math inline">\(\phi_0\)</span> satisfies the initial or boundary conditions and the <em>basis functions</em> <span class="math inline">\(\phi_1, \ldots, \phi_n\)</span> satisfy the homogeneous versions of them, so every trial function satisfies the conditions whatever the coefficients <span class="math inline">\(c_j\)</span> are. A trial function cannot usually make the <em>residual</em> <span class="math inline">\(r(x) = L[u(x)] + f(x)\)</span> zero everywhere, so Galerkin’s method asks for the next best thing: the residual must be orthogonal to every basis function,</p>
+<p><span class="math display">\[
+\int_a^b \phi_i(x)\,\bigl(L[u(x)] + f(x)\bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+\]</span></p>
+<p>Because <span class="math inline">\(L\)</span> is linear, these are <span class="math inline">\(n\)</span> linear equations <span class="math inline">\(\mathbf{A}\mathbf{c} = \mathbf{B}\)</span> in the <span class="math inline">\(n\)</span> unknown coefficients, with <span class="math inline">\(a_{ij} = \int_a^b \phi_i\,L[\phi_j]\,dx\)</span> and <span class="math inline">\(b_i = -\int_a^b \phi_i\,\bigl(L[\phi_0] + f\bigr)\,dx\)</span>. Solving them gives the Galerkin solution <span class="math inline">\(u(x)\)</span>. Mathews solves one initial value problem with the polynomial basis <span class="math inline">\(x, x^2, \ldots, x^7\)</span>, and four boundary value problems, two with polynomials that vanish at both ends and two with the sine functions <span class="math inline">\(\sin kx\)</span>. In every example below the Galerkin solution is compared with the exact solution; the largest errors range from about <span class="math inline">\(5 \times 10^{-9}\)</span> to <span class="math inline">\(1.5 \times 10^{-2}\)</span>, depending on how well the chosen basis can represent the exact solution.</p>
+</section>
+<section id="inner-products" class="level2">
+<h2 class="anchored" data-anchor-id="inner-products">Inner Products</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Inner product
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Consider the vector space of real functions whose domain is the closed interval <span class="math inline">\([a, b]\)</span>. The <em>inner product</em> of two functions <span class="math inline">\(f(x)\)</span> and <span class="math inline">\(g(x)\)</span> is</p>
+<p><span class="math display">\[
+\langle f, g \rangle = \int_a^b f(x)\,g(x)\,dx.
+\tag{1}
+\]</span></p>
+</div>
+</div>
+<p>The inner product is a continuous, infinite-dimensional analogue of the dot product of linear algebra. If <span class="math inline">\(\langle f, g \rangle = 0\)</span>, then <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> are said to be <em>orthogonal</em> on <span class="math inline">\([a, b]\)</span>. All the functions used here are assumed to be <em>square-integrable</em>, that is, <span class="math inline">\(\langle f, f \rangle = \int_a^b f(x)^2\,dx &lt; \infty\)</span>.</p>
+<section id="example-1-a-fx-x2---3x-3-and-gx-2x3-x2-5x---5-over-0-2" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-a-fx-x2---3x-3-and-gx-2x3-x2-5x---5-over-0-2">Example 1 (a) — <span class="math inline">\(f(x) = x^2 - 3x + 3\)</span> and <span class="math inline">\(g(x) = 2x^3 + x^2 + 5x - 5\)</span> over <span class="math inline">\([0, 2]\)</span></h3>
+<p><strong>Step 1</strong> (multiply out):</p>
+<p><span class="math display">\[
+f(x)\,g(x) = 2x^5 - 5x^4 + 8x^3 - 17x^2 + 30x - 15.
+\]</span></p>
+<p><strong>Step 2</strong> (antiderivative):</p>
+<p><span class="math display">\[
+P(x) = \frac{x^6}{3} - x^5 + 2x^4 - \frac{17x^3}{3} + 15x^2 - 15x.
+\]</span></p>
+<p><strong>Step 3</strong> (evaluate):</p>
+<p><span class="math display">\[
+\boxed{\ \langle f, g \rangle = P(2) - P(0) = 6 - 0 = 6\ }
+\]</span></p>
+<p><strong>Verification:</strong> a symbolic integration of <span class="math inline">\(f g\)</span> over <span class="math inline">\([0, 2]\)</span> returns <span class="math inline">\(6\)</span>, as in Mathews’ output.</p>
+</section>
+<section id="example-1-b-the-same-f-and-g-over--1-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-b-the-same-f-and-g-over--1-1">Example 1 (b) — the same <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> over <span class="math inline">\([-1, 1]\)</span></h3>
+<p>Over a symmetric interval the odd powers in <span class="math inline">\(f g\)</span> integrate to zero, and only the even part <span class="math inline">\(-5x^4 - 17x^2 - 15\)</span> contributes:</p>
+<p><span class="math display">\[
+\boxed{\ \langle f, g \rangle = \int_{-1}^{1} \bigl(-5x^4 - 17x^2 - 15\bigr)\,dx = 2\left(-1 - \frac{17}{3} - 15\right) = -\frac{130}{3} \approx -43.3333\ }
+\]</span></p>
+<p><strong>Verification:</strong> with <span class="math inline">\(P\)</span> from Example 1 (a), <span class="math inline">\(P(1) - P(-1) = -\tfrac{13}{3} - 39 = -\tfrac{130}{3}\)</span>.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Mathews’ solution uses a different pair
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Mathews states Example 1 (b) with the same <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> as part (a), but his solution notebook integrates a different pair over <span class="math inline">\([-1, 1]\)</span>: <span class="math inline">\(f(x) = 5x^3 - 3x^2 - 3x + 1\)</span> and <span class="math inline">\(g(x) = 35x^4 - 30x^2 + 7x + 3\)</span>. That pair is orthogonal: the antiderivative of <span class="math inline">\(f g\)</span> takes the value <span class="math inline">\(-\tfrac58\)</span> at both <span class="math inline">\(x = 1\)</span> and <span class="math inline">\(x = -1\)</span>, so <span class="math inline">\(\langle f, g \rangle = 0\)</span>, which is his printed answer and agrees with a symbolic integration. For the pair in the problem statement the inner product is <span class="math inline">\(-\tfrac{130}{3}\)</span>, as above.</p>
+</div>
+</div>
+</section>
+<section id="example-1-c-fx-cos-x-sin-2x-and-gx-sin-2x-cos-3x-over-0-2pi" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-c-fx-cos-x-sin-2x-and-gx-sin-2x-cos-3x-over-0-2pi">Example 1 (c) — <span class="math inline">\(f(x) = \cos x + \sin 2x\)</span> and <span class="math inline">\(g(x) = \sin 2x + \cos 3x\)</span> over <span class="math inline">\([0, 2\pi]\)</span></h3>
+<p>Multiplying out gives four products. Over a full period <span class="math inline">\([0, 2\pi]\)</span>, <span class="math inline">\(\int_0^{2\pi} \cos x \sin 2x\,dx\)</span>, <span class="math inline">\(\int_0^{2\pi} \cos x \cos 3x\,dx\)</span> and <span class="math inline">\(\int_0^{2\pi} \sin 2x \cos 3x\,dx\)</span> are all <span class="math inline">\(0\)</span>, and only the square survives:</p>
+<p><span class="math display">\[
+\boxed{\ \langle f, g \rangle = \int_0^{2\pi} \sin^2 2x\,dx = \pi\ }
+\]</span></p>
+<p><strong>Verification:</strong> a symbolic integration of <span class="math inline">\(f g\)</span> over <span class="math inline">\([0, 2\pi]\)</span> returns <span class="math inline">\(\pi\)</span>, which is Mathews’ printed answer. (The step-by-step panel that follows it in his notebook works with <span class="math inline">\(g(x) = \cos 2x + \sin x\)</span> instead, which is orthogonal to <span class="math inline">\(f\)</span> on <span class="math inline">\([0, 2\pi]\)</span> and gives <span class="math inline">\(0\)</span>.)</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f\)</span> is continuous on <span class="math inline">\([a, b]\)</span> and <span class="math inline">\(\langle w, f \rangle = 0\)</span> for every function <span class="math inline">\(w\)</span>, then <span class="math inline">\(f(x) \equiv 0\)</span> on <span class="math inline">\([a, b]\)</span>. (Take <span class="math inline">\(w = f\)</span>: then <span class="math inline">\(\int_a^b f(x)^2\,dx = 0\)</span>.)</p>
+</div>
+</div>
+</section>
+<section id="basis-for-a-vector-space" class="level3">
+<h3 class="anchored" data-anchor-id="basis-for-a-vector-space">Basis for a vector space</h3>
+<p>A <em>complete basis</em> for a vector space <span class="math inline">\(V\)</span> of functions is a set <span class="math inline">\(S = \{\phi_i(x)\}_{i=0}^{\infty}\)</span> of linearly independent functions such that every <span class="math inline">\(f \in V\)</span> can be written uniquely as a linear combination</p>
+<p><span class="math display">\[
+f(x) = \sum_{j=0}^{\infty} c_j\,\phi_j(x).
+\]</span></p>
+<p>For example, if <span class="math inline">\(V\)</span> is the set of all polynomials and power series, a complete basis is <span class="math inline">\(S = \{\phi_i(x) = x^i\}_{i=0}^{\infty}\)</span>.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Property (stated without proof)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f \in V\)</span> and <span class="math inline">\(\langle \phi_i, f \rangle = 0\)</span> for all <span class="math inline">\(\phi_i \in S\)</span>, then <span class="math inline">\(f(x) \equiv 0\)</span>.</p>
+</div>
+</div>
+<p>Mathews mentions the lemma and this property only as background. Together they motivate Galerkin’s method: a function orthogonal to <em>every</em> basis function is zero, so a residual orthogonal to the <em>first <span class="math inline">\(n\)</span></em> basis functions should be small.</p>
+</section>
+</section>
+<section id="weighted-residual-methods" class="level2">
+<h2 class="anchored" data-anchor-id="weighted-residual-methods">Weighted Residual Methods</h2>
+<p>A weighted residual method uses a finite set of functions <span class="math inline">\(\{\phi_i(x)\}_{i=0}^{n}\)</span>. Consider the differential equation</p>
+<p><span class="math display">\[
+L[y(x)] + f(x) = 0 \quad \text{over } a \le x \le b,
+\tag{2}
+\]</span></p>
+<p>where <span class="math inline">\(L[y(x)]\)</span> denotes a linear differential operator. Multiplying (2) by an arbitrary <em>weight function</em> <span class="math inline">\(w(x)\)</span> and integrating over <span class="math inline">\([a, b]\)</span> gives</p>
+<p><span class="math display">\[
+\int_a^b w(x)\,\bigl(L[y(x)] + f(x)\bigr)\,dx = 0 \quad \text{for every } w(x).
+\tag{3}
+\]</span></p>
+<p>Equations (2) and (3) are equivalent when <span class="math inline">\(L[y] + f\)</span> is continuous: (2) gives (3) at once, and (3) for every <span class="math inline">\(w\)</span> gives (2) by the lemma above. Now introduce a trial solution of the form</p>
+<p><span class="math display">\[
+u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x),
+\tag{4}
+\]</span></p>
+<p>and replace <span class="math inline">\(y(x)\)</span> with <span class="math inline">\(u(x)\)</span> on the left side of (2). The <em>residual</em> is</p>
+<p><span class="math display">\[
+r(x) = L[u(x)] + f(x).
+\tag{5}
+\]</span></p>
+<p>Unless <span class="math inline">\(y\)</span> happens to be one of the trial functions, <span class="math inline">\(r(x)\)</span> cannot be zero everywhere. The goal is to choose the coefficients so that <span class="math inline">\(u\)</span> satisfies (3) at least for <em>some</em> choices of the weight function:</p>
+<p><span class="math display">\[
+\int_a^b w(x)\,\bigl(L[u(x)] + f(x)\bigr)\,dx = 0 \quad \text{for some choices of } w(x).
+\tag{6}
+\]</span></p>
+</section>
+<section id="galerkins-method" class="level2">
+<h2 class="anchored" data-anchor-id="galerkins-method">Galerkin’s Method</h2>
+<p>One of the most important weighted residual methods is due to the Russian mathematician Boris Grigoryevich Galerkin (1871–1945). Galerkin’s method takes the weight functions from the basis functions themselves, <span class="math inline">\(w(x) \in \{\phi_i(x)\}_{i=1}^{n}\)</span>.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Galerkin’s equations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Choose the coefficients <span class="math inline">\(c_1, \ldots, c_n\)</span> of the trial solution (4) so that</p>
+<p><span class="math display">\[
+\int_a^b \phi_i(x)\,\bigl(L[u(x)] + f(x)\bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+\tag{7}
+\]</span></p>
+</div>
+</div>
+<p>Substituting (4) and using the linearity of <span class="math inline">\(L\)</span> turns (7) into</p>
+<p><span class="math display">\[
+\sum_{j=1}^{n} c_j \int_a^b \phi_i(x)\,L[\phi_j(x)]\,dx = -\int_a^b \phi_i(x)\,\bigl(L[\phi_0(x)] + f(x)\bigr)\,dx, \qquad i = 1, \ldots, n,
+\]</span></p>
+<p>which is the linear system</p>
+<p><span class="math display">\[
+\mathbf{A}\mathbf{c} = \mathbf{B}, \qquad a_{ij} = \langle \phi_i, L[\phi_j] \rangle, \qquad b_i = -\langle \phi_i, L[\phi_0] + f \rangle.
+\tag{8}
+\]</span></p>
+<p>Mathews obtains the coefficients both ways: he solves the equations (7) directly, and he sets up the matrix <span class="math inline">\(\mathbf{A}\)</span> and the vector <span class="math inline">\(\mathbf{B}\)</span> of (8) and solves <span class="math inline">\(\mathbf{A}\mathbf{c} = \mathbf{B}\)</span>. Both give the same coefficients in every example.</p>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<ol type="1">
+<li>Write the equation as <span class="math inline">\(L[y] + f = 0\)</span> and choose <span class="math inline">\(\phi_0\)</span> to satisfy the initial or boundary conditions.</li>
+<li>Choose basis functions <span class="math inline">\(\phi_1, \ldots, \phi_n\)</span> that satisfy the homogeneous conditions, so that every trial solution (4) satisfies the original ones.</li>
+<li>Form the residual <span class="math inline">\(r(x) = L[u(x)] + f(x)\)</span> of the trial solution.</li>
+<li>Compute the integrals in (8) and solve <span class="math inline">\(\mathbf{A}\mathbf{c} = \mathbf{B}\)</span> for <span class="math inline">\(c_1, \ldots, c_n\)</span>.</li>
+<li>The Galerkin solution is <span class="math inline">\(u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x)\)</span>.</li>
+</ol>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Conditioning of the Galerkin system
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The system (8) can be <em>ill conditioned</em>: its solution can be very sensitive to rounding errors in <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{B}\)</span>. Mathews computes the condition number <span class="math inline">\(\operatorname{cond}(\mathbf{A}) = \lVert \mathbf{A} \rVert\,\lVert \mathbf{A}^{-1} \rVert\)</span> for each example and uses the estimate</p>
+<p><span class="math display">\[
+\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim \lVert \mathbf{c} \rVert\,\operatorname{cond}(\mathbf{A})\,\epsilon
+\]</span></p>
+<p>for the error of the computed solution <span class="math inline">\(\hat{\mathbf{c}}\)</span> when the entries of <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{B}\)</span> are rounded to machine precision <span class="math inline">\(\epsilon = 2^{-52} \approx 2.22 \times 10^{-16}\)</span>. In words: the computed coefficients lose about <span class="math inline">\(\log_{10} \operatorname{cond}(\mathbf{A})\)</span> of their sixteen or so decimal digits. This is a first-order estimate of the typical size of the error, not a guaranteed bound. Mathews’ condition numbers are in the maximum-row-sum (<span class="math inline">\(\infty\)</span>-)norm, and the values quoted on this page are too.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="galerkins-method-for-an-initial-value-problem" class="level2">
+<h2 class="anchored" data-anchor-id="galerkins-method-for-an-initial-value-problem">Galerkin’s Method for an Initial Value Problem</h2>
+<p>Suppose we wish to solve the initial value problem</p>
+<p><span class="math display">\[
+L[y(x)] + f(x) = 0, \qquad y(a) = y_0, \qquad a \le x \le b.
+\tag{9}
+\]</span></p>
+<p>Take <span class="math inline">\(\phi_0(x) = y_0\)</span> and the trial function</p>
+<p><span class="math display">\[
+u(x) = y_0 + \sum_{j=1}^{n} c_j\,\phi_j(x),
+\tag{10}
+\]</span></p>
+<p>with basis functions that vanish at the initial point, <span class="math inline">\(\phi_j(a) = 0\)</span>, so that <span class="math inline">\(u(a) = y_0\)</span> for every choice of the coefficients. There are <span class="math inline">\(n\)</span> equations to solve for <span class="math inline">\(\{c_i\}_{i=1}^{n}\)</span>:</p>
+<p><span class="math display">\[
+\int_a^b \phi_i(x)\,\Bigl(L\Bigl[\sum_{j=1}^{n} c_j\,\phi_j(x)\Bigr] + L[y_0] + f(x)\Bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+\tag{11}
+\]</span></p>
+<section id="example-2-y-5y---1---x-sin-2x-0-y0-1-over-0-3" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-y-5y---1---x-sin-2x-0-y0-1-over-0-3">Example 2 — <span class="math inline">\(y' + 5y - 1 - x + \sin 2x = 0\)</span>, <span class="math inline">\(y(0) = 1\)</span>, over <span class="math inline">\([0, 3]\)</span></h3>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Two versions of Example 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Mathews’ module states Example 2 as <span class="math inline">\(y' + 2y + 6 + 4x = 0\)</span> with <span class="math inline">\(y(0) = 1\)</span>, but his solution notebook solves a different equation, <span class="math inline">\(y' + 5y - 1 - x + \sin 2x = 0\)</span> with <span class="math inline">\(y(0) = 1\)</span> on <span class="math inline">\([0, 3]\)</span>. This page works the equation of the solution, which is the one his numbers belong to, and gives the result for the stated equation at the end of the example.</p>
+</div>
+</div>
+<p><strong>Step 1</strong> (operator and data): <span class="math inline">\(L[y] = y' + 5y\)</span>, <span class="math inline">\(f(x) = -1 - x + \sin 2x\)</span>, <span class="math inline">\(a = 0\)</span>, <span class="math inline">\(b = 3\)</span>, <span class="math inline">\(y_0 = 1\)</span>.</p>
+<p><strong>Step 2</strong> (basis and trial solution): Mathews takes <span class="math inline">\(n = 7\)</span> and the powers <span class="math inline">\(\phi_i(x) = x^i\)</span>, which all vanish at <span class="math inline">\(x = 0\)</span>:</p>
+<p><span class="math display">\[
+u(x) = 1 + c_1 x + c_2 x^2 + c_3 x^3 + c_4 x^4 + c_5 x^5 + c_6 x^6 + c_7 x^7.
+\]</span></p>
+<p><strong>Step 3</strong> (residual):</p>
+<p><span class="math display">\[
+r(x) = u'(x) + 5u(x) - 1 - x + \sin 2x = 4 - x + \sin 2x + \sum_{j=1}^{7} c_j\,\bigl(j x^{j-1} + 5x^j\bigr).
+\]</span></p>
+<p><strong>Step 4</strong> (Galerkin system): since <span class="math inline">\(L[\phi_0] = L[1] = 5\)</span>, the entries of (8) are</p>
+<p><span class="math display">\[
+a_{ij} = \int_0^3 x^i\bigl(j x^{j-1} + 5x^j\bigr)\,dx = \frac{j\,3^{i+j}}{i+j} + \frac{5 \cdot 3^{i+j+1}}{i+j+1}, \qquad
+b_i = -\int_0^3 x^i\,\bigl(4 - x + \sin 2x\bigr)\,dx.
+\]</span></p>
+<p>For example <span class="math inline">\(a_{11} = \tfrac92 + 45 = 49.5\)</span>, <span class="math inline">\(a_{77} = \tfrac{14348907}{2} \approx 7.17445 \times 10^6\)</span> and <span class="math inline">\(b_1 = -9 + \tfrac32\cos 6 - \tfrac14\sin 6 \approx -7.48989\)</span>. The entries of <span class="math inline">\(\mathbf{A}\)</span> span more than five orders of magnitude, and <span class="math inline">\(\mathbf{A}\)</span> is not symmetric (<span class="math inline">\(a_{12} = \tfrac{477}{4}\)</span>, <span class="math inline">\(a_{21} = \tfrac{441}{4}\)</span>).</p>
+<p><strong>Step 5</strong> (solve): the solution of the <span class="math inline">\(7 \times 7\)</span> system, computed exactly and rounded to six significant figures, is</p>
+<p><span class="math display">\[
+\mathbf{c} = (-3.65784,\ 6.84171,\ -7.37284,\ 4.88613,\ -1.84964,\ 0.363990,\ -0.0289550),
+\]</span></p>
+<p>which agrees with Mathews’ printed values. The Galerkin solution is</p>
+<p><span class="math display">\[
+\boxed{\ u(x) = 1 - 3.65784\,x + 6.84171\,x^2 - 7.37284\,x^3 + 4.88613\,x^4 - 1.84964\,x^5 + 0.363990\,x^6 - 0.0289550\,x^7\ }
+\]</span></p>
+<p><strong>Verification:</strong> the exact solution is</p>
+<p><span class="math display">\[
+y(x) = \frac{1}{725}\Bigl(116 + 559\,e^{-5x} + 145x + 50\cos 2x - 125\sin 2x\Bigr),
+\]</span></p>
+<p>which satisfies the differential equation and <span class="math inline">\(y(0) = 1\)</span> (checked symbolically). Substituting the exact coefficients back into (7) gives <span class="math inline">\(0\)</span> for all seven integrals.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th>exact <span class="math inline">\(y(x)\)</span></th>
+<th>Galerkin <span class="math inline">\(u(x)\)</span></th>
+<th>error <span class="math inline">\(y - u\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0.5</td>
+<td>0.215471</td>
+<td>0.212945</td>
+<td>0.00253</td>
+</tr>
+<tr class="odd">
+<td>1.0</td>
+<td>0.179720</td>
+<td>0.182557</td>
+<td>−0.00284</td>
+</tr>
+<tr class="even">
+<td>1.5</td>
+<td>0.367820</td>
+<td>0.365456</td>
+<td>0.00236</td>
+</tr>
+<tr class="odd">
+<td>2.0</td>
+<td>0.645439</td>
+<td>0.647270</td>
+<td>−0.00183</td>
+</tr>
+<tr class="even">
+<td>2.5</td>
+<td>0.844898</td>
+<td>0.843385</td>
+<td>0.00151</td>
+</tr>
+<tr class="odd">
+<td>3.0</td>
+<td>0.874394</td>
+<td>0.874269</td>
+<td>0.000125</td>
+</tr>
+</tbody>
+</table>
+<p>On a grid of 6001 points over <span class="math inline">\([0, 3]\)</span>, the error <span class="math inline">\(y - u\)</span> ranges from <span class="math inline">\(-0.0148\)</span> (near <span class="math inline">\(x = 0.11\)</span>) to <span class="math inline">\(0.00255\)</span> (near <span class="math inline">\(x = 0.49\)</span>), and it changes sign seven times. The Galerkin solution follows the exact one to within about <span class="math inline">\(0.015\)</span>.</p>
+<p><strong>Conditioning.</strong> For this system <span class="math inline">\(\operatorname{cond}(\mathbf{A}) \approx 3.31641 \times 10^{11}\)</span> and <span class="math inline">\(\lVert \mathbf{c} \rVert_2 \approx 11.9154\)</span>, so Mathews’ estimate gives</p>
+<p><span class="math display">\[
+\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim (11.9154)(3.31641 \times 10^{11})(2.22045 \times 10^{-16}) \approx 0.000877,
+\]</span></p>
+<p>a loss of about <span class="math inline">\(11.5\)</span> of the sixteen digits. In practice the loss is smaller: solving the system in double precision with NumPy, from <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{B}\)</span> rounded to double precision, gives coefficients that differ from the exact ones by at most <span class="math inline">\(9.6 \times 10^{-8}\)</span>, and the resulting <span class="math inline">\(u(x)\)</span> differs from the exact Galerkin solution by at most <span class="math inline">\(6.6 \times 10^{-10}\)</span> on <span class="math inline">\([0, 3]\)</span>. The rounding errors in the coefficients nearly cancel in <span class="math inline">\(u\)</span>.</p>
+<p><strong>The equation as stated.</strong> For <span class="math inline">\(y' + 2y + 6 + 4x = 0\)</span>, <span class="math inline">\(y(0) = 1\)</span>, the exact solution is <span class="math inline">\(y(x) = -2 - 2x + 3e^{-2x}\)</span>. With the same basis <span class="math inline">\(x, \ldots, x^7\)</span> on the same interval <span class="math inline">\([0, 3]\)</span> (the statement gives no interval), the Galerkin coefficients are <span class="math inline">\(\mathbf{c} \approx (-7.97678,\ 5.85485,\ -3.63230,\ 1.50569,\ -0.403588,\ 0.0627804,\ -0.00427078)\)</span>, the largest error on a 6001-point grid is <span class="math inline">\(0.00125\)</span> near <span class="math inline">\(x = 0.13\)</span>, and <span class="math inline">\(\operatorname{cond}(\mathbf{A}) \approx 2.45 \times 10^{11}\)</span>.</p>
+</section>
+</section>
+<section id="galerkins-method-for-a-boundary-value-problem" class="level2">
+<h2 class="anchored" data-anchor-id="galerkins-method-for-a-boundary-value-problem">Galerkin’s Method for a Boundary Value Problem</h2>
+<p>Suppose we wish to solve a boundary value problem over <span class="math inline">\([a, b]\)</span>:</p>
+<p><span class="math display">\[
+L[y(x)] + f(x) = 0, \qquad y(a) = z_a, \quad y(b) = z_b.
+\tag{12}
+\]</span></p>
+<p>Define <span class="math inline">\(\phi_0\)</span> as the straight line between the boundary points,</p>
+<p><span class="math display">\[
+\phi_0(x) = z_a + (z_b - z_a)\,\frac{x - a}{b - a},
+\tag{13}
+\]</span></p>
+<p>and use the trial function</p>
+<p><span class="math display">\[
+u(x) = \phi_0(x) + \sum_{j=1}^{n} c_j\,\phi_j(x).
+\tag{14}
+\]</span></p>
+<p>The basis functions must all vanish at both ends,</p>
+<p><span class="math display">\[
+\phi_i(a) = 0 \quad \text{and} \quad \phi_i(b) = 0, \qquad i = 1, 2, \ldots, n,
+\]</span></p>
+<p>so that <span class="math inline">\(u(a) = z_a\)</span> and <span class="math inline">\(u(b) = z_b\)</span> for every choice of the coefficients. There are <span class="math inline">\(n\)</span> equations to solve for <span class="math inline">\(\{c_i\}_{i=1}^{n}\)</span>:</p>
+<p><span class="math display">\[
+\int_a^b \phi_i(x)\,\Bigl(L\Bigl[\sum_{j=1}^{n} c_j\,\phi_j(x)\Bigr] + L[\phi_0(x)] + f(x)\Bigr)\,dx = 0, \qquad i = 1, 2, \ldots, n.
+\tag{15}
+\]</span></p>
+<p>For an operator <span class="math inline">\(L[y] = y'' + q\,y\)</span> with a constant <span class="math inline">\(q\)</span>, as in Examples 3 and 4, integrating by parts and using <span class="math inline">\(\phi_i(a) = \phi_i(b) = 0\)</span> gives <span class="math inline">\(a_{ij} = \int_a^b \bigl(q\,\phi_i \phi_j - \phi_i' \phi_j'\bigr)\,dx\)</span>, so the matrix <span class="math inline">\(\mathbf{A}\)</span> is symmetric in those examples.</p>
+<section id="example-3-a-y-y-2x1---x-0-y0-0-y1-0" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-a-y-y-2x1---x-0-y0-0-y1-0">Example 3 (a) — <span class="math inline">\(y'' + y + 2x(1 - x) = 0\)</span>, <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(1) = 0\)</span></h3>
+<p><strong>Step 1</strong> (operator and data): <span class="math inline">\(L[y] = y'' + y\)</span>, <span class="math inline">\(f(x) = 2x(1 - x)\)</span>, <span class="math inline">\([a, b] = [0, 1]\)</span>, <span class="math inline">\(z_a = z_b = 0\)</span>, so <span class="math inline">\(\phi_0(x) = 0\)</span>.</p>
+<p><strong>Step 2</strong> (basis and trial solution): <span class="math inline">\(n = 3\)</span>, with <span class="math inline">\(\phi_1 = x(x - 1)\)</span>, <span class="math inline">\(\phi_2 = x^2(x - 1)^2\)</span>, <span class="math inline">\(\phi_3 = x^3(x - 1)^3\)</span>:</p>
+<p><span class="math display">\[
+u(x) = c_1\,x(x - 1) + c_2\,x^2(x - 1)^2 + c_3\,x^3(x - 1)^3.
+\]</span></p>
+<p><strong>Step 3</strong> (Galerkin system): the integrals (15) give</p>
+<p><span class="math display">\[
+\begin{pmatrix} -\tfrac{3}{10} &amp; \tfrac{5}{84} &amp; -\tfrac{4}{315} \\[1mm] \tfrac{5}{84} &amp; -\tfrac{11}{630} &amp; \tfrac{61}{13860} \\[1mm] -\tfrac{4}{315} &amp; \tfrac{61}{13860} &amp; -\tfrac{73}{60060} \end{pmatrix}
+\begin{pmatrix} c_1 \\ c_2 \\ c_3 \end{pmatrix}
+=
+\begin{pmatrix} \tfrac{1}{15} \\[1mm] -\tfrac{1}{70} \\[1mm] \tfrac{1}{315} \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 4</strong> (solve):</p>
+<p><span class="math display">\[
+c_1 = -\frac{1370}{7397} \approx -0.185210, \qquad c_2 = \frac{50688}{273689} \approx 0.185203, \qquad c_3 = -\frac{132}{21053} \approx -0.00626989.
+\]</span></p>
+<p>These are Mathews’ values. The Galerkin solution is</p>
+<p><span class="math display">\[
+\boxed{\ u(x) = -\frac{1370}{7397}\,x(x - 1) + \frac{50688}{273689}\,x^2(x - 1)^2 - \frac{132}{21053}\,x^3(x - 1)^3\ }
+\]</span></p>
+<p><strong>Verification:</strong> the exact solution is</p>
+<p><span class="math display">\[
+y(x) = 2\Bigl(-2 - x + x^2 + 2\cos x + 2\sin x\,\tan\tfrac12\Bigr),
+\]</span></p>
+<p>which satisfies the equation and both boundary conditions (checked symbolically).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th>exact <span class="math inline">\(y(x)\)</span></th>
+<th>Galerkin <span class="math inline">\(u(x)\)</span></th>
+<th>error <span class="math inline">\(y - u\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0.25</td>
+<td>0.0412792826</td>
+<td>0.0412792861</td>
+<td><span class="math inline">\(-3.47 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>0.5</td>
+<td>0.0579757093</td>
+<td>0.0579757042</td>
+<td><span class="math inline">\(5.12 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="even">
+<td>0.75</td>
+<td>0.0412792826</td>
+<td>0.0412792861</td>
+<td><span class="math inline">\(-3.47 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>On a 6001-point grid the error lies between <span class="math inline">\(-4.89 \times 10^{-9}\)</span> (near <span class="math inline">\(x = 0.30\)</span> and <span class="math inline">\(x = 0.70\)</span>) and <span class="math inline">\(5.12 \times 10^{-9}\)</span> (at <span class="math inline">\(x = 0.5\)</span>). With only three coefficients the Galerkin solution is accurate to about eight decimal places.</p>
+<p><strong>Conditioning:</strong> <span class="math inline">\(\operatorname{cond}(\mathbf{A}) \approx 9841.63\)</span> and <span class="math inline">\(\lVert \mathbf{c} \rVert_2 \approx 0.261997\)</span>, so the estimate is <span class="math inline">\(\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim 5.73 \times 10^{-13}\)</span>, a loss of about <span class="math inline">\(4\)</span> digits.</p>
+</section>
+<section id="example-3-b-the-same-equation-with-y0-0-y1-tfrac12" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-b-the-same-equation-with-y0-0-y1-tfrac12">Example 3 (b) — the same equation with <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(1) = \tfrac12\)</span></h3>
+<p><strong>Step 1</strong> (data): the line through <span class="math inline">\((0, 0)\)</span> and <span class="math inline">\((1, \tfrac12)\)</span> is <span class="math inline">\(\phi_0(x) = \tfrac{x}{2}\)</span>, and <span class="math inline">\(L[\phi_0] = \tfrac{x}{2}\)</span>.</p>
+<p><strong>Step 2</strong> (basis): Mathews takes <span class="math inline">\(n = 5\)</span>, with</p>
+<p><span class="math display">\[
+\phi_1 = x(x - 1),\quad \phi_2 = x^2(x - 1)^2,\quad \phi_3 = x^2(x - 1)^3,\quad \phi_4 = x^3(x - 1)^3,\quad \phi_5 = x^4(x - 1)^3,
+\]</span></p>
+<p>and <span class="math inline">\(u(x) = \tfrac{x}{2} + \sum_{j=1}^{5} c_j\,\phi_j(x)\)</span>.</p>
+<p><strong>Step 3</strong> (Galerkin system):</p>
+<p><span class="math display">\[
+\begin{pmatrix}
+-\tfrac{3}{10} &amp; \tfrac{5}{84} &amp; -\tfrac{5}{168} &amp; -\tfrac{4}{315} &amp; -\tfrac{2}{315} \\[1mm]
+\tfrac{5}{84} &amp; -\tfrac{11}{630} &amp; \tfrac{11}{1260} &amp; \tfrac{61}{13860} &amp; \tfrac{61}{27720} \\[1mm]
+-\tfrac{5}{168} &amp; \tfrac{11}{1260} &amp; -\tfrac{41}{6930} &amp; -\tfrac{61}{27720} &amp; -\tfrac{47}{60060} \\[1mm]
+-\tfrac{4}{315} &amp; \tfrac{61}{13860} &amp; -\tfrac{61}{27720} &amp; -\tfrac{73}{60060} &amp; -\tfrac{73}{120120} \\[1mm]
+-\tfrac{2}{315} &amp; \tfrac{61}{27720} &amp; -\tfrac{47}{60060} &amp; -\tfrac{73}{120120} &amp; -\tfrac{17}{45045}
+\end{pmatrix}
+\begin{pmatrix} c_1 \\ c_2 \\ c_3 \\ c_4 \\ c_5 \end{pmatrix}
+=
+\begin{pmatrix} \tfrac{13}{120} \\[1mm] -\tfrac{19}{840} \\[1mm] \tfrac{3}{280} \\[1mm] \tfrac{5}{1008} \\[1mm] \tfrac{13}{5040} \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 4</strong> (solve):</p>
+<p><span class="math display">\[
+\begin{aligned}
+c_1 &amp;= -\tfrac{9521}{29588} \approx -0.321786, &amp; c_2 &amp;= \tfrac{4950923615}{7458572628} \approx 0.663790, &amp; c_3 &amp;= \tfrac{12727}{13626} \approx 0.934023, \\
+c_4 &amp;= -\tfrac{774530317}{573736356} \approx -1.34998, &amp; c_5 &amp;= \tfrac{18304}{6813} \approx 2.68663, &amp;&amp;
+\end{aligned}
+\]</span></p>
+<p>which agree with Mathews’ values. The Galerkin solution is</p>
+<p><span class="math display">\[
+\boxed{\ u(x) = \frac{x}{2} - 0.321786\,\phi_1 + 0.663790\,\phi_2 + 0.934023\,\phi_3 - 1.34998\,\phi_4 + 2.68663\,\phi_5\ }
+\]</span></p>
+<p><strong>Verification:</strong> the exact solution is</p>
+<p><span class="math display">\[
+y(x) = -4 - 2x + 2x^2 + 4\cos x - 4\cot(1)\sin x + \tfrac92\csc(1)\sin x,
+\]</span></p>
+<p>which satisfies the equation, <span class="math inline">\(y(0) = 0\)</span> and <span class="math inline">\(y(1) = \tfrac12\)</span> (checked symbolically).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th>exact <span class="math inline">\(y(x)\)</span></th>
+<th>Galerkin <span class="math inline">\(u(x)\)</span></th>
+<th>error <span class="math inline">\(y - u\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0.25</td>
+<td>0.188286</td>
+<td>0.188515</td>
+<td><span class="math inline">\(-2.29 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td>0.5</td>
+<td>0.342849</td>
+<td>0.342849</td>
+<td><span class="math inline">\(5.4 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="even">
+<td>0.75</td>
+<td>0.446307</td>
+<td>0.446079</td>
+<td><span class="math inline">\(2.29 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>0.5</td>
+<td>0.5</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>On a 6001-point grid the error reaches <span class="math inline">\(-0.00101\)</span> near <span class="math inline">\(x = 0.06\)</span> and <span class="math inline">\(+0.00101\)</span> near <span class="math inline">\(x = 0.94\)</span>. That is about <span class="math inline">\(2 \times 10^5\)</span> times the error of part (a), with two more basis functions.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Why part (b) is less accurate: the basis
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Every one of Mathews’ five basis functions has the form <span class="math inline">\(x(x - 1)\,p(x)\)</span> with <span class="math inline">\(p(0) = p(1)\)</span> (the factors <span class="math inline">\(p\)</span> are <span class="math inline">\(1\)</span>, <span class="math inline">\(x(x-1)\)</span>, <span class="math inline">\(x(x-1)^2\)</span>, <span class="math inline">\(x^2(x-1)^2\)</span> and <span class="math inline">\(x^3(x-1)^2\)</span>). The derivative of <span class="math inline">\(x(x-1)p(x)\)</span> is <span class="math inline">\(-p(0)\)</span> at <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(p(1)\)</span> at <span class="math inline">\(x = 1\)</span>, so every trial function satisfies <span class="math inline">\(u'(0) + u'(1) = 2\,\phi_0' = 1\)</span>. The exact solution has <span class="math inline">\(y'(0) + y'(1) \approx 0.915244\)</span>, so no choice of the coefficients can reproduce it. In part (a) the same restriction does no harm: there <span class="math inline">\(\phi_0 = 0\)</span> and the exact solution, which is symmetric about <span class="math inline">\(x = \tfrac12\)</span>, has <span class="math inline">\(y'(0) + y'(1) = 0\)</span>. With the five functions <span class="math inline">\(x^i(x - 1)\)</span>, <span class="math inline">\(i = 1, \ldots, 5\)</span> (all polynomials of degree at most <span class="math inline">\(6\)</span> that vanish at <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>) in place of Mathews’ basis, the largest error on the same grid falls to <span class="math inline">\(2.07 \times 10^{-8}\)</span>.</p>
+</div>
+</div>
+<p><strong>Conditioning:</strong> <span class="math inline">\(\operatorname{cond}(\mathbf{A}) \approx 87277.4\)</span> and <span class="math inline">\(\lVert \mathbf{c} \rVert_2 \approx 3.23372\)</span>, so the estimate is <span class="math inline">\(\lVert \mathbf{c} - \hat{\mathbf{c}} \rVert \lesssim 6.27 \times 10^{-11}\)</span>, a loss of about <span class="math inline">\(5\)</span> digits.</p>
+</section>
+<section id="example-4-a-y-2y-2xx---pi-0-y0-0-ypi-0" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-a-y-2y-2xx---pi-0-y0-0-ypi-0">Example 4 (a) — <span class="math inline">\(y'' + 2y + 2x(x - \pi) = 0\)</span>, <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(\pi) = 0\)</span></h3>
+<p><strong>Step 1</strong> (operator and data): <span class="math inline">\(L[y] = y'' + 2y\)</span>, <span class="math inline">\(f(x) = 2x(x - \pi)\)</span>, <span class="math inline">\([a, b] = [0, \pi]\)</span>, <span class="math inline">\(\phi_0(x) = 0\)</span>.</p>
+<p><strong>Step 2</strong> (basis): Mathews takes <span class="math inline">\(n = 3\)</span> and the odd sines <span class="math inline">\(\phi_1 = \sin x\)</span>, <span class="math inline">\(\phi_2 = \sin 3x\)</span>, <span class="math inline">\(\phi_3 = \sin 5x\)</span>, which vanish at <span class="math inline">\(0\)</span> and <span class="math inline">\(\pi\)</span>:</p>
+<p><span class="math display">\[
+u(x) = c_1 \sin x + c_2 \sin 3x + c_3 \sin 5x.
+\]</span></p>
+<p><strong>Step 3</strong> (Galerkin system): since <span class="math inline">\(L[\sin kx] = (2 - k^2)\sin kx\)</span> and the functions <span class="math inline">\(\sin kx\)</span> are orthogonal on <span class="math inline">\([0, \pi]\)</span> with <span class="math inline">\(\int_0^\pi \sin^2 kx\,dx = \tfrac{\pi}{2}\)</span>, the matrix is diagonal, <span class="math inline">\(a_{kk} = (2 - k^2)\tfrac{\pi}{2}\)</span>. The right-hand side is <span class="math inline">\(b_k = -\int_0^\pi \sin kx \cdot 2x(x - \pi)\,dx = \tfrac{8}{k^3}\)</span> for odd <span class="math inline">\(k\)</span>, and the equations are</p>
+<p><span class="math display">\[
+\frac{\pi}{2}\,c_1 = 8, \qquad -\frac{7\pi}{2}\,c_2 = \frac{8}{27}, \qquad -\frac{23\pi}{2}\,c_3 = \frac{8}{125}.
+\]</span></p>
+<p><strong>Step 4</strong> (solve):</p>
+<p><span class="math display">\[
+c_1 = \frac{16}{\pi} \approx 5.09296, \qquad c_2 = -\frac{16}{189\pi} \approx -0.0269469, \qquad c_3 = -\frac{16}{2875\pi} \approx -0.00177146,
+\]</span></p>
+<p>so</p>
+<p><span class="math display">\[
+\boxed{\ u(x) = \frac{16\sin x}{\pi} - \frac{16\sin 3x}{189\pi} - \frac{16\sin 5x}{2875\pi}\ }
+\]</span></p>
+<p>These agree with Mathews’ values. For even <span class="math inline">\(k\)</span> the right-hand side <span class="math inline">\(b_k\)</span> is <span class="math inline">\(0\)</span> (the forcing <span class="math inline">\(2x(x - \pi)\)</span> is symmetric about <span class="math inline">\(x = \tfrac{\pi}{2}\)</span> and <span class="math inline">\(\sin kx\)</span> is antisymmetric about it), so adding <span class="math inline">\(\sin 2x\)</span> and <span class="math inline">\(\sin 4x\)</span> to the basis would give them zero coefficients; that is why Mathews skips them.</p>
+<p><strong>Verification:</strong> the exact solution is</p>
+<p><span class="math display">\[
+y(x) = 1 + \pi x - x^2 - \cos\bigl(\sqrt2\,x\bigr) - \sin\bigl(\sqrt2\,x\bigr)\tan\frac{\pi}{\sqrt2},
+\]</span></p>
+<p>which satisfies the equation (checked symbolically) and both boundary conditions (checked to 40 digits).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th>exact <span class="math inline">\(y(x)\)</span></th>
+<th>Galerkin <span class="math inline">\(u(x)\)</span></th>
+<th>error <span class="math inline">\(y - u\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\pi/4\)</span></td>
+<td>3.583613</td>
+<td>3.583464</td>
+<td><span class="math inline">\(1.50 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\pi/2\)</span></td>
+<td>5.118384</td>
+<td>5.118134</td>
+<td><span class="math inline">\(2.50 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(3\pi/4\)</span></td>
+<td>3.583613</td>
+<td>3.583464</td>
+<td><span class="math inline">\(1.50 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\pi\)</span></td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>On a 20001-point grid the error lies between <span class="math inline">\(-4.29 \times 10^{-4}\)</span> (near <span class="math inline">\(x = 0.19\)</span>) and <span class="math inline">\(3.24 \times 10^{-4}\)</span> (near <span class="math inline">\(x = 0.62\)</span>), small beside the size of the solution, whose maximum is <span class="math inline">\(y(\pi/2) \approx 5.118\)</span>. The matrix is diagonal, so <span class="math inline">\(\operatorname{cond}(\mathbf{A}) = \tfrac{23\pi/2}{\pi/2} = 23\)</span>: this system is well conditioned.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Sine basis: Galerkin coefficients are Fourier coefficients
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In Example 4 the basis functions are eigenfunctions of <span class="math inline">\(L\)</span> with the same boundary conditions: for any <span class="math inline">\(v\)</span> with <span class="math inline">\(v(0) = v(\pi) = 0\)</span>, integrating by parts twice gives <span class="math inline">\(\langle \sin kx, L[v] \rangle = (2 - k^2)\langle \sin kx, v \rangle\)</span>. Applying this to <span class="math inline">\(v = y - \phi_0\)</span> turns Galerkin’s equation for <span class="math inline">\(c_k\)</span> into <span class="math inline">\((2 - k^2)\tfrac{\pi}{2}\,c_k = (2 - k^2)\langle \sin kx, y - \phi_0 \rangle\)</span>, so</p>
+<p><span class="math display">\[
+c_k = \frac{2}{\pi}\int_0^\pi \bigl(y(x) - \phi_0(x)\bigr)\sin kx\,dx,
+\]</span></p>
+<p>the Fourier sine coefficient of <span class="math inline">\(y - \phi_0\)</span> (this needs <span class="math inline">\(2 - k^2 \ne 0\)</span>, which holds for every integer <span class="math inline">\(k\)</span>). The Galerkin solution is the truncated Fourier sine series of the exact solution, plus <span class="math inline">\(\phi_0\)</span>. Numerical quadrature of the exact solutions of Examples 4 (a) and 4 (b) reproduces every coefficient on this page to ten significant figures.</p>
+</div>
+</div>
+</section>
+<section id="example-4-b-the-same-equation-with-y0-0-ypi-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-b-the-same-equation-with-y0-0-ypi-1">Example 4 (b) — the same equation with <span class="math inline">\(y(0) = 0\)</span>, <span class="math inline">\(y(\pi) = 1\)</span></h3>
+<p><strong>Step 1</strong> (data): <span class="math inline">\(\phi_0(x) = \tfrac{x}{\pi}\)</span>, and <span class="math inline">\(L[\phi_0] = \tfrac{2x}{\pi}\)</span>.</p>
+<p><strong>Step 2</strong> (basis): Mathews now uses all seven sines <span class="math inline">\(\phi_k = \sin kx\)</span>, <span class="math inline">\(k = 1, \ldots, 7\)</span>, odd and even (the even ones get nonzero coefficients here, see Step 3):</p>
+<p><span class="math display">\[
+u(x) = \frac{x}{\pi} + \sum_{k=1}^{7} c_k \sin kx.
+\]</span></p>
+<p><strong>Step 3</strong> (Galerkin system): <span class="math inline">\(\mathbf{A}\)</span> is again diagonal with <span class="math inline">\(a_{kk} = (2 - k^2)\tfrac{\pi}{2}\)</span>, and</p>
+<p><span class="math display">\[
+b_k = -\int_0^\pi \sin kx\,\Bigl(\frac{2x}{\pi} + 2x(x - \pi)\Bigr)\,dx = \frac{2(-1)^k}{k} + \begin{cases} \dfrac{8}{k^3}, &amp; k \text{ odd}, \\[1mm] 0, &amp; k \text{ even}, \end{cases}
+\]</span></p>
+<p>so <span class="math inline">\(\mathbf{B} = \bigl(6,\ 1,\ -\tfrac{10}{27},\ \tfrac12,\ -\tfrac{42}{125},\ \tfrac13,\ -\tfrac{90}{343}\bigr)\)</span>.</p>
+<p><strong>Step 4</strong> (solve), <span class="math inline">\(c_k = b_k / a_{kk}\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(a_{kk}\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span> (decimal)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(\pi/2\)</span></td>
+<td><span class="math inline">\(6\)</span></td>
+<td><span class="math inline">\(12/\pi\)</span></td>
+<td><span class="math inline">\(3.81972\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(-\pi\)</span></td>
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(-1/\pi\)</span></td>
+<td><span class="math inline">\(-0.318310\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(-7\pi/2\)</span></td>
+<td><span class="math inline">\(-10/27\)</span></td>
+<td><span class="math inline">\(20/(189\pi)\)</span></td>
+<td><span class="math inline">\(0.0336836\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><span class="math inline">\(-7\pi\)</span></td>
+<td><span class="math inline">\(1/2\)</span></td>
+<td><span class="math inline">\(-1/(14\pi)\)</span></td>
+<td><span class="math inline">\(-0.0227364\)</span></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><span class="math inline">\(-23\pi/2\)</span></td>
+<td><span class="math inline">\(-42/125\)</span></td>
+<td><span class="math inline">\(84/(2875\pi)\)</span></td>
+<td><span class="math inline">\(0.00930018\)</span></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><span class="math inline">\(-17\pi\)</span></td>
+<td><span class="math inline">\(1/3\)</span></td>
+<td><span class="math inline">\(-1/(51\pi)\)</span></td>
+<td><span class="math inline">\(-0.00624137\)</span></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><span class="math inline">\(-47\pi/2\)</span></td>
+<td><span class="math inline">\(-90/343\)</span></td>
+<td><span class="math inline">\(180/(16121\pi)\)</span></td>
+<td><span class="math inline">\(0.00355411\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>These agree with Mathews’ values, and the Galerkin solution is</p>
+<p><span class="math display">\[
+\boxed{\ u(x) = \frac{x}{\pi} + \frac{12\sin x}{\pi} - \frac{\sin 2x}{\pi} + \frac{20\sin 3x}{189\pi} - \frac{\sin 4x}{14\pi} + \frac{84\sin 5x}{2875\pi} - \frac{\sin 6x}{51\pi} + \frac{180\sin 7x}{16121\pi}\ }
+\]</span></p>
+<p><strong>Verification:</strong> the exact solution is</p>
+<p><span class="math display">\[
+y(x) = 1 + \pi x - x^2 - \cos\bigl(\sqrt2\,x\bigr) + \cot\bigl(\sqrt2\,\pi\bigr)\sin\bigl(\sqrt2\,x\bigr),
+\]</span></p>
+<p>which satisfies the equation (checked symbolically), <span class="math inline">\(y(0) = 0\)</span> and <span class="math inline">\(y(\pi) = 1\)</span> (checked to 40 digits).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th>exact <span class="math inline">\(y(x)\)</span></th>
+<th>Galerkin <span class="math inline">\(u(x)\)</span></th>
+<th>error <span class="math inline">\(y - u\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\pi/4\)</span></td>
+<td>2.654039</td>
+<td>2.653609</td>
+<td><span class="math inline">\(4.30 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\pi/2\)</span></td>
+<td>4.292892</td>
+<td>4.291781</td>
+<td><span class="math inline">\(1.11 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(3\pi/4\)</span></td>
+<td>3.780125</td>
+<td>3.777746</td>
+<td><span class="math inline">\(2.38 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\pi\)</span></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>On a 20001-point grid the error lies between <span class="math inline">\(-0.00477\)</span> (near <span class="math inline">\(x = 2.67\)</span>) and <span class="math inline">\(0.00870\)</span> (near <span class="math inline">\(x = 3.02\)</span>, close to the right end). Even with seven sines the error is about <span class="math inline">\(20\)</span> times that of part (a) with three. The condition number of the diagonal matrix is <span class="math inline">\(\tfrac{47\pi/2}{\pi/2} = 47\)</span>.</p>
+</section>
+</section>
+<section id="summary-of-the-examples" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-the-examples">Summary of the Examples</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 5%">
+<col style="width: 40%">
+<col style="width: 35%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Example</th>
+<th>Basis</th>
+<th><span class="math inline">\(n\)</span></th>
+<th><span class="math inline">\(\operatorname{cond}(\mathbf{A})\)</span></th>
+<th>largest <span class="math inline">\(\lvert y - u \rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2, IVP on <span class="math inline">\([0, 3]\)</span></td>
+<td><span class="math inline">\(x^i\)</span></td>
+<td>7</td>
+<td><span class="math inline">\(3.32 \times 10^{11}\)</span></td>
+<td><span class="math inline">\(0.0148\)</span></td>
+</tr>
+<tr class="even">
+<td>3 (a), BVP on <span class="math inline">\([0, 1]\)</span></td>
+<td><span class="math inline">\(x^i(x - 1)^i\)</span></td>
+<td>3</td>
+<td><span class="math inline">\(9.84 \times 10^{3}\)</span></td>
+<td><span class="math inline">\(5.12 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>3 (b), BVP on <span class="math inline">\([0, 1]\)</span></td>
+<td>Mathews’ five polynomials</td>
+<td>5</td>
+<td><span class="math inline">\(8.73 \times 10^{4}\)</span></td>
+<td><span class="math inline">\(1.01 \times 10^{-3}\)</span></td>
+</tr>
+<tr class="even">
+<td>4 (a), BVP on <span class="math inline">\([0, \pi]\)</span></td>
+<td><span class="math inline">\(\sin x, \sin 3x, \sin 5x\)</span></td>
+<td>3</td>
+<td><span class="math inline">\(23\)</span></td>
+<td><span class="math inline">\(4.29 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4 (b), BVP on <span class="math inline">\([0, \pi]\)</span></td>
+<td><span class="math inline">\(\sin kx\)</span>, <span class="math inline">\(k = 1, \ldots, 7\)</span></td>
+<td>7</td>
+<td><span class="math inline">\(47\)</span></td>
+<td><span class="math inline">\(8.70 \times 10^{-3}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The condition numbers are in the <span class="math inline">\(\infty\)</span>-norm, as Mathews computes them, and the largest errors are taken over a grid of 6001 points (<span class="math inline">\([0, 3]\)</span> and <span class="math inline">\([0, 1]\)</span>) or 20001 points (<span class="math inline">\([0, \pi]\)</span>).</p>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Logistic Curve – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#the-logistic-differential-equation" id="toc-the-logistic-differential-equation" class="nav-link" data-scroll-target="#the-logistic-differential-equation">The Logistic Differential Equation</a></li>
+  <li><a href="#fitting-a-logistic-curve-by-data-linearization" id="toc-fitting-a-logistic-curve-by-data-linearization" class="nav-link" data-scroll-target="#fitting-a-logistic-curve-by-data-linearization">Fitting a Logistic Curve by Data Linearization</a>
+  <ul class="collapse">
+  <li><a href="#example-1-u.s.-population-19001990-with-l-800-million" id="toc-example-1-u.s.-population-19001990-with-l-800-million" class="nav-link" data-scroll-target="#example-1-u.s.-population-19001990-with-l-800-million">Example 1 — U.S. population 1900–1990 with <span class="math inline">\(L = 800\)</span> million</a></li>
+  <li><a href="#example-2-estimating-the-population-in-2000" id="toc-example-2-estimating-the-population-in-2000" class="nav-link" data-scroll-target="#example-2-estimating-the-population-in-2000">Example 2 — Estimating the population in 2000</a></li>
+  <li><a href="#example-3-the-census-figure-for-2000" id="toc-example-3-the-census-figure-for-2000" class="nav-link" data-scroll-target="#example-3-the-census-figure-for-2000">Example 3 — The census figure for 2000</a></li>
+  <li><a href="#example-4-how-close-is-the-prediction" id="toc-example-4-how-close-is-the-prediction" class="nav-link" data-scroll-target="#example-4-how-close-is-the-prediction">Example 4 — How close is the prediction?</a></li>
+  <li><a href="#how-much-does-the-answer-depend-on-l" id="toc-how-much-does-the-answer-depend-on-l" class="nav-link" data-scroll-target="#how-much-does-the-answer-depend-on-l">How much does the answer depend on <span class="math inline">\(L\)</span>?</a></li>
+  </ul></li>
+  <li><a href="#true-least-squares" id="toc-true-least-squares" class="nav-link" data-scroll-target="#true-least-squares">True Least Squares</a>
+  <ul class="collapse">
+  <li><a href="#example-5-least-squares-logistic-curve-for-the-19001990-data-new" id="toc-example-5-least-squares-logistic-curve-for-the-19001990-data-new" class="nav-link" data-scroll-target="#example-5-least-squares-logistic-curve-for-the-19001990-data-new">Example 5 — Least squares logistic curve for the 1900–1990 data (new)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Logistic Curve</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>A population that grows without limit is modelled by the exponential equation <span class="math inline">\(y' = r\,y\)</span>. When growth is held back by limited resources, the <em>logistic</em> differential equation <span class="math inline">\(y' = r\,y\,(1 - y/L)\)</span> is used instead, and its solution is the S-shaped <em>logistic curve</em></p>
+<p><span class="math display">\[
+y = \frac{L}{1 + c\,e^{a x}},
+\]</span></p>
+<p>which rises (when <span class="math inline">\(a &lt; 0\)</span> and <span class="math inline">\(c &gt; 0\)</span>) from near <span class="math inline">\(0\)</span> toward the limiting value <span class="math inline">\(L\)</span>, also called the carrying capacity. The problem on this page is the one in Mathews’ module: given data points <span class="math inline">\((x_k, y_k)\)</span>, here the population of the United States from 1900 to 1990, find the logistic curve that fits them, and use it to predict the population in 2000.</p>
+<p>The first method, <em>data linearization</em>, needs a guess for <span class="math inline">\(L\)</span>. It rearranges the curve to <span class="math inline">\(L/y - 1 = c\,e^{a x}\)</span> and takes logarithms, so that the change of variables <span class="math inline">\(X = x\)</span>, <span class="math inline">\(Y = \ln(L/y - 1)\)</span> turns the curve into the straight line</p>
+<p><span class="math display">\[
+Y = \ln(c) + a X .
+\]</span></p>
+<p>A least squares line <span class="math inline">\(Y = AX + B\)</span> through the transformed points then gives <span class="math inline">\(a = A\)</span> and <span class="math inline">\(c = e^{B}\)</span>. With <span class="math inline">\(L = 800\)</span> million this predicts <span class="math inline">\(281.75\)</span> million people for 2000, within <span class="math inline">\(0.13\%\)</span> of the census figure. The second method, <em>true least squares</em>, chooses <span class="math inline">\(L\)</span>, <span class="math inline">\(c\)</span> and <span class="math inline">\(a\)</span> together to minimise the sum of squared errors in <span class="math inline">\(y\)</span> itself; the equations are nonlinear, so it is solved iteratively from starting values such as those of the first method.</p>
+</section>
+<section id="the-logistic-differential-equation" class="level2">
+<h2 class="anchored" data-anchor-id="the-logistic-differential-equation">The Logistic Differential Equation</h2>
+<p>Mathews’ module is about fitting the curve; the differential equation behind it is on his separate theory page, which states the solution, its initial value, its limit <span class="math inline">\(L\)</span>, its S shape and its symmetry, but whose formula images have not survived in the archive. This section therefore gives the standard background, derived and checked here.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Logistic differential equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For constants <span class="math inline">\(r &gt; 0\)</span> (the growth rate) and <span class="math inline">\(L &gt; 0\)</span> (the carrying capacity), the <em>logistic differential equation</em> is</p>
+<p><span class="math display">\[
+\frac{dy}{dt} = r\,y\left(1 - \frac{y}{L}\right).
+\tag{1}
+\]</span></p>
+</div>
+</div>
+<p>For small <span class="math inline">\(y\)</span> the factor <span class="math inline">\(1 - y/L\)</span> is close to <span class="math inline">\(1\)</span> and equation (1) is close to the exponential model <span class="math inline">\(y' = r y\)</span>, whose solution is <span class="math inline">\(y = y_0 e^{r(t - t_0)}\)</span>. As <span class="math inline">\(y\)</span> approaches <span class="math inline">\(L\)</span> the factor approaches <span class="math inline">\(0\)</span> and growth stops.</p>
+<p><strong>Solution by separation of variables.</strong> For <span class="math inline">\(y\)</span> between <span class="math inline">\(0\)</span> and <span class="math inline">\(L\)</span>, write (1) as <span class="math inline">\(\dfrac{dy}{y(1 - y/L)} = r\,dt\)</span> and use the partial fractions <span class="math inline">\(\dfrac{1}{y(1 - y/L)} = \dfrac{1}{y} + \dfrac{1}{L - y}\)</span>:</p>
+<p><span class="math display">\[
+\ln y - \ln (L - y) = r t + C
+\quad\Longrightarrow\quad
+\frac{y}{L - y} = K e^{r t}.
+\]</span></p>
+<p>Solving for <span class="math inline">\(y\)</span> and choosing the constant so that <span class="math inline">\(y(t_0) = y_0\)</span> gives the solution in the theorem below (the same formula holds for <span class="math inline">\(y_0 &gt; L\)</span>, by the same steps with <span class="math inline">\(y - L\)</span> in place of <span class="math inline">\(L - y\)</span>).</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Solution of the logistic equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(r &gt; 0\)</span>, <span class="math inline">\(L &gt; 0\)</span> and <span class="math inline">\(y_0 &gt; 0\)</span>, the solution of (1) with <span class="math inline">\(y(t_0) = y_0\)</span> is, for <span class="math inline">\(t \ge t_0\)</span>,</p>
+<p><span class="math display">\[
+y(t) = \frac{L}{1 + c\,e^{-r(t - t_0)}}, \qquad c = \frac{L - y_0}{y_0},
+\tag{2}
+\]</span></p>
+<p>with derivative</p>
+<p><span class="math display">\[
+y'(t) = \frac{L\,r\,c\,e^{-r(t - t_0)}}{\bigl(1 + c\,e^{-r(t - t_0)}\bigr)^2}.
+\]</span></p>
+<ol type="1">
+<li><span class="math inline">\(y(t) \to L\)</span> as <span class="math inline">\(t \to \infty\)</span>.</li>
+<li>If <span class="math inline">\(0 &lt; y_0 &lt; L\)</span>, then <span class="math inline">\(c &gt; 0\)</span> and <span class="math inline">\(y\)</span> increases; if <span class="math inline">\(y_0 &gt; L\)</span>, then <span class="math inline">\(-1 &lt; c &lt; 0\)</span> and <span class="math inline">\(y\)</span> decreases; if <span class="math inline">\(y_0 = L\)</span>, then <span class="math inline">\(y \equiv L\)</span>.</li>
+<li>If <span class="math inline">\(0 &lt; y_0 &lt; L\)</span>, formula (2) holds for all <span class="math inline">\(t\)</span>, and <span class="math inline">\(y \to 0\)</span> as <span class="math inline">\(t \to -\infty\)</span>.</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Inflection point and symmetry
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(0 &lt; y_0 &lt; L\)</span> and <span class="math inline">\(r &gt; 0\)</span>. Then</p>
+<p><span class="math display">\[
+y'' = \frac{r^2\, y\,(L - y)(L - 2y)}{L^2},
+\]</span></p>
+<p>so the solution (2) is concave up while <span class="math inline">\(y &lt; L/2\)</span> and concave down while <span class="math inline">\(y &gt; L/2\)</span>. Its single inflection point is at</p>
+<p><span class="math display">\[
+t^* = t_0 + \frac{\ln c}{r}, \qquad y(t^*) = \frac{L}{2}, \qquad y'(t^*) = \frac{rL}{4},
+\tag{3}
+\]</span></p>
+<p>where the growth rate <span class="math inline">\(y'\)</span> is largest. The curve is symmetric about the point <span class="math inline">\((t^*, L/2)\)</span>:</p>
+<p><span class="math display">\[
+y(t^* + s) + y(t^* - s) = L \quad \text{for every } s.
+\]</span></p>
+</div>
+</div>
+<p><strong>Connection with Mathews’ form.</strong> Mathews writes the curve as <span class="math inline">\(y = L/(1 + c\,e^{a x})\)</span> with <span class="math inline">\(x\)</span> the time. This is formula (2) with <span class="math inline">\(a = -r\)</span> and <span class="math inline">\(t_0 = 0\)</span>, so <span class="math inline">\(c = (L - y_0)/y_0\)</span> where <span class="math inline">\(y_0\)</span> is the value of the curve at <span class="math inline">\(x = 0\)</span>. A growing population therefore has <span class="math inline">\(a &lt; 0\)</span>, and the fitted value <span class="math inline">\(-a\)</span> is the growth rate <span class="math inline">\(r\)</span> of equation (1).</p>
+</section>
+<section id="fitting-a-logistic-curve-by-data-linearization" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-a-logistic-curve-by-data-linearization">Fitting a Logistic Curve by Data Linearization</h2>
+<p>We wish to fit the curve</p>
+<p><span class="math display">\[
+y = f(x) = \frac{L}{1 + c\,e^{a x}}
+\tag{4}
+\]</span></p>
+<p>to the data points <span class="math inline">\((x_1, y_1), (x_2, y_2), \ldots, (x_n, y_n)\)</span>. Rearranging (4) and taking logarithms,</p>
+<p><span class="math display">\[
+\frac{L}{y} - 1 = c\,e^{a x}
+\qquad\Longrightarrow\qquad
+\ln\!\left(\frac{L}{y} - 1\right) = \ln(c) + a x .
+\]</span></p>
+<p>The change of variables</p>
+<p><span class="math display">\[
+X = x, \qquad Y = \ln\!\left(\frac{L}{y} - 1\right)
+\tag{5}
+\]</span></p>
+<p>turns this into <span class="math inline">\(Y = \ln(c) + a X\)</span>, which is “linearized”: a straight line in the <span class="math inline">\(XY\)</span>-plane. Apply (5) to the data, keeping the abscissas and transforming the ordinates, to get the points <span class="math inline">\((X_1, Y_1), \ldots, (X_n, Y_n)\)</span>, and fit the least squares line <span class="math inline">\(Y = AX + B\)</span> to them. Matching it with <span class="math inline">\(Y = \ln(c) + aX\)</span> gives</p>
+<p><span class="math display">\[
+a = A, \qquad c = e^{B}.
+\tag{6}
+\]</span></p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Least squares line — normal equations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The line <span class="math inline">\(Y = AX + B\)</span> that minimises <span class="math inline">\(\sum_{k=1}^{n} (Y_k - A X_k - B)^2\)</span> solves</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Bigl(\sum X_k^2\Bigr) A + \Bigl(\sum X_k\Bigr) B &amp;= \sum X_k Y_k, \\
+\Bigl(\sum X_k\Bigr) A + n B &amp;= \sum Y_k .
+\end{aligned}
+\tag{7}
+\]</span></p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Caution — <span class="math inline">\(L\)</span> must be chosen first
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Data linearization needs the limiting value <span class="math inline">\(L\)</span> in advance (Mathews’ Remark 1), and <span class="math inline">\(L\)</span> must be larger than every <span class="math inline">\(y_k\)</span>, or <span class="math inline">\(L/y_k - 1 \le 0\)</span> and its logarithm is not a real number. A value suited to the problem is usually found by guessing. Different guesses give different curves (see the table after Example 4), and the line minimises the squared errors in <span class="math inline">\(Y = \ln(L/y - 1)\)</span>, not in <span class="math inline">\(y\)</span>, so it is not the least squares curve for the original data.</p>
+</div>
+</div>
+<section id="example-1-u.s.-population-19001990-with-l-800-million" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-u.s.-population-19001990-with-l-800-million">Example 1 — U.S. population 1900–1990 with <span class="math inline">\(L = 800\)</span> million</h3>
+<p>Use data linearization to fit the curve (4) to the population of the United States in July of each census decade, 1900 to 1990. Mathews’ data (the U.S. Census Bureau’s historical national population estimates for July 1) are:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Date</th>
+<th style="text-align: right;">Population</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1900 July</td>
+<td style="text-align: right;">76094000</td>
+</tr>
+<tr class="even">
+<td>1910 July</td>
+<td style="text-align: right;">92407000</td>
+</tr>
+<tr class="odd">
+<td>1920 July</td>
+<td style="text-align: right;">106461000</td>
+</tr>
+<tr class="even">
+<td>1930 July</td>
+<td style="text-align: right;">123076741</td>
+</tr>
+<tr class="odd">
+<td>1940 July</td>
+<td style="text-align: right;">132122446</td>
+</tr>
+<tr class="even">
+<td>1950 July</td>
+<td style="text-align: right;">152271417</td>
+</tr>
+<tr class="odd">
+<td>1960 July</td>
+<td style="text-align: right;">180671158</td>
+</tr>
+<tr class="even">
+<td>1970 July</td>
+<td style="text-align: right;">205052174</td>
+</tr>
+<tr class="odd">
+<td>1980 July</td>
+<td style="text-align: right;">227224681</td>
+</tr>
+<tr class="even">
+<td>1990 July</td>
+<td style="text-align: right;">249464396</td>
+</tr>
+</tbody>
+</table>
+<p>Mathews enters the populations in millions and, for illustration, chooses the limiting population <span class="math inline">\(L = 800\)</span> million, which is larger than the largest value <span class="math inline">\(249.464396\)</span>. He also shifts the abscissas to the left before fitting; here time is measured from 1900, <span class="math inline">\(X = t - 1900\)</span>.</p>
+<p><strong>Step 1</strong>: Transform the data with (5).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Year <span class="math inline">\(t\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k = t - 1900\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span> (millions)</th>
+<th style="text-align: right;"><span class="math inline">\(L/y_k - 1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y_k = \ln(L/y_k - 1)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1900</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">76.094000</td>
+<td style="text-align: right;">9.513312</td>
+<td style="text-align: right;">2.252692</td>
+</tr>
+<tr class="even">
+<td>1910</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">92.407000</td>
+<td style="text-align: right;">7.657353</td>
+<td style="text-align: right;">2.035666</td>
+</tr>
+<tr class="odd">
+<td>1920</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">106.461000</td>
+<td style="text-align: right;">6.514489</td>
+<td style="text-align: right;">1.874029</td>
+</tr>
+<tr class="even">
+<td>1930</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">123.076741</td>
+<td style="text-align: right;">5.500010</td>
+<td style="text-align: right;">1.704750</td>
+</tr>
+<tr class="odd">
+<td>1940</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">132.122446</td>
+<td style="text-align: right;">5.054989</td>
+<td style="text-align: right;">1.620376</td>
+</tr>
+<tr class="even">
+<td>1950</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">152.271417</td>
+<td style="text-align: right;">4.253777</td>
+<td style="text-align: right;">1.447807</td>
+</tr>
+<tr class="odd">
+<td>1960</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">180.671158</td>
+<td style="text-align: right;">3.427934</td>
+<td style="text-align: right;">1.231958</td>
+</tr>
+<tr class="even">
+<td>1970</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">205.052174</td>
+<td style="text-align: right;">2.901446</td>
+<td style="text-align: right;">1.065209</td>
+</tr>
+<tr class="odd">
+<td>1980</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">227.224681</td>
+<td style="text-align: right;">2.520744</td>
+<td style="text-align: right;">0.924554</td>
+</tr>
+<tr class="even">
+<td>1990</td>
+<td style="text-align: right;">90</td>
+<td style="text-align: right;">249.464396</td>
+<td style="text-align: right;">2.206870</td>
+<td style="text-align: right;">0.791575</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 2</strong>: Form the sums for the normal equations (7), with <span class="math inline">\(n = 10\)</span> (computed from the unrounded <span class="math inline">\(Y_k\)</span>):</p>
+<p><span class="math display">\[
+\sum X_k = 450, \quad \sum X_k^2 = 28500, \quad \sum Y_k = 14.9486167, \quad \sum X_k Y_k = 539.8733648 .
+\]</span></p>
+<p><strong>Step 3</strong>: Solve the normal equations</p>
+<p><span class="math display">\[
+\begin{aligned}
+28500\,A + 450\,B &amp;= 539.8733648, \\
+450\,A + 10\,B &amp;= 14.9486167,
+\end{aligned}
+\]</span></p>
+<p>which gives</p>
+<p><span class="math display">\[
+A = \frac{10(539.8733648) - 450(14.9486167)}{10(28500) - 450^2} = -0.01609871, \qquad B = \frac{14.9486167 - 450A}{10} = 2.219304 .
+\]</span></p>
+<p><strong>Step 4</strong>: Recover the coefficients with (6): <span class="math inline">\(a = A = -0.01609871\)</span> and <span class="math inline">\(c = e^{B} = 9.200923\)</span>. Because the abscissas were shifted, the answer has <span class="math inline">\(t - 1900\)</span> in place of <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[
+\boxed{\,f_1(t) = \frac{800}{1 + 9.200923\, e^{-0.01609871\,(t - 1900)}}\,}
+\]</span></p>
+<p>with <span class="math inline">\(t\)</span> in years and <span class="math inline">\(f_1\)</span> in millions. The coefficients are shown to seven significant figures; all values of <span class="math inline">\(f_1\)</span> on this page are computed with the unrounded ones.</p>
+<p><strong>Verification.</strong> The values of <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> satisfy both normal equations to within rounding error of the 50-digit computation, and the line passes through the transformed points with residuals <span class="math inline">\(Y_k - (AX_k + B)\)</span> all smaller than <span class="math inline">\(0.046\)</span> in size. On the original data the curve fits as follows:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Year</th>
+<th style="text-align: right;">Census (millions)</th>
+<th style="text-align: right;"><span class="math inline">\(f_1(t)\)</span></th>
+<th style="text-align: right;">Census <span class="math inline">\(- f_1(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1900</td>
+<td style="text-align: right;">76.094000</td>
+<td style="text-align: right;">78.4243</td>
+<td style="text-align: right;">−2.3303</td>
+</tr>
+<tr class="even">
+<td>1910</td>
+<td style="text-align: right;">92.407000</td>
+<td style="text-align: right;">90.5718</td>
+<td style="text-align: right;">1.8352</td>
+</tr>
+<tr class="odd">
+<td>1920</td>
+<td style="text-align: right;">106.461000</td>
+<td style="text-align: right;">104.3288</td>
+<td style="text-align: right;">2.1322</td>
+</tr>
+<tr class="even">
+<td>1930</td>
+<td style="text-align: right;">123.076741</td>
+<td style="text-align: right;">119.8225</td>
+<td style="text-align: right;">3.2542</td>
+</tr>
+<tr class="odd">
+<td>1940</td>
+<td style="text-align: right;">132.122446</td>
+<td style="text-align: right;">137.1634</td>
+<td style="text-align: right;">−5.0410</td>
+</tr>
+<tr class="even">
+<td>1950</td>
+<td style="text-align: right;">152.271417</td>
+<td style="text-align: right;">156.4368</td>
+<td style="text-align: right;">−4.1654</td>
+</tr>
+<tr class="odd">
+<td>1960</td>
+<td style="text-align: right;">180.671158</td>
+<td style="text-align: right;">177.6923</td>
+<td style="text-align: right;">2.9788</td>
+</tr>
+<tr class="even">
+<td>1970</td>
+<td style="text-align: right;">205.052174</td>
+<td style="text-align: right;">200.9342</td>
+<td style="text-align: right;">4.1180</td>
+</tr>
+<tr class="odd">
+<td>1980</td>
+<td style="text-align: right;">227.224681</td>
+<td style="text-align: right;">226.1115</td>
+<td style="text-align: right;">1.1132</td>
+</tr>
+<tr class="even">
+<td>1990</td>
+<td style="text-align: right;">249.464396</td>
+<td style="text-align: right;">253.1107</td>
+<td style="text-align: right;">−3.6463</td>
+</tr>
+</tbody>
+</table>
+<p>The largest error is <span class="math inline">\(5.04\)</span> million (in 1940), and the sum of squared errors is <span class="math inline">\(\sum (y_k - f_1(t_k))^2 = 107.06\)</span> million². Mathews plots the least squares line in the <span class="math inline">\(XY\)</span>-plane and graphs the curve <span class="math inline">\(f_1\)</span>; the images of those plots have not survived in the archive.</p>
+<p><strong>The fitted curve as a solution of the logistic equation.</strong> By the connection above, <span class="math inline">\(f_1\)</span> is the solution of</p>
+<p><span class="math display">\[
+y' = 0.01609871\, y \left(1 - \frac{y}{800}\right), \qquad y(1900) = \frac{800}{1 + 9.200923} = 78.4243,
+\]</span></p>
+<p>a growth rate of about <span class="math inline">\(1.61\%\)</span> per year when the population is small. A numerical solution of this initial value problem (an eighth-order Runge–Kutta method with tolerances <span class="math inline">\(10^{-12}\)</span>) agrees with <span class="math inline">\(f_1\)</span> to within <span class="math inline">\(5 \times 10^{-10}\)</span> million at <span class="math inline">\(t = 1950\)</span>, <span class="math inline">\(2000\)</span>, <span class="math inline">\(2037\)</span>, <span class="math inline">\(2100\)</span> and <span class="math inline">\(2200\)</span>. By (3) the inflection point of <span class="math inline">\(f_1\)</span> is at <span class="math inline">\(t^* = 1900 + \ln(9.200923)/0.01609871 = 2037.86\)</span>, where <span class="math inline">\(f_1 = 400\)</span> million and the growth rate reaches its largest value, <span class="math inline">\(rL/4 = 3.2197\)</span> million per year; the numerical solution crosses <span class="math inline">\(y = 400\)</span> at the same time to the digits shown. All the census years lie before <span class="math inline">\(t^*\)</span>, where <span class="math inline">\(f_1\)</span> is concave up. The inflection point and the long-term limit of <span class="math inline">\(800\)</span> million are properties of the model with the guessed value <span class="math inline">\(L = 800\)</span>, not predictions supported by the data.</p>
+</section>
+<section id="example-2-estimating-the-population-in-2000" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-estimating-the-population-in-2000">Example 2 — Estimating the population in 2000</h3>
+<p>Use the model <span class="math inline">\(f_1\)</span> of Example 1 to estimate the population in 2000.</p>
+<p><strong>Solution.</strong> With <span class="math inline">\(t - 1900 = 100\)</span>,</p>
+<p><span class="math display">\[
+f_1(2000) = \frac{800}{1 + 9.200923\, e^{-1.609871}} = 281.750944 \text{ million},
+\]</span></p>
+<p>about <span class="math inline">\(281{,}750{,}944\)</span> people. (With the rounded coefficients shown, the same formula gives <span class="math inline">\(281.7509\)</span> million.)</p>
+</section>
+<section id="example-3-the-census-figure-for-2000" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-the-census-figure-for-2000">Example 3 — The census figure for 2000</h3>
+<p>Mathews sends the reader to the U.S. Census Bureau’s tables of population estimates to find the figure for July 1, 2000, and gives a table for readers who cannot connect. His table repeats the figures of Example 1, except that the 1990 entry reads <span class="math inline">\(249{,}438{,}712\)</span> instead of <span class="math inline">\(249{,}464{,}396\)</span>, and adds the figure for July 1, 2000:</p>
+<p><span class="math display">\[
+P(2000) = 282{,}124{,}631 = 282.124631 \text{ million}.
+\]</span></p>
+<p>Example 1 is fitted to the figures listed with it, including <span class="math inline">\(249.464396\)</span> million for 1990.</p>
+</section>
+<section id="example-4-how-close-is-the-prediction" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-how-close-is-the-prediction">Example 4 — How close is the prediction?</h3>
+<p>Compare the prediction of Example 2 with the census figure of Example 3: (a) how close is it, and (b) what is the percentage error?</p>
+<p><strong>Solution.</strong> (a) The difference is</p>
+<p><span class="math display">\[
+P(2000) - f_1(2000) = 282.124631 - 281.750944 = 0.373687 \text{ million},
+\]</span></p>
+<p>about <span class="math inline">\(373{,}687\)</span> people, so the model underestimates slightly.</p>
+<ol start="2" type="a">
+<li>The percentage error is</li>
+</ol>
+<p><span class="math display">\[
+100\,\frac{P(2000) - f_1(2000)}{P(2000)} = 0.132455\,\%.
+\]</span></p>
+<p>Both values agree with Mathews’ results.</p>
+</section>
+<section id="how-much-does-the-answer-depend-on-l" class="level3">
+<h3 class="anchored" data-anchor-id="how-much-does-the-answer-depend-on-l">How much does the answer depend on <span class="math inline">\(L\)</span>?</h3>
+<p>Mathews ends the module with a caveat: various curves can be fitted, but they all depend on the value of <span class="math inline">\(L\)</span>, which no one knows in advance. Repeating Example 1 with other guesses for <span class="math inline">\(L\)</span> gives:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(L\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(a\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(c\)</span></th>
+<th style="text-align: right;">Sum of squared errors, 1900–1990</th>
+<th style="text-align: right;"><span class="math inline">\(f(2000)\)</span></th>
+<th style="text-align: right;">Error in 2000</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">500</td>
+<td style="text-align: right;">−0.018846</td>
+<td style="text-align: right;">5.5172</td>
+<td style="text-align: right;">120.7</td>
+<td style="text-align: right;">272.03</td>
+<td style="text-align: right;">3.58 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">600</td>
+<td style="text-align: right;">−0.017501</td>
+<td style="text-align: right;">6.7345</td>
+<td style="text-align: right;">103.6</td>
+<td style="text-align: right;">276.48</td>
+<td style="text-align: right;">2.00 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">700</td>
+<td style="text-align: right;">−0.016668</td>
+<td style="text-align: right;">7.9646</td>
+<td style="text-align: right;">102.8</td>
+<td style="text-align: right;">279.53</td>
+<td style="text-align: right;">0.92 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">800</td>
+<td style="text-align: right;">−0.016099</td>
+<td style="text-align: right;">9.2009</td>
+<td style="text-align: right;">107.1</td>
+<td style="text-align: right;">281.75</td>
+<td style="text-align: right;">0.13 %</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">900</td>
+<td style="text-align: right;">−0.015686</td>
+<td style="text-align: right;">10.4407</td>
+<td style="text-align: right;">112.8</td>
+<td style="text-align: right;">283.44</td>
+<td style="text-align: right;">−0.47 %</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1000</td>
+<td style="text-align: right;">−0.015372</td>
+<td style="text-align: right;">11.6826</td>
+<td style="text-align: right;">118.8</td>
+<td style="text-align: right;">284.77</td>
+<td style="text-align: right;">−0.94 %</td>
+</tr>
+</tbody>
+</table>
+<p>(The error is <span class="math inline">\(100\,(P(2000) - f(2000))/P(2000)\)</span>, so a negative value is an overestimate.) All six curves fit the 1900–1990 data with sums of squared errors between <span class="math inline">\(102.8\)</span> and <span class="math inline">\(120.7\)</span> million², yet their predictions for 2000 range from <span class="math inline">\(272.03\)</span> to <span class="math inline">\(284.77\)</span> million and increase with <span class="math inline">\(L\)</span> across the table. The close prediction of Example 2 depends on the choice <span class="math inline">\(L = 800\)</span>. Among these six guesses the smallest sum of squared errors comes with <span class="math inline">\(L = 700\)</span>, not with the best prediction. None of these curves is chosen to minimise the errors in <span class="math inline">\(y\)</span>; the second method is.</p>
+</section>
+</section>
+<section id="true-least-squares" class="level2">
+<h2 class="anchored" data-anchor-id="true-least-squares">True Least Squares</h2>
+<p>Mathews’ Remark 2 describes the second method: let the computer find all three parameters, <span class="math inline">\(L\)</span> included, by true least squares, starting from good estimates. As far as their surviving text shows, the module’s worked solutions use only the data linearization model <span class="math inline">\(f_1\)</span>, so the computation below is new, on the data of Example 1.</p>
+<p>The least squares logistic curve minimises the sum of squared errors in <span class="math inline">\(y\)</span>,</p>
+<p><span class="math display">\[
+E(L, c, a) = \sum_{k=1}^{n} \left( y_k - \frac{L}{1 + c\,e^{a X_k}} \right)^2 .
+\tag{8}
+\]</span></p>
+<p>Setting <span class="math inline">\(\partial E/\partial L = \partial E/\partial c = \partial E/\partial a = 0\)</span> gives three equations that are nonlinear in <span class="math inline">\(c\)</span> and <span class="math inline">\(a\)</span>, so they are solved iteratively. A standard choice is the <em>Gauss–Newton</em> method. Write <span class="math inline">\(\mathbf{p} = (L, c, a)\)</span>, let <span class="math inline">\(\mathbf{r}\)</span> be the vector of residuals <span class="math inline">\(r_k = y_k - f(X_k; \mathbf{p})\)</span>, and let <span class="math inline">\(\mathbf{J}\)</span> be the <span class="math inline">\(n \times 3\)</span> matrix of partial derivatives of <span class="math inline">\(f(X_k; \mathbf{p})\)</span>:</p>
+<p><span class="math display">\[
+\frac{\partial f}{\partial L} = \frac{1}{1 + c\,e^{aX_k}}, \qquad
+\frac{\partial f}{\partial c} = -\frac{L\,e^{aX_k}}{(1 + c\,e^{aX_k})^2}, \qquad
+\frac{\partial f}{\partial a} = -\frac{L\,c\,X_k\,e^{aX_k}}{(1 + c\,e^{aX_k})^2}.
+\]</span></p>
+<p>Each step replaces <span class="math inline">\(f\)</span> by its linear approximation in <span class="math inline">\(\mathbf{p}\)</span> and solves the resulting linear least squares problem:</p>
+<p><span class="math display">\[
+\mathbf{p}_{k+1} = \mathbf{p}_k + \Delta\mathbf{p}_k, \qquad
+\mathbf{J}^{T}\mathbf{J}\,\Delta\mathbf{p}_k = \mathbf{J}^{T}\mathbf{r}.
+\tag{9}
+\]</span></p>
+<section id="example-5-least-squares-logistic-curve-for-the-19001990-data-new" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-least-squares-logistic-curve-for-the-19001990-data-new">Example 5 — Least squares logistic curve for the 1900–1990 data (new)</h3>
+<p>Fit the curve <span class="math inline">\(y = L/(1 + c\,e^{a(t - 1900)})\)</span> to the census data of Example 1 by minimising (8), starting from the data linearization result <span class="math inline">\(L = 800\)</span>, <span class="math inline">\(c = 9.200923\)</span>, <span class="math inline">\(a = -0.01609871\)</span>.</p>
+<p><strong>Steps</strong>: The Gauss–Newton iteration (9), computed in 50-digit arithmetic, gives</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(L\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(c\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(a\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(E(L, c, a)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">800.0000</td>
+<td style="text-align: right;">9.200923</td>
+<td style="text-align: right;">−0.01609871</td>
+<td style="text-align: right;">107.062064</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">596.9479</td>
+<td style="text-align: right;">6.700646</td>
+<td style="text-align: right;">−0.01710307</td>
+<td style="text-align: right;">206.848748</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">650.8369</td>
+<td style="text-align: right;">7.368261</td>
+<td style="text-align: right;">−0.01702597</td>
+<td style="text-align: right;">102.723252</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">650.0247</td>
+<td style="text-align: right;">7.358331</td>
+<td style="text-align: right;">−0.01706751</td>
+<td style="text-align: right;">102.060097</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">650.0275</td>
+<td style="text-align: right;">7.358398</td>
+<td style="text-align: right;">−0.01706758</td>
+<td style="text-align: right;">102.060097</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">650.0271</td>
+<td style="text-align: right;">7.358394</td>
+<td style="text-align: right;">−0.01706758</td>
+<td style="text-align: right;">102.060097</td>
+</tr>
+</tbody>
+</table>
+<p>The first step overshoots and nearly doubles the error; from the second step on, the error decreases at every step to its minimum, and from <span class="math inline">\(k = 5\)</span> the iterates no longer change in the digits shown. The least squares curve is</p>
+<p><span class="math display">\[
+\boxed{\,f_2(t) = \frac{650.0271}{1 + 7.358394\, e^{-0.01706758\,(t - 1900)}}\,}
+\]</span></p>
+<p>with <span class="math inline">\(E = 102.0601\)</span> million², less than the <span class="math inline">\(107.0621\)</span> million² of <span class="math inline">\(f_1\)</span>.</p>
+<p><strong>Verification.</strong> Solving <span class="math inline">\(\nabla E = \mathbf{0}\)</span> directly with a Newton root finder, from a different starting point, gives the same <span class="math inline">\(L\)</span>, <span class="math inline">\(c\)</span> and <span class="math inline">\(a\)</span> to <span class="math inline">\(16\)</span> digits. The Hessian matrix of <span class="math inline">\(E\)</span> there has eigenvalues <span class="math inline">\(6.78 \times 10^{-4}\)</span>, <span class="math inline">\(819.67\)</span> and <span class="math inline">\(1.106 \times 10^{9}\)</span>, all positive, so the point is a local minimum. The eigenvector of the very small first eigenvalue points almost exactly along the <span class="math inline">\(L\)</span> axis, so <span class="math inline">\(E\)</span> changes little when <span class="math inline">\(L\)</span> changes: the data determine <span class="math inline">\(L\)</span> only weakly. For example, fixing <span class="math inline">\(L = 800\)</span> and choosing <span class="math inline">\(c\)</span> and <span class="math inline">\(a\)</span> by least squares raises <span class="math inline">\(E\)</span> only from <span class="math inline">\(102.06\)</span> to <span class="math inline">\(106.50\)</span> million². The curve fits as follows:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Year</th>
+<th style="text-align: right;">Census (millions)</th>
+<th style="text-align: right;"><span class="math inline">\(f_2(t)\)</span></th>
+<th style="text-align: right;">Census <span class="math inline">\(- f_2(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1900</td>
+<td style="text-align: right;">76.094000</td>
+<td style="text-align: right;">77.7694</td>
+<td style="text-align: right;">−1.6754</td>
+</tr>
+<tr class="even">
+<td>1910</td>
+<td style="text-align: right;">92.407000</td>
+<td style="text-align: right;">90.2336</td>
+<td style="text-align: right;">2.1734</td>
+</tr>
+<tr class="odd">
+<td>1920</td>
+<td style="text-align: right;">106.461000</td>
+<td style="text-align: right;">104.3313</td>
+<td style="text-align: right;">2.1297</td>
+</tr>
+<tr class="even">
+<td>1930</td>
+<td style="text-align: right;">123.076741</td>
+<td style="text-align: right;">120.1588</td>
+<td style="text-align: right;">2.9179</td>
+</tr>
+<tr class="odd">
+<td>1940</td>
+<td style="text-align: right;">132.122446</td>
+<td style="text-align: right;">137.7812</td>
+<td style="text-align: right;">−5.6587</td>
+</tr>
+<tr class="even">
+<td>1950</td>
+<td style="text-align: right;">152.271417</td>
+<td style="text-align: right;">157.2211</td>
+<td style="text-align: right;">−4.9497</td>
+</tr>
+<tr class="odd">
+<td>1960</td>
+<td style="text-align: right;">180.671158</td>
+<td style="text-align: right;">178.4484</td>
+<td style="text-align: right;">2.2228</td>
+</tr>
+<tr class="even">
+<td>1970</td>
+<td style="text-align: right;">205.052174</td>
+<td style="text-align: right;">201.3706</td>
+<td style="text-align: right;">3.6816</td>
+</tr>
+<tr class="odd">
+<td>1980</td>
+<td style="text-align: right;">227.224681</td>
+<td style="text-align: right;">225.8272</td>
+<td style="text-align: right;">1.3975</td>
+</tr>
+<tr class="even">
+<td>1990</td>
+<td style="text-align: right;">249.464396</td>
+<td style="text-align: right;">251.5884</td>
+<td style="text-align: right;">−2.1240</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Prediction for 2000.</strong> With unrounded coefficients, <span class="math inline">\(f_2(2000) = 278.3600\)</span> million, which is <span class="math inline">\(3.7646\)</span> million, or <span class="math inline">\(1.3344\%\)</span>, below the census figure <span class="math inline">\(282.124631\)</span> million. The least squares curve fits the 1900–1990 data better than <span class="math inline">\(f_1\)</span> but predicts 2000 less well: a smaller error on past data does not guarantee a better extrapolation. As a solution of the logistic equation, <span class="math inline">\(f_2\)</span> has growth rate <span class="math inline">\(r = 0.01706758\)</span> per year, carrying capacity <span class="math inline">\(650.0271\)</span> million and, by (3), its inflection point at <span class="math inline">\(t^* = 2016.94\)</span>.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Caution — starting values
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The iteration needs good estimates, as Mathews warns. Started from the data linearization fits for the guesses <span class="math inline">\(L = 260\)</span>, <span class="math inline">\(300\)</span>, <span class="math inline">\(400\)</span>, <span class="math inline">\(500\)</span>, <span class="math inline">\(600\)</span>, <span class="math inline">\(700\)</span>, <span class="math inline">\(800\)</span> and <span class="math inline">\(1000\)</span>, the undamped Gauss–Newton iteration (9) reached the same minimum each time. Started from the fits for <span class="math inline">\(L = 1100\)</span>, <span class="math inline">\(1200\)</span>, <span class="math inline">\(1300\)</span>, <span class="math inline">\(1400\)</span>, <span class="math inline">\(1500\)</span>, <span class="math inline">\(2000\)</span>, <span class="math inline">\(3000\)</span> and <span class="math inline">\(5000\)</span>, it broke down: the iterates left the neighbourhood of the minimum, in most of these runs with <span class="math inline">\(L\)</span> running off to huge positive or negative values, and the matrix <span class="math inline">\(\mathbf{J}^{T}\mathbf{J}\)</span> became numerically singular.</p>
+</div>
+</div>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

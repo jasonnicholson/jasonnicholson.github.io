@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Engineering math, numerical methods, and simulation: worked examples, animations, software, and notes from a mechanical engineer.">
+
+<title>Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-listing/list.min.js"></script>
+<script src="site_libs/quarto-listing/quarto-listing.js"></script>
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script>
+
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-latest-posts .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-date','listing-title','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
+      page: 30,
+    pagination: { item: "<li class='page-item'><a class='page page-link' href='#'></a></li>" },
+      searchColumns: ["listing-date","listing-title","listing-author"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-latest-posts'] = new List('listing-latest-posts', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed landing-page quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="./pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="./about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content column-page" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Jason H. Nicholson</h1>
+</div>
+
+<div>
+  <div class="description">
+    Engineering math, numerical methods, and simulation: worked examples, animations, software, and notes from a mechanical engineer.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta column-page">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="landing">
+<div class="landing-intro">
+<p>You can find the source code at <a href="https://github.com/jasonnicholson/jasonnicholson.github.io">https://github.com/jasonnicholson/jasonnicholson.github.io</a>. If the domain is ever lost or not working, <a href="https://jasonnicholson.github.io">https://jasonnicholson.github.io</a> should still work.</p>
+</div>
+<div class="landing-stats">
+<div class="stat">
+<p><span class="stat-num">110+</span> <span class="stat-label">numerical-methods pages</span></p>
+</div>
+<div class="stat">
+<p><span class="stat-num">400+</span> <span class="stat-label">animations</span></p>
+</div>
+<div class="stat">
+<p><span class="stat-num">50+</span> <span class="stat-label">blog posts since 2015</span></p>
+</div>
+<div class="stat">
+<p><span class="stat-num">12</span> <span class="stat-label">regularizeNd tutorials &amp; articles</span></p>
+</div>
+</div>
+<p>Looking for one specific method? Use the search in the top bar (press <kbd>/</kbd>).</p>
+<section id="where-do-you-want-to-go" class="level2 landing-h">
+<h2 class="landing-h anchored" data-anchor-id="where-do-you-want-to-go">Where do you want to go?</h2>
+<div class="landing-grid cols-2">
+<section id="numerical-methods" class="level3 door">
+<h3 class="anchored" data-anchor-id="numerical-methods"><a href="./pages/numerical-methods/index.html"><span class="bi bi-graph-up"></span> Numerical Methods</a></h3>
+<p>Short explanations, fully worked examples, and animations for root finding, linear systems, interpolation, integration, differential equations, eigenvalues, and optimization. Inspired by John H. Mathews’ numerical analysis site.</p>
+<p><span class="door-label">Popular:</span> <a href="pages/numerical-methods/newton-raphson-method/">Newton-Raphson</a> · <a href="pages/numerical-methods/cubic-splines/">Cubic Splines</a> · <a href="pages/numerical-methods/runge-kutta-method/">Runge-Kutta</a> · <a href="pages/numerical-methods/gauss-legendre-quadrature/">Gauss-Legendre</a></p>
+<p><a href="#numerical-methods-chapters" class="door-cta">Browse by chapter ↓</a></p>
+</section>
+<section id="regularizend" class="level3 door">
+<h3 class="anchored" data-anchor-id="regularizend"><a href="./pages/regularizeNd/index.html"><span class="bi bi-grid-3x3"></span> regularizeNd</a></h3>
+<p>A MATLAB function that fits a smooth, gridded surface to scattered data in any number of dimensions. Learn to use it from a tutorial series, or learn how it works from the foundation pages and a deep-dive article.</p>
+<p><span class="door-label">Start:</span> <a href="./pages/regularizeNd/part-01-introduction-and-intuition.html">Part 1: Introduction</a> · <a href="./pages/regularizeNd/foundations-2d-data.html">Foundations</a> · <a href="./pages/regularizeNd/deep-dive-regularizeNd-design.html">Deep dive</a> · <a href="https://www.mathworks.com/matlabcentral/fileexchange/61436-regularizend">Download</a></p>
+<p><a href="./pages/regularizeNd/index.html" class="door-cta">All 12 pages →</a></p>
+</section>
+<section id="blog" class="level3 door">
+<h3 class="anchored" data-anchor-id="blog"><a href="./blog.html"><span class="bi bi-journal-text"></span> Blog</a></h3>
+<p>Notes from a decade of engineering work: numerical math and optimization, CFD and FEA simulation, controls, programming, and building workstations and toolchains.</p>
+<p><span class="door-label">Topics:</span> <a href="./blog.html#category=math">Math</a> · <a href="./blog.html#category=simulation">Simulation</a> · <a href="./blog.html#category=programming">Programming</a> · <a href="./blog.html#category=devOps">DevOps</a></p>
+<p><a href="#latest" class="door-cta">Latest posts ↓</a></p>
+</section>
+<section id="tools-resources" class="level3 door">
+<h3 class="anchored" data-anchor-id="tools-resources"><span class="door-title-plain"><span class="bi bi-tools"></span> Tools &amp; Resources</span></h3>
+<p><a href="pages/calculators/secant-muller-inverse-solver/"><strong>Secant/Muller Inverse Solver</strong></a>. An interactive calculator that solves f(x) = target in your browser. <a href="./pages/calculators/index.html">More calculators</a>.</p>
+<p><a href="./pages/system-identification/index.html"><strong>System Identification</strong></a>. A curated list of books, courses, and researchers for learning system identification.</p>
+</section>
+</div>
+</section>
+<section id="numerical-methods-chapters" class="level2 landing-h">
+<h2 class="landing-h anchored" data-anchor-id="numerical-methods-chapters">Numerical Methods by chapter</h2>
+<p>Every page explains a method and works an example by hand, and most animate it.</p>
+<div class="landing-gallery">
+<p><a href="pages/numerical-methods/newton-raphson-method/"><img src="pages/numerical-methods/newton-raphson-method/newtonaa.gif" class="img-fluid" loading="lazy" alt="Animation of Newton-Raphson tangent-line iterations converging to a root"><span class="gallery-caption">Newton-Raphson</span></a> <a href="pages/numerical-methods/bezier-curves/"><img src="pages/numerical-methods/bezier-curves/bezieraa.gif" class="img-fluid" loading="lazy" alt="Animation of the de Casteljau construction tracing a Bézier curve"><span class="gallery-caption">Bézier Curves</span></a> <a href="pages/numerical-methods/least-squares-polynomials/"><img src="pages/numerical-methods/least-squares-polynomials/leastsqpolyaa.gif" class="img-fluid" loading="lazy" alt="Animation of least-squares polynomial fits of increasing degree"><span class="gallery-caption">Least Squares Polynomials</span></a> <a href="pages/numerical-methods/fourier-series/"><img src="pages/numerical-methods/fourier-series/fourierfftaa.gif" class="img-fluid" loading="lazy" alt="Animation of a Fourier series approximation"><span class="gallery-caption">Fourier Series</span></a> <a href="pages/numerical-methods/runge-kutta-method/"><img src="pages/numerical-methods/runge-kutta-method/rungekuttaaa.gif" class="img-fluid" loading="lazy" alt="Animation of the RK4 method stepping along an ODE solution"><span class="gallery-caption">Runge-Kutta</span></a> <a href="pages/numerical-methods/monte-carlo-pi/"><img src="pages/numerical-methods/monte-carlo-pi/montecarlopiaa.gif" class="img-fluid" loading="lazy" alt="Animation of random points estimating pi inside a quarter circle"><span class="gallery-caption">Monte Carlo Pi</span></a></p>
+</div>
+<div class="landing-grid cols-3">
+<section id="fundamentals-start-here" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="fundamentals-start-here"><a href="./pages/numerical-methods/index.html#fundamentals">Fundamentals</a> <span class="chapter-count">start here</span></h4>
+<p><a href="pages/numerical-methods/big-o-truncation-error/">Big “O” Truncation Error</a>: how the error of a method shrinks as the step size shrinks. The rest of the chapters use this idea.</p>
+</section>
+<section id="nonlinear-equations-fx-0-17" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="nonlinear-equations-fx-0-17"><a href="./pages/numerical-methods/index.html#the-solution-of-nonlinear-equations-fx-0">Nonlinear Equations f(x) = 0</a> <span class="chapter-count">17</span></h4>
+<p><a href="pages/numerical-methods/bisection-method/">Bisection</a> · <a href="pages/numerical-methods/newton-raphson-method/">Newton-Raphson</a> · <a href="pages/numerical-methods/secant-method/">Secant</a> · <a href="pages/numerical-methods/brents-method/">Brent’s</a> · <a href="pages/numerical-methods/broydens-method/">Broyden’s</a></p>
+</section>
+<section id="linear-systems-ax-b-15" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="linear-systems-ax-b-15"><a href="./pages/numerical-methods/index.html#the-solution-of-linear-systems-ax-b">Linear Systems AX = B</a> <span class="chapter-count">15</span></h4>
+<p><a href="./pages/numerical-methods/gauss-jordan-elimination-and-pivoting.html">Gauss-Jordan</a> · <a href="./pages/numerical-methods/lu-factorization.html">LU Factorization</a> · <a href="pages/numerical-methods/jacobi-and-gauss-seidel-iteration/">Jacobi &amp; Gauss-Seidel</a> · <a href="pages/numerical-methods/successive-over-relaxation-sor/">SOR</a> · <a href="pages/numerical-methods/linear-programming-simplex-method/">Simplex</a></p>
+</section>
+<section id="function-approximation-17" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="function-approximation-17"><a href="./pages/numerical-methods/index.html#function-approximation">Function Approximation</a> <span class="chapter-count">17</span></h4>
+<p><a href="pages/numerical-methods/maclaurin-and-taylor-series/">Taylor Series</a> · <a href="pages/numerical-methods/pade-approximation/">Padé</a> · <a href="pages/numerical-methods/lagrange-polynomial-interpolation-and-approximation/">Lagrange</a> · <a href="pages/numerical-methods/cubic-splines/">Cubic Splines</a> · <a href="pages/numerical-methods/chebyshev-approximation-polynomial/">Chebyshev</a></p>
+</section>
+<section id="curve-fitting-8" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="curve-fitting-8"><a href="./pages/numerical-methods/index.html#curve-fitting">Curve Fitting</a> <span class="chapter-count">8</span></h4>
+<p><a href="pages/numerical-methods/least-squares-lines/">Least Squares Lines</a> · <a href="pages/numerical-methods/least-squares-polynomials/">Least Squares Polynomials</a> · <a href="pages/numerical-methods/nonlinear-curve-fitting/">Nonlinear Curve Fitting</a> · <a href="pages/numerical-methods/logistic-curve/">Logistic Curve</a></p>
+</section>
+<section id="numerical-differentiation-3" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="numerical-differentiation-3"><a href="./pages/numerical-methods/index.html#numerical-differentiation">Numerical Differentiation</a> <span class="chapter-count">3</span></h4>
+<p><a href="pages/numerical-methods/numerical-differentiation/">Difference Formulas</a> · <a href="pages/numerical-methods/richardson-extrapolation/">Richardson Extrapolation</a> · <a href="pages/numerical-methods/derive-numerical-differentiation-formulae/">Deriving Formulae</a></p>
+</section>
+<section id="numerical-integration-14" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="numerical-integration-14"><a href="./pages/numerical-methods/index.html#numerical-integration">Numerical Integration</a> <span class="chapter-count">14</span></h4>
+<p><a href="pages/numerical-methods/trapezoidal-rule-for-numerical-integration/">Trapezoidal</a> · <a href="pages/numerical-methods/simpsons-rule-for-numerical-integration/">Simpson’s</a> · <a href="pages/numerical-methods/romberg-integration/">Romberg</a> · <a href="pages/numerical-methods/gauss-legendre-quadrature/">Gauss-Legendre</a> · <a href="pages/numerical-methods/monte-carlo-integration/">Monte Carlo</a></p>
+</section>
+<section id="ordinary-differential-equations-21" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="ordinary-differential-equations-21"><a href="./pages/numerical-methods/index.html#solution-of-differential-equations">Ordinary Differential Equations</a> <span class="chapter-count">21</span></h4>
+<p><a href="pages/numerical-methods/eulers-method-for-odes/">Euler’s</a> · <a href="pages/numerical-methods/runge-kutta-method/">Runge-Kutta</a> · <a href="pages/numerical-methods/runge-kutta-fehlberg-method/">Runge-Kutta-Fehlberg</a> · <a href="pages/numerical-methods/adams-bashforth-moulton-method/">Adams-Bashforth-Moulton</a> · <a href="pages/numerical-methods/shooting-methods-for-odes/">Shooting</a></p>
+</section>
+<section id="partial-differential-equations-3" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="partial-differential-equations-3"><a href="./pages/numerical-methods/index.html#solution-of-partial-differential-equations">Partial Differential Equations</a> <span class="chapter-count">3</span></h4>
+<p><a href="pages/numerical-methods/finite-difference-method/">Finite Difference</a> · <a href="pages/numerical-methods/crank-nicolson-method/">Crank-Nicolson</a> · <a href="pages/numerical-methods/elliptic-pdes/">Elliptic PDEs</a></p>
+</section>
+<section id="eigenvalues-eigenvectors-10" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="eigenvalues-eigenvectors-10"><a href="./pages/numerical-methods/index.html#eigenvalues-and-eigenvectors">Eigenvalues &amp; Eigenvectors</a> <span class="chapter-count">10</span></h4>
+<p><a href="pages/numerical-methods/power-method/">Power Method</a> · <a href="pages/numerical-methods/jacobi-method/">Jacobi Method</a> · <a href="pages/numerical-methods/qr-method/">QR Method</a> · <a href="./pages/numerical-methods/householder-transformations.html">Householder</a> · <a href="pages/numerical-methods/matrix-exponential/">Matrix Exponential</a></p>
+</section>
+<section id="optimization-7" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="optimization-7"><a href="./pages/numerical-methods/index.html#numerical-optimization">Optimization</a> <span class="chapter-count">7</span></h4>
+<p><a href="pages/numerical-methods/golden-ratio-search/">Golden Ratio Search</a> · <a href="pages/numerical-methods/nelder-mead-method/">Nelder-Mead</a> · <a href="pages/numerical-methods/powells-method/">Powell’s</a> · <a href="pages/numerical-methods/steepest-descent-gradient-search/">Steepest Descent</a> · <a href="pages/numerical-methods/newtons-search-method/">Newton’s Search</a></p>
+</section>
+<section id="applied-models-across-chapters" class="level4 chapter">
+<h4 class="anchored" data-anchor-id="applied-models-across-chapters">Applied Models <span class="chapter-count">across chapters</span></h4>
+<p><a href="pages/numerical-methods/pendulum/">Pendulum</a> · <a href="pages/numerical-methods/projectile-motion/">Projectile Motion</a> · <a href="pages/numerical-methods/lorenz-attractor/">Lorenz Attractor</a> · <a href="pages/numerical-methods/lotka-volterra-model/">Lotka-Volterra</a> · <a href="pages/numerical-methods/spring-mass-systems/">Spring-Mass</a> · <a href="./pages/numerical-methods/kirchhoffs-law.html">Kirchhoff’s Law</a> · <a href="pages/numerical-methods/earthquake-model/">Earthquake Model</a></p>
+</section>
+</div>
+</section>
+<section id="latest" class="level2 landing-h">
+<h2 class="landing-h anchored" data-anchor-id="latest">Latest from the blog</h2>
+<p><span class="door-label">Browse by topic:</span> <a href="./blog.html#category=math" class="topic-chip">Math</a> <a href="./blog.html#category=optimization" class="topic-chip">Optimization</a> <a href="./blog.html#category=MATLAB" class="topic-chip">MATLAB</a> <a href="./blog.html#category=simulation" class="topic-chip">Simulation</a> <a href="./blog.html#category=CFD" class="topic-chip">CFD</a> <a href="./blog.html#category=FEA" class="topic-chip">FEA</a> <a href="./blog.html#category=CAE" class="topic-chip">CAE</a> <a href="./blog.html#category=controls" class="topic-chip">Controls</a> <a href="./blog.html#category=system-identification" class="topic-chip">System ID</a> <a href="./blog.html#category=programming" class="topic-chip">Programming</a> <a href="./blog.html#category=devOps" class="topic-chip">DevOps</a> <a href="./blog.html#category=computing" class="topic-chip">Computing</a> <a href="./blog.html#category=video" class="topic-chip">Video</a> <a href="./blog.html#category=running" class="topic-chip">Running</a></p>
+<div id="listing-latest-posts" class="quarto-listing quarto-listing-container-table">
+<table class="quarto-listing-table table table-hover">
+<thead>
+<tr>
+
+<th>
+Date
+</th>
+
+<th>
+Title
+</th>
+
+<th>
+Categories
+</th>
+
+</tr>
+</thead>
+<tbody class="list">
+
+<tr data-index="0" data-categories="TUFUTEFC" data-listing-date-sort="1788753600000" data-listing-file-modified-sort="1792890862417" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="451" data-listing-title-sort="Notes on FFT" data-listing-filename-sort="07-notes-on-fft.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Sep 7, 2026</span>
+</td>
+<td>
+<a href="./posts/2026/09/07-notes-on-fft.html" class="title listing-title">Notes on FFT</a>
+</td>
+<td>
+<span class="listing-categories">MATLAB</span>
+</td>
+
+</tr>
+
+<tr data-index="1" data-categories="cHJvZ3JhbW1pbmc=" data-listing-date-sort="1788580800000" data-listing-file-modified-sort="1792890862417" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="479" data-listing-title-sort="Learning Python as an Experienced Programmer" data-listing-filename-sort="05-learning-python-as-an-experience-programmer.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Sep 5, 2026</span>
+</td>
+<td>
+<a href="./posts/2026/09/05-learning-python-as-an-experience-programmer.html" class="title listing-title">Learning Python as an Experienced Programmer</a>
+</td>
+<td>
+<span class="listing-categories">programming</span>
+</td>
+
+</tr>
+
+<tr data-index="2" data-categories="bWF0aCUyQ3Byb2dyYW1taW5n" data-listing-date-sort="1787284800000" data-listing-file-modified-sort="1792891055114" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1537" data-listing-title-sort="Newton step driven by Fixed Point Theorem" data-listing-filename-sort="21-newton-step-driven-by-fixed-point-theorem.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Aug 21, 2026</span>
+</td>
+<td>
+<a href="./posts/2026/08/21-newton-step-driven-by-fixed-point-theorem.html" class="title listing-title">Newton step driven by Fixed Point Theorem</a>
+</td>
+<td>
+<span class="listing-categories">math, programming</span>
+</td>
+
+</tr>
+
+<tr data-index="3" data-categories="cnVubmluZyUyQ2VuZHVyYW5jZSUyQ29ic3RhY2xlLWNvdXJzZS1yYWNpbmclMkN1bHRyYW1hcmF0aG9uJTJDbXVkZGVy" data-listing-date-sort="1786766400000" data-listing-file-modified-sort="1792890862416" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="40" data-listing-title-sort="Reference to World’s Toughest Mudder 2016: A Cautionary Tale" data-listing-filename-sort="15-reference-to-worlds-toughest-mudder-2016-a-cautionary-tale.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Aug 15, 2026</span>
+</td>
+<td>
+<a href="./posts/2026/08/15-reference-to-worlds-toughest-mudder-2016-a-cautionary-tale.html" class="title listing-title">Reference to World’s Toughest Mudder 2016: A Cautionary Tale</a>
+</td>
+<td>
+<span class="listing-categories">running, endurance, obstacle-course-racing, ultramarathon, mudder</span>
+</td>
+
+</tr>
+
+<tr data-index="4" data-categories="dmlkZW8=" data-listing-date-sort="1780632000000" data-listing-file-modified-sort="1792890862415" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="258" data-listing-title-sort="FFMetrics" data-listing-filename-sort="05-FFMetrics.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Jun 5, 2026</span>
+</td>
+<td>
+<a href="./posts/2026/06/05-FFMetrics.html" class="title listing-title">FFMetrics</a>
+</td>
+<td>
+<span class="listing-categories">video</span>
+</td>
+
+</tr>
+
+<tr data-index="5" data-categories="b3B0aW1pemF0aW9uJTJDTUFUTEFC" data-listing-date-sort="1779595200000" data-listing-file-modified-sort="1792890862414" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="488" data-listing-title-sort="When Turning OSQP Scaling Off Wins on a Constrained Least-Squares QP" data-listing-filename-sort="24-osqp-scaling-off-on-a-constrained-least-squares-qp.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">May 24, 2026</span>
+</td>
+<td>
+<a href="./posts/2026/05/24-osqp-scaling-off-on-a-constrained-least-squares-qp.html" class="title listing-title">When Turning OSQP Scaling Off Wins on a Constrained Least-Squares QP</a>
+</td>
+<td>
+<span class="listing-categories">optimization, MATLAB</span>
+</td>
+
+</tr>
+
+</tbody>
+</table>
+<div class="listing-no-matching d-none">No matching items</div>
+</div>
+<p><a href="./blog.html" class="door-cta">All posts →</a></p>
+<div class="landing-footer">
+<p><a href="./about.html">About me</a> · <a href="./contact.html">Contact</a> · <a href="https://github.com/jasonnicholson/jasonnicholson.github.io">Source code on GitHub</a></p>
+</div>
+</section>
+</div>
+
+
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

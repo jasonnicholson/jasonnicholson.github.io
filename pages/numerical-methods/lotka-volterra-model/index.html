@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lotka-Volterra Model – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-example-2-runs-a-and-b-forward-and-backward-from-2-1-m-50-h-pm-0.066" id="toc-case-1-example-2-runs-a-and-b-forward-and-backward-from-2-1-m-50-h-pm-0.066" class="nav-link" data-scroll-target="#case-1-example-2-runs-a-and-b-forward-and-backward-from-2-1-m-50-h-pm-0.066">Case 1 — Example 2, runs (a) and (b): forward and backward from <span class="math inline">\((2, 1)\)</span>, <span class="math inline">\(m = 50\)</span>, <span class="math inline">\(h = \pm 0.066\)</span></a></li>
+  <li><a href="#case-2-example-2-aside-five-orbits-from-x_0-1-x_0-2.0-1.8-1.6-1.4-1.2-m-50-on-0-6.6" id="toc-case-2-example-2-aside-five-orbits-from-x_0-1-x_0-2.0-1.8-1.6-1.4-1.2-m-50-on-0-6.6" class="nav-link" data-scroll-target="#case-2-example-2-aside-five-orbits-from-x_0-1-x_0-2.0-1.8-1.6-1.4-1.2-m-50-on-0-6.6">Case 2 — Example 2, aside: five orbits from <span class="math inline">\((x_0, 1)\)</span>, <span class="math inline">\(x_0 = 2.0, 1.8, 1.6, 1.4, 1.2\)</span>, <span class="math inline">\(m = 50\)</span> on <span class="math inline">\([0, 6.6]\)</span></a></li>
+  <li><a href="#case-3-example-6-foxes-and-rabbits-x_0-y_0-5000-100-on-0-5-m-100-h-0.05" id="toc-case-3-example-6-foxes-and-rabbits-x_0-y_0-5000-100-on-0-5-m-100-h-0.05" class="nav-link" data-scroll-target="#case-3-example-6-foxes-and-rabbits-x_0-y_0-5000-100-on-0-5-m-100-h-0.05">Case 3 — Example 6, foxes and rabbits: <span class="math inline">\((x_0, y_0) = (5000, 100)\)</span> on <span class="math inline">\([0, 5]\)</span>, <span class="math inline">\(m = 100\)</span>, <span class="math inline">\(h = 0.05\)</span></a></li>
+  </ul></li>
+  <li><a href="#the-lotka-volterra-equations" id="toc-the-lotka-volterra-equations" class="nav-link" data-scroll-target="#the-lotka-volterra-equations">The Lotka-Volterra Equations</a>
+  <ul class="collapse">
+  <li><a href="#equilibrium-points" id="toc-equilibrium-points" class="nav-link" data-scroll-target="#equilibrium-points">Equilibrium points</a></li>
+  <li><a href="#a-conserved-quantity-and-closed-orbits" id="toc-a-conserved-quantity-and-closed-orbits" class="nav-link" data-scroll-target="#a-conserved-quantity-and-closed-orbits">A conserved quantity and closed orbits</a></li>
+  </ul></li>
+  <li><a href="#predator-prey-model" id="toc-predator-prey-model" class="nav-link" data-scroll-target="#predator-prey-model">Predator-Prey Model</a></li>
+  <li><a href="#the-runge-kutta-method" id="toc-the-runge-kutta-method" class="nav-link" data-scroll-target="#the-runge-kutta-method">The Runge-Kutta Method</a>
+  <ul class="collapse">
+  <li><a href="#one-equation" id="toc-one-equation" class="nav-link" data-scroll-target="#one-equation">One equation</a></li>
+  <li><a href="#systems-of-two-equations" id="toc-systems-of-two-equations" class="nav-link" data-scroll-target="#systems-of-two-equations">Systems of two equations</a></li>
+  <li><a href="#example-1-a-single-equation-y-t2---y" id="toc-example-1-a-single-equation-y-t2---y" class="nav-link" data-scroll-target="#example-1-a-single-equation-y-t2---y">Example 1 — A single equation, <span class="math inline">\(y' = t^2 - y\)</span></a></li>
+  </ul></li>
+  <li><a href="#example-2-the-lotka-volterra-system-with-k_1-k_2-k_3-k_4-1" id="toc-example-2-the-lotka-volterra-system-with-k_1-k_2-k_3-k_4-1" class="nav-link" data-scroll-target="#example-2-the-lotka-volterra-system-with-k_1-k_2-k_3-k_4-1">Example 2 — The Lotka-Volterra system with <span class="math inline">\(k_1 = k_2 = k_3 = k_4 = 1\)</span></a>
+  <ul class="collapse">
+  <li><a href="#aside-several-orbits-around-the-equilibrium" id="toc-aside-several-orbits-around-the-equilibrium" class="nav-link" data-scroll-target="#aside-several-orbits-around-the-equilibrium">Aside — several orbits around the equilibrium</a></li>
+  </ul></li>
+  <li><a href="#example-3-the-orbit-as-a-separable-equation" id="toc-example-3-the-orbit-as-a-separable-equation" class="nav-link" data-scroll-target="#example-3-the-orbit-as-a-separable-equation">Example 3 — The orbit as a separable equation</a></li>
+  <li><a href="#example-4-the-numerical-and-analytic-solutions-agree" id="toc-example-4-the-numerical-and-analytic-solutions-agree" class="nav-link" data-scroll-target="#example-4-the-numerical-and-analytic-solutions-agree">Example 4 — The numerical and analytic solutions agree</a></li>
+  <li><a href="#example-5-solving-the-orbit-for-y" id="toc-example-5-solving-the-orbit-for-y" class="nav-link" data-scroll-target="#example-5-solving-the-orbit-for-y">Example 5 — Solving the orbit for <span class="math inline">\(y\)</span></a></li>
+  <li><a href="#example-6-foxes-and-rabbits" id="toc-example-6-foxes-and-rabbits" class="nav-link" data-scroll-target="#example-6-foxes-and-rabbits">Example 6 — Foxes and rabbits</a></li>
+  <li><a href="#numerical-notes" id="toc-numerical-notes" class="nav-link" data-scroll-target="#numerical-notes">Numerical Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lotka-Volterra Model</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>The Lotka-Volterra equations are two coupled nonlinear differential equations for a prey population <span class="math inline">\(x(t)\)</span> and a predator population <span class="math inline">\(y(t)\)</span>:</p>
+<p><span class="math display">\[
+\frac{dx}{dt} = k_1 x - k_2 x y, \qquad \frac{dy}{dt} = -k_3 y + k_4 x y, \qquad k_1, k_2, k_3, k_4 &gt; 0 .
+\]</span></p>
+<p>Without predators the prey grow at the rate <span class="math inline">\(k_1\)</span>, and without prey the predators die out at the rate <span class="math inline">\(k_3\)</span>; the products <span class="math inline">\(x y\)</span> count the encounters between the two species, which cost the prey and feed the predators. Mathews does not try to write <span class="math inline">\(x(t)\)</span> and <span class="math inline">\(y(t)\)</span> as formulas. He computes them with the fourth-order Runge-Kutta method in vector form: with <span class="math inline">\(\mathbf{Z} = (x, y)\)</span>, <span class="math inline">\(\mathbf{F}(t, \mathbf{Z}) = (k_1 x - k_2 x y,\ -k_3 y + k_4 x y)\)</span> and step <span class="math inline">\(h = (b - a)/m\)</span>,</p>
+<p><span class="math display">\[
+\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16\left(\mathbf{K}_1 + 2\mathbf{K}_2 + 2\mathbf{K}_3 + \mathbf{K}_4\right),
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf{K}_1, \ldots, \mathbf{K}_4\)</span> are <span class="math inline">\(h\)</span> times <span class="math inline">\(\mathbf{F}\)</span> evaluated at the start, twice at the midpoint and at the end of the step. The computed points <span class="math inline">\(\mathbf{Z}_0, \mathbf{Z}_1, \ldots, \mathbf{Z}_m\)</span> trace a curve in the <span class="math inline">\(xy\)</span>-plane, the <em>phase plane</em>.</p>
+<p>For positive starting values other than the equilibrium, the exact curves are closed. Dividing the two equations gives a separable equation for <span class="math inline">\(dy/dx\)</span>, whose solution says that the quantity <span class="math inline">\(V(x, y) = k_4 x - k_3 \ln x + k_2 y - k_1 \ln y\)</span> keeps its initial value along every solution in the first quadrant. Its level curves are closed loops around the equilibrium <span class="math inline">\((k_3/k_4,\ k_1/k_2)\)</span>, so the populations rise and fall periodically, the predators peaking after the prey. After a scalar warm-up (Example 1), the examples solve the case <span class="math inline">\(k_1 = k_2 = k_3 = k_4 = 1\)</span> from <span class="math inline">\((x_0, y_0) = (2, 1)\)</span> numerically and analytically and compare the two, and then follow a population of <span class="math inline">\(5000\)</span> rabbits and <span class="math inline">\(100\)</span> foxes.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below traces a <strong>Runge-Kutta solution in the phase plane</strong>, one step of the method (7) per frame, beside the <strong>populations against time</strong>. In the phase plane the computed points <span class="math inline">\(\mathbf{Z}_j\)</span> are joined by straight segments, as in Mathews’ graphs, and a large dot marks the current point; the time panels plot the same points against <span class="math inline">\(t_j\)</span>. Where an exact orbit is drawn (gray, dashed), it is the level curve of the conserved quantity (4) through the starting point, computed independently of the Runge-Kutta run, so the run’s distance from it shows the part of its error across the orbit. Periods, extreme values and the times at which they occur come from a reference solution (the Runge-Kutta method with steps of about <span class="math inline">\(10^{-4}\)</span>, crossing times refined by bisection) and agree with the values in the examples below. The last frame of each animation is held for about three seconds.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for the Lotka-Volterra model, so all three animations are new, with no Mathews original. Cases 1 and 2 animate the graphs of Example 2 and its aside, in Mathews’ window <span class="math inline">\([0, 2] \times [0, 2]\)</span> and with his colours, step counts and zoom window; Case 3 animates Example 6, whose program, step count and graphs are lost, so its window and <span class="math inline">\(m = 100\)</span> are chosen here. Not animated are Example 1, a single equation whose graph is lost; run (c) of Example 2 and the closing run with <span class="math inline">\(m = 200\)</span>, which trace the same loop as Case 1’s two runs together; and Examples 3 to 5, which find the orbit analytically and draw static graphs: the implicit curve (9), which is the dashed curve of Case 1, Example 4’s contour plot of <span class="math inline">\(x y e^{-x-y}\)</span>, and Example 5’s graphs of halves of the orbit.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-example-2-runs-a-and-b-forward-and-backward-from-2-1-m-50-h-pm-0.066" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-example-2-runs-a-and-b-forward-and-backward-from-2-1-m-50-h-pm-0.066">Case 1 — Example 2, runs (a) and (b): forward and backward from <span class="math inline">\((2, 1)\)</span>, <span class="math inline">\(m = 50\)</span>, <span class="math inline">\(h = \pm 0.066\)</span></h3>
+<p><strong>Behavior:</strong> Run (a) (magenta) goes forward from <span class="math inline">\((2, 1)\)</span>, counterclockwise over the top of the orbit, and run (b) (blue) goes backward in time, clockwise over the bottom. Both stay on the dashed exact orbit to plotting accuracy: the largest change in <span class="math inline">\(V\)</span> along them is <span class="math inline">\(2.3 \times 10^{-7}\)</span>. In the time panel the prey start at their largest value, <span class="math inline">\(x = 2\)</span>; run (a) passes the predators’ peak, <span class="math inline">\(y = 2\)</span> at <span class="math inline">\(t = 1.146\)</span>, and the prey’s lowest value at <span class="math inline">\(t = 2.764\)</span>, and run (b) passes the predators’ lowest value at <span class="math inline">\(t = -1.617\)</span>. After <span class="math inline">\(50\)</span> steps the runs end at <span class="math inline">\((0.438644, 0.731545)\)</span> and <span class="math inline">\((0.439650, 0.728073)\)</span>, Mathews’ printed end points, inside his zoom window <span class="math inline">\([0.4, 0.5] \times [0.6, 0.8]\)</span>. A closer zoom in the last frames shows the two ends <span class="math inline">\(0.003615\)</span> apart, on either side of the exact point at <span class="math inline">\(t = \pm T/2 = \pm 3.304\)</span>: the runs cover <span class="math inline">\(6.6\)</span> time units in all, less than the period <span class="math inline">\(T = 6.608\)</span>, so the curve does not close.</p>
+<p><a href="lotkaaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lotkaaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta solution of x′ = x − xy, y′ = −y + xy from (2, 1), traced one step per frame forward over [0, 3.3] (magenta) and backward over [0, −3.3] (blue) with m = 50, in Mathews’ window [0, 2] × [0, 2] around the equilibrium (1, 1) along the dashed exact orbit x y e^(−x−y) = 2/e³, with the prey x(t) and predators y(t) of both runs plotted against t, and Mathews’ zoom window [0.4, 0.5] × [0.6, 0.8] where the runs end at (0.438644, 0.731545) and (0.439650, 0.728073); a closer zoom shows the ends 0.003615 apart, on either side of the exact point at t = T/2 = 3.304</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-example-2-aside-five-orbits-from-x_0-1-x_0-2.0-1.8-1.6-1.4-1.2-m-50-on-0-6.6" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-example-2-aside-five-orbits-from-x_0-1-x_0-2.0-1.8-1.6-1.4-1.2-m-50-on-0-6.6">Case 2 — Example 2, aside: five orbits from <span class="math inline">\((x_0, 1)\)</span>, <span class="math inline">\(x_0 = 2.0, 1.8, 1.6, 1.4, 1.2\)</span>, <span class="math inline">\(m = 50\)</span> on <span class="math inline">\([0, 6.6]\)</span></h3>
+<p><strong>Behavior:</strong> The five runs start on the line <span class="math inline">\(y = 1\)</span> and go round the critical point <span class="math inline">\((1, 1)\)</span> counterclockwise on nested loops, one step of each run per frame, so the five current points always belong to the same time. The smaller the orbit, the shorter its period, from <span class="math inline">\(T = 6.608\)</span> for <span class="math inline">\(x_0 = 2\)</span> down to <span class="math inline">\(T = 6.302\)</span> for <span class="math inline">\(x_0 = 1.2\)</span>, so the inner runs complete a larger fraction of their periods: at <span class="math inline">\(t = 3.3\)</span> the run from <span class="math inline">\(x_0 = 1.2\)</span> has gone <span class="math inline">\(0.524\)</span> of its period and the run from <span class="math inline">\(x_0 = 2\)</span> only <span class="math inline">\(0.499\)</span>. Round the loop the outer point still leads at that moment, about <span class="math inline">\(10^\circ\)</span> further round <span class="math inline">\((1, 1)\)</span> than the inner one, but from <span class="math inline">\(t \approx 4.1\)</span> the inner points are ahead, in order of size, and by <span class="math inline">\(t = 6.6\)</span> they lead visibly and the dotted line joining the five points bends. In the right panel each prey curve <span class="math inline">\(x(t)\)</span> returns to its starting value <span class="math inline">\(x_0\)</span>, its largest, at the period (diamond). By <span class="math inline">\(t = 6.6\)</span> the four inner runs have passed their periods and overlap the start of their own curves, while the outer one stops <span class="math inline">\(0.0085\)</span> short of its starting point, since <span class="math inline">\(6.608 &gt; 6.6\)</span>. With <span class="math inline">\(h = 0.132\)</span> the computed curves are visibly polygonal, but each stays on its orbit: the largest change in <span class="math inline">\(V\)</span> along the five runs is <span class="math inline">\(3.7 \times 10^{-6}\)</span>.</p>
+<p><a href="lotkabb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lotkabb.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta solutions of x′ = x − xy, y′ = −y + xy from (2, 1), (1.8, 1), (1.6, 1), (1.4, 1) and (1.2, 1) over [0, 6.6] with m = 50, traced together one step per frame in Mathews’ window [0, 2] × [0, 2] and his colours cyan, red, blue, magenta and green around the critical point (1, 1), with the prey x(t) of each run against t and a diamond at each period, from 6.608 for the outer orbit down to 6.302 for the inner one; from t ≈ 4.1 the inner points are ahead round the loop, and by t = 6.6 the four inner curves overlap themselves while the outer one stops just short of its start</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-example-6-foxes-and-rabbits-x_0-y_0-5000-100-on-0-5-m-100-h-0.05" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-example-6-foxes-and-rabbits-x_0-y_0-5000-100-on-0-5-m-100-h-0.05">Case 3 — Example 6, foxes and rabbits: <span class="math inline">\((x_0, y_0) = (5000, 100)\)</span> on <span class="math inline">\([0, 5]\)</span>, <span class="math inline">\(m = 100\)</span>, <span class="math inline">\(h = 0.05\)</span></h3>
+<p><strong>Behavior:</strong> Both populations grow at first. The rabbits peak at <span class="math inline">\(9498.1\)</span> at <span class="math inline">\(t = 0.9656\)</span>, at the moment the foxes pass <span class="math inline">\(y = 200\)</span>, where <span class="math inline">\(x' = 0\)</span>; the foxes peak at <span class="math inline">\(356.2\)</span> at <span class="math inline">\(t = 1.859\)</span>, as the falling rabbits pass <span class="math inline">\(x = 4000\)</span>, where <span class="math inline">\(y' = 0\)</span>. In the phase plane the peaks therefore sit on these two lines through the equilibrium <span class="math inline">\((4000, 200)\)</span>, and in the time panels the fox peak comes <span class="math inline">\(0.8938\)</span> time units after the rabbit peak, the phase lag Mathews asks the reader to notice. The rabbits reach their lowest value, <span class="math inline">\(1190.2\)</span>, at <span class="math inline">\(t = 3.249\)</span>, and are growing again by <span class="math inline">\(t = 5\)</span>; the foxes’ lowest value, <span class="math inline">\(97.90\)</span> at <span class="math inline">\(t = 5.047\)</span>, lies just beyond Mathews’ interval. At <span class="math inline">\(t = 5\)</span> the run is at <span class="math inline">\((3813.6, 97.982)\)</span>, short of a full cycle (<span class="math inline">\(T = 5.267\)</span>), so the trace leaves a gap in the dashed exact orbit between its end and the start <span class="math inline">\((5000, 100)\)</span>. The largest change in <span class="math inline">\(V\)</span> along the run is <span class="math inline">\(3.5 \times 10^{-7}\)</span>.</p>
+<p><a href="lotkacc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lotkacc.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta solution of the fox-rabbit system x′ = 2x − 0.01xy, y′ = −0.8y + 0.0002xy from 5000 rabbits and 100 foxes over [0, 5] with m = 100, traced one step per frame in the phase plane along the dashed exact orbit around the equilibrium (4000, 200), with the rabbits x(t) and foxes y(t) against t: the rabbits peak at 9498.1 at t = 0.9656 on the line y = 200, the foxes peak at 356.2 at t = 1.859 on the line x = 4000, 0.8938 time units later, the rabbits fall to 1190.2 at t = 3.249, and the run ends at (3813.6, 97.982), short of a full cycle</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="the-lotka-volterra-equations" class="level2">
+<h2 class="anchored" data-anchor-id="the-lotka-volterra-equations">The Lotka-Volterra Equations</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Lotka-Volterra equations
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For constants <span class="math inline">\(k_1, k_2, k_3, k_4 &gt; 0\)</span> the <em>Lotka-Volterra equations</em> are</p>
+<p><span class="math display">\[
+\frac{dx}{dt} = k_1 x - k_2 x y, \qquad \frac{dy}{dt} = -k_3 y + k_4 x y,
+\tag{1}
+\]</span></p>
+<p>solved with initial values <span class="math inline">\(x(0) = x_0 &gt; 0\)</span> and <span class="math inline">\(y(0) = y_0 &gt; 0\)</span>.</p>
+</div>
+</div>
+<section id="equilibrium-points" class="level3">
+<h3 class="anchored" data-anchor-id="equilibrium-points">Equilibrium points</h3>
+<p>An <em>equilibrium</em> (critical point) is a point where <span class="math inline">\(dx/dt = 0\)</span> and <span class="math inline">\(dy/dt = 0\)</span> at once. Writing (1) as <span class="math inline">\(x(k_1 - k_2 y) = 0\)</span> and <span class="math inline">\(y(-k_3 + k_4 x) = 0\)</span> shows there are exactly two:</p>
+<p><span class="math display">\[
+(0, 0) \qquad \text{and} \qquad (x_e, y_e) = \left(\frac{k_3}{k_4},\ \frac{k_1}{k_2}\right).
+\tag{2}
+\]</span></p>
+<p>Mathews states that there is one critical point, <span class="math inline">\((k_3/k_4,\ k_1/k_2)\)</span>; that is the only one with both populations positive, but the origin is an equilibrium too.</p>
+<p>The Jacobian matrix of the right-hand side of (1) is</p>
+<p><span class="math display">\[
+J(x, y) = \begin{pmatrix} k_1 - k_2 y &amp; -k_2 x \\ k_4 y &amp; -k_3 + k_4 x \end{pmatrix}.
+\]</span></p>
+<p>At the origin <span class="math inline">\(J = \operatorname{diag}(k_1, -k_3)\)</span>, with one positive and one negative eigenvalue: the origin is a saddle point, repelling along the <span class="math inline">\(x\)</span>-axis (prey alone grow) and attracting along the <span class="math inline">\(y\)</span>-axis (predators alone die out). At <span class="math inline">\((x_e, y_e)\)</span></p>
+<p><span class="math display">\[
+J(x_e, y_e) = \begin{pmatrix} 0 &amp; -k_2 k_3/k_4 \\ k_1 k_4/k_2 &amp; 0 \end{pmatrix}, \qquad \lambda = \pm\, i\sqrt{k_1 k_3},
+\tag{3}
+\]</span></p>
+<p>so the linearised system rotates around <span class="math inline">\((x_e, y_e)\)</span> with angular frequency <span class="math inline">\(\sqrt{k_1 k_3}\)</span>, that is with period <span class="math inline">\(2\pi/\sqrt{k_1 k_3}\)</span>. Purely imaginary eigenvalues alone do not decide what the nonlinear system does near the equilibrium; the conserved quantity below does.</p>
+</section>
+<section id="a-conserved-quantity-and-closed-orbits" class="level3">
+<h3 class="anchored" data-anchor-id="a-conserved-quantity-and-closed-orbits">A conserved quantity and closed orbits</h3>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Conserved quantity (general, for <span class="math inline">\(k_1, \ldots, k_4 &gt; 0\)</span> and <span class="math inline">\(x, y &gt; 0\)</span>)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Along every solution of (1) with <span class="math inline">\(x_0, y_0 &gt; 0\)</span> the function</p>
+<p><span class="math display">\[
+V(x, y) = k_4 x - k_3 \ln x + k_2 y - k_1 \ln y
+\tag{4}
+\]</span></p>
+<p>is constant. Equivalently, <span class="math inline">\(x^{k_3}\, y^{k_1}\, e^{-k_4 x - k_2 y}\)</span> is constant.</p>
+</div>
+</div>
+<p><strong>Proof.</strong> The two axes are solution curves of (1) (<span class="math inline">\(x = 0\)</span> gives <span class="math inline">\(dx/dt = 0\)</span>, <span class="math inline">\(y = 0\)</span> gives <span class="math inline">\(dy/dt = 0\)</span>), so a solution that starts in the open first quadrant stays in it and <span class="math inline">\(\ln x\)</span>, <span class="math inline">\(\ln y\)</span> are defined. By the chain rule</p>
+<p><span class="math display">\[
+\frac{dV}{dt} = \left(k_4 - \frac{k_3}{x}\right)(k_1 x - k_2 x y) + \left(k_2 - \frac{k_1}{y}\right)(-k_3 y + k_4 x y)
+= (k_4 x - k_3)(k_1 - k_2 y) + (k_2 y - k_1)(k_4 x - k_3) = 0. \qquad \blacksquare
+\]</span></p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Periodic orbits (general, for <span class="math inline">\(k_1, \ldots, k_4 &gt; 0\)</span>)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Every solution of (1) that starts at a point <span class="math inline">\((x_0, y_0)\)</span> with <span class="math inline">\(x_0, y_0 &gt; 0\)</span>, other than the equilibrium <span class="math inline">\((x_e, y_e)\)</span>, is periodic: its orbit in the phase plane is a closed curve around <span class="math inline">\((x_e, y_e)\)</span>, traversed counterclockwise.</p>
+</div>
+</div>
+<p><strong>Why.</strong> The gradient of <span class="math inline">\(V\)</span> is <span class="math inline">\((k_4 - k_3/x,\ k_2 - k_1/y)\)</span>, which vanishes only at <span class="math inline">\((x_e, y_e)\)</span>, and its Hessian <span class="math inline">\(\operatorname{diag}(k_3/x^2,\ k_1/y^2)\)</span> is positive definite, so <span class="math inline">\(V\)</span> is strictly convex on the quadrant with its only minimum at the equilibrium. Since <span class="math inline">\(V \to \infty\)</span> as <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span> tends to <span class="math inline">\(0\)</span> or to <span class="math inline">\(\infty\)</span>, each level set <span class="math inline">\(V = V(x_0, y_0)\)</span> above the minimum is a single closed curve around <span class="math inline">\((x_e, y_e)\)</span>. The solution stays on that curve, and the curve holds no equilibrium, so the solution keeps moving round it and returns to its starting point after a finite time <span class="math inline">\(T\)</span>. Below the equilibrium (<span class="math inline">\(y &lt; y_e\)</span>) the prey increase, so the motion is counterclockwise.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Average populations (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a periodic solution of (1) with period <span class="math inline">\(T\)</span>,</p>
+<p><span class="math display">\[
+\frac1T \int_0^T x(t)\,dt = \frac{k_3}{k_4} = x_e, \qquad \frac1T \int_0^T y(t)\,dt = \frac{k_1}{k_2} = y_e .
+\tag{5}
+\]</span></p>
+</div>
+</div>
+<p><strong>Proof.</strong> From (1), <span class="math inline">\(\dfrac{d}{dt}\ln y = -k_3 + k_4 x\)</span>. Integrating over one period, the left side gives <span class="math inline">\(\ln y(T) - \ln y(0) = 0\)</span>, so <span class="math inline">\(0 = -k_3 T + k_4 \int_0^T x\,dt\)</span>. The same argument with <span class="math inline">\(\dfrac{d}{dt}\ln x = k_1 - k_2 y\)</span> gives the average of <span class="math inline">\(y\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>The period itself depends on the orbit. For small orbits around <span class="math inline">\((x_e, y_e)\)</span> it approaches the linearised value <span class="math inline">\(2\pi/\sqrt{k_1 k_3}\)</span> from (3); in Example 2 and Example 6 the computed periods of the larger orbits exceed it.</p>
+</section>
+</section>
+<section id="predator-prey-model" class="level2">
+<h2 class="anchored" data-anchor-id="predator-prey-model">Predator-Prey Model</h2>
+<p>The study of interacting populations goes back to two independently published works by Alfred James Lotka (1880–1949) and Vito Volterra (1860–1940). Let <span class="math inline">\(x(t)\)</span> be the number of prey (rabbits) and <span class="math inline">\(y(t)\)</span> the number of predators (foxes). The prey have ample food and reproduce with birth rate <span class="math inline">\(c_1\)</span> and death rate <span class="math inline">\(c_2\)</span>; successful hunting by the predators removes a further <span class="math inline">\(k_2\, y x\)</span> prey per unit time, proportional to the number of encounters. Combining the three terms,</p>
+<p><span class="math display">\[
+\frac{dx}{dt} = c_1 x - c_2 x - k_2\, y x = (c_1 - c_2)\,x - k_2\, x y,
+\]</span></p>
+<p>and the substitution <span class="math inline">\(k_1 = c_1 - c_2\)</span> (the net growth rate of the prey) gives</p>
+<p><span class="math display">\[
+\frac{dx}{dt} = k_1 x - k_2 x y .
+\]</span></p>
+<p>The predators’ birth rate is proportional to their food supply, <span class="math inline">\(k_4 x\)</span>, and their death rate is <span class="math inline">\(k_3\)</span>, so</p>
+<p><span class="math display">\[
+\frac{dy}{dt} = -k_3 y + k_4 x y .
+\]</span></p>
+<p>These are the Lotka-Volterra equations (1). In this setting the equilibrium (2) is the pair of population sizes at which neither species changes, and (5) says that over each cycle the populations average exactly those sizes.</p>
+</section>
+<section id="the-runge-kutta-method" class="level2">
+<h2 class="anchored" data-anchor-id="the-runge-kutta-method">The Runge-Kutta Method</h2>
+<section id="one-equation" class="level3">
+<h3 class="anchored" data-anchor-id="one-equation">One equation</h3>
+<p>Mathews solves the equations with the classical fourth-order Runge-Kutta method. For the initial value problem <span class="math inline">\(y' = f(t, y)\)</span>, <span class="math inline">\(y(a) = \alpha\)</span>, on <span class="math inline">\(a \le t \le b\)</span>, divide <span class="math inline">\([a, b]\)</span> into <span class="math inline">\(m\)</span> steps of length <span class="math inline">\(h = (b - a)/m\)</span>, set <span class="math inline">\(t_j = a + jh\)</span> and <span class="math inline">\(y_0 = \alpha\)</span>, and compute</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Runge-Kutta method of order 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\begin{aligned}
+K_1 &amp;= h\, f(t_j,\ y_j), \\
+K_2 &amp;= h\, f\!\left(t_j + \tfrac{h}{2},\ y_j + \tfrac{K_1}{2}\right), \\
+K_3 &amp;= h\, f\!\left(t_j + \tfrac{h}{2},\ y_j + \tfrac{K_2}{2}\right), \\
+K_4 &amp;= h\, f(t_j + h,\ y_j + K_3), \\
+y_{j+1} &amp;= y_j + \tfrac16\left(K_1 + 2K_2 + 2K_3 + K_4\right),
+\end{aligned}
+\qquad j = 0, 1, \ldots, m - 1.
+\tag{6}
+\]</span></p>
+</div>
+</div>
+<p>Mathews names the four slopes <span class="math inline">\(k_1, \ldots, k_4\)</span>, the same letters as the model constants in (1); this page writes them as capitals. The result is a discrete set of points <span class="math inline">\((t_j, y_j)\)</span> that approximate the solution, not a formula. For a smooth solution the error at a fixed <span class="math inline">\(t\)</span> is <span class="math inline">\(O(h^4)\)</span>, so halving <span class="math inline">\(h\)</span> divides it by about <span class="math inline">\(16\)</span> (a general result for sufficiently smooth <span class="math inline">\(f\)</span>; Example 1 checks it). The <a href="../runge-kutta-method/">Runge-Kutta method</a> page treats the method in detail.</p>
+</section>
+<section id="systems-of-two-equations" class="level3">
+<h3 class="anchored" data-anchor-id="systems-of-two-equations">Systems of two equations</h3>
+<p>The method extends to a system</p>
+<p><span class="math display">\[
+x' = f_1(t, x, y),\quad x(a) = \alpha, \qquad y' = f_2(t, x, y),\quad y(a) = \beta, \qquad a \le t \le b,
+\]</span></p>
+<p>by applying (6) to the vector <span class="math inline">\(\mathbf{Z} = (x, y)\)</span> and the vector function <span class="math inline">\(\mathbf{F}(t, \mathbf{Z}) = \bigl(f_1(t, x, y),\ f_2(t, x, y)\bigr)\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{K}_1 &amp;= h\,\mathbf{F}(t_j,\ \mathbf{Z}_j), &amp;
+\mathbf{K}_2 &amp;= h\,\mathbf{F}\!\left(t_j + \tfrac{h}{2},\ \mathbf{Z}_j + \tfrac{\mathbf{K}_1}{2}\right), \\
+\mathbf{K}_3 &amp;= h\,\mathbf{F}\!\left(t_j + \tfrac{h}{2},\ \mathbf{Z}_j + \tfrac{\mathbf{K}_2}{2}\right), &amp;
+\mathbf{K}_4 &amp;= h\,\mathbf{F}(t_j + h,\ \mathbf{Z}_j + \mathbf{K}_3),
+\end{aligned}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16\left(\mathbf{K}_1 + 2\mathbf{K}_2 + 2\mathbf{K}_3 + \mathbf{K}_4\right), \qquad \mathbf{Z}_0 = (\alpha, \beta).
+\tag{7}
+\]</span></p>
+<p>This is the one-dimensional method in “vector form”: <span class="math inline">\(f\)</span> is replaced by <span class="math inline">\(\mathbf{F}\)</span>, and both components of each <span class="math inline">\(\mathbf{K}_i\)</span> are computed before the next one. A negative <span class="math inline">\(b\)</span> (with <span class="math inline">\(a = 0\)</span>) gives a negative <span class="math inline">\(h\)</span> and integrates backward in time. Mathews’ subroutine returns only the points <span class="math inline">\(\mathbf{Z}_j\)</span>, which are joined by straight segments to draw the orbit.</p>
+</section>
+<section id="example-1-a-single-equation-y-t2---y" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-a-single-equation-y-t2---y">Example 1 — A single equation, <span class="math inline">\(y' = t^2 - y\)</span></h3>
+<p><strong>Problem.</strong> Solve <span class="math inline">\(y' = t^2 - y\)</span>, <span class="math inline">\(y(0) = 1\)</span>, over <span class="math inline">\([0, 10]\)</span> with the Runge-Kutta method.</p>
+<p>Only the text of this example’s solution page survives: the images holding Mathews’ program, output and graph are lost. The image sizes of his lost output table, <span class="math inline">\(51\)</span> pairs of <span class="math inline">\(t\)</span> and <span class="math inline">\(y\)</span> entries with a shorter <span class="math inline">\(t\)</span> entry in every fifth pair (the integers <span class="math inline">\(0., 1., \ldots\)</span>), indicate <span class="math inline">\(m = 50\)</span> steps, <span class="math inline">\(h = 0.2\)</span>, and that is used here. Whether Mathews compared with the exact solution cannot be told from what survives; this page does. The equation is linear, and</p>
+<p><span class="math display">\[
+y(t) = t^2 - 2t + 2 - e^{-t}
+\]</span></p>
+<p>satisfies it: <span class="math inline">\(y' = 2t - 2 + e^{-t} = t^2 - y\)</span>, and <span class="math inline">\(y(0) = 2 - 1 = 1\)</span>.</p>
+<p><strong>Step 1</strong> (<span class="math inline">\(t_0 = 0\)</span>, <span class="math inline">\(y_0 = 1\)</span>, <span class="math inline">\(h = 0.2\)</span>):</p>
+<p><span class="math display">\[
+\begin{aligned}
+K_1 &amp;= 0.2\,(0^2 - 1) = -0.2, \\
+K_2 &amp;= 0.2\,\bigl(0.1^2 - (1 - 0.1)\bigr) = -0.178, \\
+K_3 &amp;= 0.2\,\bigl(0.1^2 - (1 - 0.089)\bigr) = -0.1802, \\
+K_4 &amp;= 0.2\,\bigl(0.2^2 - (1 - 0.1802)\bigr) = -0.15596, \\
+y_1 &amp;= 1 + \tfrac16\bigl(-0.2 - 0.356 - 0.3604 - 0.15596\bigr) = 0.8212733,
+\end{aligned}
+\]</span></p>
+<p>against the exact <span class="math inline">\(y(0.2) = 0.8212692\)</span>.</p>
+<p><strong>Steps 2 to 50</strong> repeat (6). Every fifth point:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t_j\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_j\)</span> (RK4, <span class="math inline">\(h = 0.2\)</span>)</th>
+<th style="text-align: right;">exact <span class="math inline">\(y(t_j)\)</span></th>
+<th style="text-align: right;">error <span class="math inline">\(y_j - y(t_j)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.632138</td>
+<td style="text-align: right;">0.632121</td>
+<td style="text-align: right;"><span class="math inline">\(1.75 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1.864692</td>
+<td style="text-align: right;">1.864665</td>
+<td style="text-align: right;"><span class="math inline">\(2.75 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4.950246</td>
+<td style="text-align: right;">4.950213</td>
+<td style="text-align: right;"><span class="math inline">\(3.26 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">9.981719</td>
+<td style="text-align: right;">9.981684</td>
+<td style="text-align: right;"><span class="math inline">\(3.50 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">16.993298</td>
+<td style="text-align: right;">16.993262</td>
+<td style="text-align: right;"><span class="math inline">\(3.60 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">25.997558</td>
+<td style="text-align: right;">25.997521</td>
+<td style="text-align: right;"><span class="math inline">\(3.65 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">36.999125</td>
+<td style="text-align: right;">36.999088</td>
+<td style="text-align: right;"><span class="math inline">\(3.66 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">49.999701</td>
+<td style="text-align: right;">49.999665</td>
+<td style="text-align: right;"><span class="math inline">\(3.67 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">64.999913</td>
+<td style="text-align: right;">64.999877</td>
+<td style="text-align: right;"><span class="math inline">\(3.68 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">81.999991</td>
+<td style="text-align: right;">81.999955</td>
+<td style="text-align: right;"><span class="math inline">\(3.68 \times 10^{-5}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification.</strong> Over all <span class="math inline">\(51\)</span> points the error is positive after <span class="math inline">\(t = 0\)</span> and never decreases, levelling off at <span class="math inline">\(3.68 \times 10^{-5}\)</span> at <span class="math inline">\(t = 10\)</span>. Repeating the run with other step counts shows the fourth-order behaviour:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(m\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(h\)</span></th>
+<th style="text-align: right;">error at <span class="math inline">\(t = 10\)</span></th>
+<th style="text-align: right;">ratio to the next row</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">0.4</td>
+<td style="text-align: right;"><span class="math inline">\(6.47 \times 10^{-4}\)</span></td>
+<td style="text-align: right;">17.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">0.2</td>
+<td style="text-align: right;"><span class="math inline">\(3.68 \times 10^{-5}\)</span></td>
+<td style="text-align: right;">16.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">0.1</td>
+<td style="text-align: right;"><span class="math inline">\(2.19 \times 10^{-6}\)</span></td>
+<td style="text-align: right;">16.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">200</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;"><span class="math inline">\(1.33 \times 10^{-7}\)</span></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<p>Each halving of <span class="math inline">\(h\)</span> divides the error by a factor approaching <span class="math inline">\(16 = 2^4\)</span>.</p>
+</section>
+</section>
+<section id="example-2-the-lotka-volterra-system-with-k_1-k_2-k_3-k_4-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-the-lotka-volterra-system-with-k_1-k_2-k_3-k_4-1">Example 2 — The Lotka-Volterra system with <span class="math inline">\(k_1 = k_2 = k_3 = k_4 = 1\)</span></h2>
+<p><strong>Problem.</strong> Solve</p>
+<p><span class="math display">\[
+x' = x - xy, \quad x(0) = 2, \qquad y' = -y + xy, \quad y(0) = 1,
+\tag{8}
+\]</span></p>
+<p>with the Runge-Kutta method over (a) <span class="math inline">\(0 \le t \le 3.3\)</span>, (b) <span class="math inline">\(-3.3 \le t \le 0\)</span>, (c) <span class="math inline">\(0 \le t \le 6.6\)</span>. Does the solution form an orbit?</p>
+<p>Here <span class="math inline">\(\mathbf{F}(t, x, y) = (x - xy,\ -y + xy)\)</span>, the equilibria are <span class="math inline">\((0, 0)\)</span> and <span class="math inline">\((1, 1)\)</span>, and the conserved quantity (4) is <span class="math inline">\(V(x, y) = x - \ln x + y - \ln y\)</span>, with <span class="math inline">\(V(2, 1) = 3 - \ln 2 = 2.306853\)</span>. Mathews uses <span class="math inline">\(m = 50\)</span> steps in (a) and (b) and <span class="math inline">\(m = 100\)</span> in (c), so <span class="math inline">\(h = \pm 0.066\)</span> throughout, and plots the orbits in the window <span class="math inline">\([0, 2] \times [0, 2]\)</span>.</p>
+<p><strong>Step 1 of (a)</strong> (<span class="math inline">\(h = 3.3/50 = 0.066\)</span>, <span class="math inline">\(\mathbf{Z}_0 = (2, 1)\)</span>):</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{K}_1 &amp;= 0.066\,\mathbf{F}(2, 1) = (0,\ 0.066), \\
+\mathbf{K}_2 &amp;= 0.066\,\mathbf{F}(2,\ 1.033) = (-0.004356,\ 0.068178), \\
+\mathbf{K}_3 &amp;= 0.066\,\mathbf{F}(1.997822,\ 1.034089) = (-0.0044948,\ 0.0681012), \\
+\mathbf{K}_4 &amp;= 0.066\,\mathbf{F}(1.9955052,\ 1.0681012) = (-0.0089692,\ 0.0701778), \\
+\mathbf{Z}_1 &amp;= (2, 1) + \tfrac16\bigl(\mathbf{K}_1 + 2\mathbf{K}_2 + 2\mathbf{K}_3 + \mathbf{K}_4\bigr) = (1.9955549,\ 1.0681227).
+\end{aligned}
+\]</span></p>
+<p>A reference solution (an adaptive eighth-order integrator with tolerance <span class="math inline">\(10^{-13}\)</span>) gives <span class="math inline">\((1.9955549,\ 1.0681228)\)</span> at <span class="math inline">\(t = 0.066\)</span>. The prey begin to fall and the predators to rise, since <span class="math inline">\(y_0 = 1\)</span> sits exactly at the level where <span class="math inline">\(x' = 0\)</span>.</p>
+<p><strong>Results.</strong> The last point of each run, compared with the reference solution:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 20%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Run</th>
+<th>interval</th>
+<th style="text-align: right;"><span class="math inline">\(m\)</span></th>
+<th>RK4 end point</th>
+<th>reference</th>
+<th style="text-align: right;">end-point error (distance)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(a)</td>
+<td><span class="math inline">\([0, 3.3]\)</span></td>
+<td style="text-align: right;">50</td>
+<td><span class="math inline">\((0.438644,\ 0.731545)\)</span></td>
+<td><span class="math inline">\((0.438644,\ 0.731545)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.1 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td>(b)</td>
+<td><span class="math inline">\([0, -3.3]\)</span></td>
+<td style="text-align: right;">50</td>
+<td><span class="math inline">\((0.439650,\ 0.728073)\)</span></td>
+<td><span class="math inline">\((0.439650,\ 0.728073)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.6 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td>(c)</td>
+<td><span class="math inline">\([0, 6.6]\)</span></td>
+<td style="text-align: right;">100</td>
+<td><span class="math inline">\((1.999928,\ 0.991553)\)</span></td>
+<td><span class="math inline">\((1.999928,\ 0.991553)\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.6 \times 10^{-7}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>These agree with Mathews’ printed end points <span class="math inline">\((0.438644, 0.731545)\)</span>, <span class="math inline">\((0.43965, 0.728073)\)</span> and <span class="math inline">\((1.99993, 0.991553)\)</span>. The largest change in <span class="math inline">\(V\)</span> along any of the three runs is <span class="math inline">\(2.30 \times 10^{-7}\)</span>.</p>
+<p><strong>Do the two curves join up?</strong> Run (a) goes forward from <span class="math inline">\((2, 1)\)</span> counterclockwise through the top of the orbit; run (b) goes backward from <span class="math inline">\((2, 1)\)</span> through the bottom. Mathews draws them together and then zooms to the window <span class="math inline">\([0.4, 0.5] \times [0.6, 0.8]\)</span>, where their ends do not meet: they are <span class="math inline">\(0.0036\)</span> apart. The end-point errors of runs (a) and (b) are about <span class="math inline">\(2 \times 10^4\)</span> times smaller than that gap. The gap is there because the orbit’s period is <span class="math inline">\(T = 6.608483\)</span>, so the two half-runs of length <span class="math inline">\(3.3\)</span> together cover <span class="math inline">\(6.6 &lt; T\)</span>; the point halfway round, at <span class="math inline">\(t = T/2 = 3.304241\)</span>, is <span class="math inline">\((0.439145,\ 0.729806)\)</span>, between the two end points. For the same reason run (c), over <span class="math inline">\([0, 6.6]\)</span>, stops just short of its starting point, at <span class="math inline">\((1.999928,\ 0.991553)\)</span>.</p>
+<p><strong>Closing the orbit.</strong> Mathews then runs <span class="math inline">\(m = 200\)</span> steps over <span class="math inline">\([0,\ 6.6084827203]\)</span> and arrives at <span class="math inline">\((2., 1.)\)</span>; the recomputed end point is <span class="math inline">\((1.9999999987,\ 1.0000000000)\)</span>. The true period, computed in 30-digit arithmetic, is</p>
+<p><span class="math display">\[
+T = 6.6084826712\ldots,
+\]</span></p>
+<p>which agrees with Mathews’ interval length to <span class="math inline">\(5 \times 10^{-8}\)</span>; at his <span class="math inline">\(b\)</span> the exact solution is at <span class="math inline">\((2,\ 1.00000005)\)</span>. The orbit is a closed curve, and its extreme points are</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>point on the orbit</th>
+<th style="text-align: right;">time <span class="math inline">\(t\)</span></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((2, 1)\)</span>, largest <span class="math inline">\(x\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span> and <span class="math inline">\(T\)</span></td>
+<td>start</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((1, 2)\)</span>, largest <span class="math inline">\(y\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.1465\)</span></td>
+<td>predators peak</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((0.40638, 1)\)</span>, smallest <span class="math inline">\(x\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.7636\)</span></td>
+<td>prey at their lowest</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((1, 0.40638)\)</span>, smallest <span class="math inline">\(y\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.9914\)</span></td>
+<td>predators at their lowest</td>
+</tr>
+</tbody>
+</table>
+<p>Because all four constants equal <span class="math inline">\(1\)</span>, <span class="math inline">\(V\)</span> is symmetric in <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>, and so is the orbit: it is symmetric about the line <span class="math inline">\(y = x\)</span>, and <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> both range over <span class="math inline">\([0.40638, 2]\)</span>, where <span class="math inline">\(0.40638\)</span> is the smaller root of <span class="math inline">\(x e^{-x} = 2/e^2\)</span>. Over one period the averages of <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> both equal <span class="math inline">\(1\)</span> to <span class="math inline">\(10^{-13}\)</span>, as (5) predicts. Mathews remarks that there is no known formula for the solution as a function of <span class="math inline">\(t\)</span>; Example 3 shows that the orbit itself does have an equation.</p>
+<section id="aside-several-orbits-around-the-equilibrium" class="level3">
+<h3 class="anchored" data-anchor-id="aside-several-orbits-around-the-equilibrium">Aside — several orbits around the equilibrium</h3>
+<p>Mathews’ aside runs <span class="math inline">\(m = 50\)</span> steps over <span class="math inline">\([0, 6.6]\)</span> from <span class="math inline">\((x_0, 1)\)</span> with <span class="math inline">\(x_0 = 2.0, 1.8, 1.6, 1.4, 1.2\)</span>, draws the five curves in <span class="math inline">\([0, 2] \times [0, 2]\)</span> and marks the critical point <span class="math inline">\((k_3/k_4,\ k_1/k_2) = (1, 1)\)</span>. The curves are nested loops around <span class="math inline">\((1, 1)\)</span>, one for each level of <span class="math inline">\(V\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 15%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(x_0\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(V(x_0, 1)\)</span></th>
+<th style="text-align: right;">period <span class="math inline">\(T\)</span></th>
+<th>RK4 point at <span class="math inline">\(t = 6.6\)</span> (<span class="math inline">\(m = 50\)</span>)</th>
+<th style="text-align: right;">distance from start</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">2.306853</td>
+<td style="text-align: right;">6.608483</td>
+<td><span class="math inline">\((1.999927,\ 0.991542)\)</span></td>
+<td style="text-align: right;">0.0085</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.8</td>
+<td style="text-align: right;">2.212213</td>
+<td style="text-align: right;">6.507331</td>
+<td><span class="math inline">\((1.793681,\ 1.076731)\)</span></td>
+<td style="text-align: right;">0.077</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1.6</td>
+<td style="text-align: right;">2.129996</td>
+<td style="text-align: right;">6.420043</td>
+<td><span class="math inline">\((1.584036,\ 1.112948)\)</span></td>
+<td style="text-align: right;">0.114</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.4</td>
+<td style="text-align: right;">2.063528</td>
+<td style="text-align: right;">6.349886</td>
+<td><span class="math inline">\((1.382142,\ 1.103574)\)</span></td>
+<td style="text-align: right;">0.105</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1.2</td>
+<td style="text-align: right;">2.017678</td>
+<td style="text-align: right;">6.301712</td>
+<td><span class="math inline">\((1.189257,\ 1.060336)\)</span></td>
+<td style="text-align: right;">0.061</td>
+</tr>
+</tbody>
+</table>
+<p>For these five orbits the period grows with the size of the orbit, and all exceed the linearised period <span class="math inline">\(2\pi = 6.283185\)</span> from (3) (for <span class="math inline">\(x_0 = 1.01\)</span> it is <span class="math inline">\(6.283237\)</span>). Since <span class="math inline">\(6.6\)</span> is longer than every period except the first, the four inner curves run past their starting point and overlap themselves slightly, while the outer one stops just short. The largest change in <span class="math inline">\(V\)</span> along the five runs is <span class="math inline">\(3.71 \times 10^{-6}\)</span> (for <span class="math inline">\(x_0 = 2.0\)</span>), so each computed curve lies on its closed orbit to plotting accuracy.</p>
+</section>
+</section>
+<section id="example-3-the-orbit-as-a-separable-equation" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-the-orbit-as-a-separable-equation">Example 3 — The orbit as a separable equation</h2>
+<p><strong>Problem.</strong> For the system (8), combine the two differential equations into a separable first-order equation and solve it.</p>
+<p><strong>Step 1.</strong> In Leibniz notation, <span class="math inline">\(\dfrac{dx}{dt} = x - xy\)</span> and <span class="math inline">\(\dfrac{dy}{dt} = -y + xy\)</span>. Divide the second by the first, using <span class="math inline">\(\dfrac{dy/dt}{dx/dt} = \dfrac{dy}{dx}\)</span>:</p>
+<p><span class="math display">\[
+\frac{dy}{dx} = \frac{-y + xy}{x - xy} = \frac{y\,(x - 1)}{x\,(1 - y)} .
+\]</span></p>
+<p><strong>Step 2.</strong> Separate the variables:</p>
+<p><span class="math display">\[
+\frac{1 - y}{y}\,dy = \frac{x - 1}{x}\,dx .
+\]</span></p>
+<p><strong>Step 3.</strong> Integrate both sides, writing the constant of integration as <span class="math inline">\(\ln c\)</span>:</p>
+<p><span class="math display">\[
+\ln y - y = x - \ln x + \ln c .
+\]</span></p>
+<p><strong>Step 4.</strong> Collect the logarithms, <span class="math inline">\(\ln x + \ln y - x - y = \ln c\)</span>, and exponentiate:</p>
+<p><span class="math display">\[
+x\,y\,e^{-x-y} = c .
+\]</span></p>
+<p><strong>Step 5.</strong> The curve passes through the initial point <span class="math inline">\((2, 1)\)</span>, so <span class="math inline">\(c = 2 \cdot 1 \cdot e^{-3} = 2/e^3 = 0.0995741\)</span>. The orbit is the curve</p>
+<p><span class="math display">\[
+x\,y\,e^{-x-y} = \frac{2}{e^3}.
+\tag{9}
+\]</span></p>
+<p>Mathews graphs (9) with an implicit plot in the window <span class="math inline">\([0, 2] \times [0, 2]\)</span>; it is the closed loop of Example 2.</p>
+<p><strong>Verification.</strong> Equation (9) is (4) with every <span class="math inline">\(k_i = 1\)</span>: <span class="math inline">\(V(x, y) = x - \ln x + y - \ln y = -\ln\bigl(x y e^{-x-y}\bigr)\)</span>, so (9) says <span class="math inline">\(V(x, y) = 3 - \ln 2\)</span>. The general separation, with arbitrary <span class="math inline">\(k_i\)</span>, gives the constant <span class="math inline">\(x^{k_3} y^{k_1} e^{-k_4 x - k_2 y}\)</span> of (4) in the same way.</p>
+</section>
+<section id="example-4-the-numerical-and-analytic-solutions-agree" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-the-numerical-and-analytic-solutions-agree">Example 4 — The numerical and analytic solutions agree</h2>
+<p><strong>Problem.</strong> For the system (8), show that the numerical solution of Example 2 and the analytic solution of Example 3 agree. (Mathews’ statement says “the numerical solution in Example 3 and the analytic solution in Example 4”; the numerical solution is the one of Example 2 and the implicit curve the one of Example 3.)</p>
+<p>Mathews places the Runge-Kutta orbit with <span class="math inline">\(m = 200\)</span> steps over <span class="math inline">\([0,\ 6.6084827203]\)</span> beside the implicit plot of (9), both in <span class="math inline">\([0, 2] \times [0, 2]\)</span>, and then draws one over the other, where the two curves coincide.</p>
+<p><strong>Verification.</strong> Substituting the <span class="math inline">\(201\)</span> Runge-Kutta points into the left side of (9):</p>
+<p><span class="math display">\[
+\max_{0 \le j \le 200} \bigl|\, x_j y_j e^{-x_j - y_j} - 2/e^3 \bigr| = 1.4 \times 10^{-9},
+\]</span></p>
+<p>a relative deviation of <span class="math inline">\(1.4 \times 10^{-8}\)</span>. For the coarser runs of Example 2 the largest deviation is <span class="math inline">\(2.3 \times 10^{-8}\)</span> (runs (a) and (c)) and <span class="math inline">\(8.3 \times 10^{-9}\)</span> (run (b)). The numerical points lie on the analytic curve to far better than plotting accuracy.</p>
+<p>Mathews also draws a contour plot of <span class="math inline">\(G(x, y) = x y e^{-x-y}\)</span> over <span class="math inline">\([0, 2] \times [0, 2]\)</span>. Each level curve <span class="math inline">\(G = c\)</span> with <span class="math inline">\(0 &lt; c &lt; e^{-2}\)</span> is an orbit of (8); <span class="math inline">\(G\)</span> takes its largest value <span class="math inline">\(e^{-2} = 0.135335\)</span> at the equilibrium <span class="math inline">\((1, 1)\)</span>, and the orbit of Examples 2 and 3 is the level <span class="math inline">\(c = 2/e^3 = 0.0995741\)</span>.</p>
+</section>
+<section id="example-5-solving-the-orbit-for-y" class="level2">
+<h2 class="anchored" data-anchor-id="example-5-solving-the-orbit-for-y">Example 5 — Solving the orbit for <span class="math inline">\(y\)</span></h2>
+<p><strong>Problem.</strong> For the system (8) the implicit solution is <span class="math inline">\(x y e^{-x-y} = 2/e^3\)</span>. Can <span class="math inline">\(y\)</span> be solved as a function of <span class="math inline">\(x\)</span>?</p>
+<p><strong>Step 1.</strong> Write (9) as <span class="math inline">\(y e^{-y} = \dfrac{2 e^{x-3}}{x}\)</span>, that is <span class="math inline">\((-y)\,e^{-y} = -\dfrac{2 e^{x-3}}{x}\)</span>. The equation <span class="math inline">\(w e^{w} = z\)</span> is solved by the Lambert <span class="math inline">\(W\)</span> function, <span class="math inline">\(w = W(z)\)</span> (Mathematica’s <code>ProductLog</code>), so</p>
+<p><span class="math display">\[
+y = -W\!\left(-\frac{2e^{x-3}}{x}\right).
+\tag{10}
+\]</span></p>
+<p><strong>Step 2.</strong> For real <span class="math inline">\(w\)</span>, <span class="math inline">\(w e^w = z\)</span> has real solutions only when <span class="math inline">\(z \ge -1/e\)</span>, and two of them when <span class="math inline">\(-1/e &lt; z &lt; 0\)</span>: the principal branch <span class="math inline">\(W_0(z) \in (-1, 0)\)</span> and the lower branch <span class="math inline">\(W_{-1}(z) &lt; -1\)</span>. Here <span class="math inline">\(z = -2e^{x-3}/x \ge -1/e\)</span> exactly when <span class="math inline">\(x e^{-x} \ge 2/e^2\)</span>, that is for</p>
+<p><span class="math display">\[
+0.40638 \le x \le 2 .
+\]</span></p>
+<p>At both ends <span class="math inline">\(z = -1/e\)</span> and <span class="math inline">\(W = -1\)</span>, so <span class="math inline">\(y = 1\)</span>: these are the leftmost and rightmost points <span class="math inline">\((0.40638, 1)\)</span> and <span class="math inline">\((2, 1)\)</span> of the orbit.</p>
+<p><strong>Step 3.</strong> Mathematica’s <code>Solve</code> returns the principal branch, <span class="math inline">\(y = -W_0\bigl(-2e^{x-3}/x\bigr)\)</span>, which Mathews plots for <span class="math inline">\(0.40638 \le x \le 2\)</span>. Since <span class="math inline">\(W_0 \in [-1, 0)\)</span>, this gives <span class="math inline">\(y \le 1\)</span>: the lower half of the orbit. Mathews concludes that only the lower half of the curve can be solved explicitly. In fact the upper half is the other branch, <span class="math inline">\(y = -W_{-1}\bigl(-2e^{x-3}/x\bigr) \ge 1\)</span>, which <code>Solve</code> does not return:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(x\)</span></th>
+<th style="text-align: right;">lower half, <span class="math inline">\(-W_0\)</span></th>
+<th style="text-align: right;">upper half, <span class="math inline">\(-W_{-1}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">0.595718</td>
+<td style="text-align: right;">1.555507</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.406376</td>
+<td style="text-align: right;">2.000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1.5</td>
+<td style="text-align: right;">0.481529</td>
+<td style="text-align: right;">1.800235</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification.</strong> Both columns satisfy (9): at all six points <span class="math inline">\(\bigl|x y e^{-x-y} - 2/e^3\bigr| &lt; 10^{-16}\)</span>. At <span class="math inline">\(x = 1\)</span> the two values are the lowest and highest points <span class="math inline">\((1, 0.40638)\)</span> and <span class="math inline">\((1, 2)\)</span> of the orbit, as found in Example 2.</p>
+<p><strong>Step 4.</strong> Solving (9) for <span class="math inline">\(x\)</span> instead gives, by the symmetry of (9), <span class="math inline">\(x = -W\bigl(-2e^{y-3}/y\bigr)\)</span> for <span class="math inline">\(0.40638 \le y \le 2\)</span>. Mathews plots the principal branch, which is the left half of the orbit (<span class="math inline">\(x \le 1\)</span>); the branch <span class="math inline">\(W_{-1}\)</span> gives the right half.</p>
+</section>
+<section id="example-6-foxes-and-rabbits" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-foxes-and-rabbits">Example 6 — Foxes and rabbits</h2>
+<p><strong>Problem.</strong> Initially there are <span class="math inline">\(y_0 = 100\)</span> foxes and <span class="math inline">\(x_0 = 5000\)</span> rabbits, and the coefficients are <span class="math inline">\(k_1 = 2\)</span>, <span class="math inline">\(k_2 = 0.01\)</span>, <span class="math inline">\(k_3 = 0.8\)</span>, <span class="math inline">\(k_4 = 0.0002\)</span>:</p>
+<p><span class="math display">\[
+\frac{dx}{dt} = 2x - 0.01\,xy, \qquad \frac{dy}{dt} = -0.8\,y + 0.0002\,xy .
+\tag{11}
+\]</span></p>
+<p>Solve for <span class="math inline">\(x(t)\)</span> and <span class="math inline">\(y(t)\)</span> over <span class="math inline">\(0 \le t \le 5\)</span>.</p>
+<p>The surviving page gives the problem only: Mathews’ program, his number of steps, his output and his graphs are lost. The values below are from a reference solution, with Runge-Kutta runs for comparison.</p>
+<p><strong>Equilibrium and period.</strong> By (2) the populations would stay fixed at <span class="math inline">\((x_e, y_e) = (0.8/0.0002,\ 2/0.01) = (4000, 200)\)</span>. The linearised period (3) is <span class="math inline">\(2\pi/\sqrt{2 \cdot 0.8} = 4.9673\)</span>. At the start, <span class="math inline">\(x' = 10000 - 5000 = 5000\)</span> and <span class="math inline">\(y' = -80 + 100 = 20\)</span>, so both populations begin to grow.</p>
+<p><strong>Solution.</strong> The reference solution at half-unit times:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t\)</span></th>
+<th style="text-align: right;">rabbits <span class="math inline">\(x(t)\)</span></th>
+<th style="text-align: right;">foxes <span class="math inline">\(y(t)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">5000.0</td>
+<td style="text-align: right;">100.00</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.5</td>
+<td style="text-align: right;">7831.6</td>
+<td style="text-align: right;">126.88</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">9485.6</td>
+<td style="text-align: right;">207.71</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.5</td>
+<td style="text-align: right;">6752.2</td>
+<td style="text-align: right;">324.27</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">3217.1</td>
+<td style="text-align: right;">352.17</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2.5</td>
+<td style="text-align: right;">1693.9</td>
+<td style="text-align: right;">297.74</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3.0</td>
+<td style="text-align: right;">1234.2</td>
+<td style="text-align: right;">229.84</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3.5</td>
+<td style="text-align: right;">1231.1</td>
+<td style="text-align: right;">173.78</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4.0</td>
+<td style="text-align: right;">1562.2</td>
+<td style="text-align: right;">133.55</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4.5</td>
+<td style="text-align: right;">2333.9</td>
+<td style="text-align: right;">108.28</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5.0</td>
+<td style="text-align: right;">3813.6</td>
+<td style="text-align: right;">97.98</td>
+</tr>
+</tbody>
+</table>
+<p>With <span class="math inline">\(m = 50\)</span> steps (<span class="math inline">\(h = 0.1\)</span>) the Runge-Kutta method gives <span class="math inline">\((3813.55,\ 97.983)\)</span> at <span class="math inline">\(t = 5\)</span>, errors of <span class="math inline">\(0.024\)</span> and <span class="math inline">\(0.00021\)</span>; with <span class="math inline">\(m = 100\)</span> (<span class="math inline">\(h = 0.05\)</span>) it gives <span class="math inline">\((3813.574,\ 97.9824)\)</span>, errors of <span class="math inline">\(0.0016\)</span> and <span class="math inline">\(0.000011\)</span>, about <span class="math inline">\(15\)</span> and <span class="math inline">\(19\)</span> times smaller.</p>
+<p><strong>Periodic behaviour.</strong> The solution returns to <span class="math inline">\((5000, 100)\)</span> after one period</p>
+<p><span class="math display">\[
+T = 5.26678,
+\]</span></p>
+<p>so the interval <span class="math inline">\([0, 5]\)</span> falls just short of a full cycle, and over a longer interval the orbit traces over itself. Within each cycle</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>event</th>
+<th style="text-align: right;">time <span class="math inline">\(t\)</span></th>
+<th style="text-align: right;">value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>rabbits peak</td>
+<td style="text-align: right;">0.9656</td>
+<td style="text-align: right;">9498.08</td>
+</tr>
+<tr class="even">
+<td>foxes peak</td>
+<td style="text-align: right;">1.8593</td>
+<td style="text-align: right;">356.230</td>
+</tr>
+<tr class="odd">
+<td>rabbits at their lowest</td>
+<td style="text-align: right;">3.2487</td>
+<td style="text-align: right;">1190.20</td>
+</tr>
+<tr class="even">
+<td>foxes at their lowest</td>
+<td style="text-align: right;">5.0468</td>
+<td style="text-align: right;">97.896</td>
+</tr>
+</tbody>
+</table>
+<p>The rabbits peak when the foxes pass <span class="math inline">\(y_e = 200\)</span>, and the foxes peak when the rabbits pass <span class="math inline">\(x_e = 4000\)</span>, as (11) requires (<span class="math inline">\(x' = 0\)</span> exactly when <span class="math inline">\(y = 200\)</span>, <span class="math inline">\(y' = 0\)</span> exactly when <span class="math inline">\(x = 4000\)</span>). Mathews plots <span class="math inline">\(x(t)\)</span> and <span class="math inline">\(y(t)\)</span> separately and asks the reader to notice the phase lag. The fox cycle lags behind the rabbit cycle: the fox peak comes <span class="math inline">\(0.894\)</span> time units after the rabbit peak, and the fox minimum <span class="math inline">\(1.798\)</span> units after the rabbit minimum. The two lags differ because the cycle is far from a sine wave: the rabbits rise from <span class="math inline">\(1190\)</span> to <span class="math inline">\(9498\)</span> in <span class="math inline">\(2.98\)</span> time units and fall back in <span class="math inline">\(2.28\)</span>. Over one period the averages of <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> are <span class="math inline">\(4000\)</span> and <span class="math inline">\(200\)</span> to ten significant digits, as (5) predicts.</p>
+<p><strong>Verification.</strong> Along the reference solution over <span class="math inline">\([0, 5]\)</span>, <span class="math inline">\(V(x, y) = 0.0002x - 0.8\ln x + 0.01y - 2\ln y\)</span> stays within <span class="math inline">\(2.2 \times 10^{-12}\)</span> of its initial value <span class="math inline">\(-14.0240949\)</span>, and along the Runge-Kutta solution with <span class="math inline">\(m = 100\)</span> its largest change is <span class="math inline">\(3.52 \times 10^{-7}\)</span>. The period was confirmed in 30-digit arithmetic (<span class="math inline">\(T = 5.2667814109\ldots\)</span>), as was the value at <span class="math inline">\(t = 5\)</span>, <span class="math inline">\((3813.5755,\ 97.982429)\)</span>.</p>
+</section>
+<section id="numerical-notes" class="level2">
+<h2 class="anchored" data-anchor-id="numerical-notes">Numerical Notes</h2>
+<ul>
+<li><strong>Monitor the conserved quantity.</strong> Because <span class="math inline">\(V\)</span> in (4) is constant along exact solutions, the change of <span class="math inline">\(V\)</span> along the computed points detects drift off the orbit (though not timing error along it) without knowing the exact solution.</li>
+<li><strong>The Runge-Kutta method does not conserve <span class="math inline">\(V\)</span>.</strong> Over many periods the computed orbit slowly drifts off its level curve. For the system (8) from <span class="math inline">\((2, 1)\)</span> with <span class="math inline">\(h = 0.066\)</span>, the change in <span class="math inline">\(V\)</span> after <span class="math inline">\(100\)</span>, <span class="math inline">\(1001\)</span> and <span class="math inline">\(10013\)</span> steps (about <span class="math inline">\(1\)</span>, <span class="math inline">\(10\)</span> and <span class="math inline">\(100\)</span> periods) is <span class="math inline">\(-1.9 \times 10^{-8}\)</span>, <span class="math inline">\(-2.1 \times 10^{-7}\)</span> and <span class="math inline">\(-2.1 \times 10^{-6}\)</span>, growing in proportion to the number of periods.</li>
+<li><strong>Stopping at a fixed time does not close the curve.</strong> A computed orbit closes only if the time interval is a whole number of periods. The gaps in Example 2 and the overlaps in its aside come from the interval length, not from the Runge-Kutta error.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

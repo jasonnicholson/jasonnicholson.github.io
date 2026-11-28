@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lagrange Polynomial Interpolation and Approximation – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-01-fx11-x-nodes-on--1.5-0.9" id="toc-case-01-fx11-x-nodes-on--1.5-0.9" class="nav-link" data-scroll-target="#case-01-fx11-x-nodes-on--1.5-0.9">Case 01: <span class="math inline">\(f(x)=1/(1-x)\)</span>, nodes on <span class="math inline">\([-1.5, 0.9]\)</span></a></li>
+  <li><a href="#case-02-fx11x-nodes-on--0.9-1.5" id="toc-case-02-fx11x-nodes-on--0.9-1.5" class="nav-link" data-scroll-target="#case-02-fx11x-nodes-on--0.9-1.5">Case 02: <span class="math inline">\(f(x)=1/(1+x)\)</span>, nodes on <span class="math inline">\([-0.9, 1.5]\)</span></a></li>
+  <li><a href="#case-03-fx11-x2-nodes-on--1.5-0.9" id="toc-case-03-fx11-x2-nodes-on--1.5-0.9" class="nav-link" data-scroll-target="#case-03-fx11-x2-nodes-on--1.5-0.9">Case 03: <span class="math inline">\(f(x)=1/(1-x)^2\)</span>, nodes on <span class="math inline">\([-1.5, 0.9]\)</span></a></li>
+  <li><a href="#case-4" id="toc-case-4" class="nav-link" data-scroll-target="#case-4">Case 04: <span class="math inline">\(f(x)=\sqrt{x}\)</span>, nodes on <span class="math inline">\([0, 2]\)</span></a></li>
+  <li><a href="#case-05-fxsqrtx-nodes-on-0-8" id="toc-case-05-fxsqrtx-nodes-on-0-8" class="nav-link" data-scroll-target="#case-05-fxsqrtx-nodes-on-0-8">Case 05: <span class="math inline">\(f(x)=\sqrt{x}\)</span>, nodes on <span class="math inline">\([0, 8]\)</span></a></li>
+  <li><a href="#case-06-fxsqrtx-nodes-on-0-10" id="toc-case-06-fxsqrtx-nodes-on-0-10" class="nav-link" data-scroll-target="#case-06-fxsqrtx-nodes-on-0-10">Case 06: <span class="math inline">\(f(x)=\sqrt{x}\)</span>, nodes on <span class="math inline">\([0, 10]\)</span></a></li>
+  <li><a href="#case-07-fx1sqrt1-x-nodes-on--1.5-0.95" id="toc-case-07-fx1sqrt1-x-nodes-on--1.5-0.95" class="nav-link" data-scroll-target="#case-07-fx1sqrt1-x-nodes-on--1.5-0.95">Case 07: <span class="math inline">\(f(x)=1/\sqrt{1-x}\)</span>, nodes on <span class="math inline">\([-1.5, 0.95]\)</span></a></li>
+  <li><a href="#case-8" id="toc-case-8" class="nav-link" data-scroll-target="#case-8">Case 08: <span class="math inline">\(f(x)=1/(1+10x^2)\)</span>, nodes on <span class="math inline">\([-1, 1]\)</span></a></li>
+  <li><a href="#case-09-fxln-x-nodes-on-0.02-2" id="toc-case-09-fxln-x-nodes-on-0.02-2" class="nav-link" data-scroll-target="#case-09-fxln-x-nodes-on-0.02-2">Case 09: <span class="math inline">\(f(x)=\ln x\)</span>, nodes on <span class="math inline">\([0.02, 2]\)</span></a></li>
+  <li><a href="#case-10-fxln-x-nodes-on-0.02-4" id="toc-case-10-fxln-x-nodes-on-0.02-4" class="nav-link" data-scroll-target="#case-10-fxln-x-nodes-on-0.02-4">Case 10: <span class="math inline">\(f(x)=\ln x\)</span>, nodes on <span class="math inline">\([0.02, 4]\)</span></a></li>
+  <li><a href="#case-11-fxln1x-nodes-on--0.98-1" id="toc-case-11-fxln1x-nodes-on--0.98-1" class="nav-link" data-scroll-target="#case-11-fxln1x-nodes-on--0.98-1">Case 11: <span class="math inline">\(f(x)=\ln(1+x)\)</span>, nodes on <span class="math inline">\([-0.98, 1]\)</span></a></li>
+  <li><a href="#case-12-fxsin-x-nodes-on--3pi-3pi" id="toc-case-12-fxsin-x-nodes-on--3pi-3pi" class="nav-link" data-scroll-target="#case-12-fxsin-x-nodes-on--3pi-3pi">Case 12: <span class="math inline">\(f(x)=\sin x\)</span>, nodes on <span class="math inline">\([-3\pi, 3\pi]\)</span></a></li>
+  <li><a href="#case-13-fxcos-x-nodes-on--3pi-3pi" id="toc-case-13-fxcos-x-nodes-on--3pi-3pi" class="nav-link" data-scroll-target="#case-13-fxcos-x-nodes-on--3pi-3pi">Case 13: <span class="math inline">\(f(x)=\cos x\)</span>, nodes on <span class="math inline">\([-3\pi, 3\pi]\)</span></a></li>
+  <li><a href="#case-14-fxtan-x-nodes-on--1.45-1.45" id="toc-case-14-fxtan-x-nodes-on--1.45-1.45" class="nav-link" data-scroll-target="#case-14-fxtan-x-nodes-on--1.45-1.45">Case 14: <span class="math inline">\(f(x)=\tan x\)</span>, nodes on <span class="math inline">\([-1.45, 1.45]\)</span></a></li>
+  <li><a href="#case-15" id="toc-case-15" class="nav-link" data-scroll-target="#case-15">Case 15: <span class="math inline">\(f(x)=e^x\)</span>, nodes on <span class="math inline">\([-2, 3]\)</span></a></li>
+  <li><a href="#case-16-fxe-xcos-x-nodes-on--2-4" id="toc-case-16-fxe-xcos-x-nodes-on--2-4" class="nav-link" data-scroll-target="#case-16-fxe-xcos-x-nodes-on--2-4">Case 16: <span class="math inline">\(f(x)=e^{-x}\cos x\)</span>, nodes on <span class="math inline">\([-2, 4]\)</span></a></li>
+  <li><a href="#case-17-fxcosh-x-nodes-on--4-4" id="toc-case-17-fxcosh-x-nodes-on--4-4" class="nav-link" data-scroll-target="#case-17-fxcosh-x-nodes-on--4-4">Case 17: <span class="math inline">\(f(x)=\cosh x\)</span>, nodes on <span class="math inline">\([-4, 4]\)</span></a></li>
+  <li><a href="#case-18-fxarctan-x-nodes-on--2-2" id="toc-case-18-fxarctan-x-nodes-on--2-2" class="nav-link" data-scroll-target="#case-18-fxarctan-x-nodes-on--2-2">Case 18: <span class="math inline">\(f(x)=\arctan x\)</span>, nodes on <span class="math inline">\([-2, 2]\)</span></a></li>
+  <li><a href="#case-19-fxarcsin-x-nodes-on--1-1" id="toc-case-19-fxarcsin-x-nodes-on--1-1" class="nav-link" data-scroll-target="#case-19-fxarcsin-x-nodes-on--1-1">Case 19: <span class="math inline">\(f(x)=\arcsin x\)</span>, nodes on <span class="math inline">\([-1, 1]\)</span></a></li>
+  <li><a href="#case-20-fxj_0x-nodes-on--10-10" id="toc-case-20-fxj_0x-nodes-on--10-10" class="nav-link" data-scroll-target="#case-20-fxj_0x-nodes-on--10-10">Case 20: <span class="math inline">\(f(x)=J_0(x)\)</span>, nodes on <span class="math inline">\([-10, 10]\)</span></a></li>
+  <li><a href="#case-21-fxj_1x-nodes-on--10.2-10.2" id="toc-case-21-fxj_1x-nodes-on--10.2-10.2" class="nav-link" data-scroll-target="#case-21-fxj_1x-nodes-on--10.2-10.2">Case 21: <span class="math inline">\(f(x)=J_1(x)\)</span>, nodes on <span class="math inline">\([-10.2, 10.2]\)</span></a></li>
+  <li><a href="#case-22-fxe-x22sqrt2pi-nodes-on--3-3" id="toc-case-22-fxe-x22sqrt2pi-nodes-on--3-3" class="nav-link" data-scroll-target="#case-22-fxe-x22sqrt2pi-nodes-on--3-3">Case 22: <span class="math inline">\(f(x)=e^{-x^2/2}/\sqrt{2\pi}\)</span>, nodes on <span class="math inline">\([-3, 3]\)</span></a></li>
+  <li><a href="#case-23-fxtfrac12left1operatornameerfxsqrt2right-nodes-on--3-3" id="toc-case-23-fxtfrac12left1operatornameerfxsqrt2right-nodes-on--3-3" class="nav-link" data-scroll-target="#case-23-fxtfrac12left1operatornameerfxsqrt2right-nodes-on--3-3">Case 23: <span class="math inline">\(f(x)=\tfrac12\left(1+\operatorname{erf}(x/\sqrt2)\right)\)</span>, nodes on <span class="math inline">\([-3, 3]\)</span></a></li>
+  <li><a href="#case-24-fxgammax-nodes-on-0.05-2" id="toc-case-24-fxgammax-nodes-on-0.05-2" class="nav-link" data-scroll-target="#case-24-fxgammax-nodes-on-0.05-2">Case 24: <span class="math inline">\(f(x)=\Gamma(x)\)</span>, nodes on <span class="math inline">\([0.05, 2]\)</span></a></li>
+  <li><a href="#case-25-fxgammax-nodes-on-0.05-4" id="toc-case-25-fxgammax-nodes-on-0.05-4" class="nav-link" data-scroll-target="#case-25-fxgammax-nodes-on-0.05-4">Case 25: <span class="math inline">\(f(x)=\Gamma(x)\)</span>, nodes on <span class="math inline">\([0.05, 4]\)</span></a></li>
+  <li><a href="#case-26-fxgammax-nodes-on-0.5-5" id="toc-case-26-fxgammax-nodes-on-0.5-5" class="nav-link" data-scroll-target="#case-26-fxgammax-nodes-on-0.5-5">Case 26: <span class="math inline">\(f(x)=\Gamma(x)\)</span>, nodes on <span class="math inline">\([0.5, 5]\)</span></a></li>
+  <li><a href="#case-27-fxy_0x-nodes-on-0.5-20" id="toc-case-27-fxy_0x-nodes-on-0.5-20" class="nav-link" data-scroll-target="#case-27-fxy_0x-nodes-on-0.5-20">Case 27: <span class="math inline">\(f(x)=Y_0(x)\)</span>, nodes on <span class="math inline">\([0.5, 20]\)</span></a></li>
+  <li><a href="#case-28-fxy_0x-nodes-on-0.5-10" id="toc-case-28-fxy_0x-nodes-on-0.5-10" class="nav-link" data-scroll-target="#case-28-fxy_0x-nodes-on-0.5-10">Case 28: <span class="math inline">\(f(x)=Y_0(x)\)</span>, nodes on <span class="math inline">\([0.5, 10]\)</span></a></li>
+  <li><a href="#case-29-fxy_0x-nodes-on-0.5-4" id="toc-case-29-fxy_0x-nodes-on-0.5-4" class="nav-link" data-scroll-target="#case-29-fxy_0x-nodes-on-0.5-4">Case 29: <span class="math inline">\(f(x)=Y_0(x)\)</span>, nodes on <span class="math inline">\([0.5, 4]\)</span></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lagrange Polynomial Interpolation and Approximation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Lagrange interpolation solves this problem: given <span class="math inline">\(n+1\)</span> points <span class="math inline">\((x_i, y_i)\)</span> with distinct nodes <span class="math inline">\(x_i\)</span>, find the polynomial of degree at most <span class="math inline">\(n\)</span> that passes through all of them. That polynomial exists and is unique, and when <span class="math inline">\(y_i = f(x_i)\)</span> it is used to approximate <span class="math inline">\(f\)</span>. Given nodes <span class="math inline">\((x_i, y_i)\)</span>, the interpolation polynomial is</p>
+<p><span class="math display">\[
+P_n(x)=\sum_{i=0}^{n} y_i L_i(x), \qquad
+L_i(x)=\prod_{j\ne i} \frac{x-x_j}{x_i-x_j}.
+\]</span></p>
+<p>Each <span class="math inline">\(L_i\)</span> is 1 at <span class="math inline">\(x_i\)</span> and 0 at the other nodes, so <span class="math inline">\(P_n(x_j) = y_j\)</span>. The animations evaluate it in the first barycentric form, <span class="math inline">\(P_n(x)=\ell(x)\sum_{i=0}^{n} \frac{w_i y_i}{x-x_i}\)</span> with <span class="math inline">\(\ell(x)=\prod_{j=0}^{n}(x-x_j)\)</span> and <span class="math inline">\(w_i=1/\prod_{j\ne i}(x_i-x_j)\)</span>. This is the same interpolant, and it stays accurate far outside the nodes, where the second barycentric form (a ratio of two such sums) gives values of the wrong sign in Cases 04 and 29.</p>
+<p>Building <span class="math inline">\(P_n\)</span> needs only distinct nodes; bounding its error needs a smooth <span class="math inline">\(f\)</span>. Mathews’ theorem: if <span class="math inline">\(f \in C^{n+1}[a, b]\)</span> and the nodes lie in <span class="math inline">\([a, b]\)</span>, then for each <span class="math inline">\(x \in [a, b]\)</span> there is a <span class="math inline">\(c\)</span> in <span class="math inline">\([a, b]\)</span> with</p>
+<p><span class="math display">\[
+f(x) - P_n(x) = \frac{f^{(n+1)}(c)}{(n+1)!}\,(x-x_0)(x-x_1)\cdots(x-x_n).
+\]</span></p>
+<p>In general, for fixed <span class="math inline">\(n\)</span> and equally spaced nodes with spacing <span class="math inline">\(h\)</span>, the error on <span class="math inline">\([x_0, x_n]\)</span> is therefore <span class="math inline">\(O(h^{n+1})\)</span>; for <span class="math inline">\(n = 1\)</span> it is at most <span class="math inline">\(h^2 \max|f''|/8\)</span>. Raising <span class="math inline">\(n\)</span> on a fixed interval need not help. For <span class="math inline">\(e^x\)</span> on <span class="math inline">\([-2, 3]\)</span> (<a href="#case-15">Case 15</a>) it does: the largest error on the node interval falls from <span class="math inline">\(9.65\)</span> at degree 1 to <span class="math inline">\(3.05 \times 10^{-10}\)</span> at degree 15.</p>
+<p>For <span class="math inline">\(1/(1+10x^2)\)</span> on <span class="math inline">\([-1, 1]\)</span> (<a href="#case-8">Case 08</a>), smooth on the whole real line, the error falls to <span class="math inline">\(0.135\)</span> with 8 nodes and then grows, to <span class="math inline">\(0.485\)</span> with 16 nodes, in oscillations next to the end nodes: Runge’s phenomenon. In <a href="#case-4">Case 04</a>, <span class="math inline">\(\sqrt{x}\)</span> is not in <span class="math inline">\(C^1[0, 2]\)</span>, and the largest error on <span class="math inline">\([0, 2]\)</span> falls only to <span class="math inline">\(0.0485\)</span> at degree 15, next to <span class="math inline">\(x = 0\)</span>. Outside <span class="math inline">\([a, b]\)</span> the theorem says nothing: in Case 04 at degree 15 the interpolant is about <span class="math inline">\(64.5\)</span> at <span class="math inline">\(x = 2.5\)</span>, where <span class="math inline">\(\sqrt{2.5} \approx 1.58\)</span>.</p>
+<p><a href="../newton-interpolation-polynomial/">Newton Interpolation</a> builds the same polynomial from divided differences, <a href="../aitkens-and-nevilles-interpolation/">Neville’s algorithm</a> evaluates it at a point, <a href="../hermite-polynomial-interpolation/">Hermite Interpolation</a> also matches slopes, <a href="../chebyshev-approximation-polynomial/">Chebyshev nodes</a> avoid Runge’s phenomenon, and <a href="../cubic-splines/">Cubic Splines</a> use cubic pieces instead of one high-degree polynomial.</p>
+<p>The 29 animations below follow the legacy Mathews case ordering. Each case heading gives the function and the node interval <span class="math inline">\([a, b]\)</span>; the nodes are equally spaced from <span class="math inline">\(a\)</span> to <span class="math inline">\(b\)</span>, endpoints included. Where the plot window is wider than <span class="math inline">\([a, b]\)</span> (Cases 01–11, 14, 18–20 and 24–29), the interpolant beyond the nodes is extrapolation. In Case 19, <span class="math inline">\(\arcsin x\)</span> is undefined outside <span class="math inline">\([-1, 1]\)</span>, so there only the interpolant is drawn.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation raises the polynomial degree through 1, 2, 3, 4, 5, 7, 9, 11, 13 and 15 (2, 3, 4, 5, 6, 8, 10, 12, 14 and 16 nodes) for a fixed function and node interval. The degree in each title is the number of nodes minus one, the most the interpolant can have; its actual degree can be lower. With nodes symmetric about 0, the interpolant of an even <span class="math inline">\(f\)</span> has only even powers of <span class="math inline">\(x\)</span> and that of an odd <span class="math inline">\(f\)</span> only odd powers, so in the even cases (08, 13, 17, 20 and 22) the frame titled degree 1 is a horizontal line and the frame titled degree 15 has degree 14. A curve that goes off-scale leaves the plot window, and <span class="math inline">\(f\)</span> is broken at each of its poles (Cases 01–03, 14 and 24–26). Mathews’ own animations, of which only those for Cases 01 and 04 survive in the archive, went further, to degree 25 and degree 20 respectively, and drew a yellow bar on the <span class="math inline">\(x\)</span>-axis, labelled “Tolerance ±0.05”, over an interval on which the interpolant is within <span class="math inline">\(0.05\)</span> of <span class="math inline">\(f\)</span>; these frames stop at degree 15 and have no such bar.</p>
+<p><a href="lagnewt_animations_all.jl">Julia source for all cases</a></p>
+<section id="case-01-fx11-x-nodes-on--1.5-0.9" class="level3">
+<h3 class="anchored" data-anchor-id="case-01-fx11-x-nodes-on--1.5-0.9">Case 01: <span class="math inline">\(f(x)=1/(1-x)\)</span>, nodes on <span class="math inline">\([-1.5, 0.9]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt01.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = 1/(1−x) through equally spaced nodes on [−1.5, 0.9], degree rising from 1 to 15, in the window [−1.6, 1.5], which includes the pole of f at x = 1; beyond the pole f ≤ −2, below the window.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-02-fx11x-nodes-on--0.9-1.5" class="level3">
+<h3 class="anchored" data-anchor-id="case-02-fx11x-nodes-on--0.9-1.5">Case 02: <span class="math inline">\(f(x)=1/(1+x)\)</span>, nodes on <span class="math inline">\([-0.9, 1.5]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt02.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = 1/(1+x) through equally spaced nodes on [−0.9, 1.5], degree rising from 1 to 15, in the window [−1.5, 1.6], which includes the pole of f at x = −1; beyond the pole f ≤ −2, below the window.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-03-fx11-x2-nodes-on--1.5-0.9" class="level3">
+<h3 class="anchored" data-anchor-id="case-03-fx11-x2-nodes-on--1.5-0.9">Case 03: <span class="math inline">\(f(x)=1/(1-x)^2\)</span>, nodes on <span class="math inline">\([-1.5, 0.9]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt03.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = 1/(1−x)² through equally spaced nodes on [−1.5, 0.9], degree rising from 1 to 15, in the window [−1.6, 1.5], which includes the pole of f at x = 1.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-4" class="level3">
+<h3 class="anchored" data-anchor-id="case-4">Case 04: <span class="math inline">\(f(x)=\sqrt{x}\)</span>, nodes on <span class="math inline">\([0, 2]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt04.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = √x through equally spaced nodes on [0, 2], degree rising from 1 to 15, drawn with f on [0, 10.5].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-05-fxsqrtx-nodes-on-0-8" class="level3">
+<h3 class="anchored" data-anchor-id="case-05-fxsqrtx-nodes-on-0-8">Case 05: <span class="math inline">\(f(x)=\sqrt{x}\)</span>, nodes on <span class="math inline">\([0, 8]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt05.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = √x through equally spaced nodes on [0, 8], degree rising from 1 to 15, drawn with f on [0, 10.5].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-06-fxsqrtx-nodes-on-0-10" class="level3">
+<h3 class="anchored" data-anchor-id="case-06-fxsqrtx-nodes-on-0-10">Case 06: <span class="math inline">\(f(x)=\sqrt{x}\)</span>, nodes on <span class="math inline">\([0, 10]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt06.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = √x through equally spaced nodes on [0, 10], degree rising from 1 to 15, drawn with f on [0, 10.5].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-07-fx1sqrt1-x-nodes-on--1.5-0.95" class="level3">
+<h3 class="anchored" data-anchor-id="case-07-fx1sqrt1-x-nodes-on--1.5-0.95">Case 07: <span class="math inline">\(f(x)=1/\sqrt{1-x}\)</span>, nodes on <span class="math inline">\([-1.5, 0.95]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt07.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = 1/√(1−x) through equally spaced nodes on [−1.5, 0.95], degree rising from 1 to 15, in the window [−1.6, 1.5], with f drawn for x &lt; 1, where it is defined.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-8" class="level3">
+<h3 class="anchored" data-anchor-id="case-8">Case 08: <span class="math inline">\(f(x)=1/(1+10x^2)\)</span>, nodes on <span class="math inline">\([-1, 1]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt08.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = 1/(1+10x²) through equally spaced nodes on [−1, 1], degree rising from 1 to 15, drawn with f on [−1.5, 1.5].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-09-fxln-x-nodes-on-0.02-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-09-fxln-x-nodes-on-0.02-2">Case 09: <span class="math inline">\(f(x)=\ln x\)</span>, nodes on <span class="math inline">\([0.02, 2]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt09.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = ln x through equally spaced nodes on [0.02, 2], degree rising from 1 to 15, in the window [−0.5, 4.1], with f drawn for x &gt; 0, where it is defined.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-10-fxln-x-nodes-on-0.02-4" class="level3">
+<h3 class="anchored" data-anchor-id="case-10-fxln-x-nodes-on-0.02-4">Case 10: <span class="math inline">\(f(x)=\ln x\)</span>, nodes on <span class="math inline">\([0.02, 4]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt10.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = ln x through equally spaced nodes on [0.02, 4], degree rising from 1 to 15, in the window [−0.5, 4.1], with f drawn for x &gt; 0, where it is defined.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-11-fxln1x-nodes-on--0.98-1" class="level3">
+<h3 class="anchored" data-anchor-id="case-11-fxln1x-nodes-on--0.98-1">Case 11: <span class="math inline">\(f(x)=\ln(1+x)\)</span>, nodes on <span class="math inline">\([-0.98, 1]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt11.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = ln(1+x) through equally spaced nodes on [−0.98, 1], degree rising from 1 to 15, in the window [−1.5, 1.5], with f drawn for x &gt; −1, where it is defined.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-12-fxsin-x-nodes-on--3pi-3pi" class="level3">
+<h3 class="anchored" data-anchor-id="case-12-fxsin-x-nodes-on--3pi-3pi">Case 12: <span class="math inline">\(f(x)=\sin x\)</span>, nodes on <span class="math inline">\([-3\pi, 3\pi]\)</span></h3>
+<p>With 2, 3 and 4 nodes every node is a multiple of <span class="math inline">\(\pi\)</span>, where <span class="math inline">\(\sin x = 0\)</span>, so the frames titled degree 1, 2 and 3 all show the line <span class="math inline">\(y = 0\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt12.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = sin x through equally spaced nodes on [−3π, 3π], degree rising from 1 to 15, drawn with f on the same interval; at degrees 1, 2 and 3 every node is a multiple of π, so the interpolant is the line y = 0.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-13-fxcos-x-nodes-on--3pi-3pi" class="level3">
+<h3 class="anchored" data-anchor-id="case-13-fxcos-x-nodes-on--3pi-3pi">Case 13: <span class="math inline">\(f(x)=\cos x\)</span>, nodes on <span class="math inline">\([-3\pi, 3\pi]\)</span></h3>
+<p>With 2 and 4 nodes every node is an odd multiple of <span class="math inline">\(\pi\)</span>, where <span class="math inline">\(\cos x = -1\)</span>, so the frames titled degree 1 and 3 show the line <span class="math inline">\(y = -1\)</span>.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt13.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = cos x through equally spaced nodes on [−3π, 3π], degree rising from 1 to 15, drawn with f on the same interval; at degrees 1 and 3 every node is an odd multiple of π, so the interpolant is the line y = −1.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-14-fxtan-x-nodes-on--1.45-1.45" class="level3">
+<h3 class="anchored" data-anchor-id="case-14-fxtan-x-nodes-on--1.45-1.45">Case 14: <span class="math inline">\(f(x)=\tan x\)</span>, nodes on <span class="math inline">\([-1.45, 1.45]\)</span></h3>
+<p><span class="math inline">\(\tan x\)</span> is odd and the nodes are symmetric about 0, so the middle of three nodes, <span class="math inline">\((0, 0)\)</span>, lies on the line through the two end nodes, and the frames titled degree 1 and 2 show the same line.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt14.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = tan x through equally spaced nodes on [−1.45, 1.45], between the poles of f at x = ±π/2, degree rising from 1 to 15, drawn with f on [−π, π] and broken at its poles; the frames at degrees 1 and 2 show the same straight line.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-15" class="level3">
+<h3 class="anchored" data-anchor-id="case-15">Case 15: <span class="math inline">\(f(x)=e^x\)</span>, nodes on <span class="math inline">\([-2, 3]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt15.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = eˣ through equally spaced nodes on [−2, 3], degree rising from 1 to 15, drawn with f on the same interval.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-16-fxe-xcos-x-nodes-on--2-4" class="level3">
+<h3 class="anchored" data-anchor-id="case-16-fxe-xcos-x-nodes-on--2-4">Case 16: <span class="math inline">\(f(x)=e^{-x}\cos x\)</span>, nodes on <span class="math inline">\([-2, 4]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt16.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = e⁻ˣ cos x through equally spaced nodes on [−2, 4], degree rising from 1 to 15, drawn with f on the same interval.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-17-fxcosh-x-nodes-on--4-4" class="level3">
+<h3 class="anchored" data-anchor-id="case-17-fxcosh-x-nodes-on--4-4">Case 17: <span class="math inline">\(f(x)=\cosh x\)</span>, nodes on <span class="math inline">\([-4, 4]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt17.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = cosh x through equally spaced nodes on [−4, 4], degree rising from 1 to 15, drawn with f on the same interval.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-18-fxarctan-x-nodes-on--2-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-18-fxarctan-x-nodes-on--2-2">Case 18: <span class="math inline">\(f(x)=\arctan x\)</span>, nodes on <span class="math inline">\([-2, 2]\)</span></h3>
+<p><span class="math inline">\(\arctan x\)</span> is odd and the nodes are symmetric about 0, so the middle of three nodes, <span class="math inline">\((0, 0)\)</span>, lies on the line through the two end nodes, and the frames titled degree 1 and 2 show the same line.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt18.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = arctan x through equally spaced nodes on [−2, 2], degree rising from 1 to 15, drawn with f on [−2.2, 2.2]; the frames at degrees 1 and 2 show the same straight line.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-19-fxarcsin-x-nodes-on--1-1" class="level3">
+<h3 class="anchored" data-anchor-id="case-19-fxarcsin-x-nodes-on--1-1">Case 19: <span class="math inline">\(f(x)=\arcsin x\)</span>, nodes on <span class="math inline">\([-1, 1]\)</span></h3>
+<p><span class="math inline">\(\arcsin x\)</span> is odd and the nodes are symmetric about 0, so the middle of three nodes, <span class="math inline">\((0, 0)\)</span>, lies on the line through the two end nodes, and the frames titled degree 1 and 2 show the same line.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt19.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = arcsin x through equally spaced nodes on [−1, 1], degree rising from 1 to 15, in the window [−1.5, 1.5], with f drawn on [−1, 1] (its whole domain); the frames at degrees 1 and 2 show the same straight line.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-20-fxj_0x-nodes-on--10-10" class="level3">
+<h3 class="anchored" data-anchor-id="case-20-fxj_0x-nodes-on--10-10">Case 20: <span class="math inline">\(f(x)=J_0(x)\)</span>, nodes on <span class="math inline">\([-10, 10]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt20.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of the Bessel function f(x) = J₀(x) through equally spaced nodes on [−10, 10], degree rising from 1 to 15, drawn with f on [−10.2, 10.2].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-21-fxj_1x-nodes-on--10.2-10.2" class="level3">
+<h3 class="anchored" data-anchor-id="case-21-fxj_1x-nodes-on--10.2-10.2">Case 21: <span class="math inline">\(f(x)=J_1(x)\)</span>, nodes on <span class="math inline">\([-10.2, 10.2]\)</span></h3>
+<p><span class="math inline">\(J_1\)</span> is odd and the nodes are symmetric about 0, so the middle of three nodes, <span class="math inline">\((0, 0)\)</span>, lies on the line through the two end nodes, and the frames titled degree 1 and 2 show the same line.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt21.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of the Bessel function f(x) = J₁(x) through equally spaced nodes on [−10.2, 10.2], degree rising from 1 to 15, drawn with f on the same interval; the frames at degrees 1 and 2 show the same straight line.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-22-fxe-x22sqrt2pi-nodes-on--3-3" class="level3">
+<h3 class="anchored" data-anchor-id="case-22-fxe-x22sqrt2pi-nodes-on--3-3">Case 22: <span class="math inline">\(f(x)=e^{-x^2/2}/\sqrt{2\pi}\)</span>, nodes on <span class="math inline">\([-3, 3]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt22.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of the standard normal density f(x) = e^(−x²/2)/√(2π) through equally spaced nodes on [−3, 3], degree rising from 1 to 15, drawn with f on the same interval.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-23-fxtfrac12left1operatornameerfxsqrt2right-nodes-on--3-3" class="level3">
+<h3 class="anchored" data-anchor-id="case-23-fxtfrac12left1operatornameerfxsqrt2right-nodes-on--3-3">Case 23: <span class="math inline">\(f(x)=\tfrac12\left(1+\operatorname{erf}(x/\sqrt2)\right)\)</span>, nodes on <span class="math inline">\([-3, 3]\)</span></h3>
+<p><span class="math inline">\(f(x)-\tfrac12\)</span> is odd and the nodes are symmetric about 0, so the middle of three nodes, <span class="math inline">\((0, \tfrac12)\)</span>, lies on the line through the two end nodes, and the frames titled degree 1 and 2 show the same line.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt23.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of the standard normal distribution function f(x) = ½(1 + erf(x/√2)) through equally spaced nodes on [−3, 3], degree rising from 1 to 15, drawn with f on the same interval; the frames at degrees 1 and 2 show the same straight line.</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-24-fxgammax-nodes-on-0.05-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-24-fxgammax-nodes-on-0.05-2">Case 24: <span class="math inline">\(f(x)=\Gamma(x)\)</span>, nodes on <span class="math inline">\([0.05, 2]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt24.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = Γ(x) through equally spaced nodes on [0.05, 2], degree rising from 1 to 15, drawn with f on [−0.2, 5.2].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-25-fxgammax-nodes-on-0.05-4" class="level3">
+<h3 class="anchored" data-anchor-id="case-25-fxgammax-nodes-on-0.05-4">Case 25: <span class="math inline">\(f(x)=\Gamma(x)\)</span>, nodes on <span class="math inline">\([0.05, 4]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt25.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = Γ(x) through equally spaced nodes on [0.05, 4], degree rising from 1 to 15, drawn with f on [−0.2, 5.2].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-26-fxgammax-nodes-on-0.5-5" class="level3">
+<h3 class="anchored" data-anchor-id="case-26-fxgammax-nodes-on-0.5-5">Case 26: <span class="math inline">\(f(x)=\Gamma(x)\)</span>, nodes on <span class="math inline">\([0.5, 5]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt26.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of f(x) = Γ(x) through equally spaced nodes on [0.5, 5], degree rising from 1 to 15, drawn with f on [−0.2, 5.2].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-27-fxy_0x-nodes-on-0.5-20" class="level3">
+<h3 class="anchored" data-anchor-id="case-27-fxy_0x-nodes-on-0.5-20">Case 27: <span class="math inline">\(f(x)=Y_0(x)\)</span>, nodes on <span class="math inline">\([0.5, 20]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt27.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of the Bessel function f(x) = Y₀(x) through equally spaced nodes on [0.5, 20], degree rising from 1 to 15, drawn with f on [0, 22].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-28-fxy_0x-nodes-on-0.5-10" class="level3">
+<h3 class="anchored" data-anchor-id="case-28-fxy_0x-nodes-on-0.5-10">Case 28: <span class="math inline">\(f(x)=Y_0(x)\)</span>, nodes on <span class="math inline">\([0.5, 10]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt28.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of the Bessel function f(x) = Y₀(x) through equally spaced nodes on [0.5, 10], degree rising from 1 to 15, drawn with f on [0, 22].</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-29-fxy_0x-nodes-on-0.5-4" class="level3">
+<h3 class="anchored" data-anchor-id="case-29-fxy_0x-nodes-on-0.5-4">Case 29: <span class="math inline">\(f(x)=Y_0(x)\)</span>, nodes on <span class="math inline">\([0.5, 4]\)</span></h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lagnewt29.gif" class="img-fluid figure-img"></p>
+<figcaption>Lagrange interpolants of the Bessel function f(x) = Y₀(x) through equally spaced nodes on [0.5, 4], degree rising from 1 to 15, drawn with f on [0, 22].</figcaption>
+</figure>
+</div>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

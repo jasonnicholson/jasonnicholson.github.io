@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Fourier series – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-fx-lvert-x-pirvert-s_m-for-m-1-3-ldots-25-rebuilt" id="toc-case-1-fx-lvert-x-pirvert-s_m-for-m-1-3-ldots-25-rebuilt" class="nav-link" data-scroll-target="#case-1-fx-lvert-x-pirvert-s_m-for-m-1-3-ldots-25-rebuilt">Case 1 — <span class="math inline">\(f(x) = \lvert x-\pi\rvert\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 25\)</span> (rebuilt)</a></li>
+  <li><a href="#case-2-fx-x-pi-s_m-for-m-1-2-ldots-25-rebuilt" id="toc-case-2-fx-x-pi-s_m-for-m-1-2-ldots-25-rebuilt" class="nav-link" data-scroll-target="#case-2-fx-x-pi-s_m-for-m-1-2-ldots-25-rebuilt">Case 2 — <span class="math inline">\(f(x) = x-\pi\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 25\)</span> (rebuilt)</a></li>
+  <li><a href="#case-3-mathews-unit-step-f--1-on-0-pi-and-1-on-pi-2pi-s_m-for-m-1-3-ldots-25-rebuilt" id="toc-case-3-mathews-unit-step-f--1-on-0-pi-and-1-on-pi-2pi-s_m-for-m-1-3-ldots-25-rebuilt" class="nav-link" data-scroll-target="#case-3-mathews-unit-step-f--1-on-0-pi-and-1-on-pi-2pi-s_m-for-m-1-3-ldots-25-rebuilt">Case 3 — Mathews’ unit step, <span class="math inline">\(f = -1\)</span> on <span class="math inline">\((0, \pi)\)</span> and <span class="math inline">\(1\)</span> on <span class="math inline">\((\pi, 2\pi)\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 25\)</span> (rebuilt)</a></li>
+  <li><a href="#case-4-fx-x-pi2-s_m-for-m-1-2-ldots-25-rebuilt" id="toc-case-4-fx-x-pi2-s_m-for-m-1-2-ldots-25-rebuilt" class="nav-link" data-scroll-target="#case-4-fx-x-pi2-s_m-for-m-1-2-ldots-25-rebuilt">Case 4 — <span class="math inline">\(f(x) = (x-\pi)^2\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 25\)</span> (rebuilt)</a></li>
+  <li><a href="#case-5-fx-x-lvert-x-pirvert-s_m-for-m-1-2-ldots-25-mathews-animation" id="toc-case-5-fx-x-lvert-x-pirvert-s_m-for-m-1-2-ldots-25-mathews-animation" class="nav-link" data-scroll-target="#case-5-fx-x-lvert-x-pirvert-s_m-for-m-1-2-ldots-25-mathews-animation">Case 5 — <span class="math inline">\(f(x) = x-\lvert x-\pi\rvert\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 25\)</span> (Mathews’ animation)</a></li>
+  <li><a href="#case-6-discrete-series-of-fx-lvert-x-pirvert-n-36-p_m-for-m-1-3-ldots-17-rebuilt" id="toc-case-6-discrete-series-of-fx-lvert-x-pirvert-n-36-p_m-for-m-1-3-ldots-17-rebuilt" class="nav-link" data-scroll-target="#case-6-discrete-series-of-fx-lvert-x-pirvert-n-36-p_m-for-m-1-3-ldots-17-rebuilt">Case 6 — Discrete series of <span class="math inline">\(f(x) = \lvert x-\pi\rvert\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 17\)</span> (rebuilt)</a></li>
+  <li><a href="#case-7-discrete-series-of-fx-x-pi-n-36-p_m-for-m-1-2-ldots-17-rebuilt" id="toc-case-7-discrete-series-of-fx-x-pi-n-36-p_m-for-m-1-2-ldots-17-rebuilt" class="nav-link" data-scroll-target="#case-7-discrete-series-of-fx-x-pi-n-36-p_m-for-m-1-2-ldots-17-rebuilt">Case 7 — Discrete series of <span class="math inline">\(f(x) = x-\pi\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 17\)</span> (rebuilt)</a></li>
+  <li><a href="#case-8-discrete-series-of-the-unit-step-n-36-p_m-for-m-1-3-ldots-17-mathews-animation" id="toc-case-8-discrete-series-of-the-unit-step-n-36-p_m-for-m-1-3-ldots-17-mathews-animation" class="nav-link" data-scroll-target="#case-8-discrete-series-of-the-unit-step-n-36-p_m-for-m-1-3-ldots-17-mathews-animation">Case 8 — Discrete series of the unit step, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 17\)</span> (Mathews’ animation)</a></li>
+  <li><a href="#case-9-discrete-series-of-fx-x-pi2-n-36-p_m-for-m-1-2-ldots-17-mathews-animation" id="toc-case-9-discrete-series-of-fx-x-pi2-n-36-p_m-for-m-1-2-ldots-17-mathews-animation" class="nav-link" data-scroll-target="#case-9-discrete-series-of-fx-x-pi2-n-36-p_m-for-m-1-2-ldots-17-mathews-animation">Case 9 — Discrete series of <span class="math inline">\(f(x) = (x-\pi)^2\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 17\)</span> (Mathews’ animation)</a></li>
+  <li><a href="#case-10-discrete-series-of-fx-x-lvert-x-pirvert-n-36-p_m-for-m-1-2-ldots-17-mathews-animation" id="toc-case-10-discrete-series-of-fx-x-lvert-x-pirvert-n-36-p_m-for-m-1-2-ldots-17-mathews-animation" class="nav-link" data-scroll-target="#case-10-discrete-series-of-fx-x-lvert-x-pirvert-n-36-p_m-for-m-1-2-ldots-17-mathews-animation">Case 10 — Discrete series of <span class="math inline">\(f(x) = x-\lvert x-\pi\rvert\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 17\)</span> (Mathews’ animation)</a></li>
+  </ul></li>
+  <li><a href="#fourier-series" id="toc-fourier-series" class="nav-link" data-scroll-target="#fourier-series">Fourier Series</a>
+  <ul class="collapse">
+  <li><a href="#definitions" id="toc-definitions" class="nav-link" data-scroll-target="#definitions">Definitions</a></li>
+  <li><a href="#convergence" id="toc-convergence" class="nav-link" data-scroll-target="#convergence">Convergence</a></li>
+  <li><a href="#example-1-fx-lvert-x---pirvert-degree-5-mathews-example-1" id="toc-example-1-fx-lvert-x---pirvert-degree-5-mathews-example-1" class="nav-link" data-scroll-target="#example-1-fx-lvert-x---pirvert-degree-5-mathews-example-1">Example 1 — <span class="math inline">\(f(x) = \lvert x - \pi\rvert\)</span>, degree 5 (Mathews’ Example 1)</a></li>
+  <li><a href="#example-2-the-functions-of-mathews-fourier-series-animations" id="toc-example-2-the-functions-of-mathews-fourier-series-animations" class="nav-link" data-scroll-target="#example-2-the-functions-of-mathews-fourier-series-animations">Example 2 — The functions of Mathews’ Fourier-series animations</a></li>
+  </ul></li>
+  <li><a href="#discrete-fourier-series-from-equally-spaced-data" id="toc-discrete-fourier-series-from-equally-spaced-data" class="nav-link" data-scroll-target="#discrete-fourier-series-from-equally-spaced-data">Discrete Fourier Series from Equally Spaced Data</a>
+  <ul class="collapse">
+  <li><a href="#replacing-the-integrals-by-sums" id="toc-replacing-the-integrals-by-sums" class="nav-link" data-scroll-target="#replacing-the-integrals-by-sums">Replacing the integrals by sums</a></li>
+  <li><a href="#what-the-discrete-coefficients-are" id="toc-what-the-discrete-coefficients-are" class="nav-link" data-scroll-target="#what-the-discrete-coefficients-are">What the discrete coefficients are</a></li>
+  <li><a href="#example-3-12-samples-by-numerical-integration-mathews-example-2" id="toc-example-3-12-samples-by-numerical-integration-mathews-example-2" class="nav-link" data-scroll-target="#example-3-12-samples-by-numerical-integration-mathews-example-2">Example 3 — 12 samples by numerical integration (Mathews’ Example 2)</a></li>
+  <li><a href="#example-4-the-same-data-given-as-points-mathews-example-3" id="toc-example-4-the-same-data-given-as-points-mathews-example-3" class="nav-link" data-scroll-target="#example-4-the-same-data-given-as-points-mathews-example-3">Example 4 — The same data given as points (Mathews’ Example 3)</a></li>
+  <li><a href="#example-5-least-squares-fit-mathews-example-4" id="toc-example-5-least-squares-fit-mathews-example-4" class="nav-link" data-scroll-target="#example-5-least-squares-fit-mathews-example-4">Example 5 — Least-squares fit (Mathews’ Example 4)</a></li>
+  <li><a href="#example-6-the-fft-mathews-example-5" id="toc-example-6-the-fft-mathews-example-5" class="nav-link" data-scroll-target="#example-6-the-fft-mathews-example-5">Example 6 — The FFT (Mathews’ Example 5)</a></li>
+  <li><a href="#example-7-36-samples-of-the-animation-functions-degree-17" id="toc-example-7-36-samples-of-the-animation-functions-degree-17" class="nav-link" data-scroll-target="#example-7-36-samples-of-the-animation-functions-degree-17">Example 7 — 36 samples of the animation functions, degree 17</a></li>
+  </ul></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Fourier series</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>A function <span class="math inline">\(f\)</span> with period <span class="math inline">\(2L\)</span> that is piecewise continuous can be expanded in a <strong>Fourier series</strong>, a sum of cosines and sines whose frequencies are whole multiples of <span class="math inline">\(\pi/L\)</span>:</p>
+<p><span class="math display">\[
+S(x) = \frac{a_0}{2} + \sum_{j=1}^{\infty}\left(a_j\cos\!\left(\frac{j\pi x}{L}\right) + b_j\sin\!\left(\frac{j\pi x}{L}\right)\right),
+\qquad
+a_j = \frac{1}{L}\int_0^{2L} f(x)\cos\!\left(\frac{j\pi x}{L}\right)dx,\quad
+b_j = \frac{1}{L}\int_0^{2L} f(x)\sin\!\left(\frac{j\pi x}{L}\right)dx .
+\]</span></p>
+<p>Stopping the sum at <span class="math inline">\(j=m\)</span> gives the Fourier polynomial <span class="math inline">\(S_m(x)\)</span> of degree <span class="math inline">\(m\)</span>. Where <span class="math inline">\(f\)</span> is continuous and has a piecewise continuous derivative, <span class="math inline">\(S_m(x)\to f(x)\)</span> as <span class="math inline">\(m\)</span> grows. At a jump, <span class="math inline">\(S_m\)</span> converges to the midpoint of the jump, and next to the jump the partial sums overshoot by about <span class="math inline">\(9\%\)</span> of the jump however large <span class="math inline">\(m\)</span> is (the Gibbs phenomenon).</p>
+<p>When only <span class="math inline">\(n\)</span> equally spaced samples <span class="math inline">\(y_k = f(x_k)\)</span>, <span class="math inline">\(x_k = 2Lk/n\)</span> for <span class="math inline">\(k = 0,1,\ldots,n-1\)</span>, are known, the integrals are replaced by sums, giving the <strong>discrete Fourier series</strong>, or trigonometric polynomial, of degree <span class="math inline">\(m\)</span> (with <span class="math inline">\(2m+1\le n\)</span>):</p>
+<p><span class="math display">\[
+P_m(x) = \frac{a_0}{2} + \sum_{j=1}^{m}\left(a_j\cos\!\left(\frac{j\pi x}{L}\right) + b_j\sin\!\left(\frac{j\pi x}{L}\right)\right),
+\qquad
+a_j = \frac{2}{n}\sum_{k=0}^{n-1} y_k\cos\!\left(\frac{j\pi x_k}{L}\right),\quad
+b_j = \frac{2}{n}\sum_{k=0}^{n-1} y_k\sin\!\left(\frac{j\pi x_k}{L}\right).
+\]</span></p>
+<p>Equivalently, <span class="math inline">\(a_j = \tfrac{2}{n}\operatorname{Re} Y_j\)</span> and <span class="math inline">\(b_j = -\tfrac{2}{n}\operatorname{Im} Y_j\)</span>, where <span class="math inline">\(Y_j\)</span> is the discrete Fourier transform of the data (equation (10) below), which the fast Fourier transform (FFT) computes. <span class="math inline">\(P_m\)</span> is the least-squares trigonometric fit to the samples, and it passes through every sample when <span class="math inline">\(n = 2m+1\)</span>. The examples use <span class="math inline">\(L=\pi\)</span>, with <span class="math inline">\(f(x) = \lvert x-\pi\rvert\)</span> for Mathews’ five examples and the functions of his animations for the rest.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation draws one period, <span class="math inline">\(0 \le x \le 2\pi\)</span>, of a function with period <span class="math inline">\(2\pi\)</span> and raises the degree <span class="math inline">\(m\)</span> by one per frame, or by two in Cases 1, 3, 6 and 8, whose terms of even degree <span class="math inline">\(j \ge 2\)</span> are zero. The first frame shows the function alone (Cases 1–5) or the samples with the graph of <span class="math inline">\(f\)</span> (Cases 6–10), and the last frame is held. Cases 1–5 show the Fourier polynomials <span class="math inline">\(S_m\)</span> of (3), with the coefficients of Example 2, as Mathews drew them: <span class="math inline">\(f\)</span> in blue and <span class="math inline">\(S_m\)</span> in magenta. The second line of each title gives one number for the frame. For a function whose periodic extension is continuous (Cases 1 and 4) it is the largest error <span class="math inline">\(\max_x \lvert f(x) - S_m(x)\rvert\)</span>. For one whose periodic extension jumps (Cases 2, 3 and 5) it is the largest value <span class="math inline">\(\max_x S_m(x)\)</span>, to compare with the least upper bound of <span class="math inline">\(f\)</span>. As <span class="math inline">\(m\)</span> grows, the excess <span class="math inline">\(\max_x S_m(x) - \sup f\)</span> tends to the Gibbs overshoot. In Case 2, whose <span class="math inline">\(f\)</span> rises right up to the jump, it does so slowly (<span class="math inline">\(0.4407\)</span> for <span class="math inline">\(m = 25\)</span>), so its Behavior paragraph measures the overshoot from the line instead. Cases 6–10 show the trigonometric polynomials <span class="math inline">\(P_m\)</span> of (8) for the <span class="math inline">\(n = 36\)</span> samples of Example 7, as in Mathews’ animations: the samples are red dots, <span class="math inline">\(P_m\)</span> is magenta, and a pale pink dot marks the periodic copy <span class="math inline">\((2\pi, y_0)\)</span> of the first sample, which is not itself a sample. The thin grey graph of <span class="math inline">\(f\)</span> is an addition, so that the samples at the jumps can be compared with the one-sided limits. The second title line gives the largest error <span class="math inline">\(\max_x \lvert f(x) - P_m(x)\rvert\)</span> when the periodic extension of <span class="math inline">\(f\)</span> is continuous (Cases 6 and 9) and the largest value <span class="math inline">\(\max_x P_m(x)\)</span> when it jumps (Cases 7, 8 and 10). The scripts evaluate the sums (6)–(7) directly rather than calling an FFT routine; both give the same coefficients up to rounding.</p>
+<p>Mathews’ module links ten animations, five of Fourier series and five of discrete Fourier series (“FFT”). The Fourier-series animations are for the functions <span class="math inline">\(\lvert x-\pi\rvert\)</span>, <span class="math inline">\(x-\pi\)</span>, a unit step, <span class="math inline">\((x-\pi)^2\)</span> and <span class="math inline">\(x-\lvert x-\pi\rvert\)</span>. Four GIFs survive: the Fourier series of <span class="math inline">\(x-\lvert x-\pi\rvert\)</span> and the discrete series of the step, <span class="math inline">\((x-\pi)^2\)</span> and <span class="math inline">\(x-\lvert x-\pi\rvert\)</span>. Case 5 and Cases 8–10 rebuild them with the degrees read from their frames and with his sample points, including the midpoint values at the jumps. Cases 1–4 (marked “rebuilt”) stand in for his lost Fourier-series animations of the first four functions. Their functions are listed on his index page, but their frames are lost, so they take the picture and the range <span class="math inline">\(m \le 25\)</span> from the surviving animation (Case 5) and the values <span class="math inline">\(\mp 1\)</span> of the step from Case 8; Cases 1 and 3 show odd <span class="math inline">\(m\)</span> only, because the even-<span class="math inline">\(j\)</span> coefficients of those functions are zero and <span class="math inline">\(S_m = S_{m-1}\)</span> for even <span class="math inline">\(m\)</span>. Cases 6 and 7 (also marked “rebuilt”) stand in for his first two discrete-series animations, whose frames and formula images are lost. The functions <span class="math inline">\(\lvert x-\pi\rvert\)</span> and <span class="math inline">\(x-\pi\)</span> are identified from the layout of the discrete-series index page, whose text names no function: its list of five animations matches the Fourier-series index entry for entry, with the same bullet colours and link pattern and formula images of the same declared sizes in the same order, and its one surviving formula image, the fifth, is byte-identical to the Fourier-series one for <span class="math inline">\(x-\lvert x-\pi\rvert\)</span>. Cases 6 and 7 take the picture, <span class="math inline">\(n = 36\)</span>, the range <span class="math inline">\(m \le 17\)</span> and the midpoint sample at a jump from Cases 8–10. Case 6 shows odd <span class="math inline">\(m\)</span> only, because for these 36 samples every <span class="math inline">\(b_j\)</span> and every <span class="math inline">\(a_j\)</span> with even <span class="math inline">\(j \ge 2\)</span> is zero, so <span class="math inline">\(P_m = P_{m-1}\)</span> for even <span class="math inline">\(m\)</span>; the <span class="math inline">\(b_j\)</span> of <span class="math inline">\(x-\pi\)</span> with even <span class="math inline">\(j\)</span> are not zero, so Case 7 shows every <span class="math inline">\(m\)</span>. Mathews’ five worked examples (Examples 1 and 3–6 here) have static graphs and are not animated, although <span class="math inline">\(S_5\)</span> of Example 1 appears as a frame of Case 1; Case 6 samples the function of Examples 3–6 at 36 points, not their 12. Every case has a Mathews original, surviving or lost; none is new.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-fx-lvert-x-pirvert-s_m-for-m-1-3-ldots-25-rebuilt" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-fx-lvert-x-pirvert-s_m-for-m-1-3-ldots-25-rebuilt">Case 1 — <span class="math inline">\(f(x) = \lvert x-\pi\rvert\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 25\)</span> (rebuilt)</h3>
+<p><strong>Behavior:</strong> The periodic extension of <span class="math inline">\(f\)</span> is continuous, so <span class="math inline">\(S_m \to f\)</span> uniformly. Every <span class="math inline">\(a_j\)</span> with even <span class="math inline">\(j \ge 2\)</span> is zero, so the frames show odd <span class="math inline">\(m\)</span>. The error is largest at the corners <span class="math inline">\(x = 0\)</span>, <span class="math inline">\(\pi\)</span> and <span class="math inline">\(2\pi\)</span>, where all the terms of <span class="math inline">\(f - S_m\)</span> have the same sign, and there it equals the tail sum <span class="math inline">\(\tfrac{4}{\pi}\sum_{j&gt;m,\ j\ \text{odd}} j^{-2}\)</span>. It falls at every frame, from <span class="math inline">\(0.2976\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(0.1052\)</span> for <span class="math inline">\(m = 5\)</span> (Example 1) and <span class="math inline">\(0.02447\)</span> for <span class="math inline">\(m = 25\)</span>.</p>
+<p><a href="fourierseriesaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierseriesaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Fourier partial sums S_m of f(x) = |x − π| over one period for m = 1, 3, …, 25: the magenta curve closes onto the blue V, and the largest error, at the corners x = 0, π and 2π, falls from 0.2976 to 0.02447</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-fx-x-pi-s_m-for-m-1-2-ldots-25-rebuilt" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-fx-x-pi-s_m-for-m-1-2-ldots-25-rebuilt">Case 2 — <span class="math inline">\(f(x) = x-\pi\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 25\)</span> (rebuilt)</h3>
+<p><strong>Behavior:</strong> The series has only sine terms, <span class="math inline">\(b_j = -2/j\)</span>, so <span class="math inline">\(S_m(0) = S_m(\pi) = S_m(2\pi) = 0\)</span> for every <span class="math inline">\(m\)</span>. At <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(2\pi\)</span> this is the midpoint of the jump of the periodic extension from <span class="math inline">\(\pi\)</span> down to <span class="math inline">\(-\pi\)</span>, and at <span class="math inline">\(x = \pi\)</span> it is <span class="math inline">\(f(\pi)\)</span>. Beside the jump at <span class="math inline">\(2\pi\)</span>, <span class="math inline">\(S_m\)</span> peaks at <span class="math inline">\(x = 2\pi - \pi/(m+1)\)</span>; the peak value rises at every frame, from <span class="math inline">\(2\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(3.582\)</span> for <span class="math inline">\(m = 25\)</span>. Measured from the line <span class="math inline">\(f\)</span> below it, the overshoot at the peak is <span class="math inline">\(0.5477\)</span> for <span class="math inline">\(m = 5\)</span> and <span class="math inline">\(0.5615\)</span> for <span class="math inline">\(m = 25\)</span>, close to the Gibbs value <span class="math inline">\(0.0895 \times 2\pi = 0.5623\)</span>: it moves toward the jump but does not shrink. Since <span class="math inline">\(S_m(2\pi - x) = -S_m(x)\)</span>, the same undershoot appears beside <span class="math inline">\(x = 0\)</span>.</p>
+<p><a href="fourierseriesbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierseriesbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Fourier partial sums S_m of f(x) = x − π for m = 1 to 25: the magenta sine sums follow the blue line, pass through 0 at x = 0, π and 2π, and overshoot beside the jumps at 0 and 2π by an amount that approaches 0.56 while moving toward the jumps</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-mathews-unit-step-f--1-on-0-pi-and-1-on-pi-2pi-s_m-for-m-1-3-ldots-25-rebuilt" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-mathews-unit-step-f--1-on-0-pi-and-1-on-pi-2pi-s_m-for-m-1-3-ldots-25-rebuilt">Case 3 — Mathews’ unit step, <span class="math inline">\(f = -1\)</span> on <span class="math inline">\((0, \pi)\)</span> and <span class="math inline">\(1\)</span> on <span class="math inline">\((\pi, 2\pi)\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 25\)</span> (rebuilt)</h3>
+<p><strong>Behavior:</strong> Only the sine terms with odd <span class="math inline">\(j\)</span> are nonzero, so the frames show odd <span class="math inline">\(m\)</span>, and <span class="math inline">\(S_m(0) = S_m(\pi) = S_m(2\pi) = 0\)</span>, the midpoints of the jumps, for every <span class="math inline">\(m\)</span>. The graph of <span class="math inline">\(f\)</span> is broken at <span class="math inline">\(x = \pi\)</span> and has no value drawn there. The largest value of <span class="math inline">\(S_m\)</span> falls at every frame, from <span class="math inline">\(4/\pi \approx 1.273\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(1.188\)</span> for <span class="math inline">\(m = 5\)</span> and <span class="math inline">\(1.179\)</span> for <span class="math inline">\(m = 25\)</span>, staying above the Gibbs value <span class="math inline">\(1 + 0.0895 \times 2 = 1.179\)</span> (more precisely <span class="math inline">\(1.17898\)</span>, against <span class="math inline">\(1.17947\)</span> for <span class="math inline">\(m = 25\)</span>). The peaks sit a distance <span class="math inline">\(\pi/(m+1)\)</span> from the jumps, so they move toward them, but the overshoot of about <span class="math inline">\(9\%\)</span> of the jump remains.</p>
+<p><a href="fourierseriescc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierseriescc.gif" class="img-fluid figure-img"></p>
+<figcaption>Fourier partial sums S_m of the unit step, −1 on (0, π) and 1 on (π, 2π), for m = 1, 3, …, 25: the magenta curve becomes a square wave through 0 at each jump, with peaks that close in on the jumps but stay above 1.179</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-4-fx-x-pi2-s_m-for-m-1-2-ldots-25-rebuilt" class="level3">
+<h3 class="anchored" data-anchor-id="case-4-fx-x-pi2-s_m-for-m-1-2-ldots-25-rebuilt">Case 4 — <span class="math inline">\(f(x) = (x-\pi)^2\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 25\)</span> (rebuilt)</h3>
+<p><strong>Behavior:</strong> The periodic extension is continuous, with corners at <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(2\pi\)</span>, so <span class="math inline">\(S_m \to f\)</span> uniformly. Every coefficient <span class="math inline">\(a_j = 4/j^2\)</span> is positive, so all the terms of <span class="math inline">\(f - S_m = \sum_{j&gt;m} 4\cos(jx)/j^2\)</span> equal their largest value at <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(2\pi\)</span>, where the error is the tail sum <span class="math inline">\(4\sum_{j&gt;m} j^{-2}\)</span>. It falls at every frame, from <span class="math inline">\(2.580\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(0.7253\)</span> for <span class="math inline">\(m = 5\)</span> and <span class="math inline">\(0.1568\)</span> for <span class="math inline">\(m = 25\)</span>.</p>
+<p><a href="fourierseriesdd.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierseriesdd.gif" class="img-fluid figure-img"></p>
+<figcaption>Fourier partial sums S_m of f(x) = (x − π)² for m = 1 to 25: the magenta curve settles onto the blue parabola, and the largest error, at x = 0 and 2π, falls from 2.580 to 0.1568</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-5-fx-x-lvert-x-pirvert-s_m-for-m-1-2-ldots-25-mathews-animation" class="level3">
+<h3 class="anchored" data-anchor-id="case-5-fx-x-lvert-x-pirvert-s_m-for-m-1-2-ldots-25-mathews-animation">Case 5 — <span class="math inline">\(f(x) = x-\lvert x-\pi\rvert\)</span>, <span class="math inline">\(S_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 25\)</span> (Mathews’ animation)</h3>
+<p><strong>Behavior:</strong> The frames follow Mathews’ sequence <span class="math inline">\(S_1, S_2, \ldots, S_{25}\)</span>; Example 2 works this function in full. Inside the period <span class="math inline">\(f\)</span> is continuous, with a corner at <span class="math inline">\(x = \pi\)</span>; its periodic extension jumps from <span class="math inline">\(\pi\)</span> down to <span class="math inline">\(-\pi\)</span> at <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(2\pi\)</span>. Unlike Case 2, the cosine terms do not vanish there, so <span class="math inline">\(S_m(0) = \tfrac{\pi}{2} - \tfrac{4}{\pi}\sum_{j\ \text{odd} \le m} j^{-2}\)</span> is not <span class="math inline">\(0\)</span> but tends to it, from <span class="math inline">\(0.2976\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(0.02447\)</span> for <span class="math inline">\(m = 25\)</span>. The largest value of <span class="math inline">\(S_m\)</span> is <span class="math inline">\(3.942\)</span> for <span class="math inline">\(m = 1\)</span>; from <span class="math inline">\(m = 2\)</span> on it stays between <span class="math inline">\(3.673\)</span> and <span class="math inline">\(3.734\)</span>, without a monotone trend, around the Gibbs value <span class="math inline">\(\pi + 0.0895 \times 2\pi = 3.704\)</span>, and for <span class="math inline">\(m = 25\)</span> it is <span class="math inline">\(3.702\)</span>, beside the jump at <span class="math inline">\(x \approx 6.160\)</span>.</p>
+<p><a href="fourierseriesee.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierseriesee.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ animation of the Fourier partial sums S_m of f(x) = x − |x − π| for m = 1 to 25: the magenta curve approaches the blue ramp-and-plateau, while the peak beside the jump at 2π stays between 0.53 and 0.59 above π from m = 2 on and moves toward the jump</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-6-discrete-series-of-fx-lvert-x-pirvert-n-36-p_m-for-m-1-3-ldots-17-rebuilt" class="level3">
+<h3 class="anchored" data-anchor-id="case-6-discrete-series-of-fx-lvert-x-pirvert-n-36-p_m-for-m-1-3-ldots-17-rebuilt">Case 6 — Discrete series of <span class="math inline">\(f(x) = \lvert x-\pi\rvert\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 17\)</span> (rebuilt)</h3>
+<p><strong>Behavior:</strong> Mathews’ frames are lost, so the range <span class="math inline">\(m \le 17\)</span> follows Cases 8–10. <span class="math inline">\(f\)</span> is continuous, so the samples are <span class="math inline">\(y_k = f(x_k)\)</span>. They satisfy <span class="math inline">\(y_{36-k} = y_k\)</span> and <span class="math inline">\(y_{k+18} = \pi - y_k\)</span>, so every <span class="math inline">\(b_j\)</span> and every <span class="math inline">\(a_j\)</span> with even <span class="math inline">\(j \ge 2\)</span> is zero, and <span class="math inline">\(P_m = P_{m-1}\)</span> for even <span class="math inline">\(m\)</span>; the frames show <span class="math inline">\(m = 1, 3, \ldots, 17\)</span>, as in Case 8. The alternating sum in (9) is zero, so <span class="math inline">\(P_{17}\)</span> passes through all 36 samples, including the corners <span class="math inline">\(x_0 = 0\)</span> and <span class="math inline">\(x_{18} = \pi\)</span> (Example 7). Up to <span class="math inline">\(m = 11\)</span> the largest error <span class="math inline">\(\max_x \lvert f(x) - P_m(x)\rvert\)</span> is at the corners <span class="math inline">\(x = 0\)</span>, <span class="math inline">\(\pi\)</span> and <span class="math inline">\(2\pi\)</span>. It falls at every frame from <span class="math inline">\(0.2943\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(0.02976\)</span> for <span class="math inline">\(m = 13\)</span>, then grows, to <span class="math inline">\(0.03322\)</span> for <span class="math inline">\(m = 17\)</span>, at <span class="math inline">\(x \approx 0.0705\)</span> between the first two samples and at the matching points beside <span class="math inline">\(\pi\)</span> and <span class="math inline">\(2\pi\)</span>. That is still below the <span class="math inline">\(0.03533\)</span> of the Fourier polynomial <span class="math inline">\(S_{17}\)</span> in Case 1, whose error is largest at the corners.</p>
+<p><a href="fourierfftaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierfftaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Discrete Fourier series of 36 samples of f(x) = |x − π|: trigonometric polynomials of degree 1, 3, …, 17 close onto the red sample dots, and degree 17 passes through all of them; the largest error falls from 0.2943 to 0.02976 at degree 13 and ends at 0.03322</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-7-discrete-series-of-fx-x-pi-n-36-p_m-for-m-1-2-ldots-17-rebuilt" class="level3">
+<h3 class="anchored" data-anchor-id="case-7-discrete-series-of-fx-x-pi-n-36-p_m-for-m-1-2-ldots-17-rebuilt">Case 7 — Discrete series of <span class="math inline">\(f(x) = x-\pi\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 17\)</span> (rebuilt)</h3>
+<p><strong>Behavior:</strong> Mathews’ frames are lost, so the degrees follow Cases 9 and 10: <span class="math inline">\(m = 1, 2, \ldots, 17\)</span>. The sample at the jump <span class="math inline">\(x_0 = 0\)</span> is the midpoint <span class="math inline">\(y_0 = 0\)</span> of <span class="math inline">\(f(0^+) = -\pi\)</span> and <span class="math inline">\(f(2\pi^-) = \pi\)</span>, as in Case 10. The data satisfy <span class="math inline">\(y_{36-k} = -y_k\)</span>, so every <span class="math inline">\(a_j\)</span> is zero: <span class="math inline">\(P_m\)</span> is a sum of sines, with <span class="math inline">\(P_m(0) = P_m(\pi) = P_m(2\pi) = 0\)</span> for every <span class="math inline">\(m\)</span>. The <span class="math inline">\(b_j\)</span> with even <span class="math inline">\(j\)</span> are not zero (<span class="math inline">\(b_2 = -0.9898\)</span>), so every degree is shown. The alternating sum in (9) is zero, so <span class="math inline">\(P_{17}\)</span> passes through all 36 samples. The largest value of <span class="math inline">\(P_m\)</span> rises at every frame from <span class="math inline">\(1.995\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(3.227\)</span> for <span class="math inline">\(m = 9\)</span>, then falls at every frame to <span class="math inline">\(3.115\)</span> for <span class="math inline">\(m = 17\)</span>, at <span class="math inline">\(x \approx 6.055\)</span>; it exceeds <span class="math inline">\(\sup f = \pi\)</span> only for <span class="math inline">\(6 \le m \le 15\)</span>. Since <span class="math inline">\(P_m(2\pi - x) = -P_m(x)\)</span>, the lowest value is the negative of the largest, so <span class="math inline">\(P_{17}\)</span> stays inside <span class="math inline">\((-\pi, \pi)\)</span>, although at its peak it is still <span class="math inline">\(0.2018\)</span> above the line <span class="math inline">\(f\)</span>. The Fourier polynomial <span class="math inline">\(S_{17}\)</span> of Case 2 peaks at <span class="math inline">\(3.528\)</span>, <span class="math inline">\(0.5607\)</span> above the line (Example 7).</p>
+<p><a href="fourierfftbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierfftbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Discrete Fourier series of 36 samples of f(x) = x − π, with value 0 at the jump: trigonometric polynomials of degree 1 to 17 approach the red sample dots on the line, with ripples beside the jump at 0 and 2π; the peak rises to 3.227 at degree 9 and falls to 3.115, and degree 17 passes through all the samples</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-8-discrete-series-of-the-unit-step-n-36-p_m-for-m-1-3-ldots-17-mathews-animation" class="level3">
+<h3 class="anchored" data-anchor-id="case-8-discrete-series-of-the-unit-step-n-36-p_m-for-m-1-3-ldots-17-mathews-animation">Case 8 — Discrete series of the unit step, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 3, \ldots, 17\)</span> (Mathews’ animation)</h3>
+<p><strong>Behavior:</strong> The frames follow Mathews’ sequence of degrees <span class="math inline">\(1, 3, \ldots, 17\)</span>. The samples at the jumps, <span class="math inline">\(x_0 = 0\)</span> and <span class="math inline">\(x_{18} = \pi\)</span>, are the midpoints <span class="math inline">\(y_0 = y_{18} = 0\)</span>. The data satisfy <span class="math inline">\(y_{36-k} = -y_k\)</span> and <span class="math inline">\(y_{k+18} = -y_k\)</span>, so every <span class="math inline">\(a_j\)</span> and every <span class="math inline">\(b_j\)</span> with even <span class="math inline">\(j\)</span> is zero: <span class="math inline">\(P_m\)</span> is a sum of odd sines, with <span class="math inline">\(P_m(0) = P_m(\pi) = 0\)</span> for every <span class="math inline">\(m\)</span>. Its largest value falls at every frame, from <span class="math inline">\(1.270\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(1.065\)</span> for <span class="math inline">\(m = 17\)</span>. Since <span class="math inline">\(2m + 1 = 35\)</span> and the alternating sum in (9) is zero, <span class="math inline">\(P_{17}\)</span> passes through all 36 samples, and its peak, <span class="math inline">\(1.065\)</span>, is well below the <span class="math inline">\(1.180\)</span> of the Fourier polynomial <span class="math inline">\(S_{17}\)</span>: interpolating midpoint samples damps the overshoot (Example 7).</p>
+<p><a href="fourierfftcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierfftcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ discrete Fourier series animation for 36 samples of the unit step, with value 0 at the jumps: trigonometric polynomials of degree 1, 3, …, 17 approach the red sample dots, and degree 17 passes through all of them with a peak of only 1.065</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-9-discrete-series-of-fx-x-pi2-n-36-p_m-for-m-1-2-ldots-17-mathews-animation" class="level3">
+<h3 class="anchored" data-anchor-id="case-9-discrete-series-of-fx-x-pi2-n-36-p_m-for-m-1-2-ldots-17-mathews-animation">Case 9 — Discrete series of <span class="math inline">\(f(x) = (x-\pi)^2\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 17\)</span> (Mathews’ animation)</h3>
+<p><strong>Behavior:</strong> The frames follow Mathews’ sequence of degrees <span class="math inline">\(1, 2, \ldots, 17\)</span>. <span class="math inline">\(f\)</span> is continuous, so the samples are <span class="math inline">\(y_k = f(x_k)\)</span>, and <span class="math inline">\(P_m\)</span> is the least-squares fit of degree <span class="math inline">\(m\)</span>. Even <span class="math inline">\(P_{17}\)</span> does not interpolate: <span class="math inline">\(n = 36 = 2 \cdot 17 + 2\)</span>, and the alternating sum in (9) gives <span class="math inline">\(a_{18} = 0.030462\)</span>, so <span class="math inline">\(P_{17}\)</span> misses every sample by <span class="math inline">\(0.015231\)</span>, alternately above and below. The largest error <span class="math inline">\(\max_x \lvert f(x) - P_m(x)\rvert\)</span> falls from <span class="math inline">\(2.564\)</span> for <span class="math inline">\(m = 1\)</span> to <span class="math inline">\(0.1856\)</span> for <span class="math inline">\(m = 12\)</span>, then grows slightly, to <span class="math inline">\(0.2042\)</span> for <span class="math inline">\(m = 17\)</span>, at <span class="math inline">\(x \approx 0.074\)</span> beside the corner of the periodic extension at <span class="math inline">\(x = 0\)</span>. That is still below the <span class="math inline">\(0.2285\)</span> of the Fourier polynomial <span class="math inline">\(S_{17}\)</span> (Example 7).</p>
+<p><a href="fourierfftdd.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierfftdd.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ discrete Fourier series animation for 36 samples of f(x) = (x − π)²: least-squares trigonometric polynomials of degree 1 to 17 settle onto the red sample dots, with a largest error that falls to 0.1856 at degree 12 and ends at 0.2042</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-10-discrete-series-of-fx-x-lvert-x-pirvert-n-36-p_m-for-m-1-2-ldots-17-mathews-animation" class="level3">
+<h3 class="anchored" data-anchor-id="case-10-discrete-series-of-fx-x-lvert-x-pirvert-n-36-p_m-for-m-1-2-ldots-17-mathews-animation">Case 10 — Discrete series of <span class="math inline">\(f(x) = x-\lvert x-\pi\rvert\)</span>, <span class="math inline">\(n = 36\)</span>, <span class="math inline">\(P_m\)</span> for <span class="math inline">\(m = 1, 2, \ldots, 17\)</span> (Mathews’ animation)</h3>
+<p><strong>Behavior:</strong> The frames follow Mathews’ sequence of degrees <span class="math inline">\(1, 2, \ldots, 17\)</span>. The sample at the jump <span class="math inline">\(x_0 = 0\)</span> is the midpoint <span class="math inline">\(y_0 = 0\)</span> of <span class="math inline">\(f(0^+) = -\pi\)</span> and <span class="math inline">\(f(2\pi^-) = \pi\)</span>. The alternating sum in (9) is zero, so <span class="math inline">\(P_{17}\)</span> passes through all 36 samples, and in particular <span class="math inline">\(P_{17}(0) = 0\)</span>. The largest value of <span class="math inline">\(P_m\)</span> is <span class="math inline">\(3.939\)</span> for <span class="math inline">\(m = 1\)</span>; it is not monotone over the first frames, but from <span class="math inline">\(m = 5\)</span> on it falls at every frame, to <span class="math inline">\(3.365\)</span> for <span class="math inline">\(m = 17\)</span>, below the <span class="math inline">\(3.702\)</span> of the Fourier polynomial <span class="math inline">\(S_{17}\)</span> in Case 5. The lowest value of <span class="math inline">\(P_{17}\)</span> is <span class="math inline">\(-2.880\)</span>, at <span class="math inline">\(x \approx 0.215\)</span>, so the samples keep <span class="math inline">\(P_{17}\)</span> above <span class="math inline">\(-\pi\)</span> beside the jump.</p>
+<p><a href="fourierfftee.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fourierfftee.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ discrete Fourier series animation for 36 samples of f(x) = x − |x − π|, with value 0 at the jump: trigonometric polynomials of degree 1 to 17 approach the red sample dots, and degree 17 passes through all of them, peaking at 3.365</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="fourier-series" class="level2">
+<h2 class="anchored" data-anchor-id="fourier-series">Fourier Series</h2>
+<section id="definitions" class="level3">
+<h3 class="anchored" data-anchor-id="definitions">Definitions</h3>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Piecewise continuous
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A function <span class="math inline">\(f\)</span> is piecewise continuous on <span class="math inline">\([a,b]\)</span> if there are points <span class="math inline">\(a = x_0 &lt; x_1 &lt; \cdots &lt; x_n = b\)</span> such that <span class="math inline">\(f\)</span> is continuous on each open interval <span class="math inline">\(x_{k-1} &lt; x &lt; x_k\)</span> and has one-sided limits at each <span class="math inline">\(x_k\)</span>, for <span class="math inline">\(k = 0, 1, \ldots, n\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Fourier series
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f\)</span> has period <span class="math inline">\(2L\)</span> and is piecewise continuous on <span class="math inline">\([0,2L]\)</span>, its Fourier series is</p>
+<p><span class="math display">\[
+S(x) = \frac{a_0}{2} + \sum_{j=1}^{\infty}\left(a_j\cos\!\left(\frac{j\pi x}{L}\right) + b_j\sin\!\left(\frac{j\pi x}{L}\right)\right),
+\tag{1}
+\]</span></p>
+<p>with coefficients given by <strong>Euler’s formulas</strong></p>
+<p><span class="math display">\[
+a_j = \frac{1}{L}\int_0^{2L} f(x)\cos\!\left(\frac{j\pi x}{L}\right)dx \quad (j = 0,1,\ldots),
+\qquad
+b_j = \frac{1}{L}\int_0^{2L} f(x)\sin\!\left(\frac{j\pi x}{L}\right)dx \quad (j = 1,2,\ldots).
+\tag{2}
+\]</span></p>
+</div>
+</div>
+<p>The factor <span class="math inline">\(\tfrac12\)</span> on <span class="math inline">\(a_0\)</span> lets one formula cover every <span class="math inline">\(a_j\)</span>: <span class="math inline">\(a_0/2\)</span> is the mean value of <span class="math inline">\(f\)</span> over a period.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Fourier polynomial
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Fourier polynomial of degree <span class="math inline">\(m\)</span> is the partial sum of (1),</p>
+<p><span class="math display">\[
+S_m(x) = \frac{a_0}{2} + \sum_{j=1}^{m}\left(a_j\cos\!\left(\frac{j\pi x}{L}\right) + b_j\sin\!\left(\frac{j\pi x}{L}\right)\right),
+\tag{3}
+\]</span></p>
+<p>with the coefficients (2) for <span class="math inline">\(j = 0, 1, \ldots, m\)</span>.</p>
+</div>
+</div>
+</section>
+<section id="convergence" class="level3">
+<h3 class="anchored" data-anchor-id="convergence">Convergence</h3>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Fourier expansion
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(S(x)\)</span> be the Fourier series of <span class="math inline">\(f\)</span>. If <span class="math inline">\(f\)</span> and <span class="math inline">\(f'\)</span> are piecewise continuous on <span class="math inline">\([0,2L]\)</span>, then <span class="math inline">\(S(x)\)</span> converges for every <span class="math inline">\(x\)</span>. It equals <span class="math inline">\(f(x)\)</span> at every <span class="math inline">\(x\)</span> where <span class="math inline">\(f\)</span> is continuous, and at a point <span class="math inline">\(a\)</span> where <span class="math inline">\(f\)</span> jumps,</p>
+<p><span class="math display">\[
+S(a) = \frac{f(a^-) + f(a^+)}{2},
+\tag{4}
+\]</span></p>
+<p>the midpoint of the left- and right-hand limits. At <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(x = 2L\)</span> the limits are those of the periodic extension, so <span class="math inline">\(S(0) = \tfrac12\left(f(2L^-) + f(0^+)\right)\)</span>.</p>
+</div>
+</div>
+<p>Three general facts describe <em>how</em> the partial sums approach <span class="math inline">\(f\)</span>. They are standard theorems; the examples below check them for specific functions.</p>
+<ul>
+<li><strong>Uniform convergence.</strong> If the periodic extension of <span class="math inline">\(f\)</span> is continuous and <span class="math inline">\(f'\)</span> is piecewise continuous, then <span class="math inline">\(\max_x \lvert f(x) - S_m(x)\rvert \to 0\)</span>.</li>
+<li><strong>Gibbs phenomenon.</strong> If <span class="math inline">\(f\)</span> jumps by <span class="math inline">\(J\)</span> at <span class="math inline">\(a\)</span>, the largest overshoot of <span class="math inline">\(S_m\)</span> beside the jump does not tend to zero as <span class="math inline">\(m\)</span> grows; it tends to <span class="math inline">\(\left(\tfrac{1}{\pi}\operatorname{Si}(\pi) - \tfrac12\right)J \approx 0.0895\,J\)</span>, where <span class="math inline">\(\operatorname{Si}(\pi) = \int_0^\pi \tfrac{\sin t}{t}\,dt \approx 1.8519\)</span>. The overshoot moves closer to the jump as <span class="math inline">\(m\)</span> grows, so convergence is not uniform near a jump.</li>
+<li><strong>Coefficient decay.</strong> Coefficients of a function whose periodic extension jumps decrease like <span class="math inline">\(1/j\)</span>; those of a continuous function with a jump only in <span class="math inline">\(f'\)</span> decrease like <span class="math inline">\(1/j^2\)</span>. The functions in Example 2 show both rates.</li>
+</ul>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The value of <span class="math inline">\(f\)</span> at a jump
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The integrals (2) do not depend on the value of <span class="math inline">\(f\)</span> at isolated points, but the series does not converge to an arbitrary value there: by (4) it converges to the midpoint. When data are sampled at a jump, using the midpoint value keeps the samples consistent with the series. Mathews’ discrete-series animations do this (Example 7).</p>
+</div>
+</div>
+</section>
+<section id="example-1-fx-lvert-x---pirvert-degree-5-mathews-example-1" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-fx-lvert-x---pirvert-degree-5-mathews-example-1">Example 1 — <span class="math inline">\(f(x) = \lvert x - \pi\rvert\)</span>, degree 5 (Mathews’ Example 1)</h3>
+<p>Let <span class="math inline">\(f\)</span> have period <span class="math inline">\(2\pi\)</span> (so <span class="math inline">\(L = \pi\)</span>) with</p>
+<p><span class="math display">\[
+f(x) = \lvert x-\pi\rvert, \qquad 0 \le x \le 2\pi .
+\]</span></p>
+<p>Find the Fourier polynomial of degree <span class="math inline">\(m = 5\)</span>.</p>
+<p><strong>Step 1</strong> (constant term): the graph over <span class="math inline">\([0,2\pi]\)</span> is a “V” enclosing two triangles of area <span class="math inline">\(\pi^2/2\)</span>, so</p>
+<p><span class="math display">\[
+a_0 = \frac1\pi\int_0^{2\pi}\lvert x-\pi\rvert\,dx = \frac{1}{\pi}\cdot\pi^2 = \pi .
+\]</span></p>
+<p><strong>Step 2</strong> (sine terms): replacing <span class="math inline">\(x\)</span> by <span class="math inline">\(2\pi - x\)</span> leaves <span class="math inline">\(f\)</span> unchanged but changes the sign of <span class="math inline">\(\sin(jx)\)</span>, so the two halves of each integral cancel:</p>
+<p><span class="math display">\[
+b_j = 0, \qquad j = 1, 2, \ldots
+\]</span></p>
+<p><strong>Step 3</strong> (cosine terms): <span class="math inline">\(f\)</span> and <span class="math inline">\(\cos(jx)\)</span> are both symmetric about <span class="math inline">\(x=\pi\)</span>, so integrate over <span class="math inline">\([0,\pi]\)</span>, double, and integrate by parts:</p>
+<p><span class="math display">\[
+a_j = \frac{2}{\pi}\int_0^{\pi}(\pi-x)\cos(jx)\,dx
+= \frac{2}{\pi}\left(\Big[\frac{(\pi-x)\sin(jx)}{j}\Big]_0^{\pi} + \frac1j\int_0^\pi \sin(jx)\,dx\right)
+= \frac{2\left(1-(-1)^j\right)}{\pi j^2}.
+\]</span></p>
+<p>So <span class="math inline">\(a_j = \dfrac{4}{\pi j^2}\)</span> for odd <span class="math inline">\(j\)</span> and <span class="math inline">\(a_j = 0\)</span> for even <span class="math inline">\(j \ge 2\)</span>.</p>
+<p><strong>Step 4</strong> (assemble):</p>
+<p><span class="math display">\[
+\boxed{S_5(x) = \frac{\pi}{2} + \frac{4}{\pi}\left(\cos x + \frac{\cos 3x}{9} + \frac{\cos 5x}{25}\right)}
+\approx 1.570796 + 1.273240\cos x + 0.141471\cos 3x + 0.050930\cos 5x .
+\]</span></p>
+<p><strong>Verification.</strong> The coefficients were also computed by adaptive quadrature of (2); the two agree to better than <span class="math inline">\(10^{-15}\)</span> for <span class="math inline">\(j \le 6\)</span>. The partial sum against <span class="math inline">\(f\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x\)</span></th>
+<th><span class="math inline">\(f(x)\)</span></th>
+<th><span class="math inline">\(S_5(x)\)</span></th>
+<th><span class="math inline">\(f(x) - S_5(x)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(3.141593\)</span></td>
+<td><span class="math inline">\(3.036437\)</span></td>
+<td><span class="math inline">\(0.105156\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\pi/3\)</span></td>
+<td><span class="math inline">\(2.094395\)</span></td>
+<td><span class="math inline">\(2.091410\)</span></td>
+<td><span class="math inline">\(0.002985\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\pi/2\)</span></td>
+<td><span class="math inline">\(1.570796\)</span></td>
+<td><span class="math inline">\(1.570796\)</span></td>
+<td><span class="math inline">\(0.000000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\pi\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.105156\)</span></td>
+<td><span class="math inline">\(-0.105156\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The error is largest at the corners <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(x = \pi\)</span>. Because every term of <span class="math inline">\(f - S_m = \sum_{j&gt;m,\ j\text{ odd}} \tfrac{4}{\pi j^2}\cos(jx)\)</span> has the same sign at <span class="math inline">\(x = 0\)</span>, the maximum error is exactly the tail sum <span class="math inline">\(\tfrac{4}{\pi}\sum_{j&gt;m,\ j \text{ odd}} j^{-2}\)</span>. This <span class="math inline">\(f\)</span> is continuous and periodic, so the convergence is uniform:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(m\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+<th><span class="math inline">\(25\)</span></th>
+<th><span class="math inline">\(99\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\max_x \lvert f - S_m\rvert\)</span></td>
+<td><span class="math inline">\(0.105156\)</span></td>
+<td><span class="math inline">\(0.024473\)</span></td>
+<td><span class="math inline">\(0.006366\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(2/(\pi m)\)</span></td>
+<td><span class="math inline">\(0.127324\)</span></td>
+<td><span class="math inline">\(0.025465\)</span></td>
+<td><span class="math inline">\(0.006431\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>For large <span class="math inline">\(m\)</span> the maximum error behaves like <span class="math inline">\(2/(\pi m)\)</span>.</p>
+</section>
+<section id="example-2-the-functions-of-mathews-fourier-series-animations" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-the-functions-of-mathews-fourier-series-animations">Example 2 — The functions of Mathews’ Fourier-series animations</h3>
+<p>Mathews’ Fourier-series animations use five functions of period <span class="math inline">\(2\pi\)</span>, each given on <span class="math inline">\(0 &lt; x &lt; 2\pi\)</span>. The first is Example 1; the others have these coefficients (computed with sympy and checked by quadrature for <span class="math inline">\(j \le 6\)</span>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 43%">
+<col style="width: 13%">
+<col style="width: 30%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(f(x)\)</span> on <span class="math inline">\((0, 2\pi)\)</span></th>
+<th><span class="math inline">\(a_0\)</span></th>
+<th><span class="math inline">\(a_j\)</span>, <span class="math inline">\(j\ge1\)</span></th>
+<th><span class="math inline">\(b_j\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\lvert x-\pi\rvert\)</span></td>
+<td><span class="math inline">\(\pi\)</span></td>
+<td><span class="math inline">\(\dfrac{2(1-(-1)^j)}{\pi j^2}\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x - \pi\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(-\dfrac{2}{j}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(-1\)</span> on <span class="math inline">\((0,\pi)\)</span>, <span class="math inline">\(+1\)</span> on <span class="math inline">\((\pi,2\pi)\)</span> (Mathews’ “unit step”)</td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(-\dfrac{2(1-(-1)^j)}{\pi j}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((x-\pi)^2\)</span></td>
+<td><span class="math inline">\(\dfrac{2\pi^2}{3}\)</span></td>
+<td><span class="math inline">\(\dfrac{4}{j^2}\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x - \lvert x-\pi\rvert\)</span></td>
+<td><span class="math inline">\(\pi\)</span></td>
+<td><span class="math inline">\(-\dfrac{2(1-(-1)^j)}{\pi j^2}\)</span></td>
+<td><span class="math inline">\(-\dfrac{2}{j}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The decay rates match the general rule. The periodic extensions of <span class="math inline">\(x-\pi\)</span>, the step and <span class="math inline">\(x-\lvert x-\pi\rvert\)</span> jump, and their <span class="math inline">\(b_j\)</span> fall like <span class="math inline">\(1/j\)</span>. The extensions of <span class="math inline">\(\lvert x-\pi\rvert\)</span> and <span class="math inline">\((x-\pi)^2\)</span> are continuous, and their <span class="math inline">\(a_j\)</span> fall like <span class="math inline">\(1/j^2\)</span>.</p>
+<p><strong>The function <span class="math inline">\(x - \lvert x-\pi\rvert\)</span></strong> (the surviving animation) equals <span class="math inline">\(2x - \pi\)</span> on <span class="math inline">\([0,\pi]\)</span> and <span class="math inline">\(\pi\)</span> on <span class="math inline">\([\pi, 2\pi]\)</span>. Its coefficients follow by linearity from the identity</p>
+<p><span class="math display">\[
+x - \lvert x-\pi\rvert = (x-\pi) - \lvert x-\pi\rvert + \pi ,
+\]</span></p>
+<p>which adds the rows for <span class="math inline">\(x-\pi\)</span> and <span class="math inline">\(-\lvert x-\pi\rvert\)</span> and adds <span class="math inline">\(2\pi\)</span> to <span class="math inline">\(a_0\)</span> (the constant <span class="math inline">\(\pi\)</span> has <span class="math inline">\(a_0 = 2\pi\)</span>):</p>
+<p><span class="math display">\[
+a_0 = 0 - \pi + 2\pi = \pi, \qquad a_j = -\frac{2(1-(-1)^j)}{\pi j^2}, \qquad b_j = -\frac{2}{j},
+\]</span></p>
+<p><span class="math display">\[
+S_m(x) = \frac{\pi}{2} - \frac{4}{\pi}\sum_{\substack{j=1\\ j\ \text{odd}}}^{m}\frac{\cos jx}{j^2} - 2\sum_{j=1}^{m}\frac{\sin jx}{j}.
+\]</span></p>
+<p>The periodic extension jumps at <span class="math inline">\(x = 0\)</span> (and <span class="math inline">\(2\pi\)</span>) from <span class="math inline">\(f(2\pi^-) = \pi\)</span> down to <span class="math inline">\(f(0^+) = -\pi\)</span>, a jump of <span class="math inline">\(2\pi\)</span>; at <span class="math inline">\(x = \pi\)</span> it is continuous with a corner.</p>
+<p><strong>Verification against the convergence theorem:</strong></p>
+<ul>
+<li><em>At the jump.</em> All sines vanish at <span class="math inline">\(x=0\)</span>, so <span class="math inline">\(S_m(0) = \tfrac{\pi}{2} - \tfrac{4}{\pi}\sum_{j\ \text{odd} \le m} j^{-2}\)</span>. This tends to <span class="math inline">\(\tfrac{\pi}{2} - \tfrac{4}{\pi}\cdot\tfrac{\pi^2}{8} = 0\)</span>, the midpoint of <span class="math inline">\(-\pi\)</span> and <span class="math inline">\(\pi\)</span>, as (4) predicts. Numerically <span class="math inline">\(S_5(0) = 0.105156\)</span> and <span class="math inline">\(S_{25}(0) = 0.024473\)</span>.</li>
+<li><em>At the corner.</em> <span class="math inline">\(S_m(\pi) = \tfrac{\pi}{2} + \tfrac{4}{\pi}\sum_{j\ \text{odd}\le m} j^{-2} \to \pi = f(\pi)\)</span>; <span class="math inline">\(S_{25}(\pi) = 3.117119\)</span>.</li>
+<li><em>Gibbs overshoot.</em> The predicted limit is <span class="math inline">\(0.0895 \times 2\pi \approx 0.5623\)</span>. For <span class="math inline">\(m = 25\)</span> the maximum of <span class="math inline">\(S_{25}\)</span> just left of <span class="math inline">\(2\pi\)</span> is <span class="math inline">\(3.70189\)</span> at <span class="math inline">\(x \approx 6.160\)</span>, which is <span class="math inline">\(0.5603\)</span> above <span class="math inline">\(\pi\)</span>. Just right of <span class="math inline">\(0\)</span>, <span class="math inline">\(S_{25}\)</span> falls <span class="math inline">\(0.5651\)</span> below <span class="math inline">\(f\)</span> at <span class="math inline">\(x \approx 0.123\)</span>. For <span class="math inline">\(m = 400\)</span> the two figures are <span class="math inline">\(0.5621\)</span> and <span class="math inline">\(0.5625\)</span>, so the overshoot does not die out.</li>
+</ul>
+<p>For the step function the same theorem predicts a peak of <span class="math inline">\(1 + 2\left(\tfrac{1}{\pi}\operatorname{Si}(\pi) - \tfrac12\right) \approx 1.17898\)</span>. The partial sums peak at <span class="math inline">\(1.18001\)</span> for <span class="math inline">\(m = 17\)</span> and <span class="math inline">\(1.17901\)</span> for <span class="math inline">\(m = 101\)</span>.</p>
+</section>
+</section>
+<section id="discrete-fourier-series-from-equally-spaced-data" class="level2">
+<h2 class="anchored" data-anchor-id="discrete-fourier-series-from-equally-spaced-data">Discrete Fourier Series from Equally Spaced Data</h2>
+<section id="replacing-the-integrals-by-sums" class="level3">
+<h3 class="anchored" data-anchor-id="replacing-the-integrals-by-sums">Replacing the integrals by sums</h3>
+<p>Suppose <span class="math inline">\(f\)</span> is known only at <span class="math inline">\(n\)</span> equally spaced points of one period,</p>
+<p><span class="math display">\[
+x_k = k\,\frac{2L}{n}, \qquad y_k = f(x_k), \qquad k = 0, 1, \ldots, n-1,
+\tag{5}
+\]</span></p>
+<p>with <span class="math inline">\(\Delta x = 2L/n\)</span>. Applying the trapezoidal rule to Euler’s formulas (2) on these <span class="math inline">\(n\)</span> subintervals gives the discrete coefficients.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Discrete Fourier coefficients
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+a_j = \frac{1}{L}\sum_{k=0}^{n-1} y_k\cos\!\left(\frac{j\pi x_k}{L}\right)\Delta x = \frac{2}{n}\sum_{k=0}^{n-1} y_k\cos\!\left(\frac{2\pi jk}{n}\right), \quad j = 0, 1, \ldots, m,
+\tag{6}
+\]</span></p>
+<p><span class="math display">\[
+b_j = \frac{2}{n}\sum_{k=0}^{n-1} y_k\sin\!\left(\frac{2\pi jk}{n}\right), \quad j = 1, 2, \ldots, m,
+\tag{7}
+\]</span></p>
+<p>and the trigonometric polynomial is</p>
+<p><span class="math display">\[
+P_m(x) = \frac{a_0}{2} + \sum_{j=1}^{m}\left(a_j\cos\!\left(\frac{j\pi x}{L}\right) + b_j\sin\!\left(\frac{j\pi x}{L}\right)\right).
+\tag{8}
+\]</span></p>
+<p>The construction needs <span class="math inline">\(2m + 1 \le n\)</span>: there are <span class="math inline">\(2m+1\)</span> coefficients and only <span class="math inline">\(n\)</span> data.</p>
+</div>
+</div>
+<p><strong>Why the weights are all 1.</strong> The trapezoidal rule gives weight <span class="math inline">\(\tfrac12\)</span> to the two end ordinates <span class="math inline">\(f(x_0)\)</span> and <span class="math inline">\(f(x_n)\)</span>. The data are periodic, <span class="math inline">\(f(x_n) = f(x_0)\)</span>, so the two halves combine into one full weight on <span class="math inline">\(y_0\)</span>. The sum therefore runs over exactly the <span class="math inline">\(n\)</span> ordinates <span class="math inline">\(y_0, \ldots, y_{n-1}\)</span>, and the right endpoint <span class="math inline">\(x_n = 2L\)</span> must not be added again (Example 4 shows what goes wrong).</p>
+</section>
+<section id="what-the-discrete-coefficients-are" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-discrete-coefficients-are">What the discrete coefficients are</h3>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Discrete orthogonality and least squares
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">\(0 \le j, l \le m\)</span> with <span class="math inline">\(2m &lt; n\)</span> (<span class="math inline">\(1 \le j, l \le m\)</span> in the sine relation),</p>
+<p><span class="math display">\[
+\sum_{k=0}^{n-1}\cos(jx_k)\cos(lx_k) = \begin{cases} n, &amp; j = l = 0,\\ n/2, &amp; j = l \ge 1,\\ 0, &amp; j \ne l,\end{cases}
+\qquad
+\sum_{k=0}^{n-1}\sin(jx_k)\sin(lx_k) = \tfrac{n}{2}\,\delta_{jl},
+\qquad
+\sum_{k=0}^{n-1}\cos(jx_k)\sin(lx_k) = 0,
+\]</span></p>
+<p>(here with <span class="math inline">\(L = \pi\)</span>, so <span class="math inline">\(x_k = 2\pi k/n\)</span>). Consequently the normal equations of the least-squares fit of a degree-<span class="math inline">\(m\)</span> trigonometric polynomial to the <span class="math inline">\(n\)</span> data are diagonal, and their solution is exactly (6)–(7): <strong><span class="math inline">\(P_m\)</span> is the least-squares trigonometric polynomial of degree <span class="math inline">\(m\)</span>.</strong> If <span class="math inline">\(n = 2m+1\)</span> it interpolates the data. If <span class="math inline">\(n = 2m+2\)</span>, the residual at the nodes is</p>
+<p><span class="math display">\[
+y_k - P_m(x_k) = \frac{a_{n/2}}{2}(-1)^k, \qquad a_{n/2} = \frac{2}{n}\sum_{k=0}^{n-1}(-1)^k y_k,
+\tag{9}
+\]</span></p>
+<p>so <span class="math inline">\(P_m\)</span> interpolates exactly when the alternating sum of the data is zero.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Aliasing
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the Fourier series of <span class="math inline">\(f\)</span> converges absolutely, or if <span class="math inline">\(f\)</span> is piecewise smooth and its samples at jumps are the midpoint values (the series in <span class="math inline">\(l\)</span> must then be summed pair by pair, as written), the discrete coefficients from <span class="math inline">\(n\)</span> samples are sums of the true coefficients folded onto frequencies <span class="math inline">\(0, \ldots, n/2\)</span>:</p>
+<p><span class="math display">\[
+a_j^{\text{disc}} = a_j + \sum_{l=1}^{\infty}\left(a_{ln+j} + a_{ln-j}\right), \qquad
+b_j^{\text{disc}} = b_j + \sum_{l=1}^{\infty}\left(b_{ln+j} - b_{ln-j}\right).
+\]</span></p>
+<p>The discrete coefficients therefore approximate the Fourier coefficients well only when the coefficients beyond frequency <span class="math inline">\(n/2\)</span> are small.</p>
+</div>
+</div>
+</section>
+<section id="example-3-12-samples-by-numerical-integration-mathews-example-2" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-12-samples-by-numerical-integration-mathews-example-2">Example 3 — 12 samples by numerical integration (Mathews’ Example 2)</h3>
+<p>Use <span class="math inline">\(f(x) = \lvert x - \pi\rvert\)</span> from Example 1. Find the trigonometric polynomial of degree <span class="math inline">\(m = 5\)</span> from the <span class="math inline">\(n = 12\)</span> equally spaced points of <span class="math inline">\([0, 2\pi]\)</span>, computing the coefficients by numerical integration of (2).</p>
+<p><strong>Step 1</strong> (nodes and data): <span class="math inline">\(L = \pi\)</span>, <span class="math inline">\(\Delta x = 2\pi/12 = \pi/6\)</span> and <span class="math inline">\(x_k = k\pi/6\)</span>, so <span class="math inline">\(\tfrac1L\Delta x = \tfrac{2}{12}\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+<th><span class="math inline">\(2\)</span></th>
+<th><span class="math inline">\(3\)</span></th>
+<th><span class="math inline">\(4\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+<th><span class="math inline">\(6\)</span></th>
+<th><span class="math inline">\(7\)</span></th>
+<th><span class="math inline">\(8\)</span></th>
+<th><span class="math inline">\(9\)</span></th>
+<th><span class="math inline">\(10\)</span></th>
+<th><span class="math inline">\(11\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x_k\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{6}\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{2}\)</span></td>
+<td><span class="math inline">\(\tfrac{2\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{5\pi}{6}\)</span></td>
+<td><span class="math inline">\(\pi\)</span></td>
+<td><span class="math inline">\(\tfrac{7\pi}{6}\)</span></td>
+<td><span class="math inline">\(\tfrac{4\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{3\pi}{2}\)</span></td>
+<td><span class="math inline">\(\tfrac{5\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{11\pi}{6}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_k\)</span></td>
+<td><span class="math inline">\(\pi\)</span></td>
+<td><span class="math inline">\(\tfrac{5\pi}{6}\)</span></td>
+<td><span class="math inline">\(\tfrac{2\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{2}\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{6}\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{6}\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{2}\)</span></td>
+<td><span class="math inline">\(\tfrac{2\pi}{3}\)</span></td>
+<td><span class="math inline">\(\tfrac{5\pi}{6}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 2</strong> (constant term): <span class="math inline">\(\sum y_k = 6\pi\)</span>, so <span class="math inline">\(a_0 = \tfrac{2}{12}\cdot 6\pi = \pi\)</span>.</p>
+<p><strong>Step 3</strong> (sine terms): the data satisfy <span class="math inline">\(y_{12-k} = y_k\)</span> while <span class="math inline">\(\sin(jx_{12-k}) = -\sin(jx_k)\)</span>, so the terms cancel in pairs and <span class="math inline">\(b_j = 0\)</span> for every <span class="math inline">\(j\)</span>.</p>
+<p><strong>Step 4</strong> (cosine terms): with <span class="math inline">\(\cos(3x_k) = 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0\)</span>,</p>
+<p><span class="math display">\[
+a_3 = \frac{2}{12}\left(\pi - \frac{2\pi}{3} + \frac{\pi}{3} - 0 + \frac{\pi}{3} - \frac{2\pi}{3}\right) = \frac{2}{12}\cdot\frac{\pi}{3} = \frac{\pi}{18} \approx 0.174533 .
+\]</span></p>
+<p>The same computation with <span class="math inline">\(\cos(x_k) = 1, \tfrac{\sqrt3}{2}, \tfrac12, 0, -\tfrac12, -\tfrac{\sqrt3}{2}, -1, \ldots\)</span> and with <span class="math inline">\(\cos(5x_k)\)</span> gives</p>
+<p><span class="math display">\[
+\sum_k y_k\cos x_k = \frac{2\pi(2+\sqrt3)}{3}, \qquad
+a_1 = \frac{\pi(2+\sqrt3)}{9} \approx 1.302731, \qquad
+a_5 = \frac{\pi(2-\sqrt3)}{9} \approx 0.093532,
+\]</span></p>
+<p>and <span class="math inline">\(a_2 = a_4 = 0\)</span>.</p>
+<p><strong>Step 5</strong> (assemble):</p>
+<p><span class="math display">\[
+\boxed{P_5(x) = \frac{\pi}{2} + \frac{\pi(2+\sqrt3)}{9}\cos x + \frac{\pi}{18}\cos 3x + \frac{\pi(2-\sqrt3)}{9}\cos 5x}
+\approx 1.570796 + 1.302731\cos x + 0.174533\cos 3x + 0.093532\cos 5x .
+\]</span></p>
+<p>Mathews’ printed values (<span class="math inline">\(1.5708\)</span>, <span class="math inline">\(1.30273\)</span>, <span class="math inline">\(0.174533\)</span>, <span class="math inline">\(0.0935319\)</span>) agree.</p>
+<p><strong>Verification.</strong> Here <span class="math inline">\(n = 12 = 2m + 2\)</span>, and the alternating sum in (9) is <span class="math inline">\(\pi - \tfrac{5\pi}{6} + \tfrac{2\pi}{3} - \cdots - \tfrac{5\pi}{6} = 0\)</span>. So <span class="math inline">\(P_5\)</span> passes through all twelve data points:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+<th><span class="math inline">\(2\)</span></th>
+<th><span class="math inline">\(3\)</span></th>
+<th><span class="math inline">\(4\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+<th><span class="math inline">\(6\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(P_5(x_k)\)</span></td>
+<td><span class="math inline">\(3.141593\)</span></td>
+<td><span class="math inline">\(2.617994\)</span></td>
+<td><span class="math inline">\(2.094395\)</span></td>
+<td><span class="math inline">\(1.570796\)</span></td>
+<td><span class="math inline">\(1.047198\)</span></td>
+<td><span class="math inline">\(0.523599\)</span></td>
+<td><span class="math inline">\(0.000000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y_k\)</span></td>
+<td><span class="math inline">\(\pi \checkmark\)</span></td>
+<td><span class="math inline">\(\tfrac{5\pi}{6}\checkmark\)</span></td>
+<td><span class="math inline">\(\tfrac{2\pi}{3}\checkmark\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{2}\checkmark\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{3}\checkmark\)</span></td>
+<td><span class="math inline">\(\tfrac{\pi}{6}\checkmark\)</span></td>
+<td><span class="math inline">\(0\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>(<span class="math inline">\(k = 7, \ldots, 11\)</span> repeat <span class="math inline">\(k = 5, \ldots, 1\)</span> by symmetry; sympy gives <span class="math inline">\(P_5(x_k) - y_k = 0\)</span> exactly for all twelve.)</p>
+<p><strong>Comparison with the Fourier coefficients.</strong> The discrete coefficients approximate those of Example 1, and the gap widens with <span class="math inline">\(j\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(j\)</span></th>
+<th>Fourier <span class="math inline">\(a_j\)</span> (Example 1)</th>
+<th>discrete <span class="math inline">\(a_j\)</span></th>
+<th>difference</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(1.273240\)</span></td>
+<td><span class="math inline">\(1.302731\)</span></td>
+<td><span class="math inline">\(0.029492\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(3\)</span></td>
+<td><span class="math inline">\(0.141471\)</span></td>
+<td><span class="math inline">\(0.174533\)</span></td>
+<td><span class="math inline">\(0.033062\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(5\)</span></td>
+<td><span class="math inline">\(0.050930\)</span></td>
+<td><span class="math inline">\(0.093532\)</span></td>
+<td><span class="math inline">\(0.042602\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The aliasing theorem accounts for the differences: summing <span class="math inline">\(a_{12l+j} + a_{12l-j}\)</span> over <span class="math inline">\(l\)</span> reproduces each discrete value to the accuracy of the truncated sum (within <span class="math inline">\(10^{-6}\)</span>). The two polynomials differ by at most <span class="math inline">\(0.105156\)</span>, at the nodes <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(x = \pi\)</span>, where <span class="math inline">\(P_5\)</span> matches the corners of <span class="math inline">\(f\)</span> and <span class="math inline">\(S_5\)</span> misses them. Between the nodes <span class="math inline">\(P_5\)</span> also misses: <span class="math inline">\(\max_x \lvert f - P_5\rvert = 0.1009\)</span>, near <span class="math inline">\(x \approx 3.356\)</span>.</p>
+</section>
+<section id="example-4-the-same-data-given-as-points-mathews-example-3" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-the-same-data-given-as-points-mathews-example-3">Example 4 — The same data given as points (Mathews’ Example 3)</h3>
+<p>Now the twelve points <span class="math inline">\((x_k, y_k)\)</span> of the table in Example 3 are given as data, <span class="math inline">\((0,\pi), (\tfrac{\pi}{6}, \tfrac{5\pi}{6}), \ldots, (\tfrac{11\pi}{6}, \tfrac{5\pi}{6})\)</span>, extended periodically by <span class="math inline">\((x_{12}, y_{12}) = (2\pi, \pi)\)</span>. Find the degree-5 trigonometric polynomial with the sums (6)–(7).</p>
+<p>What changes from Example 3 is only the bookkeeping: the weight <span class="math inline">\(\tfrac{1}{L}\Delta x\)</span> is written <span class="math inline">\(\tfrac{2}{n} = \tfrac{1}{6}\)</span>, and the ordinates come from a table instead of a formula. The sums are identical, so the result is the same <span class="math inline">\(P_5\)</span> as in Example 3.</p>
+<p><strong>The endpoint pitfall.</strong> Suppose the sums are taken over <span class="math inline">\(k = 0, \ldots, 12\)</span>, so the point <span class="math inline">\((2\pi, \pi)\)</span> is included as well as <span class="math inline">\((0, \pi)\)</span>. Each sum gains the term <span class="math inline">\(y_{12}\cos(2\pi j) = \pi\)</span>, so every <span class="math inline">\(a_j\)</span> increases by <span class="math inline">\(\tfrac{2}{12}\pi = \tfrac{\pi}{6} \approx 0.523599\)</span> (and the <span class="math inline">\(b_j\)</span> are unchanged, since <span class="math inline">\(\sin 2\pi j = 0\)</span>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(j\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+<th><span class="math inline">\(2\)</span></th>
+<th><span class="math inline">\(3\)</span></th>
+<th><span class="math inline">\(4\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>correct <span class="math inline">\(a_j\)</span></td>
+<td><span class="math inline">\(3.141593\)</span></td>
+<td><span class="math inline">\(1.302731\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.174533\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.093532\)</span></td>
+</tr>
+<tr class="even">
+<td>13-term <span class="math inline">\(a_j\)</span></td>
+<td><span class="math inline">\(3.665191\)</span></td>
+<td><span class="math inline">\(1.826330\)</span></td>
+<td><span class="math inline">\(0.523599\)</span></td>
+<td><span class="math inline">\(0.698132\)</span></td>
+<td><span class="math inline">\(0.523599\)</span></td>
+<td><span class="math inline">\(0.617131\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The wrong sums give the spurious terms <span class="math inline">\(0.523599\cos 2x\)</span> and <span class="math inline">\(0.523599\cos 4x\)</span>, as Mathews shows. The endpoint ordinate has been counted twice.</p>
+</section>
+<section id="example-5-least-squares-fit-mathews-example-4" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-least-squares-fit-mathews-example-4">Example 5 — Least-squares fit (Mathews’ Example 4)</h3>
+<p>Fit the twelve data points of Example 4 by least squares with the eleven functions <span class="math inline">\(1, \cos x, \sin x, \ldots, \cos 5x, \sin 5x\)</span> (Mathews uses Mathematica’s <code>Fit</code>).</p>
+<p><strong>Step 1</strong> (normal equations): with <span class="math inline">\(M_{kl}\)</span> the value of the <span class="math inline">\(l\)</span>-th basis function at <span class="math inline">\(x_k\)</span>, the matrix of the normal equations is</p>
+<p><span class="math display">\[
+M^{\mathsf T}M = \operatorname{diag}(12, 6, 6, \ldots, 6),
+\]</span></p>
+<p>as the orthogonality theorem predicts (off-diagonal entries below <span class="math inline">\(6\times10^{-15}\)</span> in floating point).</p>
+<p><strong>Step 2</strong> (solve): each normal equation involves one unknown, and dividing by the diagonal entry reproduces (6)–(7). The least-squares solution is</p>
+<p><span class="math display">\[
+Q(x) = 1.570796 + 1.302731\cos x + 0.174533\cos 3x + 0.093532\cos 5x = P_5(x),
+\]</span></p>
+<p>with every sine coefficient and the <span class="math inline">\(\cos 2x\)</span>, <span class="math inline">\(\cos 4x\)</span> coefficients zero (below <span class="math inline">\(10^{-15}\)</span>).</p>
+<p><strong>Verification.</strong> The residual <span class="math inline">\(\max_k \lvert Q(x_k) - y_k\rvert\)</span> is at rounding level, below <span class="math inline">\(10^{-13}\)</span>: the fit interpolates, as found in Example 3.</p>
+<p><strong>About the endpoint caveat.</strong> Mathews says that fitting 13 points that include both endpoints gives a wrong answer with spurious terms. The computation disagrees for this example. Least squares on the 13 points <span class="math inline">\(x_k = k\pi/6\)</span>, <span class="math inline">\(k = 0, \ldots, 12\)</span>, returns the same <span class="math inline">\(P_5\)</span>, because <span class="math inline">\(P_5\)</span> already passes through <span class="math inline">\((2\pi, \pi)\)</span>. Mathews’ printed “wrong” polynomial, <span class="math inline">\(1.5962 + 1.30798\cos x + 0.0380189\cos 2x + \cdots - 0.0213626\sin 5x\)</span>, is reproduced to every printed digit by fitting the twelve points <span class="math inline">\(x_k = 2\pi k/13\)</span>, <span class="math inline">\(k = 0, \ldots, 11\)</span>. Those are the points his table actually lists. That fit fails because the nodes are mis-spaced and stop short of <span class="math inline">\(2\pi\)</span>, not because an endpoint is counted twice. Duplicating the endpoint does change the fit whenever the polynomial does not interpolate. For <span class="math inline">\(f(x) = (x-\pi)^2\)</span> with the same 12 nodes and <span class="math inline">\(m = 5\)</span>, adding the point <span class="math inline">\(x = 2\pi\)</span> shifts the coefficients by up to <span class="math inline">\(0.0119\)</span>.</p>
+</section>
+<section id="example-6-the-fft-mathews-example-5" class="level3">
+<h3 class="anchored" data-anchor-id="example-6-the-fft-mathews-example-5">Example 6 — The FFT (Mathews’ Example 5)</h3>
+<p>For the same twelve ordinates, compute the coefficients with a fast Fourier transform.</p>
+<p><strong>Step 1</strong> (relation to the DFT): combining (6) and (7),</p>
+<p><span class="math display">\[
+a_j - i\,b_j = \frac{2}{n}\sum_{k=0}^{n-1} y_k\, e^{-2\pi i jk/n} = \frac{2}{n}\,Y_j ,
+\qquad
+Y_j = \sum_{k=0}^{n-1} y_k\, e^{-2\pi i jk/n},
+\tag{10}
+\]</span></p>
+<p>where <span class="math inline">\(Y_j\)</span> is the discrete Fourier transform in the convention of numpy, MATLAB and FFTW. Thus <span class="math inline">\(a_j = \tfrac{2}{n}\operatorname{Re} Y_j\)</span> and <span class="math inline">\(b_j = -\tfrac{2}{n}\operatorname{Im} Y_j\)</span>.</p>
+<p><strong>Step 2</strong> (transform): the FFT of <span class="math inline">\((y_0, \ldots, y_{11})\)</span> is real here because the data are symmetric:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(j\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+<th><span class="math inline">\(2\)</span></th>
+<th><span class="math inline">\(3\)</span></th>
+<th><span class="math inline">\(4\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+<th><span class="math inline">\(6\)</span></th>
+<th><span class="math inline">\(7\)</span>–<span class="math inline">\(11\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(Y_j\)</span></td>
+<td><span class="math inline">\(18.849556\)</span></td>
+<td><span class="math inline">\(7.816389\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(1.047198\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.561191\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(Y_{12-j}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\tfrac{2}{12}Y_j\)</span></td>
+<td><span class="math inline">\(3.141593\)</span></td>
+<td><span class="math inline">\(1.302731\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.174533\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.093532\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>mirror</td>
+</tr>
+</tbody>
+</table>
+<p>For real data <span class="math inline">\(Y_{n-j} = \overline{Y_j}\)</span>, so only <span class="math inline">\(j = 0, \ldots, n/2\)</span> carry information. That is why Mathews’ list of twelve values reads <span class="math inline">\(3.14159, 1.30273, 0, 0.174533, 0, 0.0935319, 0, 0.0935319, 0, 0.174533, 0, 1.30273\)</span> symmetrically.</p>
+<p><strong>Step 3</strong> (read off): <span class="math inline">\(a_0, \ldots, a_5 = \pi, 1.302731, 0, 0.174533, 0, 0.093532\)</span> and all <span class="math inline">\(b_j = 0\)</span>. The resulting polynomial is the same <span class="math inline">\(P_5\)</span> as in Examples 3–5.</p>
+<p><strong>Verification.</strong> <span class="math inline">\(Y_0 = \sum y_k = 6\pi = 18.849556\)</span> and <span class="math inline">\(Y_1 = \sum y_k\cos(k\pi/6) = \tfrac{2\pi(2+\sqrt3)}{3} = 7.816389\)</span>, matching Step 4 of Example 3.</p>
+<p>Mathematica’s <code>Fourier</code> uses the opposite sign in the exponent and the factor <span class="math inline">\(1/\sqrt{n}\)</span>. Mathews multiplies its output by <span class="math inline">\(2/\sqrt{n}\)</span>, which gives <span class="math inline">\(a_j + i\,b_j\)</span> directly. A transform of the 13 ordinates that include <span class="math inline">\(x = 2\pi\)</span> treats them as one period of 13 samples. The coefficients then become complex: <span class="math inline">\(\tfrac{2}{13}Y_1 = 1.3458 + 0.3317i\)</span> instead of <span class="math inline">\(1.302731\)</span>, which shows up as spurious sine terms.</p>
+</section>
+<section id="example-7-36-samples-of-the-animation-functions-degree-17" class="level3">
+<h3 class="anchored" data-anchor-id="example-7-36-samples-of-the-animation-functions-degree-17">Example 7 — 36 samples of the animation functions, degree 17</h3>
+<p>The three surviving discrete-series (FFT) animations of Mathews sample three functions of Example 2 at <span class="math inline">\(n = 36\)</span> points, <span class="math inline">\(x_k = k\pi/18\)</span>, <span class="math inline">\(k = 0, \ldots, 35\)</span>, and end with <span class="math inline">\(P_{17}\)</span> (<span class="math inline">\(2m+1 = 35 \le 36\)</span>). Cases 6 and 7 rebuild his two lost ones, for <span class="math inline">\(\lvert x-\pi\rvert\)</span> and <span class="math inline">\(x-\pi\)</span>, the same way. Read from the frames of the legacy GIFs, the samples at the jumps are the midpoint values. The step has <span class="math inline">\(y_0 = y_{18} = 0\)</span>, <span class="math inline">\(y_k = -1\)</span> for <span class="math inline">\(1 \le k \le 17\)</span> and <span class="math inline">\(y_k = 1\)</span> for <span class="math inline">\(19 \le k \le 35\)</span>. The function <span class="math inline">\(x - \lvert x-\pi\rvert\)</span> has <span class="math inline">\(y_0 = 0\)</span>, the midpoint of <span class="math inline">\(-\pi\)</span> and <span class="math inline">\(\pi\)</span>, and the rebuild for <span class="math inline">\(x-\pi\)</span> uses the same <span class="math inline">\(y_0 = 0\)</span>. For the continuous <span class="math inline">\(\lvert x-\pi\rvert\)</span> and <span class="math inline">\((x-\pi)^2\)</span>, <span class="math inline">\(y_k = f(x_k)\)</span>.</p>
+<p><strong>Step 1</strong> (coefficients from the FFT, using (10)):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 25%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>function</th>
+<th>coefficient</th>
+<th><span class="math inline">\(j=1\)</span></th>
+<th><span class="math inline">\(j=3\)</span></th>
+<th><span class="math inline">\(j=5\)</span></th>
+<th><span class="math inline">\(j=17\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\lvert x-\pi\rvert\)</span></td>
+<td>discrete <span class="math inline">\(a_j\)</span></td>
+<td><span class="math inline">\(1.276477\)</span></td>
+<td><span class="math inline">\(0.144748\)</span></td>
+<td><span class="math inline">\(0.054289\)</span></td>
+<td><span class="math inline">\(0.009770\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Fourier <span class="math inline">\(a_j\)</span></td>
+<td><span class="math inline">\(1.273240\)</span></td>
+<td><span class="math inline">\(0.141471\)</span></td>
+<td><span class="math inline">\(0.050930\)</span></td>
+<td><span class="math inline">\(0.004406\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x-\pi\)</span></td>
+<td>discrete <span class="math inline">\(b_j\)</span></td>
+<td><span class="math inline">\(-1.994920\)</span></td>
+<td><span class="math inline">\(-0.651366\)</span></td>
+<td><span class="math inline">\(-0.374287\)</span></td>
+<td><span class="math inline">\(-0.015270\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Fourier <span class="math inline">\(b_j\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+<td><span class="math inline">\(-0.666667\)</span></td>
+<td><span class="math inline">\(-0.4\)</span></td>
+<td><span class="math inline">\(-0.117647\)</span></td>
+</tr>
+<tr class="odd">
+<td>step</td>
+<td>discrete <span class="math inline">\(b_j\)</span></td>
+<td><span class="math inline">\(-1.270006\)</span></td>
+<td><span class="math inline">\(-0.414672\)</span></td>
+<td><span class="math inline">\(-0.238279\)</span></td>
+<td><span class="math inline">\(-0.009721\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Fourier <span class="math inline">\(b_j\)</span></td>
+<td><span class="math inline">\(-1.273240\)</span></td>
+<td><span class="math inline">\(-0.424413\)</span></td>
+<td><span class="math inline">\(-0.254648\)</span></td>
+<td><span class="math inline">\(-0.074896\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((x-\pi)^2\)</span></td>
+<td>discrete <span class="math inline">\(a_j\)</span></td>
+<td><span class="math inline">\(4.010169\)</span></td>
+<td><span class="math inline">\(0.454739\)</span></td>
+<td><span class="math inline">\(0.170553\)</span></td>
+<td><span class="math inline">\(0.030695\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Fourier <span class="math inline">\(a_j\)</span></td>
+<td><span class="math inline">\(4\)</span></td>
+<td><span class="math inline">\(0.444444\)</span></td>
+<td><span class="math inline">\(0.16\)</span></td>
+<td><span class="math inline">\(0.013841\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x-\lvert x-\pi\rvert\)</span></td>
+<td>discrete <span class="math inline">\(b_j\)</span></td>
+<td><span class="math inline">\(-1.994920\)</span></td>
+<td><span class="math inline">\(-0.651366\)</span></td>
+<td><span class="math inline">\(-0.374287\)</span></td>
+<td><span class="math inline">\(-0.015270\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td>Fourier <span class="math inline">\(b_j\)</span></td>
+<td><span class="math inline">\(-2\)</span></td>
+<td><span class="math inline">\(-0.666667\)</span></td>
+<td><span class="math inline">\(-0.4\)</span></td>
+<td><span class="math inline">\(-0.117647\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The remaining coefficients follow the same pattern. For <span class="math inline">\(\lvert x-\pi\rvert\)</span> every <span class="math inline">\(b_j\)</span> and every <span class="math inline">\(a_j\)</span> with even <span class="math inline">\(j \ge 2\)</span> is zero, as in Example 3, and <span class="math inline">\(a_0 = \pi\)</span>. For <span class="math inline">\(x-\pi\)</span> every <span class="math inline">\(a_j\)</span> is zero, and its <span class="math inline">\(b_j\)</span> with even <span class="math inline">\(j\)</span> are not (<span class="math inline">\(b_2 = -0.989825\)</span>; Fourier: <span class="math inline">\(-1\)</span>). Its <span class="math inline">\(b_j\)</span> are those of <span class="math inline">\(x-\lvert x-\pi\rvert\)</span>: the two sets of samples differ by <span class="math inline">\(\pi - \lvert x_k-\pi\rvert\)</span>, which satisfies <span class="math inline">\(y_{36-k} = y_k\)</span> and so adds no sine terms. For the step every <span class="math inline">\(a_j\)</span> and the even-<span class="math inline">\(j\)</span> <span class="math inline">\(b_j\)</span> are zero. For <span class="math inline">\((x-\pi)^2\)</span> every <span class="math inline">\(b_j\)</span> is zero and <span class="math inline">\(a_0 = 6.589890\)</span> (Fourier: <span class="math inline">\(2\pi^2/3 = 6.579736\)</span>). For <span class="math inline">\(x - \lvert x-\pi\rvert\)</span>, <span class="math inline">\(a_0 = \pi\)</span> and <span class="math inline">\(a_1 = -1.276477\)</span> (Fourier: <span class="math inline">\(-1.273240\)</span>). The low-order discrete coefficients are close to the Fourier coefficients. Near <span class="math inline">\(j = n/2\)</span> aliasing dominates: the discrete <span class="math inline">\(b_{17}\)</span> of the three discontinuous functions are much smaller than their Fourier values, and the discrete <span class="math inline">\(a_{17}\)</span> of the two continuous ones are about <span class="math inline">\(2.2\)</span> times theirs.</p>
+<p><strong>Step 2</strong> (interpolation check with (9)):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 43%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>function</th>
+<th><span class="math inline">\(a_{18} = \tfrac{2}{36}\sum(-1)^k y_k\)</span></th>
+<th><span class="math inline">\(\max_k \lvert y_k - P_{17}(x_k)\rvert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\lvert x-\pi\rvert\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>rounding level, below <span class="math inline">\(10^{-13}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x-\pi\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>rounding level, below <span class="math inline">\(10^{-13}\)</span></td>
+</tr>
+<tr class="odd">
+<td>step</td>
+<td><span class="math inline">\(0\)</span></td>
+<td>rounding level, below <span class="math inline">\(10^{-13}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((x-\pi)^2\)</span></td>
+<td><span class="math inline">\(0.030462\)</span></td>
+<td><span class="math inline">\(0.015231 = a_{18}/2\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x-\lvert x-\pi\rvert\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>rounding level, below <span class="math inline">\(10^{-13}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(P_{17}\)</span> passes through all 36 samples of <span class="math inline">\(\lvert x-\pi\rvert\)</span>, <span class="math inline">\(x-\pi\)</span>, the step and <span class="math inline">\(x - \lvert x-\pi\rvert\)</span>. For <span class="math inline">\((x-\pi)^2\)</span> it misses each sample by <span class="math inline">\(0.015231\)</span>, alternately above and below, as (9) predicts.</p>
+<p><strong>Step 3</strong> (behaviour between the samples): for <span class="math inline">\(\lvert x-\pi\rvert\)</span>, <span class="math inline">\(P_{17}\)</span> matches <span class="math inline">\(f\)</span> at the corners <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(\pi\)</span>, which are samples, and <span class="math inline">\(\max_x \lvert f - P_{17}\rvert = 0.03322\)</span>, at <span class="math inline">\(x \approx 0.0705\)</span> between the first two samples and at the matching points <span class="math inline">\(x \approx \pi \pm 0.0705\)</span> and <span class="math inline">\(2\pi - 0.0705\)</span>. This is slightly smaller than <span class="math inline">\(\max_x \lvert f - S_{17}\rvert = 0.03533\)</span>, which is at the corners. For <span class="math inline">\(x-\pi\)</span>, <span class="math inline">\(P_{17}\)</span> ranges from <span class="math inline">\(-3.115434\)</span> (at <span class="math inline">\(x \approx 0.228\)</span>) to <span class="math inline">\(3.115434\)</span> (at <span class="math inline">\(x \approx 6.055\)</span>), inside <span class="math inline">\((-\pi, \pi)\)</span>, and <span class="math inline">\(P_{17}(0) = 0\)</span>. At its peak it is <span class="math inline">\(0.2018\)</span> above the line <span class="math inline">\(f\)</span>, against a peak of <span class="math inline">\(3.527725\)</span> for <span class="math inline">\(S_{17}\)</span>, <span class="math inline">\(0.5607\)</span> above the line. For the step, <span class="math inline">\(P_{17}\)</span> peaks at <span class="math inline">\(1.065022\)</span> near <span class="math inline">\(x \approx 3.382\)</span>. This is well below the peak <span class="math inline">\(1.180010\)</span> of the Fourier polynomial <span class="math inline">\(S_{17}\)</span>, so interpolating midpoint-valued samples damps the Gibbs overshoot here. For <span class="math inline">\(x - \lvert x-\pi\rvert\)</span>, <span class="math inline">\(P_{17}\)</span> ranges from <span class="math inline">\(-2.880372\)</span> (at <span class="math inline">\(x \approx 0.215\)</span>) to <span class="math inline">\(3.365465\)</span> (at <span class="math inline">\(x \approx 6.042\)</span>), and <span class="math inline">\(P_{17}(0) = 0\)</span>. For the continuous <span class="math inline">\((x-\pi)^2\)</span>, <span class="math inline">\(\max_x \lvert f - P_{17}\rvert = 0.2042\)</span>, slightly smaller than <span class="math inline">\(\max_x \lvert f - S_{17}\rvert = 0.2285\)</span>.</p>
+</section>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Use exactly one period of samples.</strong> Take <span class="math inline">\(x_k = 2Lk/n\)</span> for <span class="math inline">\(k = 0, \ldots, n-1\)</span> and leave out <span class="math inline">\(x_n = 2L\)</span>, which is the periodic copy of <span class="math inline">\(x_0\)</span>. Adding it double-counts <span class="math inline">\(y_0\)</span> in the sums (Example 4), and an FFT of <span class="math inline">\(n+1\)</span> values treats the data as a different period (Example 6).</li>
+<li><strong>Respect <span class="math inline">\(2m + 1 \le n\)</span>.</strong> Frequencies above <span class="math inline">\(n/2\)</span> cannot be distinguished from lower ones on the grid (aliasing). If <span class="math inline">\(n\)</span> is even and <span class="math inline">\(m = n/2\)</span> is wanted, the last cosine coefficient <span class="math inline">\(a_{n/2}\)</span> must be halved.</li>
+<li><strong>Know the FFT’s convention.</strong> With <span class="math inline">\(Y_j = \sum_k y_k e^{-2\pi i jk/n}\)</span> (numpy, MATLAB, FFTW), <span class="math inline">\(a_j = \tfrac{2}{n}\operatorname{Re} Y_j\)</span> and <span class="math inline">\(b_j = -\tfrac{2}{n}\operatorname{Im} Y_j\)</span>. Libraries differ in the sign of the exponent and in the scale factor (<span class="math inline">\(1\)</span>, <span class="math inline">\(1/n\)</span> or <span class="math inline">\(1/\sqrt n\)</span>), so check one coefficient against a direct sum.</li>
+<li><strong>Sample jumps at the midpoint.</strong> The Fourier series converges to the midpoint of a jump, and Mathews’ animations sample there. Using a one-sided value <span class="math inline">\(y_k \pm \delta\)</span> instead, where <span class="math inline">\(\delta\)</span> is half the jump, shifts every <span class="math inline">\(a_j\)</span> by <span class="math inline">\(\pm\tfrac{2}{n}\delta\cos(jx_k)\)</span> and every <span class="math inline">\(b_j\)</span> by <span class="math inline">\(\pm\tfrac{2}{n}\delta\sin(jx_k)\)</span>, since (6)–(7) are linear in the data.</li>
+<li><strong>Cost.</strong> Evaluating (6)–(7) directly for all <span class="math inline">\(j\)</span> up to <span class="math inline">\(n/2\)</span> takes on the order of <span class="math inline">\(n^2\)</span> operations; an FFT takes on the order of <span class="math inline">\(n\log n\)</span> (a general property of the algorithm, most efficient for <span class="math inline">\(n\)</span> a power of 2 or a product of small primes).</li>
+<li><strong>Other periods.</strong> For period <span class="math inline">\(2L\)</span> the sums (6)–(7) are unchanged in terms of <span class="math inline">\(k\)</span>; only the polynomial (8) is evaluated with <span class="math inline">\(j\pi x/L\)</span> in place of <span class="math inline">\(jx\)</span>.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Fibonacci Search – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-example-2-with-mathews-tolerance-fx-tfrac12-x5---tfrac45-x-on-0-1-varepsilon-7-times-10-3-n-12" id="toc-case-1-example-2-with-mathews-tolerance-fx-tfrac12-x5---tfrac45-x-on-0-1-varepsilon-7-times-10-3-n-12" class="nav-link" data-scroll-target="#case-1-example-2-with-mathews-tolerance-fx-tfrac12-x5---tfrac45-x-on-0-1-varepsilon-7-times-10-3-n-12">Case 1 — Example 2 with Mathews’ tolerance, <span class="math inline">\(f(x) = \tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span>, <span class="math inline">\(\varepsilon = 7 \times 10^{-3}\)</span>, <span class="math inline">\(n = 12\)</span></a></li>
+  <li><a href="#case-2-mathews-animation-fx-tfrac12-x5---tfrac45-x-on-0-1-n-32" id="toc-case-2-mathews-animation-fx-tfrac12-x5---tfrac45-x-on-0-1-n-32" class="nav-link" data-scroll-target="#case-2-mathews-animation-fx-tfrac12-x5---tfrac45-x-on-0-1-n-32">Case 2 — Mathews’ animation, <span class="math inline">\(f(x) = \tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span>, <span class="math inline">\(n = 32\)</span></a></li>
+  <li><a href="#case-3-example-1-fx-x2---sin-x-on-0-1-varepsilon-10-4-n-21-e-0.01-new" id="toc-case-3-example-1-fx-x2---sin-x-on-0-1-varepsilon-10-4-n-21-e-0.01-new" class="nav-link" data-scroll-target="#case-3-example-1-fx-x2---sin-x-on-0-1-varepsilon-10-4-n-21-e-0.01-new">Case 3 — Example 1, <span class="math inline">\(f(x) = x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span>, <span class="math inline">\(\varepsilon = 10^{-4}\)</span>, <span class="math inline">\(n = 21\)</span>, <span class="math inline">\(e = 0.01\)</span> (new)</a></li>
+  </ul></li>
+  <li><a href="#unimodal-functions-and-bracketing" id="toc-unimodal-functions-and-bracketing" class="nav-link" data-scroll-target="#unimodal-functions-and-bracketing">Unimodal Functions and Bracketing</a></li>
+  <li><a href="#derivation-of-the-fibonacci-ratios" id="toc-derivation-of-the-fibonacci-ratios" class="nav-link" data-scroll-target="#derivation-of-the-fibonacci-ratios">Derivation of the Fibonacci Ratios</a>
+  <ul class="collapse">
+  <li><a href="#fibonacci-numbers-and-the-golden-ratio" id="toc-fibonacci-numbers-and-the-golden-ratio" class="nav-link" data-scroll-target="#fibonacci-numbers-and-the-golden-ratio">Fibonacci numbers and the golden ratio</a></li>
+  </ul></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  <li><a href="#example-1-minimise-x2---sin-x-on-0-1" id="toc-example-1-minimise-x2---sin-x-on-0-1" class="nav-link" data-scroll-target="#example-1-minimise-x2---sin-x-on-0-1">Example 1 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span></a></li>
+  <li><a href="#example-2-minimise-tfrac12-x5---tfrac45-x-on-0-1" id="toc-example-2-minimise-tfrac12-x5---tfrac45-x-on-0-1" class="nav-link" data-scroll-target="#example-2-minimise-tfrac12-x5---tfrac45-x-on-0-1">Example 2 — Minimise <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span></a></li>
+  <li><a href="#fibonacci-versus-golden-ratio-search" id="toc-fibonacci-versus-golden-ratio-search" class="nav-link" data-scroll-target="#fibonacci-versus-golden-ratio-search">Fibonacci Versus Golden Ratio Search</a></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Fibonacci Search</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Fibonacci search finds the minimum of a function <span class="math inline">\(f\)</span> on an interval <span class="math inline">\([a_0, b_0]\)</span> using only function values, no derivatives. It needs <span class="math inline">\(f\)</span> to be <strong>unimodal</strong> on the interval: decreasing up to a single minimiser <span class="math inline">\(p\)</span> and increasing after it. Each step evaluates <span class="math inline">\(f\)</span> at two interior points <span class="math inline">\(c_k &lt; d_k\)</span> and throws away the part of the interval that cannot contain <span class="math inline">\(p\)</span>. If <span class="math inline">\(f(c_k) \le f(d_k)\)</span> the minimiser lies in <span class="math inline">\([a_k, d_k]\)</span>, otherwise it lies in <span class="math inline">\([c_k, b_k]\)</span>. The points are placed so that the surviving interior point becomes an interior point of the next interval, so every step after the first costs at most one new function evaluation (the last costs none).</p>
+<p>Unlike the golden ratio search, which shrinks the interval by the same factor every time, Fibonacci search fixes the number of steps in advance and changes the factor at every step. With the Fibonacci numbers <span class="math inline">\(F_0 = 0\)</span>, <span class="math inline">\(F_1 = 1\)</span>, <span class="math inline">\(F_n = F_{n-1} + F_{n-2}\)</span> and a tolerance <span class="math inline">\(\varepsilon\)</span>, choose the smallest <span class="math inline">\(n\)</span> with <span class="math inline">\(F_n &gt; (b_0 - a_0)/\varepsilon\)</span>. For <span class="math inline">\(k = 0, 1, \ldots, n-3\)</span>, interval <span class="math inline">\([a_k, b_k]\)</span> gets the interior points</p>
+<p><span class="math display">\[
+c_k = a_k + (1 - r_k)(b_k - a_k), \qquad d_k = a_k + r_k (b_k - a_k), \qquad r_k = \frac{F_{n-1-k}}{F_{n-k}},
+\]</span></p>
+<p>and for <span class="math inline">\(k \le n-4\)</span> the next interval is <span class="math inline">\(r_k\)</span> times as long. At the last step <span class="math inline">\(r_{n-3} = F_2/F_3 = \tfrac12\)</span>, so the two interior points meet at the midpoint of an interval of length <span class="math inline">\(2(b_0 - a_0)/F_n\)</span>. That midpoint is within <span class="math inline">\((b_0 - a_0)/F_n &lt; \varepsilon\)</span> of the minimiser.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below shows the <strong>shrinking bracket</strong> of a Fibonacci search. The top panel keeps the picture of Mathews’ animation: the full graph of <span class="math inline">\(f\)</span>, the current interval <span class="math inline">\([a_k, b_k]\)</span> as a red arc with pink fill, red dots at <span class="math inline">\(a_k\)</span> and <span class="math inline">\(b_k\)</span>, blue dots at the interior points <span class="math inline">\(c_k\)</span> and <span class="math inline">\(d_k\)</span>, and the list <span class="math inline">\(\{a_k, c_k, d_k, b_k\}\)</span> in the title. The bottom panel is new. It zooms on <span class="math inline">\([a_k, b_k]\)</span> and plots <span class="math inline">\(f(x) - f(p)\)</span>, where <span class="math inline">\(p\)</span> is the true minimiser (the dashed green line in both panels), so the comparison of <span class="math inline">\(f(c_k)\)</span> with <span class="math inline">\(f(d_k)\)</span> stays visible after the bracket has become too narrow to see in the top panel. Its title gives the step <span class="math inline">\(k\)</span>, the ratio <span class="math inline">\(r_k\)</span>, the sign of <span class="math inline">\(f(c_k) - f(d_k)\)</span> and the part that is kept, which a green bar marks. The first frame shows <span class="math inline">\([a_0, b_0]\)</span> and how <span class="math inline">\(n\)</span> was chosen, and the last frame is held. Points are labelled with enough significant figures to tell them apart, so the labels gain digits as the bracket shrinks.</p>
+<p>Mathews’ module has two worked examples and one animation, which is of Example 2. Case 1 animates Example 2 with the tolerance of his worked solution, Case 2 rebuilds his animation, which uses the same function with a much smaller tolerance, and Case 3 animates Example 1, which had no animation, so Case 3 is new. The module’s exploration of the Fibonacci numbers and the limit of their ratios is not animated. Mathews’ program keeps <span class="math inline">\([c_k, b_k]\)</span> when <span class="math inline">\(f(c_k) = f(d_k)\)</span>, where the algorithm above keeps <span class="math inline">\([a_k, d_k]\)</span>; no comparison in these three runs is a tie, so both rules give the same steps.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-example-2-with-mathews-tolerance-fx-tfrac12-x5---tfrac45-x-on-0-1-varepsilon-7-times-10-3-n-12" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-example-2-with-mathews-tolerance-fx-tfrac12-x5---tfrac45-x-on-0-1-varepsilon-7-times-10-3-n-12">Case 1 — Example 2 with Mathews’ tolerance, <span class="math inline">\(f(x) = \tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span>, <span class="math inline">\(\varepsilon = 7 \times 10^{-3}\)</span>, <span class="math inline">\(n = 12\)</span></h3>
+<p><strong>Behavior:</strong> <span class="math inline">\(F_{12} = 144 &gt; 1/0.007 = 142.86\)</span>, so <span class="math inline">\(n = 12\)</span> and the search takes <span class="math inline">\(10\)</span> steps, <span class="math inline">\(k = 0, \ldots, 9\)</span>: the rows of the Example 2 table and the ten graphs of Mathews’ solution. The bracket is squeezed from the left (keep <span class="math inline">\([c_k, b_k]\)</span>) at <span class="math inline">\(k = 0, 2, 4, 5, 8\)</span> and from the right (keep <span class="math inline">\([a_k, d_k]\)</span>) at <span class="math inline">\(k = 1, 3, 6, 7\)</span>, and every bracket contains <span class="math inline">\(p = \sqrt{10}/5 \approx 0.6325\)</span>. At <span class="math inline">\(k = 9\)</span> the interior points meet at <span class="math inline">\(\hat p = 91/144 \approx 0.6319\)</span>, which is <span class="math inline">\(5.11 \times 10^{-4}\)</span> from <span class="math inline">\(p\)</span>, within the bound <span class="math inline">\(1/F_{12} = 6.94 \times 10^{-3}\)</span>.</p>
+<p><a href="fibonacciaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fibonacciaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Fibonacci search on f(x) = 1/2 + x⁵ − 4x/5 over [0, 1] with n = 12: the pink bracket shrinks in 10 steps around the minimiser √10/5 ≈ 0.6325, and a lower panel zoomed on each bracket shows the comparison of f(c) and f(d) until c and d meet at 91/144 ≈ 0.6319</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-mathews-animation-fx-tfrac12-x5---tfrac45-x-on-0-1-n-32" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-mathews-animation-fx-tfrac12-x5---tfrac45-x-on-0-1-n-32">Case 2 — Mathews’ animation, <span class="math inline">\(f(x) = \tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span>, <span class="math inline">\(n = 32\)</span></h3>
+<p><strong>Behavior:</strong> Mathews’ animation shows a starting frame, with only the graph and the end points of <span class="math inline">\([0, 1]\)</span>, and then <span class="math inline">\(30\)</span> steps. A Fibonacci search with <span class="math inline">\(n\)</span> has <span class="math inline">\(n - 2\)</span> steps, so he used <span class="math inline">\(n = 32\)</span> (<span class="math inline">\(F_{32} = 2\,178\,309\)</span>). The animation does not record his tolerance: any <span class="math inline">\(\varepsilon\)</span> with <span class="math inline">\(1/F_{32} &lt; \varepsilon \le 1/F_{31}\)</span>, that is <span class="math inline">\(4.59 \times 10^{-7} &lt; \varepsilon \le 7.43 \times 10^{-7}\)</span>, gives <span class="math inline">\(n = 32\)</span>, and the script uses <span class="math inline">\(\varepsilon = 5 \times 10^{-7}\)</span>. The lists of points, printed to six decimals in all <span class="math inline">\(30\)</span> of his step frames, agree with this run. (To six decimals they are also the points of the first <span class="math inline">\(30\)</span> steps of a golden ratio search, so it is the number of steps, not the printed points, that fixes <span class="math inline">\(n\)</span>.) From <span class="math inline">\(k = 10\)</span> on the bracket is less than <span class="math inline">\(1\%\)</span> of <span class="math inline">\([0, 1]\)</span> (<span class="math inline">\(F_{22}/F_{32} = 0.0081\)</span>), so in Mathews’ fixed view its four dots overlap; the zoom panel separates them. The smallest difference compared, <span class="math inline">\(|f(c_{28}) - f(d_{28})| = 8.3 \times 10^{-14}\)</span>, is still about <span class="math inline">\(6000\)</span> times the spacing of double-precision numbers near <span class="math inline">\(f(p) \approx 0.095\)</span>, and the double-precision run makes the same choice at every step as an exact rational computation. At <span class="math inline">\(k = 29\)</span> the points meet at <span class="math inline">\(\hat p \approx 0.63245573\)</span>, which is <span class="math inline">\(1.94 \times 10^{-7}\)</span> from <span class="math inline">\(p = \sqrt{10}/5\)</span>, within <span class="math inline">\(1/F_{32} = 4.59 \times 10^{-7}\)</span>.</p>
+<p><a href="fibonaccibb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fibonaccibb.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ Fibonacci search animation on f(x) = 1/2 + x⁵ − 4x/5 with n = 32: 30 steps shrink the bracket from [0, 1] to width 9.2e−7 around √10/5 ≈ 0.6324555, with a lower panel zoomed on each bracket</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-example-1-fx-x2---sin-x-on-0-1-varepsilon-10-4-n-21-e-0.01-new" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-example-1-fx-x2---sin-x-on-0-1-varepsilon-10-4-n-21-e-0.01-new">Case 3 — Example 1, <span class="math inline">\(f(x) = x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span>, <span class="math inline">\(\varepsilon = 10^{-4}\)</span>, <span class="math inline">\(n = 21\)</span>, <span class="math inline">\(e = 0.01\)</span> (new)</h3>
+<p><strong>Behavior:</strong> <span class="math inline">\(F_{21} = 10946 &gt; 10^4\)</span>, so the search takes <span class="math inline">\(19\)</span> steps, the rows of the Example 1 table, and the last frame splits the final interval with <span class="math inline">\(e = 0.01\)</span> as in Step 6. Every bracket contains the minimiser <span class="math inline">\(p \approx 0.450184\)</span>, the root of <span class="math inline">\(2x = \cos x\)</span>. From <span class="math inline">\(k = 14\)</span> on, the two values compared differ by less than <span class="math inline">\(10^{-7}\)</span> (by <span class="math inline">\(4.3 \times 10^{-9}\)</span> at <span class="math inline">\(k = 16\)</span>), and the zoom panel still shows which is lower. The midpoint <span class="math inline">\(\hat p = c_{18} \approx 0.450210\)</span> is <span class="math inline">\(2.65 \times 10^{-5}\)</span> from <span class="math inline">\(p\)</span>. The split point <span class="math inline">\(c_{18}' \approx 0.4502083\)</span> is only <span class="math inline">\(1.8 \times 10^{-6}\)</span> to the left of <span class="math inline">\(d_{18}\)</span> (in the split frame the two points overlap at the plotted scale, and the zoom panel’s title gives the sign of <span class="math inline">\(f(c_{18}') - f(d_{18})\)</span>), and <span class="math inline">\(f(c_{18}') - f(d_{18}) = -1.14 \times 10^{-10} &lt; 0\)</span>, so the last frame keeps <span class="math inline">\([a_{18}, d_{18}]\)</span>, of length <span class="math inline">\(1/F_{21} = 9.14 \times 10^{-5}\)</span>, which contains <span class="math inline">\(p\)</span>. Mathews’ solution of Example 1 has a static graph of <span class="math inline">\(f\)</span> but no animation.</p>
+<p><a href="fibonaccicc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="fibonaccicc.gif" class="img-fluid figure-img"></p>
+<figcaption>Fibonacci search on f(x) = x² − sin x over [0, 1] with n = 21: 19 steps shrink the bracket around the minimiser p ≈ 0.4502, then a split with e = 0.01 keeps [0.4501188, 0.4502101], shown in a lower panel zoomed on each bracket</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="unimodal-functions-and-bracketing" class="level2">
+<h2 class="anchored" data-anchor-id="unimodal-functions-and-bracketing">Unimodal Functions and Bracketing</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Unimodal function
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The function <span class="math inline">\(f\)</span> is <em>unimodal</em> on <span class="math inline">\(I = [a, b]\)</span> if there is a unique number <span class="math inline">\(p \in I\)</span> such that <span class="math inline">\(f\)</span> is decreasing on <span class="math inline">\([a, p]\)</span> and increasing on <span class="math inline">\([p, b]\)</span>.</p>
+</div>
+</div>
+<p>A bracketing search keeps an interval <span class="math inline">\([a_k, b_k]\)</span> that is known to contain <span class="math inline">\(p\)</span> and shrinks it by comparing <span class="math inline">\(f\)</span> at two interior points <span class="math inline">\(c_k &lt; d_k\)</span>:</p>
+<ul>
+<li>If <span class="math inline">\(f(c_k) \le f(d_k)\)</span>, the minimum cannot lie to the right of <span class="math inline">\(d_k\)</span>. <em>Squeeze from the right</em>: set <span class="math inline">\(a_{k+1} = a_k\)</span>, <span class="math inline">\(b_{k+1} = d_k\)</span>.</li>
+<li>If <span class="math inline">\(f(c_k) &gt; f(d_k)\)</span>, the minimum cannot lie to the left of <span class="math inline">\(c_k\)</span>. <em>Squeeze from the left</em>: set <span class="math inline">\(a_{k+1} = c_k\)</span>, <span class="math inline">\(b_{k+1} = b_k\)</span>.</li>
+</ul>
+<p>A tie <span class="math inline">\(f(c_k) = f(d_k)\)</span> puts <span class="math inline">\(p\)</span> between <span class="math inline">\(c_k\)</span> and <span class="math inline">\(d_k\)</span>, so either choice is safe; the rule above keeps <span class="math inline">\([a_k, d_k]\)</span>. The method uses only comparisons of function values, so it also works when <span class="math inline">\(f\)</span> is not differentiable.</p>
+</section>
+<section id="derivation-of-the-fibonacci-ratios" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-of-the-fibonacci-ratios">Derivation of the Fibonacci Ratios</h2>
+<p>Write the interior points of <span class="math inline">\([a_0, b_0]\)</span> as</p>
+<p><span class="math display">\[
+c_0 = a_0 + (1 - r_0)(b_0 - a_0), \qquad d_0 = a_0 + r_0 (b_0 - a_0), \qquad \tfrac12 &lt; r_0 &lt; 1,
+\tag{1}
+\]</span></p>
+<p>so that <span class="math inline">\(c_0 &lt; d_0\)</span>. Suppose <span class="math inline">\(f(c_0) \le f(d_0)\)</span>, so the new interval is <span class="math inline">\([a_1, b_1] = [a_0, d_0]\)</span>. To need only one new evaluation, the old point <span class="math inline">\(c_0\)</span> must be reused as the right interior point <span class="math inline">\(d_1\)</span> of the new interval. Since <span class="math inline">\(b_1 = d_0\)</span> and <span class="math inline">\(d_1 = c_0\)</span>,</p>
+<p><span class="math display">\[
+b_1 - d_1 = d_0 - c_0.
+\tag{2}
+\]</span></p>
+<p>From (1), <span class="math inline">\(d_0 - c_0 = (2r_0 - 1)(b_0 - a_0)\)</span>. In the new interval, with its own ratio <span class="math inline">\(r_1\)</span>, <span class="math inline">\(b_1 - d_1 = (1 - r_1)(b_1 - a_1)\)</span>, and the interval has shrunk by the factor <span class="math inline">\(r_0\)</span>, so <span class="math inline">\(b_1 - a_1 = r_0 (b_0 - a_0)\)</span>. Substituting into (2) and cancelling <span class="math inline">\(b_0 - a_0\)</span>,</p>
+<p><span class="math display">\[
+2r_0 - 1 = (1 - r_1)\, r_0
+\qquad\Longrightarrow\qquad
+r_1 = \frac{1 - r_0}{r_0}.
+\tag{3}
+\]</span></p>
+<p>The case <span class="math inline">\(f(c_0) &gt; f(d_0)\)</span>, where <span class="math inline">\(d_0\)</span> is reused as <span class="math inline">\(c_1\)</span>, gives the same equation. The golden ratio search keeps <span class="math inline">\(r_1 = r_0\)</span>, which forces <span class="math inline">\(r^2 + r - 1 = 0\)</span> and <span class="math inline">\(r = (\sqrt5 - 1)/2\)</span>. Fibonacci search instead starts with <span class="math inline">\(r_0 = F_{n-1}/F_n\)</span>. Then (3) gives</p>
+<p><span class="math display">\[
+r_1 = \frac{1 - F_{n-1}/F_n}{F_{n-1}/F_n} = \frac{F_n - F_{n-1}}{F_{n-1}} = \frac{F_{n-2}}{F_{n-1}},
+\]</span></p>
+<p>and by induction</p>
+<p><span class="math display">\[
+r_k = \frac{F_{n-1-k}}{F_{n-k}}, \qquad k = 0, 1, \ldots, n-3.
+\tag{4}
+\]</span></p>
+<p>The last ratio is <span class="math inline">\(r_{n-3} = F_2/F_3 = \tfrac12\)</span>: both interior points sit at the midpoint, and no new point can be added. The search therefore has exactly <span class="math inline">\(n - 2\)</span> steps, <span class="math inline">\(k = 0, 1, \ldots, n-3\)</span>.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Interval lengths in Fibonacci search
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f\)</span> is unimodal on <span class="math inline">\([a_0, b_0]\)</span>, every interval <span class="math inline">\([a_k, b_k]\)</span> contains the minimiser <span class="math inline">\(p\)</span>, and the product of the ratios telescopes:</p>
+<p><span class="math display">\[
+b_k - a_k = r_{k-1} \cdots r_1 r_0\, (b_0 - a_0) = \frac{F_{n-k}}{F_n}\,(b_0 - a_0).
+\]</span></p>
+<p>In particular the last interval has length <span class="math inline">\(b_{n-3} - a_{n-3} = F_3 (b_0 - a_0)/F_n = 2(b_0 - a_0)/F_n\)</span>, and its midpoint <span class="math inline">\(c_{n-3} = d_{n-3}\)</span> is within <span class="math inline">\((b_0 - a_0)/F_n\)</span> of <span class="math inline">\(p\)</span>. Splitting that last interval in half as well would leave a bracket of length <span class="math inline">\(r_0 r_1 \cdots r_{n-3}(b_0 - a_0) = (b_0 - a_0)/F_n\)</span>.</p>
+</div>
+</div>
+<p>To locate <span class="math inline">\(p\)</span> within a tolerance <span class="math inline">\(\varepsilon\)</span> we need <span class="math inline">\((b_0 - a_0)/F_n &lt; \varepsilon\)</span>, so <span class="math inline">\(n\)</span> is the smallest integer with</p>
+<p><span class="math display">\[
+F_n &gt; \frac{b_0 - a_0}{\varepsilon}.
+\tag{5}
+\]</span></p>
+<p>The interior points of <span class="math inline">\([a_k, b_k]\)</span> come from (1) with <span class="math inline">\(r_k\)</span> from (4):</p>
+<p><span class="math display">\[
+c_k = a_k + \left(1 - \frac{F_{n-1-k}}{F_{n-k}}\right)(b_k - a_k),
+\tag{6}
+\]</span></p>
+<p><span class="math display">\[
+d_k = a_k + \frac{F_{n-1-k}}{F_{n-k}}\,(b_k - a_k).
+\tag{7}
+\]</span></p>
+<section id="fibonacci-numbers-and-the-golden-ratio" class="level3">
+<h3 class="anchored" data-anchor-id="fibonacci-numbers-and-the-golden-ratio">Fibonacci numbers and the golden ratio</h3>
+<p>The Fibonacci numbers start <span class="math inline">\(0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, \ldots\)</span> and have the closed form</p>
+<p><span class="math display">\[
+F_n = \frac{(1 + \sqrt5)^n - (1 - \sqrt5)^n}{2^n \sqrt5},
+\]</span></p>
+<p>which helps to estimate <span class="math inline">\(n\)</span> in (5). The ratios <span class="math inline">\(r_k\)</span> themselves still need the Fibonacci numbers <span class="math inline">\(F_0, F_1, \ldots, F_n\)</span>. As <span class="math inline">\(n \to \infty\)</span> the ratio <span class="math inline">\(F_{n-1}/F_n\)</span> tends to the golden ratio constant</p>
+<p><span class="math display">\[
+\rho = \frac{\sqrt5 - 1}{2} = 0.6180339887\ldots,
+\]</span></p>
+<p>which is the constant ratio of the golden ratio search. For <span class="math inline">\(n = 21\)</span> (used in Example 1) the ratios are</p>
+<p><span class="math display">\[
+r_0, \ldots, r_{18} = \frac{6765}{10946}, \frac{4181}{6765}, \frac{2584}{4181}, \frac{1597}{2584}, \frac{987}{1597}, \frac{610}{987}, \frac{377}{610}, \ldots, \frac{8}{13}, \frac{5}{8}, \frac{3}{5}, \frac{2}{3}, \frac{1}{2}.
+\]</span></p>
+<p>The first six, <span class="math inline">\(r_0\)</span> to <span class="math inline">\(r_5\)</span>, all equal <span class="math inline">\(\rho\)</span> to six decimals (<span class="math inline">\(0.618034\)</span>). The difference grows toward the end: <span class="math inline">\(r_6 = 0.618033\)</span>, <span class="math inline">\(r_{10} = 0.617978\)</span>, <span class="math inline">\(r_{14} = 0.615385\)</span>, and the last four are <span class="math inline">\(0.625\)</span>, <span class="math inline">\(0.6\)</span>, <span class="math inline">\(0.666667\)</span> and <span class="math inline">\(0.5\)</span>. So the two methods place almost the same points in the early steps and differ only in the last few.</p>
+</section>
+</section>
+<section id="algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="algorithm">Algorithm</h2>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Fibonacci search for a minimum
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(f\)</span> unimodal on <span class="math inline">\([a_0, b_0]\)</span> and a tolerance <span class="math inline">\(\varepsilon\)</span>:</p>
+<ol type="1">
+<li>Find the smallest <span class="math inline">\(n\)</span> with <span class="math inline">\(F_n &gt; (b_0 - a_0)/\varepsilon\)</span>.</li>
+<li>Compute <span class="math inline">\(c_0\)</span> and <span class="math inline">\(d_0\)</span> from (6) and (7) and evaluate <span class="math inline">\(f(c_0)\)</span>, <span class="math inline">\(f(d_0)\)</span>.</li>
+<li>For <span class="math inline">\(k = 0, 1, \ldots, n-4\)</span>:
+<ul>
+<li>if <span class="math inline">\(f(c_k) \le f(d_k)\)</span>: set <span class="math inline">\(a_{k+1} = a_k\)</span>, <span class="math inline">\(b_{k+1} = d_k\)</span>, <span class="math inline">\(d_{k+1} = c_k\)</span>, and compute the new <span class="math inline">\(c_{k+1}\)</span> from (6);</li>
+<li>otherwise: set <span class="math inline">\(a_{k+1} = c_k\)</span>, <span class="math inline">\(b_{k+1} = b_k\)</span>, <span class="math inline">\(c_{k+1} = d_k\)</span>, and compute the new <span class="math inline">\(d_{k+1}\)</span> from (7);</li>
+<li>evaluate <span class="math inline">\(f\)</span> at the one new point (for <span class="math inline">\(k = n-4\)</span> the new point coincides with the reused one, so no evaluation is needed).</li>
+</ul></li>
+<li>At <span class="math inline">\(k = n-3\)</span> the formula gives <span class="math inline">\(c_{n-3} = d_{n-3}\)</span>, the midpoint of <span class="math inline">\([a_{n-3}, b_{n-3}]\)</span>, which has already been evaluated. Return <span class="math inline">\(p \approx c_{n-3}\)</span>; its error is at most <span class="math inline">\((b_0 - a_0)/F_n &lt; \varepsilon\)</span>.</li>
+</ol>
+</div>
+</div>
+<p>Steps 2 and 3 use <span class="math inline">\(2 + (n-4) = n - 2\)</span> function evaluations. To split the last interval as well, Mathews introduces a small <strong>distinguishability constant</strong> <span class="math inline">\(e\)</span>: replace <span class="math inline">\(c_{n-3}\)</span> by</p>
+<p><span class="math display">\[
+c_{n-3}' = a_{n-3} + \left(\tfrac12 - e\right)(b_{n-3} - a_{n-3}),
+\]</span></p>
+<p>evaluate <span class="math inline">\(f\)</span> there (evaluation number <span class="math inline">\(n-1\)</span>) and compare with <span class="math inline">\(f(d_{n-3})\)</span> as before. The final bracket is <span class="math inline">\([a_{n-3}, d_{n-3}]\)</span>, of length <span class="math inline">\((b_0 - a_0)/F_n\)</span>, or <span class="math inline">\([c_{n-3}', b_{n-3}]\)</span>, of length <span class="math inline">\((1 + 2e)(b_0 - a_0)/F_n\)</span>.</p>
+</section>
+<section id="example-1-minimise-x2---sin-x-on-0-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-minimise-x2---sin-x-on-0-1">Example 1 — Minimise <span class="math inline">\(x^2 - \sin x\)</span> on <span class="math inline">\([0, 1]\)</span></h2>
+<p>Find the minimum of the unimodal function</p>
+<p><span class="math display">\[
+f(x) = x^2 - \sin x
+\]</span></p>
+<p>on <span class="math inline">\([0, 1]\)</span> with tolerance <span class="math inline">\(\varepsilon = 10^{-4}\)</span> and distinguishability constant <span class="math inline">\(e = 0.01\)</span>. The function is unimodal there because <span class="math inline">\(f''(x) = 2 + \sin x \ge 2 &gt; 0\)</span> on <span class="math inline">\([0, 1]\)</span>.</p>
+<p><strong>Step 1</strong> (number of steps): by (5) we need</p>
+<p><span class="math display">\[
+F_n &gt; \frac{b_0 - a_0}{\varepsilon} = \frac{1 - 0}{10^{-4}} = 10000.
+\]</span></p>
+<p>Since <span class="math inline">\(F_{20} = 6765\)</span> and <span class="math inline">\(F_{21} = 10946\)</span>, take <span class="math inline">\(n = 21\)</span>. The search has <span class="math inline">\(n - 2 = 19\)</span> steps, <span class="math inline">\(k = 0, \ldots, 18\)</span>.</p>
+<p><strong>Step 2</strong> (first interior points): <span class="math inline">\(r_0 = F_{20}/F_{21} = 6765/10946 \approx 0.618034\)</span>, so</p>
+<p><span class="math display">\[
+c_0 = 0 + (1 - 0.618034)(1 - 0) = 0.381966, \qquad d_0 = 0 + 0.618034\,(1 - 0) = 0.618034,
+\]</span></p>
+<p><span class="math display">\[
+f(c_0) = f(0.381966) = -0.2268475, \qquad f(d_0) = f(0.618034) = -0.1974679.
+\]</span></p>
+<p><strong>Step 3</strong> (first squeeze): <span class="math inline">\(f(c_0) \le f(d_0)\)</span>, so squeeze from the right: <span class="math inline">\([a_1, b_1] = [0, 0.618034]\)</span> and <span class="math inline">\(d_1 = c_0 = 0.381966\)</span>. The new point comes from (6) with <span class="math inline">\(r_1 = F_{19}/F_{20} = 4181/6765\)</span>:</p>
+<p><span class="math display">\[
+c_1 = 0 + \left(1 - \tfrac{4181}{6765}\right)(0.618034 - 0) = 0.236068, \qquad f(c_1) = -0.1781534.
+\]</span></p>
+<p><strong>Step 4</strong> (second squeeze): <span class="math inline">\(f(c_1) = -0.1781534 &gt; f(d_1) = -0.2268475\)</span>, so squeeze from the left: <span class="math inline">\([a_2, b_2] = [c_1, b_1] = [0.236068, 0.618034]\)</span>, <span class="math inline">\(c_2 = d_1 = 0.381966\)</span>, and the new <span class="math inline">\(d_2\)</span> comes from (7).</p>
+<p>Continuing in the same way gives the full table. Every interval length is <span class="math inline">\(F_{21-k}/10946\)</span>, and every endpoint and interior point in the table is a multiple of <span class="math inline">\(1/F_{21} = 1/10946\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(r_k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(f(c_k)\)</span></th>
+<th><span class="math inline">\(f(d_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(6765/10946\)</span></td>
+<td>0.0000000</td>
+<td>0.3819660</td>
+<td>0.6180340</td>
+<td>1.0000000</td>
+<td>-0.2268474834</td>
+<td>-0.1974679348</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(4181/6765\)</span></td>
+<td>0.0000000</td>
+<td>0.2360680</td>
+<td>0.3819660</td>
+<td>0.6180340</td>
+<td>-0.1781533822</td>
+<td>-0.2268474834</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(2584/4181\)</span></td>
+<td>0.2360680</td>
+<td>0.3819660</td>
+<td>0.4721359</td>
+<td>0.6180340</td>
+<td>-0.2268474834</td>
+<td>-0.2318772414</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(1597/2584\)</span></td>
+<td>0.3819660</td>
+<td>0.4721359</td>
+<td>0.5278641</td>
+<td>0.6180340</td>
+<td>-0.2318772414</td>
+<td>-0.2250488195</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(987/1597\)</span></td>
+<td>0.3819660</td>
+<td>0.4376941</td>
+<td>0.4721359</td>
+<td>0.5278641</td>
+<td>-0.2322759435</td>
+<td>-0.2318772414</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(610/987\)</span></td>
+<td>0.3819660</td>
+<td>0.4164078</td>
+<td>0.4376941</td>
+<td>0.4721359</td>
+<td>-0.2310823769</td>
+<td>-0.2322759435</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(377/610\)</span></td>
+<td>0.4164078</td>
+<td>0.4376941</td>
+<td>0.4508496</td>
+<td>0.4721359</td>
+<td>-0.2322759435</td>
+<td>-0.2324650350</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td><span class="math inline">\(233/377\)</span></td>
+<td>0.4376941</td>
+<td>0.4508496</td>
+<td>0.4589804</td>
+<td>0.4721359</td>
+<td>-0.2324650350</td>
+<td>-0.2323712526</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td><span class="math inline">\(144/233\)</span></td>
+<td>0.4376941</td>
+<td>0.4458250</td>
+<td>0.4508496</td>
+<td>0.4589804</td>
+<td>-0.2324424565</td>
+<td>-0.2324650350</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td><span class="math inline">\(89/144\)</span></td>
+<td>0.4458250</td>
+<td>0.4508496</td>
+<td>0.4539558</td>
+<td>0.4589804</td>
+<td>-0.2324650350</td>
+<td>-0.2324482420</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td><span class="math inline">\(55/89\)</span></td>
+<td>0.4458250</td>
+<td>0.4489311</td>
+<td>0.4508496</td>
+<td>0.4539558</td>
+<td>-0.2324636654</td>
+<td>-0.2324650350</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>11</td>
+<td><span class="math inline">\(34/55\)</span></td>
+<td>0.4489311</td>
+<td>0.4508496</td>
+<td>0.4520373</td>
+<td>0.4539558</td>
+<td>-0.2324650350</td>
+<td>-0.2324613906</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>12</td>
+<td><span class="math inline">\(21/34\)</span></td>
+<td>0.4489311</td>
+<td>0.4501188</td>
+<td>0.4508496</td>
+<td>0.4520373</td>
+<td>-0.2324655700</td>
+<td>-0.2324650350</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>13</td>
+<td><span class="math inline">\(13/21\)</span></td>
+<td>0.4489311</td>
+<td>0.4496620</td>
+<td>0.4501188</td>
+<td>0.4508496</td>
+<td>-0.2324652439</td>
+<td>-0.2324655700</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>14</td>
+<td><span class="math inline">\(8/13\)</span></td>
+<td>0.4496620</td>
+<td>0.4501188</td>
+<td>0.4503928</td>
+<td>0.4508496</td>
+<td>-0.2324655700</td>
+<td>-0.2324655219</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>15</td>
+<td><span class="math inline">\(5/8\)</span></td>
+<td>0.4496620</td>
+<td>0.4499360</td>
+<td>0.4501188</td>
+<td>0.4503928</td>
+<td>-0.2324655005</td>
+<td>-0.2324655700</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>16</td>
+<td><span class="math inline">\(3/5\)</span></td>
+<td>0.4499360</td>
+<td>0.4501188</td>
+<td>0.4502101</td>
+<td>0.4503928</td>
+<td>-0.2324655700</td>
+<td>-0.2324655743</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>17</td>
+<td><span class="math inline">\(2/3\)</span></td>
+<td>0.4501188</td>
+<td>0.4502101</td>
+<td>0.4503015</td>
+<td>0.4503928</td>
+<td>-0.2324655743</td>
+<td>-0.2324655582</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>18</td>
+<td><span class="math inline">\(1/2\)</span></td>
+<td>0.4501188</td>
+<td>0.4502101</td>
+<td>0.4502101</td>
+<td>0.4503015</td>
+<td>-0.2324655743</td>
+<td>-0.2324655743</td>
+<td><span class="math inline">\(c_k = d_k\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>From <span class="math inline">\(k = 14\)</span> on, the two function values differ only in the eighth or ninth decimal place (at <span class="math inline">\(k = 16\)</span> by <span class="math inline">\(4.3 \times 10^{-9}\)</span>), so the comparisons need the full working precision.</p>
+<p><strong>Step 5</strong> (result): at <span class="math inline">\(k = 18\)</span> the interior points meet at the midpoint of</p>
+<p><span class="math display">\[
+[a_{18}, b_{18}] = \left[\tfrac{4927}{10946}, \tfrac{4929}{10946}\right] = [0.450118765,\ 0.450301480],
+\]</span></p>
+<p>an interval of length <span class="math inline">\(2/F_{21} = 1.83 \times 10^{-4}\)</span>. The approximation to the minimiser is</p>
+<p><span class="math display">\[
+\boxed{\,p \approx c_{18} = d_{18} = \tfrac{4928}{10946} = 0.450210122, \qquad f(p) = -0.232465574\,}
+\]</span></p>
+<p>with guaranteed error at most <span class="math inline">\(1/F_{21} = 9.14 \times 10^{-5} &lt; 10^{-4}\)</span>. This took <span class="math inline">\(19\)</span> function evaluations.</p>
+<p><strong>Step 6</strong> (optional split with <span class="math inline">\(e = 0.01\)</span>): the extra point is</p>
+<p><span class="math display">\[
+c_{18}' = a_{18} + (0.5 - 0.01)(b_{18} - a_{18}) = 0.450208295, \qquad f(c_{18}') = -0.232465574416,
+\]</span></p>
+<p>against <span class="math inline">\(f(d_{18}) = -0.232465574302\)</span>. The two values agree to nine decimals, which is all that Mathews prints, but <span class="math inline">\(f(c_{18}') &lt; f(d_{18})\)</span> by <span class="math inline">\(1.1 \times 10^{-10}\)</span>, so the final bracket is <span class="math inline">\([a_{18}, d_{18}] = [0.450118765,\ 0.450210122]\)</span>, of length <span class="math inline">\(1/F_{21} = 9.14 \times 10^{-5}\)</span>, after <span class="math inline">\(20\)</span> evaluations.</p>
+<p><strong>Verification:</strong> the minimiser solves <span class="math inline">\(f'(x) = 2x - \cos x = 0\)</span>. Solving this independently to high precision gives</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>True minimiser <span class="math inline">\(p\)</span></td>
+<td><span class="math inline">\(0.4501836113\)</span></td>
+</tr>
+<tr class="even">
+<td>True minimum <span class="math inline">\(f(p)\)</span></td>
+<td><span class="math inline">\(-0.2324655752\)</span></td>
+</tr>
+<tr class="odd">
+<td>Fibonacci estimate <span class="math inline">\(c_{18}\)</span></td>
+<td><span class="math inline">\(0.4502101224\)</span></td>
+</tr>
+<tr class="even">
+<td>Error <span class="math inline">\(\lvert c_{18} - p \rvert\)</span></td>
+<td><span class="math inline">\(2.65 \times 10^{-5} \le 9.14 \times 10^{-5}\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(f(c_{18}) - f(p)\)</span></td>
+<td><span class="math inline">\(8.6 \times 10^{-10}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(f'\)</span> at the final bracket ends</td>
+<td><span class="math inline">\(f'(0.450118765) = -1.6 \times 10^{-4} &lt; 0\)</span>, <span class="math inline">\(f'(0.450210122) = 6.5 \times 10^{-5} &gt; 0\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The sign change of <span class="math inline">\(f'\)</span> confirms that the final bracket contains the minimiser, and <span class="math inline">\(p\)</span> lies inside every interval <span class="math inline">\([a_k, b_k]\)</span> of the table.</p>
+</section>
+<section id="example-2-minimise-tfrac12-x5---tfrac45-x-on-0-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-minimise-tfrac12-x5---tfrac45-x-on-0-1">Example 2 — Minimise <span class="math inline">\(\tfrac12 + x^5 - \tfrac45 x\)</span> on <span class="math inline">\([0, 1]\)</span></h2>
+<p>Find the minimum of</p>
+<p><span class="math display">\[
+f(x) = \frac12 + x^5 - \frac45\,x
+\]</span></p>
+<p>on <span class="math inline">\([0, 1]\)</span>. Mathews runs this example with tolerance <span class="math inline">\(\varepsilon = 7 \times 10^{-3}\)</span>. The function is unimodal on <span class="math inline">\([0, 1]\)</span> because <span class="math inline">\(f''(x) = 20x^3 &gt; 0\)</span> for <span class="math inline">\(0 &lt; x \le 1\)</span>.</p>
+<p><strong>Step 1</strong>: <span class="math inline">\((b_0 - a_0)/\varepsilon = 1/0.007 = 142.86\)</span>. Since <span class="math inline">\(F_{11} = 89\)</span> and <span class="math inline">\(F_{12} = 144\)</span>, take <span class="math inline">\(n = 12\)</span>; the search has <span class="math inline">\(n - 2 = 10\)</span> steps, <span class="math inline">\(k = 0, \ldots, 9\)</span>, and every point is a multiple of <span class="math inline">\(1/144\)</span>.</p>
+<p><strong>Step 2</strong>: <span class="math inline">\(r_0 = 89/144 = 0.618056\)</span>, so <span class="math inline">\(c_0 = 55/144 = 0.381944\)</span> and <span class="math inline">\(d_0 = 89/144 = 0.618056\)</span>, with <span class="math inline">\(f(c_0) = 0.2025728\)</span> and <span class="math inline">\(f(d_0) = 0.0957412\)</span>.</p>
+<p><strong>Step 3</strong>: <span class="math inline">\(f(c_0) &gt; f(d_0)\)</span>, so squeeze from the left: <span class="math inline">\([a_1, b_1] = [0.381944, 1]\)</span>, <span class="math inline">\(c_1 = d_0 = 0.618056\)</span>, and the new point is <span class="math inline">\(d_1 = a_1 + \tfrac{55}{89}(b_1 - a_1) = 0.763889\)</span>.</p>
+<p>The remaining steps follow the same pattern:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(r_k\)</span></th>
+<th><span class="math inline">\(a_k\)</span></th>
+<th><span class="math inline">\(c_k\)</span></th>
+<th><span class="math inline">\(d_k\)</span></th>
+<th><span class="math inline">\(b_k\)</span></th>
+<th><span class="math inline">\(f(c_k)\)</span></th>
+<th><span class="math inline">\(f(d_k)\)</span></th>
+<th>keep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(89/144\)</span></td>
+<td>0.000000</td>
+<td>0.381944</td>
+<td>0.618056</td>
+<td>1.000000</td>
+<td>0.2025728</td>
+<td>0.0957412</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(55/89\)</span></td>
+<td>0.381944</td>
+<td>0.618056</td>
+<td>0.763889</td>
+<td>1.000000</td>
+<td>0.0957412</td>
+<td>0.1489952</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(34/55\)</span></td>
+<td>0.381944</td>
+<td>0.527778</td>
+<td>0.618056</td>
+<td>0.763889</td>
+<td>0.1187279</td>
+<td>0.0957412</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(21/34\)</span></td>
+<td>0.527778</td>
+<td>0.618056</td>
+<td>0.673611</td>
+<td>0.763889</td>
+<td>0.0957412</td>
+<td>0.0998015</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(13/21\)</span></td>
+<td>0.527778</td>
+<td>0.583333</td>
+<td>0.618056</td>
+<td>0.673611</td>
+<td>0.1008769</td>
+<td>0.0957412</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(8/13\)</span></td>
+<td>0.583333</td>
+<td>0.618056</td>
+<td>0.638889</td>
+<td>0.673611</td>
+<td>0.0957412</td>
+<td>0.0953342</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(5/8\)</span></td>
+<td>0.618056</td>
+<td>0.638889</td>
+<td>0.652778</td>
+<td>0.673611</td>
+<td>0.0953342</td>
+<td>0.0963074</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td><span class="math inline">\(3/5\)</span></td>
+<td>0.618056</td>
+<td>0.631944</td>
+<td>0.638889</td>
+<td>0.652778</td>
+<td>0.0952291</td>
+<td>0.0953342</td>
+<td><span class="math inline">\([a_k,d_k]\)</span></td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td><span class="math inline">\(2/3\)</span></td>
+<td>0.618056</td>
+<td>0.625000</td>
+<td>0.631944</td>
+<td>0.638889</td>
+<td>0.0953674</td>
+<td>0.0952291</td>
+<td><span class="math inline">\([c_k,b_k]\)</span></td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td><span class="math inline">\(1/2\)</span></td>
+<td>0.625000</td>
+<td>0.631944</td>
+<td>0.631944</td>
+<td>0.638889</td>
+<td>0.0952291</td>
+<td>0.0952291</td>
+<td><span class="math inline">\(c_k = d_k\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result</strong>: after <span class="math inline">\(10\)</span> function evaluations the last interval is <span class="math inline">\([a_9, b_9] = [90/144,\ 92/144] = [0.625,\ 0.638889]\)</span>, of length <span class="math inline">\(2/144 = 0.0139\)</span>, and</p>
+<p><span class="math display">\[
+\boxed{\,p \approx c_9 = d_9 = \tfrac{91}{144} = 0.631944, \qquad f(p) = 0.0952291\,}
+\]</span></p>
+<p>with guaranteed error at most <span class="math inline">\(1/F_{12} = 1/144 = 6.94 \times 10^{-3} &lt; 7 \times 10^{-3}\)</span>.</p>
+<p><strong>Verification:</strong> here <span class="math inline">\(f'(x) = 5x^4 - \tfrac45 = 0\)</span> gives the minimiser exactly, <span class="math inline">\(p = (4/25)^{1/4} = \sqrt{10}/5\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>True minimiser <span class="math inline">\(p = \sqrt{10}/5\)</span></td>
+<td><span class="math inline">\(0.6324555320\)</span></td>
+</tr>
+<tr class="even">
+<td>True minimum <span class="math inline">\(f(p)\)</span></td>
+<td><span class="math inline">\(0.0952284595\)</span></td>
+</tr>
+<tr class="odd">
+<td>Fibonacci estimate <span class="math inline">\(c_9\)</span></td>
+<td><span class="math inline">\(0.6319444444\)</span></td>
+</tr>
+<tr class="even">
+<td>Error <span class="math inline">\(\lvert c_9 - p \rvert\)</span></td>
+<td><span class="math inline">\(5.11 \times 10^{-4} \le 6.94 \times 10^{-3}\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(f(c_9) - f(p)\)</span></td>
+<td><span class="math inline">\(6.6 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(f'\)</span> at the last interval ends</td>
+<td><span class="math inline">\(f'(0.625) = -0.037 &lt; 0\)</span>, <span class="math inline">\(f'(0.638889) = 0.033 &gt; 0\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Mathews stops this example at the midpoint. Splitting the last interval with <span class="math inline">\(e = 0.01\)</span> would evaluate <span class="math inline">\(f(0.631806) = 0.0952295 &gt; f(d_9) = 0.0952291\)</span> and keep <span class="math inline">\([0.631806,\ 0.638889]\)</span>, a bracket of length <span class="math inline">\((1 + 2e)/144 = 0.00708\)</span>. That still contains <span class="math inline">\(p\)</span>, but it is slightly longer than <span class="math inline">\(\varepsilon = 0.007\)</span>: the error bound <span class="math inline">\((b_0 - a_0)/F_n &lt; \varepsilon\)</span> belongs to the midpoint estimate, not to the bracket left after the split.</p>
+</section>
+<section id="fibonacci-versus-golden-ratio-search" class="level2">
+<h2 class="anchored" data-anchor-id="fibonacci-versus-golden-ratio-search">Fibonacci Versus Golden Ratio Search</h2>
+<p>Both methods shrink a bracket with one new function evaluation per step, and their ratios differ noticeably only in the last few steps: for <span class="math inline">\(n = 21\)</span> the first eleven ratios <span class="math inline">\(r_0, \ldots, r_{10}\)</span> are within <span class="math inline">\(10^{-4}\)</span> of <span class="math inline">\(\rho\)</span>, while the last four differ from it by <span class="math inline">\(0.007\)</span> to <span class="math inline">\(0.12\)</span>. The difference is that the Fibonacci ratios are chosen for a fixed number of evaluations. With <span class="math inline">\(N\)</span> evaluations, the golden ratio search leaves a bracket of length <span class="math inline">\(\rho^{N-1}(b_0 - a_0)\)</span>. Fibonacci search with <span class="math inline">\(n = N + 1\)</span> (including the split with <span class="math inline">\(e\)</span>) leaves at most <span class="math inline">\((1 + 2e)(b_0 - a_0)/F_n\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Example</th>
+<th>Evaluations <span class="math inline">\(N\)</span></th>
+<th>Fibonacci bracket (bound)</th>
+<th>Golden ratio bracket</th>
+<th>Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1 (<span class="math inline">\(n = 21\)</span>)</td>
+<td>20</td>
+<td><span class="math inline">\(9.32 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(1.07 \times 10^{-4}\)</span></td>
+<td>0.871</td>
+</tr>
+<tr class="even">
+<td>2 (<span class="math inline">\(n = 12\)</span>)</td>
+<td>11</td>
+<td><span class="math inline">\(7.08 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\(8.13 \times 10^{-3}\)</span></td>
+<td>0.871</td>
+</tr>
+</tbody>
+</table>
+<p>With <span class="math inline">\(e = 0.01\)</span> this ratio stays between <span class="math inline">\(0.864\)</span> and <span class="math inline">\(0.874\)</span> for every <span class="math inline">\(n\)</span> from 5 to 44 and tends to <span class="math inline">\((1 + 2e)\sqrt5/\phi^2 \approx 0.871\)</span>, where <span class="math inline">\(\phi = (1 + \sqrt5)/2\)</span>. Mathews says that for large <span class="math inline">\(n\)</span> the two methods are almost identical. That is true of the points they place in the early steps, but for the same number of evaluations the Fibonacci bracket stays about 13% shorter however large <span class="math inline">\(n\)</span> is.</p>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Fix <span class="math inline">\(n\)</span> first.</strong> The number of steps comes from (5) before any function is evaluated, and the ratios <span class="math inline">\(r_k\)</span> depend on it. Unlike the golden ratio search, the method cannot simply be continued for more accuracy; a tighter tolerance means starting again with a larger <span class="math inline">\(n\)</span>.</li>
+<li><strong>Reuse the surviving point.</strong> Keep the surviving interior point and its function value from the previous step, and compute only the new point from (6) or (7). This is what makes each step cost one evaluation.</li>
+<li><strong>The last step is degenerate.</strong> At <span class="math inline">\(k = n-3\)</span> the ratio is <span class="math inline">\(\tfrac12\)</span> and the two interior points coincide. Either stop at the midpoint, or split once more with a small <span class="math inline">\(e\)</span> as above.</li>
+<li><strong>Ties and close values.</strong> Keep <span class="math inline">\([a_k, d_k]\)</span> when <span class="math inline">\(f(c_k) = f(d_k)\)</span>; for a unimodal <span class="math inline">\(f\)</span> the minimiser then lies between the two points. Near the minimum the two values can agree to many digits (Example 1 compares values that differ by <span class="math inline">\(10^{-10}\)</span>), so rounding in <span class="math inline">\(f\)</span> can send a comparison the wrong way when the tolerance approaches the square root of machine precision (<span class="math inline">\(\approx 1.5 \times 10^{-8}\)</span> in double precision). For Example 1 in double precision, <span class="math inline">\(f\)</span> is still seen to decrease and then increase on seven points spaced <span class="math inline">\(10^{-8}\)</span> apart around the minimiser, but not on points spaced <span class="math inline">\(10^{-9}\)</span> apart.</li>
+<li><strong>Unimodality is required.</strong> If <span class="math inline">\(f\)</span> has several local minima in <span class="math inline">\([a_0, b_0]\)</span>, the comparisons can discard the interval containing the global minimum. The method still returns a point, but there is no guarantee about which minimum it approaches.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

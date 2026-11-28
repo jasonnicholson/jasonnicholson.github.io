@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Newton’s Search Method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-example-5-three-minima-and-two-saddle-points-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x-new" id="toc-case-1-example-5-three-minima-and-two-saddle-points-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x-new" class="nav-link" data-scroll-target="#case-1-example-5-three-minima-and-two-saddle-points-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x-new">Case 1 — Example 5, three minima and two saddle points, <span class="math inline">\(f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x\)</span> (new)</a></li>
+  <li><a href="#case-2-example-6-convergence-from--0.3-0.2-and-divergence-from--3-2-fx-y-dfracx---yx2-y2-2-new" id="toc-case-2-example-6-convergence-from--0.3-0.2-and-divergence-from--3-2-fx-y-dfracx---yx2-y2-2-new" class="nav-link" data-scroll-target="#case-2-example-6-convergence-from--0.3-0.2-and-divergence-from--3-2-fx-y-dfracx---yx2-y2-2-new">Case 2 — Example 6, convergence from <span class="math inline">\((-0.3, 0.2)\)</span> and divergence from <span class="math inline">\((-3, 2)\)</span>, <span class="math inline">\(f(x, y) = \dfrac{x - y}{x^2 + y^2 + 2}\)</span> (new)</a></li>
+  <li><a href="#case-3-example-4-rosenbrocks-function-fx-y-100y---x22-1---x2-from-0.99-1.01-and-1.8-1.2-new" id="toc-case-3-example-4-rosenbrocks-function-fx-y-100y---x22-1---x2-from-0.99-1.01-and-1.8-1.2-new" class="nav-link" data-scroll-target="#case-3-example-4-rosenbrocks-function-fx-y-100y---x22-1---x2-from-0.99-1.01-and-1.8-1.2-new">Case 3 — Example 4, Rosenbrock’s function <span class="math inline">\(f(x, y) = 100(y - x^2)^2 + (1 - x)^2\)</span> from <span class="math inline">\((0.99, 1.01)\)</span> and <span class="math inline">\((1.8, 1.2)\)</span> (new)</a></li>
+  </ul></li>
+  <li><a href="#gradient-and-hessian" id="toc-gradient-and-hessian" class="nav-link" data-scroll-target="#gradient-and-hessian">Gradient and Hessian</a>
+  <ul class="collapse">
+  <li><a href="#example-1-gradient-and-hessian-of-fx-y-x---yx2-y2-2-at--3--2" id="toc-example-1-gradient-and-hessian-of-fx-y-x---yx2-y2-2-at--3--2" class="nav-link" data-scroll-target="#example-1-gradient-and-hessian-of-fx-y-x---yx2-y2-2-at--3--2">Example 1 — Gradient and Hessian of <span class="math inline">\(f(x, y) = (x - y)/(x^2 + y^2 + 2)\)</span> at <span class="math inline">\((-3, -2)\)</span></a></li>
+  </ul></li>
+  <li><a href="#the-quadratic-taylor-polynomial" id="toc-the-quadratic-taylor-polynomial" class="nav-link" data-scroll-target="#the-quadratic-taylor-polynomial">The Quadratic Taylor Polynomial</a>
+  <ul class="collapse">
+  <li><a href="#example-2-taylor-polynomials-of-fx-y-x---yx2-y2-2" id="toc-example-2-taylor-polynomials-of-fx-y-x---yx2-y2-2" class="nav-link" data-scroll-target="#example-2-taylor-polynomials-of-fx-y-x---yx2-y2-2">Example 2 — Taylor polynomials of <span class="math inline">\(f(x, y) = (x - y)/(x^2 + y^2 + 2)\)</span></a></li>
+  </ul></li>
+  <li><a href="#newtons-method-for-finding-a-minimum" id="toc-newtons-method-for-finding-a-minimum" class="nav-link" data-scroll-target="#newtons-method-for-finding-a-minimum">Newton’s Method for Finding a Minimum</a>
+  <ul class="collapse">
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  </ul></li>
+  <li><a href="#example-3-a-quadratic-function-one-step-is-exact" id="toc-example-3-a-quadratic-function-one-step-is-exact" class="nav-link" data-scroll-target="#example-3-a-quadratic-function-one-step-is-exact">Example 3 — A quadratic function: one step is exact</a></li>
+  <li><a href="#example-4-rosenbrocks-parabolic-valley" id="toc-example-4-rosenbrocks-parabolic-valley" class="nav-link" data-scroll-target="#example-4-rosenbrocks-parabolic-valley">Example 4 — Rosenbrock’s parabolic valley</a></li>
+  <li><a href="#example-5-three-minima-and-two-saddle-points" id="toc-example-5-three-minima-and-two-saddle-points" class="nav-link" data-scroll-target="#example-5-three-minima-and-two-saddle-points">Example 5 — Three minima and two saddle points</a>
+  <ul class="collapse">
+  <li><a href="#case-i-the-minimum-near-0-0" id="toc-case-i-the-minimum-near-0-0" class="nav-link" data-scroll-target="#case-i-the-minimum-near-0-0">Case (i) — The minimum near <span class="math inline">\((0, 0)\)</span></a></li>
+  <li><a href="#case-ii-the-minimum-near-2-1.5" id="toc-case-ii-the-minimum-near-2-1.5" class="nav-link" data-scroll-target="#case-ii-the-minimum-near-2-1.5">Case (ii) — The minimum near <span class="math inline">\((2, 1.5)\)</span></a></li>
+  <li><a href="#case-iii-the-minimum-near--2-1.5" id="toc-case-iii-the-minimum-near--2-1.5" class="nav-link" data-scroll-target="#case-iii-the-minimum-near--2-1.5">Case (iii) — The minimum near <span class="math inline">\((-2, 1.5)\)</span></a></li>
+  <li><a href="#the-saddle-points-extraneous-solutions" id="toc-the-saddle-points-extraneous-solutions" class="nav-link" data-scroll-target="#the-saddle-points-extraneous-solutions">The saddle points — “extraneous solutions”</a></li>
+  </ul></li>
+  <li><a href="#example-6-iterating-to-the-minimum-and-a-starting-point-that-fails" id="toc-example-6-iterating-to-the-minimum-and-a-starting-point-that-fails" class="nav-link" data-scroll-target="#example-6-iterating-to-the-minimum-and-a-starting-point-that-fails">Example 6 — Iterating to the minimum, and a starting point that fails</a>
+  <ul class="collapse">
+  <li><a href="#the-starting-point--3-2-divergence" id="toc-the-starting-point--3-2-divergence" class="nav-link" data-scroll-target="#the-starting-point--3-2-divergence">The starting point <span class="math inline">\((-3, 2)\)</span>: divergence</a></li>
+  <li><a href="#convergence-to-a-maximum" id="toc-convergence-to-a-maximum" class="nav-link" data-scroll-target="#convergence-to-a-maximum">Convergence to a maximum</a></li>
+  </ul></li>
+  <li><a href="#convergence-in-the-examples" id="toc-convergence-in-the-examples" class="nav-link" data-scroll-target="#convergence-in-the-examples">Convergence in the Examples</a></li>
+  <li><a href="#enhanced-newton-method-for-finding-a-minimum" id="toc-enhanced-newton-method-for-finding-a-minimum" class="nav-link" data-scroll-target="#enhanced-newton-method-for-finding-a-minimum">Enhanced Newton Method for Finding a Minimum</a></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Newton’s Search Method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Newton’s search method looks for a local minimum of a function <span class="math inline">\(f(\mathbf{X})\)</span> of several variables, <span class="math inline">\(\mathbf{X} = (x_1, \ldots, x_n)\)</span>, whose first and second partial derivatives can be evaluated. At the current point <span class="math inline">\(\mathbf{P}_k\)</span> it replaces <span class="math inline">\(f\)</span> by its second-degree Taylor polynomial, which is built from the gradient <span class="math inline">\(\nabla f(\mathbf{P}_k)\)</span> and the Hessian matrix <span class="math inline">\(\mathbf{H}(\mathbf{P}_k)\)</span> of second partial derivatives, and moves to the point where the gradient of that quadratic is zero:</p>
+<p><span class="math display">\[
+\mathbf{P}_{k+1} = \mathbf{P}_k + \Delta\mathbf{P}_k, \qquad \mathbf{H}(\mathbf{P}_k)\,\Delta\mathbf{P}_k = -\nabla f(\mathbf{P}_k).
+\]</span></p>
+<p>This is the <a href="../newton-raphson-method/">Newton-Raphson method</a> applied to the system <span class="math inline">\(\nabla f(\mathbf{X}) = \mathbf{0}\)</span>, with the Hessian playing the part of the Jacobian. With one variable it reduces to <span class="math inline">\(p_{k+1} = p_k - f'(p_k)/f''(p_k)\)</span>. Near a minimum where the Hessian is positive definite the iteration converges quadratically, and a quadratic <span class="math inline">\(f\)</span> with a positive definite Hessian is minimised in a single step. But the method only looks for a zero of the gradient, so it converges just as readily to a saddle point or a maximum, and from a poor starting point it can run away altogether. Mathews works in two variables, <span class="math inline">\(\mathbf{P}_k = (x_k, y_k)\)</span>, so every run below is a path of points on the surface <span class="math inline">\(z = f(x, y)\)</span>, and every one has been recomputed in 60-digit arithmetic.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below draws Newton’s search method on a <strong>contour map</strong> of <span class="math inline">\(f\)</span>. The iterates <span class="math inline">\(\mathbf{P}_0, \mathbf{P}_1, \ldots\)</span> are joined in order, and the stationary points are marked by type, found from the eigenvalues of the Hessian there: a star for a minimum, a cross for a saddle point, a triangle for a maximum. The titles give <span class="math inline">\(\mathbf{P}_k\)</span>, <span class="math inline">\(f(\mathbf{P}_k)\)</span>, the distance to the limit and whether <span class="math inline">\(\mathbf{H}(\mathbf{P}_k)\)</span> is positive definite or indefinite, and frame <span class="math inline">\(k\)</span> shows row <span class="math inline">\(k\)</span> of the example’s table further down this page; Case 2 goes on to <span class="math inline">\(k = 10\)</span>, Mathews’ ten iterations, past the end of the table for <span class="math inline">\((-3, 2)\)</span>. The scripts iterate in 256-bit (about 77-digit) arithmetic, so every computed value in a title is correctly rounded to four significant figures. Cases 2 and 3 keep trailing zeros; Case 1 drops them; for example, its <span class="math inline">\(0.045\)</span> stands for <span class="math inline">\(0.04500\)</span> and its <span class="math inline">\(0.721\)</span> for <span class="math inline">\(0.7210\)</span>. An independent run in 80-digit arithmetic produces the same title text in every frame.</p>
+<p>Mathews’ module has no animation for this method. Neither the module page nor its notebook links to one, and the archive’s optimization animations (<code>a2001/Animations/Optimization/</code>) have none for Newton’s search, so all three animations are new, with no Mathews original. They use his examples and starting points, and the windows of his contour plots where the notebook gives one: <span class="math inline">\([-3, 3] \times [-0.5, 2]\)</span> for Example 5 and <span class="math inline">\([-4, 4] \times [-4, 4]\)</span> for Example 6. Examples 1 and 2 (a gradient, a Hessian and a Taylor polynomial at one point, with no iteration), Example 3 (a quadratic, minimised exactly in one step), Mathews’ comparison of <span class="math inline">\(f\)</span> at four neighbours of <span class="math inline">\((1.0, 0.8)\)</span> in Example 5, his <code>FindMinimum</code> comparisons (Examples 3 to 6), his plots of the vector field <span class="math inline">\(-\nabla f\)</span> (Examples 5 and 6) and the enhanced method with a line search are not animated.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-example-5-three-minima-and-two-saddle-points-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x-new" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-example-5-three-minima-and-two-saddle-points-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x-new">Case 1 — Example 5, three minima and two saddle points, <span class="math inline">\(f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x\)</span> (new)</h3>
+<p><strong>Behavior:</strong> The five runs of Example 5 follow one another, <span class="math inline">\(25\)</span> frames in all: the three minima from <span class="math inline">\((0, 0)\)</span>, <span class="math inline">\((2, 1.5)\)</span> and <span class="math inline">\((-2, 1.5)\)</span>, with <span class="math inline">\(4\)</span>, <span class="math inline">\(5\)</span> and <span class="math inline">\(5\)</span> steps as in Mathews’ tables, then the two runs from <span class="math inline">\((1.0, 0.8)\)</span> and <span class="math inline">\((-1.0, 0.8)\)</span>, with <span class="math inline">\(3\)</span> steps each (Mathews runs <span class="math inline">\(5\)</span> steps from <span class="math inline">\((1.0, 0.8)\)</span>, but steps <span class="math inline">\(4\)</span> and <span class="math inline">\(5\)</span> repeat <span class="math inline">\(\mathbf{P}_3\)</span> to <span class="math inline">\(12\)</span> decimals). The left panel keeps Mathews’ contour window and adds the two curves he plots separately, <span class="math inline">\(f_x = 0\)</span> (dashed orange) and <span class="math inline">\(f_y = 0\)</span> (dash-dot purple), whose five crossings are the stationary points. The right panel zooms on <span class="math inline">\(\mathbf{P}_j\)</span>, with axes in units of a power of ten that shrinks within each run (overall from <span class="math inline">\(10^{-1}\)</span> down to <span class="math inline">\(10^{-29}\)</span>), and draws the contours of <span class="math inline">\(f\)</span> (grey) over those of the quadratic model <span class="math inline">\(Q\)</span> at <span class="math inline">\(\mathbf{P}_j\)</span> (dashed). The next iterate <span class="math inline">\(\mathbf{P}_{j+1}\)</span> is the stationary point of <span class="math inline">\(Q\)</span>, at the end of the black arrow. In the three runs to a minimum, <span class="math inline">\(\mathbf{H}\)</span> is positive definite at every iterate, the model’s contours are blue ellipses and each step goes to their centre. From <span class="math inline">\((1.0, 0.8)\)</span> and <span class="math inline">\((-1.0, 0.8)\)</span>, <span class="math inline">\(\mathbf{H}\)</span> is indefinite at every iterate (eigenvalues <span class="math inline">\(-4.79\)</span> and <span class="math inline">\(33.75\)</span> at both starts), the model’s contours are red hyperbolas, and each step goes to the saddle point of the model. Newton’s method converges just as fast to the saddle points <span class="math inline">\((0.9685, 0.7784)\)</span> and <span class="math inline">\((-0.9021, 0.7210)\)</span> of <span class="math inline">\(f\)</span>, and <span class="math inline">\(f\)</span> goes up on the first step of both runs. At <span class="math inline">\(\mathbf{P}_0\)</span> the contours of <span class="math inline">\(f\)</span> and <span class="math inline">\(Q\)</span> differ by up to <span class="math inline">\(5.6\%\)</span> of the spread of <span class="math inline">\(Q\)</span> across the zoom; from <span class="math inline">\(\mathbf{P}_2\)</span> on they differ by less than <span class="math inline">\(0.1\%\)</span> and the two sets of curves coincide. Each new iterate lands much closer to the limit than the last: in case (ii) the distances are <span class="math inline">\(0.172\)</span>, <span class="math inline">\(0.0450\)</span>, <span class="math inline">\(0.00203\)</span>, <span class="math inline">\(4.39 \times 10^{-6}\)</span>, <span class="math inline">\(2.07 \times 10^{-11}\)</span> and <span class="math inline">\(4.59 \times 10^{-22}\)</span>.</p>
+<p><a href="newtonsearchaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="newtonsearchaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Newton’s search method on Example 5 in Mathews’ window [−3, 3] × [−0.5, 2]: runs from (0, 0), (2, 1.5) and (−2, 1.5) converge to the three minima, and runs from (1.0, 0.8) and (−1.0, 0.8) converge to the saddle points near (0.9685, 0.7784) and (−0.9021, 0.7210); a zoom panel shows at each iterate the contours of f and of the quadratic model, ellipses where the Hessian is positive definite and hyperbolas where it is indefinite, with the Newton step to the model’s stationary point</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-example-6-convergence-from--0.3-0.2-and-divergence-from--3-2-fx-y-dfracx---yx2-y2-2-new" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-example-6-convergence-from--0.3-0.2-and-divergence-from--3-2-fx-y-dfracx---yx2-y2-2-new">Case 2 — Example 6, convergence from <span class="math inline">\((-0.3, 0.2)\)</span> and divergence from <span class="math inline">\((-3, 2)\)</span>, <span class="math inline">\(f(x, y) = \dfrac{x - y}{x^2 + y^2 + 2}\)</span> (new)</h3>
+<p><strong>Behavior:</strong> The animation shows <span class="math inline">\(k = 0, \ldots, 10\)</span>. From <span class="math inline">\((-0.3, 0.2)\)</span> (blue, in Mathews’ window on the left) the iterates reach the minimum <span class="math inline">\((-1, 1)\)</span> with <span class="math inline">\(\mathbf{H}\)</span> positive definite and <span class="math inline">\(f\)</span> decreasing at every step. On the log scale at the bottom the error <span class="math inline">\(\lVert \mathbf{P}_k - (-1, 1) \rVert\)</span> falls ever more steeply, through <span class="math inline">\(1.063\)</span>, <span class="math inline">\(0.1743\)</span>, <span class="math inline">\(0.0137\)</span>, <span class="math inline">\(1.893 \times 10^{-4}\)</span>, <span class="math inline">\(3.748 \times 10^{-8}\)</span> and <span class="math inline">\(1.481 \times 10^{-15}\)</span>, while the ratio <span class="math inline">\(e_{k+1}/e_k^2\)</span> rises from <span class="math inline">\(0.15\)</span> to <span class="math inline">\(1.05\)</span>: quadratic convergence. Like Mathews, this run stops after <span class="math inline">\(5\)</span> iterations. From <span class="math inline">\((-3, 2)\)</span> (red) the first step already leaves Mathews’ window, to <span class="math inline">\(\mathbf{P}_1 = (-5.763, 3.579)\)</span>, so the left panel shows the path running off its edge, and the panel on the right, whose window widens every frame, holds the whole path. There <span class="math inline">\(\mathbf{H}\)</span> is indefinite at every iterate and <span class="math inline">\(f\)</span> rises at every step toward <span class="math inline">\(0\)</span>. The distance from the origin grows by the factors <span class="math inline">\(1.882\)</span>, <span class="math inline">\(1.571\)</span>, <span class="math inline">\(1.527\)</span>, <span class="math inline">\(1.511\)</span>, <span class="math inline">\(1.505\)</span>, <span class="math inline">\(1.502\)</span>, <span class="math inline">\(1.501\)</span>, <span class="math inline">\(1.500\)</span>, <span class="math inline">\(1.500\)</span> and <span class="math inline">\(1.500\)</span>, to <span class="math inline">\(\lVert \mathbf{P}_{10} \rVert = 281.6\)</span> at <span class="math inline">\(\mathbf{P}_{10} = (-241.0, 145.6)\)</span>, where <span class="math inline">\(f = -0.004876\)</span>.</p>
+<p><a href="newtonsearchbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="newtonsearchbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Newton’s search method on f = (x − y)/(x² + y² + 2): from (−0.3, 0.2) five steps reach the minimum (−1, 1) with error 1.481e−15, while from (−3, 2) the iterates leave Mathews’ window [−4, 4]² at the first step and run off to (−241.0, 145.6) after ten steps, shown in a widening window; a log-scale panel shows the error of the first run falling quadratically and the distance of the second growing by a factor per step that approaches 1.5</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-example-4-rosenbrocks-function-fx-y-100y---x22-1---x2-from-0.99-1.01-and-1.8-1.2-new" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-example-4-rosenbrocks-function-fx-y-100y---x22-1---x2-from-0.99-1.01-and-1.8-1.2-new">Case 3 — Example 4, Rosenbrock’s function <span class="math inline">\(f(x, y) = 100(y - x^2)^2 + (1 - x)^2\)</span> from <span class="math inline">\((0.99, 1.01)\)</span> and <span class="math inline">\((1.8, 1.2)\)</span> (new)</h3>
+<p><strong>Behavior:</strong> Both runs are shown for <span class="math inline">\(k = 0, \ldots, 5\)</span>, with the valley floor <span class="math inline">\(y = x^2\)</span> dashed. On the left is Mathews’ run from <span class="math inline">\((0.99, 1.01)\)</span>, in a window much smaller than his contour plot’s <span class="math inline">\([0.5, 1.5]^2\)</span> so that the steps can be seen. <span class="math inline">\(\mathbf{H}(\mathbf{P}_0)\)</span> is indefinite; the first step lands on the valley floor but moves away from <span class="math inline">\((1, 1)\)</span>, from a distance of <span class="math inline">\(0.01414\)</span> to <span class="math inline">\(0.02673\)</span>. From then on <span class="math inline">\(\mathbf{H}\)</span> is positive definite and the distances fall to <span class="math inline">\(1.636 \times 10^{-4}\)</span>, <span class="math inline">\(6.056 \times 10^{-7}\)</span>, <span class="math inline">\(8.305 \times 10^{-14}\)</span> and <span class="math inline">\(1.571 \times 10^{-25}\)</span>. On the right is the run from <span class="math inline">\((1.8, 1.2)\)</span>, which starts outside Mathews’ window, in <span class="math inline">\([0.5, 2] \times [0, 3.5]\)</span>. <span class="math inline">\(\mathbf{H}\)</span> is positive definite at every iterate, yet <span class="math inline">\(f\)</span> does not decrease at every step. The first step goes up to the valley floor at <span class="math inline">\(\mathbf{P}_1 = (1.798, 3.233)\)</span> and lowers <span class="math inline">\(f\)</span> from <span class="math inline">\(416.8\)</span> to <span class="math inline">\(0.6369\)</span>. The second jumps across the valley to <span class="math inline">\(\mathbf{P}_2 = (1.001, 0.3653)\)</span> and raises <span class="math inline">\(f\)</span> to <span class="math inline">\(40.44\)</span>, which the log-scale panel at the bottom marks. The third step returns to the floor at <span class="math inline">\((1.001, 1.001)\)</span>, and the run then converges to <span class="math inline">\(f(\mathbf{P}_5) = 4.045 \times 10^{-32}\)</span>. Newton’s method is not a descent method.</p>
+<p><a href="newtonsearchcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="newtonsearchcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Newton’s search method on Rosenbrock’s function: from (0.99, 1.01) the first step lands on the valley floor y = x² but farther from (1, 1), then the run converges; from (1.8, 1.2) the iterates go up to the valley floor at (1.798, 3.233), jump across the valley to (1.001, 0.3653), where f rises from 0.6369 to 40.44, and then converge to (1, 1); a log-scale panel plots f at each step for both runs</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="gradient-and-hessian" class="level2">
+<h2 class="anchored" data-anchor-id="gradient-and-hessian">Gradient and Hessian</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Gradient
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f(x, y)\)</span> has partial derivatives <span class="math inline">\(f_x\)</span> and <span class="math inline">\(f_y\)</span>, its <em>gradient</em> is the vector function</p>
+<p><span class="math display">\[
+\nabla f(x, y) = \bigl(f_x(x, y),\ f_y(x, y)\bigr).
+\]</span></p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Jacobian matrix
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f_1(x, y)\)</span> and <span class="math inline">\(f_2(x, y)\)</span> have partial derivatives, their <em>Jacobian matrix</em> is</p>
+<p><span class="math display">\[
+\mathbf{J}(x, y) = \begin{pmatrix} \dfrac{\partial f_1}{\partial x} &amp; \dfrac{\partial f_1}{\partial y} \\[2mm] \dfrac{\partial f_2}{\partial x} &amp; \dfrac{\partial f_2}{\partial y} \end{pmatrix}.
+\]</span></p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Hessian matrix
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(f(x, y)\)</span> has partial derivatives up to order two, its <em>Hessian matrix</em> is</p>
+<p><span class="math display">\[
+\mathbf{H}(x, y) = \begin{pmatrix} f_{xx}(x, y) &amp; f_{xy}(x, y) \\ f_{yx}(x, y) &amp; f_{yy}(x, y) \end{pmatrix}.
+\]</span></p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Lemma 1 and Lemma 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>The Hessian of <span class="math inline">\(f\)</span> is the Jacobian of the two components of its gradient, <span class="math inline">\(f_1 = f_x\)</span> and <span class="math inline">\(f_2 = f_y\)</span>: <span class="math inline">\(\ \mathbf{H}(x, y) = \mathbf{J}\bigl(f_x, f_y\bigr)\)</span>.</li>
+<li>If the second partial derivatives of <span class="math inline">\(f\)</span> are continuous, then <span class="math inline">\(f_{xy} = f_{yx}\)</span> and the Hessian is symmetric.</li>
+</ol>
+</div>
+</div>
+<section id="example-1-gradient-and-hessian-of-fx-y-x---yx2-y2-2-at--3--2" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-gradient-and-hessian-of-fx-y-x---yx2-y2-2-at--3--2">Example 1 — Gradient and Hessian of <span class="math inline">\(f(x, y) = (x - y)/(x^2 + y^2 + 2)\)</span> at <span class="math inline">\((-3, -2)\)</span></h3>
+<p><strong>Step 1</strong> (first derivatives): by the quotient rule,</p>
+<p><span class="math display">\[
+f_x = -\frac{x^2 - 2xy - y^2 - 2}{(x^2 + y^2 + 2)^2}, \qquad
+f_y = -\frac{x^2 + 2xy - y^2 + 2}{(x^2 + y^2 + 2)^2}.
+\]</span></p>
+<p>At <span class="math inline">\((-3, -2)\)</span> the denominator is <span class="math inline">\(15^2 = 225\)</span>, and</p>
+<p><span class="math display">\[
+\nabla f(-3, -2) = \left(\frac{9}{225},\ -\frac{19}{225}\right) = \left(\frac{1}{25},\ -\frac{19}{225}\right) \approx (0.04,\ -0.084444).
+\]</span></p>
+<p><strong>Step 2</strong> (second derivatives):</p>
+<p><span class="math display">\[
+\begin{aligned}
+f_{xx} &amp;= \frac{2\,(x^3 - 3x^2 y - 3x y^2 + y^3 - 6x + 2y)}{(x^2 + y^2 + 2)^3}, \\
+f_{xy} &amp;= \frac{2\,(x^3 + 3x^2 y - 3x y^2 - y^3 + 2x - 2y)}{(x^2 + y^2 + 2)^3}, \\
+f_{yy} &amp;= -\frac{2\,(x^3 - 3x^2 y - 3x y^2 + y^3 + 2x - 6y)}{(x^2 + y^2 + 2)^3}.
+\end{aligned}
+\]</span></p>
+<p><strong>Step 3</strong> (Hessian at the point): the denominator is <span class="math inline">\(15^3 = 3375\)</span> and the three numerators are <span class="math inline">\(138\)</span>, <span class="math inline">\(-78\)</span> and <span class="math inline">\(-122\)</span>, so</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H}(-3, -2) = \frac{1}{3375}\begin{pmatrix} 138 &amp; -78 \\ -78 &amp; -122 \end{pmatrix} = \begin{pmatrix} \tfrac{46}{1125} &amp; -\tfrac{26}{1125} \\[1mm] -\tfrac{26}{1125} &amp; -\tfrac{122}{3375} \end{pmatrix} \approx \begin{pmatrix} 0.040889 &amp; -0.023111 \\ -0.023111 &amp; -0.036148 \end{pmatrix}\ }
+\]</span></p>
+<p>The Hessian agrees with Mathews’ output. <strong>Verification:</strong> the derivatives above were checked symbolically against direct differentiation (the differences simplify to <span class="math inline">\(0\)</span>). The Hessian here is <em>indefinite</em>: <span class="math inline">\(\det \mathbf{H}(-3, -2) = -1528/759375 &lt; 0\)</span>, and its eigenvalues are <span class="math inline">\(-0.042550\)</span> and <span class="math inline">\(0.047290\)</span>. Near <span class="math inline">\((-3, -2)\)</span> the surface curves up in one direction and down in another, which matters in Example 2.</p>
+</section>
+</section>
+<section id="the-quadratic-taylor-polynomial" class="level2">
+<h2 class="anchored" data-anchor-id="the-quadratic-taylor-polynomial">The Quadratic Taylor Polynomial</h2>
+<p>Expand <span class="math inline">\(f\)</span> about the point <span class="math inline">\(\mathbf{P} = (p, q)\)</span> and write <span class="math inline">\(\Delta p = x - p\)</span>, <span class="math inline">\(\Delta q = y - q\)</span>. In series notation the second-degree Taylor polynomial is</p>
+<p><span class="math display">\[
+Q(x, y) = f(p, q) + f_x(p, q)\,\Delta p + f_y(p, q)\,\Delta q + \tfrac12\Bigl(f_{xx}(p, q)\,\Delta p^2 + 2 f_{xy}(p, q)\,\Delta p\,\Delta q + f_{yy}(p, q)\,\Delta q^2\Bigr).
+\tag{1}
+\]</span></p>
+<p>With <span class="math inline">\(\mathbf{X} = (x, y)\)</span> and <span class="math inline">\(\Delta\mathbf{P} = \mathbf{X} - \mathbf{P} = (\Delta p, \Delta q)\)</span>, the same polynomial in vector and matrix notation is</p>
+<p><span class="math display">\[
+Q(\mathbf{X}) = f(\mathbf{P}) + \nabla f(\mathbf{P}) \cdot \Delta\mathbf{P} + \tfrac12\, \Delta\mathbf{P}\, \mathbf{H}(\mathbf{P})\, \Delta\mathbf{P}^{T}.
+\tag{2}
+\]</span></p>
+<p>Form (2) holds unchanged for <span class="math inline">\(n\)</span> variables, with <span class="math inline">\(\nabla f\)</span> a vector of <span class="math inline">\(n\)</span> first partial derivatives and <span class="math inline">\(\mathbf{H}\)</span> the <span class="math inline">\(n \times n\)</span> matrix of second partial derivatives.</p>
+<section id="example-2-taylor-polynomials-of-fx-y-x---yx2-y2-2" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-taylor-polynomials-of-fx-y-x---yx2-y2-2">Example 2 — Taylor polynomials of <span class="math inline">\(f(x, y) = (x - y)/(x^2 + y^2 + 2)\)</span></h3>
+<p><strong>(a) Centre <span class="math inline">\(\mathbf{P} = (-3, -2)\)</span>.</strong> From Example 1, <span class="math inline">\(f(-3, -2) = -\tfrac{1}{15}\)</span>, so by (1)</p>
+<p><span class="math display">\[
+Q(x, y) = -\frac{1}{15} + \frac{x + 3}{25} - \frac{19\,(y + 2)}{225} + \frac{23\,(x + 3)^2}{1125} - \frac{26\,(x + 3)(y + 2)}{1125} - \frac{61\,(y + 2)^2}{3375},
+\]</span></p>
+<p>and expanding,</p>
+<p><span class="math display">\[
+\boxed{\ Q(x, y) = \frac{-481 + 393x + 69x^2 - 763y - 78xy - 61y^2}{3375}\ }
+\]</span></p>
+<p>which is Mathews’ simplified form. Because <span class="math inline">\(\mathbf{H}(-3, -2)\)</span> is indefinite, this quadratic is a saddle surface: it has no minimum. Its only stationary point is at <span class="math inline">\((-\tfrac{1791}{382}, -\tfrac{622}{191}) \approx (-4.688482, -3.256545)\)</span>, where <span class="math inline">\(f = -0.041401\)</span>, <em>higher</em> than <span class="math inline">\(f(-3, -2) = -0.066667\)</span>. A Newton step from <span class="math inline">\((-3, -2)\)</span> would go there.</p>
+<p><strong>(b) Centre <span class="math inline">\(\mathbf{P} = (-0.3, 0.2)\)</span></strong>, closer to the minimum. Here</p>
+<p><span class="math display">\[
+f(-0.3, 0.2) = -\frac{50}{213} \approx -0.234742, \qquad \nabla f(-0.3, 0.2) \approx (0.403359,\ -0.425401),
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{H}(-0.3, 0.2) \approx \begin{pmatrix} 0.447659 &amp; -0.195579 \\ -0.195579 &amp; 0.380190 \end{pmatrix},
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+Q(x, y) \approx 0.010829 + 0.576773\,x - 0.560112\,y + 0.223830\,x^2 - 0.195579\,xy + 0.190095\,y^2 .
+\]</span></p>
+<p>This Hessian is positive definite (eigenvalues <span class="math inline">\(0.215457\)</span> and <span class="math inline">\(0.612392\)</span>), so <span class="math inline">\(Q\)</span> is a bowl. Its minimum is at <span class="math inline">\((-0.831690,\ 1.045402)\)</span>, with <span class="math inline">\(Q = -0.521790\)</span> and <span class="math inline">\(f = -0.495985\)</span> there. The true minimum of <span class="math inline">\(f\)</span> is at <span class="math inline">\((-1, 1)\)</span>, where <span class="math inline">\(f = -\tfrac12\)</span>.</p>
+<p><strong>Verification:</strong> both expansions were recomputed symbolically from (2), and the stationary points of <span class="math inline">\(Q\)</span> were found by solving <span class="math inline">\(\nabla Q = \mathbf{0}\)</span> exactly. The two stationary points of <span class="math inline">\(f\)</span> itself are <span class="math inline">\((-1, 1)\)</span>, a minimum with <span class="math inline">\(\mathbf{H} = \tfrac14 \mathbf{I}\)</span>, and <span class="math inline">\((1, -1)\)</span>, a maximum with <span class="math inline">\(f = \tfrac12\)</span>. As Mathews observes, when the centre is close to the minimum, the minimum of the quadratic is close to the minimum of the surface. That is the idea of Newton’s method, and the minimiser of <span class="math inline">\(Q\)</span> in (b) is exactly the first Newton step <span class="math inline">\(\mathbf{P}_1\)</span> of Example 6.</p>
+</section>
+</section>
+<section id="newtons-method-for-finding-a-minimum" class="level2">
+<h2 class="anchored" data-anchor-id="newtons-method-for-finding-a-minimum">Newton’s Method for Finding a Minimum</h2>
+<p>Assume that the first and second partial derivatives of <span class="math inline">\(f\)</span> are continuous near a minimum <span class="math inline">\(\mathbf{P}^*\)</span> and that <span class="math inline">\(\mathbf{P}_0\)</span> is close to it. The minimum of the quadratic approximation (2), centred at <span class="math inline">\(\mathbf{P}_0\)</span>, is where <span class="math inline">\(\nabla Q(\mathbf{X}) = \mathbf{0}\)</span>. Since <span class="math inline">\(\mathbf{H}\)</span> is symmetric,</p>
+<p><span class="math display">\[
+\nabla Q(\mathbf{X}) = \nabla f(\mathbf{P}_0) + \Delta\mathbf{P}\, \mathbf{H}(\mathbf{P}_0),
+\]</span></p>
+<p>so setting <span class="math inline">\(\nabla Q(\mathbf{X}) = \mathbf{0}\)</span> gives <span class="math inline">\(\Delta\mathbf{P}\, \mathbf{H}(\mathbf{P}_0) = -\nabla f(\mathbf{P}_0)\)</span>. If <span class="math inline">\(\mathbf{H}(\mathbf{P}_0)\)</span> is invertible,</p>
+<p><span class="math display">\[
+\mathbf{X} = \mathbf{P}_0 - \nabla f(\mathbf{P}_0)\, \bigl(\mathbf{H}(\mathbf{P}_0)\bigr)^{-1}.
+\]</span></p>
+<p>This <span class="math inline">\(\mathbf{X}\)</span> is the next approximation <span class="math inline">\(\mathbf{P}_1\)</span>. Repeating the construction at each new point gives Newton’s method for finding a minimum:</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Newton search formula
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\mathbf{P}_{k+1} = \mathbf{P}_k - \nabla f(\mathbf{P}_k)\, \bigl(\mathbf{H}(\mathbf{P}_k)\bigr)^{-1} \qquad \text{(row vectors)},
+\tag{3}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{P}_{k+1}^{T} = \mathbf{P}_k^{T} - \bigl(\mathbf{H}(\mathbf{P}_k)\bigr)^{-1} \nabla f(\mathbf{P}_k)^{T} \qquad \text{(column vectors)}.
+\tag{4}
+\]</span></p>
+</div>
+</div>
+<p>The two forms agree because <span class="math inline">\(\mathbf{H}\)</span> is symmetric. Form (4) is the Newton-Raphson formula <span class="math inline">\(\mathbf{P}_{k+1}^{T} = \mathbf{P}_k^{T} - \mathbf{J}(\mathbf{P}_k)^{-1} \mathbf{F}(\mathbf{P}_k)^{T}\)</span> for a root of the vector function <span class="math inline">\(\mathbf{F}(\mathbf{X}) = \nabla f(\mathbf{X})\)</span>, since by Lemma 1 its Jacobian is <span class="math inline">\(\mathbf{J} = \mathbf{H}\)</span>. For a function of one variable, (3) is <span class="math inline">\(p_{k+1} = p_k - f'(p_k)/f''(p_k)\)</span>: Newton-Raphson applied to <span class="math inline">\(f'(x) = 0\)</span>.</p>
+<p>The theory of Newton-Raphson therefore carries over. The following is a general result, not a claim about any one example:</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Local quadratic convergence (general)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose the second partial derivatives of <span class="math inline">\(f\)</span> are continuous near <span class="math inline">\(\mathbf{P}^*\)</span> and satisfy a Lipschitz condition there, that <span class="math inline">\(\nabla f(\mathbf{P}^*) = \mathbf{0}\)</span>, and that <span class="math inline">\(\mathbf{H}(\mathbf{P}^*)\)</span> is nonsingular. Then there is a <span class="math inline">\(\delta &gt; 0\)</span> such that for every <span class="math inline">\(\mathbf{P}_0\)</span> with <span class="math inline">\(\lVert \mathbf{P}_0 - \mathbf{P}^* \rVert &lt; \delta\)</span> the iterates (3) are defined, converge to <span class="math inline">\(\mathbf{P}^*\)</span>, and satisfy</p>
+<p><span class="math display">\[
+\lVert \mathbf{P}_{k+1} - \mathbf{P}^* \rVert \le C\, \lVert \mathbf{P}_k - \mathbf{P}^* \rVert^2
+\]</span></p>
+<p>for some constant <span class="math inline">\(C\)</span>. The point <span class="math inline">\(\mathbf{P}^*\)</span> is a strict local minimum if <span class="math inline">\(\mathbf{H}(\mathbf{P}^*)\)</span> is positive definite, a strict local maximum if it is negative definite, and a saddle point if it is indefinite.</p>
+</div>
+</div>
+<p>The theorem does not require <span class="math inline">\(\mathbf{P}^*\)</span> to be a minimum. Newton’s method treats every nondegenerate stationary point alike. Examples 5 and 6 show it converging quadratically to two saddle points and to a maximum, so the type of the limit has to be checked afterwards with the Hessian. Nor does the theorem say how small <span class="math inline">\(\delta\)</span> is: Example 6 shows a starting point from which the iterates go off to infinity.</p>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Newton’s method for finding a minimum
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Start with an approximation <span class="math inline">\(\mathbf{P}_0\)</span> to the minimum point <span class="math inline">\(\mathbf{P}^*\)</span>. Set <span class="math inline">\(k = 0\)</span>.</p>
+<ol type="1">
+<li>Evaluate the gradient vector <span class="math inline">\(\nabla f(\mathbf{P}_k)\)</span> and the Hessian matrix <span class="math inline">\(\mathbf{H}(\mathbf{P}_k)\)</span>.</li>
+<li>Solve the linear system <span class="math inline">\(\mathbf{H}(\mathbf{P}_k)\, \Delta\mathbf{P}_k^{T} = -\nabla f(\mathbf{P}_k)^{T}\)</span> and set <span class="math inline">\(\mathbf{P}_{k+1} = \mathbf{P}_k + \Delta\mathbf{P}_k\)</span>.</li>
+<li>Perform the termination test: stop when <span class="math inline">\(\lVert \Delta\mathbf{P}_k \rVert\)</span> and <span class="math inline">\(\lVert \nabla f(\mathbf{P}_{k+1}) \rVert\)</span> are small enough. Otherwise set <span class="math inline">\(k = k + 1\)</span> and repeat.</li>
+<li>Check the Hessian at the final point. If it is not positive definite, the point is not a local minimum.</li>
+</ol>
+</div>
+</div>
+<p>Mathews’ formula (3) is written with the inverse of the Hessian, but as he notes, it is better to solve the linear system in step 2 with a linear system solver: the inverse is a theoretical tool, and computing it is inefficient. His program <code>NewtonSearch</code> runs a fixed number of iterations of (3) and prints each point and the value of <span class="math inline">\(f\)</span> there; the tables below do the same.</p>
+</section>
+</section>
+<section id="example-3-a-quadratic-function-one-step-is-exact" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-a-quadratic-function-one-step-is-exact">Example 3 — A quadratic function: one step is exact</h2>
+<p>Use Newton’s method to find the minimum of</p>
+<p><span class="math display">\[
+f(x, y) = x^2 - 4x + y^2 - y - xy
+\]</span></p>
+<p>starting from <span class="math inline">\(\mathbf{P}_0 = (0, 0)\)</span>.</p>
+<p><strong>Step 1</strong>: the gradient and Hessian are</p>
+<p><span class="math display">\[
+\nabla f(x, y) = (2x - y - 4,\ 2y - x - 1), \qquad \mathbf{H} = \begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}.
+\]</span></p>
+<p>The Hessian is constant, with eigenvalues <span class="math inline">\(1\)</span> and <span class="math inline">\(3\)</span>, so it is positive definite everywhere.</p>
+<p><strong>Step 2</strong>: at <span class="math inline">\(\mathbf{P}_0\)</span>, <span class="math inline">\(\nabla f(0, 0) = (-4, -1)\)</span>. Solve</p>
+<p><span class="math display">\[
+\begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix} \begin{pmatrix} \Delta x \\ \Delta y \end{pmatrix} = \begin{pmatrix} 4 \\ 1 \end{pmatrix}
+\quad\Longrightarrow\quad
+\Delta\mathbf{P}_0 = (3,\ 2).
+\]</span></p>
+<p><strong>Step 3</strong>: <span class="math inline">\(\mathbf{P}_1 = (0, 0) + (3, 2) = (3, 2)\)</span>, and <span class="math inline">\(\nabla f(3, 2) = (6 - 2 - 4,\ 4 - 3 - 1) = (0, 0)\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.000000000000</td>
+<td>0.000000000000</td>
+<td>0</td>
+<td>3.61</td>
+<td>4.12</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>3.000000000000</td>
+<td>2.000000000000</td>
+<td>-7.000000000000</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>3.000000000000</td>
+<td>2.000000000000</td>
+<td>-7.000000000000</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">\[
+\boxed{\ \mathbf{P}^* = (3, 2), \qquad f(3, 2) = -7\ }
+\]</span></p>
+<p>Mathews asks whether the result is surprising: the method converged in one iteration. It should, because the quadratic approximation of a quadratic surface is the surface itself, so the minimum of <span class="math inline">\(Q\)</span> is the minimum of <span class="math inline">\(f\)</span>. Later iterations stay at <span class="math inline">\((3, 2)\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f(3, 2) = (0, 0)\)</span> and the Hessian is positive definite, so <span class="math inline">\((3, 2)\)</span> is the minimum. Because <span class="math inline">\(\mathbf{H}\)</span> is positive definite everywhere, <span class="math inline">\(f\)</span> is convex and this is the global minimum.</p>
+</section>
+<section id="example-4-rosenbrocks-parabolic-valley" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-rosenbrocks-parabolic-valley">Example 4 — Rosenbrock’s parabolic valley</h2>
+<p>Use Newton’s method to find the minimum of Rosenbrock’s function (circa 1960)</p>
+<p><span class="math display">\[
+f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2
+\]</span></p>
+<p>starting from <span class="math inline">\(\mathbf{P}_0 = (0.99, 1.01)\)</span>. The minimum is at <span class="math inline">\((1, 1)\)</span>, where <span class="math inline">\(f = 0\)</span>. It lies in a long, curved valley along the parabola <span class="math inline">\(y = x^2\)</span>.</p>
+<p><strong>Step 1</strong>: the gradient and Hessian are</p>
+<p><span class="math display">\[
+\nabla f = \bigl(-400x(y - x^2) - 2(1 - x),\ \ 200(y - x^2)\bigr), \qquad
+\mathbf{H} = \begin{pmatrix} 1200x^2 - 400y + 2 &amp; -400x \\ -400x &amp; 200 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 2</strong>: at <span class="math inline">\(\mathbf{P}_0 = (0.99, 1.01)\)</span>, <span class="math inline">\(y - x^2 = 0.0299\)</span> and <span class="math inline">\(f(\mathbf{P}_0) = 0.089501\)</span>, so</p>
+<p><span class="math display">\[
+\nabla f(\mathbf{P}_0) = (-11.8604,\ 5.98), \qquad
+\mathbf{H}(\mathbf{P}_0) = \begin{pmatrix} 774.12 &amp; -396 \\ -396 &amp; 200 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 3</strong>: solving <span class="math inline">\(\mathbf{H}(\mathbf{P}_0)\,\Delta\mathbf{P}_0^T = -\nabla f(\mathbf{P}_0)^T\)</span> gives <span class="math inline">\(\Delta\mathbf{P}_0 = \bigl(-\tfrac{1}{498},\ -\tfrac{28117}{830000}\bigr) \approx (-0.002008,\ -0.033876)\)</span>, so</p>
+<p><span class="math display">\[
+\mathbf{P}_1 \approx (0.987992,\ 0.976124), \qquad f(\mathbf{P}_1) = 1.441945 \times 10^{-4}.
+\]</span></p>
+<p>The full run of five iterations, Mathews’ setting:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.990000000000</td>
+<td>1.010000000000</td>
+<td>0.089501000000</td>
+<td>0.0141</td>
+<td>13.3</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.987991967871</td>
+<td>0.976124096386</td>
+<td>0.000144194461</td>
+<td>0.0267</td>
+<td>0.0224</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.999990324062</td>
+<td>0.999836687667</td>
+<td><span class="math inline">\(2.073 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\(1.64 \times 10^{-4}\)</span></td>
+<td>0.0644</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.999999729206</td>
+<td>0.999999458324</td>
+<td><span class="math inline">\(7.333 \times 10^{-14}\)</span></td>
+<td><span class="math inline">\(6.06 \times 10^{-7}\)</span></td>
+<td><span class="math inline">\(5.07 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>1.000000000000</td>
+<td>1.000000000000</td>
+<td><span class="math inline">\(5.377 \times 10^{-25}\)</span></td>
+<td><span class="math inline">\(8.30 \times 10^{-14}\)</span></td>
+<td><span class="math inline">\(3.28 \times 10^{-11}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>1.000000000000</td>
+<td>1.000000000000</td>
+<td><span class="math inline">\(4.937 \times 10^{-51}\)</span></td>
+<td><span class="math inline">\(1.57 \times 10^{-25}\)</span></td>
+<td><span class="math inline">\(1.31 \times 10^{-25}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">\[
+\boxed{\ \mathbf{P}^* = (1, 1), \qquad f(1, 1) = 0\ }
+\]</span></p>
+<p>Several things happen here:</p>
+<ul>
+<li>The Hessian at <span class="math inline">\(\mathbf{P}_0\)</span> is <strong>not</strong> positive definite: <span class="math inline">\(\det \mathbf{H}(\mathbf{P}_0) = -1992\)</span>, with eigenvalues <span class="math inline">\(-2.04\)</span> and <span class="math inline">\(976.16\)</span>. The first step still lowers <span class="math inline">\(f\)</span>, and it lands almost exactly on the valley floor (<span class="math inline">\(y_1 - x_1^2 = -4.0 \times 10^{-6}\)</span>, against <span class="math inline">\(0.0299\)</span> at <span class="math inline">\(\mathbf{P}_0\)</span>), but it moves <em>away</em> from <span class="math inline">\((1, 1)\)</span>: the distance grows from <span class="math inline">\(0.0141\)</span> to <span class="math inline">\(0.0267\)</span>. From <span class="math inline">\(k = 1\)</span> on, the Hessian is positive definite at every iterate.</li>
+<li>From then on the convergence is quadratic: the ratio <span class="math inline">\(\lVert \mathbf{P}_{k+1} - \mathbf{P}^* \rVert / \lVert \mathbf{P}_k - \mathbf{P}^* \rVert^2\)</span> alternates between about <span class="math inline">\(0.23\)</span> and about <span class="math inline">\(23\)</span> instead of settling to one value, but it stays bounded, and the number of correct digits roughly doubles each step (<span class="math inline">\(1.6 \times 10^{-4}\)</span>, <span class="math inline">\(6.1 \times 10^{-7}\)</span>, <span class="math inline">\(8.3 \times 10^{-14}\)</span>, <span class="math inline">\(1.6 \times 10^{-25}\)</span>).</li>
+<li>The function values in the table are computed in 60-digit arithmetic. A double-precision run gives the same points to the printed 12 decimals, but its last values of <span class="math inline">\(f\)</span> are rounding noise. Mathews’ printout shows <span class="math inline">\(f = 5.40 \times 10^{-25}\)</span> at <span class="math inline">\(k = 4\)</span> and <span class="math inline">\(3.16 \times 10^{-30}\)</span> at <span class="math inline">\(k = 5\)</span>; a double-precision rerun gives about <span class="math inline">\(5.4 \times 10^{-25}\)</span> and then rounding noise between <span class="math inline">\(0\)</span> and about <span class="math inline">\(10^{-27}\)</span>, depending on how the gradient and the Newton step are coded, while the exact values are <span class="math inline">\(5.38 \times 10^{-25}\)</span> and <span class="math inline">\(4.9 \times 10^{-51}\)</span>.</li>
+</ul>
+<p>Mathews compares the answer with <em>Mathematica</em>’s <code>FindMinimum</code> started at <span class="math inline">\((1.8, 1.2)\)</span> and remarks that the function is “flat” near the minimum. In numbers: <span class="math inline">\(\mathbf{H}(1, 1) = \begin{pmatrix} 802 &amp; -400 \\ -400 &amp; 200 \end{pmatrix}\)</span> has eigenvalues <span class="math inline">\(0.3994\)</span> and <span class="math inline">\(1001.6\)</span>, so along the valley <span class="math inline">\(f\)</span> rises about <span class="math inline">\(2500\)</span> times more slowly than across it.</p>
+<p><strong>Variant — Newton from <span class="math inline">\((1.8, 1.2)\)</span>.</strong> Newton’s method from the same starting point as Mathews’ <code>FindMinimum</code> also converges, but not monotonically:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>1.800000000000</td>
+<td>1.200000000000</td>
+<td>416.800000000000</td>
+<td>0.825</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>1.798044009780</td>
+<td>3.232958435208</td>
+<td>0.636874243009</td>
+<td>2.37</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>1.000610180058</td>
+<td>0.365320019649</td>
+<td>40.436972024463</td>
+<td>0.635</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>1.000605419725</td>
+<td>1.001211205961</td>
+<td><span class="math inline">\(3.665 \times 10^{-7}\)</span></td>
+<td>0.00135</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>1.000000000003</td>
+<td>0.999999633472</td>
+<td><span class="math inline">\(1.343 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\(3.67 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>1.000000000000</td>
+<td>1.000000000000</td>
+<td><span class="math inline">\(4.045 \times 10^{-32}\)</span></td>
+<td><span class="math inline">\(4.50 \times 10^{-16}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>At <span class="math inline">\(k = 1\)</span> the Hessian is positive definite (eigenvalues <span class="math inline">\(0.144\)</span> and <span class="math inline">\(2788\)</span>) and the Newton direction points downhill, yet the full step raises <span class="math inline">\(f\)</span> from <span class="math inline">\(0.637\)</span> to <span class="math inline">\(40.4\)</span>. Newton’s method is not a descent method: nothing in (3) forces <span class="math inline">\(f(\mathbf{P}_{k+1}) &lt; f(\mathbf{P}_k)\)</span>. The line search of the <a href="#enhanced-newton-method-for-finding-a-minimum">enhanced method</a> addresses this.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f(1, 1) = (0, 0)\)</span>, <span class="math inline">\(\mathbf{H}(1, 1)\)</span> is positive definite, and <span class="math inline">\(f \ge 0\)</span> everywhere with <span class="math inline">\(f(1, 1) = 0\)</span>, so <span class="math inline">\((1, 1)\)</span> is the global minimum.</p>
+</section>
+<section id="example-5-three-minima-and-two-saddle-points" class="level2">
+<h2 class="anchored" data-anchor-id="example-5-three-minima-and-two-saddle-points">Example 5 — Three minima and two saddle points</h2>
+<p>Use Newton’s method to find the minima of</p>
+<p><span class="math display">\[
+f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x .
+\]</span></p>
+<p>Mathews asks the reader to estimate the local minima from graphs of the surface and its contours on <span class="math inline">\(-3 \le x \le 3\)</span>, <span class="math inline">\(-0.5 \le y \le 2\)</span>, and then to plot the curves where each component of the gradient is zero:</p>
+<p><span class="math display">\[
+\nabla f = \bigl(4x^3 + 10x - 18xy + \tfrac14,\ \ -9x^2 + 6y + 8y^3\bigr), \qquad
+\mathbf{H} = \begin{pmatrix} 12x^2 - 18y + 10 &amp; -18x \\ -18x &amp; 24y^2 + 6 \end{pmatrix}.
+\]</span></p>
+<p>The curve <span class="math inline">\(f_x = 0\)</span> can be written <span class="math inline">\(y = (4x^3 + 10x + \tfrac14)/(18x)\)</span>, which has a vertical asymptote at <span class="math inline">\(x = 0\)</span>. The stationary points are the intersections of the two curves. Eliminating <span class="math inline">\(x\)</span> gives a polynomial of degree 9 in <span class="math inline">\(y\)</span> with exactly five real roots, and each gives one stationary point:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Stationary point <span class="math inline">\((x, y)\)</span></th>
+<th><span class="math inline">\(f(x, y)\)</span></th>
+<th>Eigenvalues of <span class="math inline">\(\mathbf{H}\)</span></th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((-2.181751873124,\ 1.606976562652)\)</span></td>
+<td><span class="math inline">\(-1.846282959604\)</span></td>
+<td><span class="math inline">\(11.086,\ 95.086\)</span></td>
+<td>minimum (global)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((-0.902145787276,\ 0.721019500722)\)</span></td>
+<td><span class="math inline">\(1.324987413902\)</span></td>
+<td><span class="math inline">\(-4.626,\ 29.891\)</span></td>
+<td>saddle</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((-0.025036093327,\ 0.000940207845)\)</span></td>
+<td><span class="math inline">\(-0.003127252578\)</span></td>
+<td><span class="math inline">\(5.950,\ 10.041\)</span></td>
+<td>minimum</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((0.968535517936,\ 0.778353659028)\)</span></td>
+<td><span class="math inline">\(1.792682348042\)</span></td>
+<td><span class="math inline">\(-4.765,\ 32.551\)</span></td>
+<td>saddle</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((2.148212130319,\ 1.587535403973)\)</span></td>
+<td><span class="math inline">\(-0.763680059186\)</span></td>
+<td><span class="math inline">\(10.226,\ 93.063\)</span></td>
+<td>minimum</td>
+</tr>
+</tbody>
+</table>
+<p>Newton’s method finds each of them from a nearby starting point.</p>
+<section id="case-i-the-minimum-near-0-0" class="level3">
+<h3 class="anchored" data-anchor-id="case-i-the-minimum-near-0-0">Case (i) — The minimum near <span class="math inline">\((0, 0)\)</span></h3>
+<p>At <span class="math inline">\(\mathbf{P}_0 = (0, 0)\)</span>: <span class="math inline">\(\nabla f = (\tfrac14, 0)\)</span> and <span class="math inline">\(\mathbf{H} = \begin{pmatrix} 10 &amp; 0 \\ 0 &amp; 6 \end{pmatrix}\)</span>, so <span class="math inline">\(\Delta\mathbf{P}_0 = (-\tfrac{1}{40}, 0)\)</span>, and</p>
+<p><span class="math display">\[
+\mathbf{P}_1 = (-0.025,\ 0), \qquad f(\mathbf{P}_1) = -\tfrac{7999}{2560000} = -0.003124609375 .
+\]</span></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.000000000000</td>
+<td>0.000000000000</td>
+<td>0</td>
+<td>0.0251</td>
+<td>0.250</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>-0.025000000000</td>
+<td>0.000000000000</td>
+<td>-0.003124609375</td>
+<td><span class="math inline">\(9.41 \times 10^{-4}\)</span></td>
+<td>0.00563</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>-0.025036032084</td>
+<td>0.000940202406</td>
+<td>-0.003127252578</td>
+<td><span class="math inline">\(6.15 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(6.09 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>-0.025036093327</td>
+<td>0.000940207845</td>
+<td>-0.003127252578</td>
+<td><span class="math inline">\(5.73 \times 10^{-15}\)</span></td>
+<td><span class="math inline">\(3.41 \times 10^{-14}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>-0.025036093327</td>
+<td>0.000940207845</td>
+<td>-0.003127252578</td>
+<td><span class="math inline">\(7.76 \times 10^{-30}\)</span></td>
+<td><span class="math inline">\(7.60 \times 10^{-29}\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="case-ii-the-minimum-near-2-1.5" class="level3">
+<h3 class="anchored" data-anchor-id="case-ii-the-minimum-near-2-1.5">Case (ii) — The minimum near <span class="math inline">\((2, 1.5)\)</span></h3>
+<p>At <span class="math inline">\(\mathbf{P}_0 = (2, 1.5)\)</span>: <span class="math inline">\(\nabla f = (-\tfrac74, 0)\)</span> and <span class="math inline">\(\mathbf{H} = \begin{pmatrix} 31 &amp; -36 \\ -36 &amp; 60 \end{pmatrix}\)</span>, so <span class="math inline">\(\Delta\mathbf{P}_0 = (\tfrac{35}{188}, \tfrac{21}{188})\)</span> and <span class="math inline">\(\mathbf{P}_1 = (\tfrac{411}{188}, \tfrac{303}{188}) \approx (2.186170,\ 1.611702)\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>2.000000000000</td>
+<td>1.500000000000</td>
+<td>-0.625000000000</td>
+<td>0.172</td>
+<td>1.75</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>2.186170212766</td>
+<td>1.611702127660</td>
+<td>-0.752884718060</td>
+<td>0.0450</td>
+<td>0.506</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>2.149904635808</td>
+<td>1.588649103038</td>
+<td>-0.763658971595</td>
+<td>0.00203</td>
+<td>0.0211</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>2.148215779408</td>
+<td>1.587537848146</td>
+<td>-0.763680059087</td>
+<td><span class="math inline">\(4.39 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\(4.52 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>2.148212130336</td>
+<td>1.587535403985</td>
+<td>-0.763680059186</td>
+<td><span class="math inline">\(2.07 \times 10^{-11}\)</span></td>
+<td><span class="math inline">\(2.12 \times 10^{-10}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>2.148212130319</td>
+<td>1.587535403973</td>
+<td>-0.763680059186</td>
+<td><span class="math inline">\(4.59 \times 10^{-22}\)</span></td>
+<td><span class="math inline">\(4.70 \times 10^{-21}\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="case-iii-the-minimum-near--2-1.5" class="level3">
+<h3 class="anchored" data-anchor-id="case-iii-the-minimum-near--2-1.5">Case (iii) — The minimum near <span class="math inline">\((-2, 1.5)\)</span></h3>
+<p>At <span class="math inline">\(\mathbf{P}_0 = (-2, 1.5)\)</span>: <span class="math inline">\(\nabla f = (\tfrac94, 0)\)</span> and <span class="math inline">\(\mathbf{H} = \begin{pmatrix} 31 &amp; 36 \\ 36 &amp; 60 \end{pmatrix}\)</span>, so <span class="math inline">\(\Delta\mathbf{P}_0 = (-\tfrac{45}{188}, \tfrac{27}{188})\)</span> and <span class="math inline">\(\mathbf{P}_1 = (-\tfrac{421}{188}, \tfrac{309}{188}) \approx (-2.239362,\ 1.643617)\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>-2.000000000000</td>
+<td>1.500000000000</td>
+<td>-1.625000000000</td>
+<td>0.211</td>
+<td>2.25</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>-2.239361702128</td>
+<td>1.643617021277</td>
+<td>-1.818945395233</td>
+<td>0.0683</td>
+<td>0.849</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>-2.185339669518</td>
+<td>1.609338564133</td>
+<td>-1.846180011106</td>
+<td>0.00430</td>
+<td>0.0487</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>-2.181767365472</td>
+<td>1.606986963856</td>
+<td>-1.846282957671</td>
+<td><span class="math inline">\(1.87 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(2.08 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>-2.181751873418</td>
+<td>1.606976562851</td>
+<td>-1.846282959604</td>
+<td><span class="math inline">\(3.54 \times 10^{-10}\)</span></td>
+<td><span class="math inline">\(3.94 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>-2.181751873124</td>
+<td>1.606976562652</td>
+<td>-1.846282959604</td>
+<td><span class="math inline">\(1.28 \times 10^{-19}\)</span></td>
+<td><span class="math inline">\(1.42 \times 10^{-18}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>In all three cases the iterates printed by Mathews agree with these to all 12 decimals, the Hessian is positive definite at every iterate, and <span class="math inline">\(f\)</span> decreases at every step. In cases (ii) and (iii) the ratio <span class="math inline">\(\lVert \mathbf{P}_{k+1} - \mathbf{P}^* \rVert / \lVert \mathbf{P}_k - \mathbf{P}^* \rVert^2\)</span> settles at about <span class="math inline">\(1.07\)</span> and <span class="math inline">\(1.02\)</span>: the convergence is quadratic.</p>
+</section>
+<section id="the-saddle-points-extraneous-solutions" class="level3">
+<h3 class="anchored" data-anchor-id="the-saddle-points-extraneous-solutions">The saddle points — “extraneous solutions”</h3>
+<p>The plot of the two gradient curves on a larger window also shows intersections near <span class="math inline">\((1.0, 0.8)\)</span> and <span class="math inline">\((-1.0, 0.8)\)</span>. (Mathews writes <span class="math inline">\((1.0, 0.8)\)</span> for both; the second is near <span class="math inline">\((-1.0, 0.8)\)</span>.) Newton’s method started there converges just as fast, but to saddle points. (Mathews runs <span class="math inline">\(5\)</span> steps from <span class="math inline">\((1.0, 0.8)\)</span>; steps <span class="math inline">\(4\)</span> and <span class="math inline">\(5\)</span> repeat <span class="math inline">\(\mathbf{P}_3\)</span> to <span class="math inline">\(12\)</span> decimals, so the table stops at <span class="math inline">\(k = 3\)</span>.)</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>1.000000000000</td>
+<td>0.800000000000</td>
+<td>1.789200000000</td>
+<td>0.0382</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0.968601543943</td>
+<td>0.778409540776</td>
+<td>1.792682331584</td>
+<td><span class="math inline">\(8.65 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>0.968535517874</td>
+<td>0.778353659905</td>
+<td>1.792682348042</td>
+<td><span class="math inline">\(8.79 \times 10^{-10}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>0.968535517936</td>
+<td>0.778353659028</td>
+<td>1.792682348042</td>
+<td><span class="math inline">\(1.92 \times 10^{-18}\)</span></td>
+</tr>
+</tbody>
+</table>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>-1.000000000000</td>
+<td>0.800000000000</td>
+<td>1.289200000000</td>
+<td>0.126</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>-0.902538598575</td>
+<td>0.722738519398</td>
+<td>1.325004299414</td>
+<td>0.00176</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>-0.902141346099</td>
+<td>0.721018296482</td>
+<td>1.324987413895</td>
+<td><span class="math inline">\(4.60 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>-0.902145787278</td>
+<td>0.721019500715</td>
+<td>1.324987413902</td>
+<td><span class="math inline">\(6.67 \times 10^{-12}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>In both runs <span class="math inline">\(f\)</span> goes <em>up</em> on the first step, from <span class="math inline">\(1.7892\)</span> to <span class="math inline">\(1.7927\)</span> and from <span class="math inline">\(1.2892\)</span> to <span class="math inline">\(1.3250\)</span>. At both starting points the Hessian is indefinite (eigenvalues <span class="math inline">\(-4.79\)</span> and <span class="math inline">\(33.75\)</span>), so the Newton step aims at the saddle of the local quadratic. Mathews says there is no way to tell from the iteration that a saddle point has been found. The iteration itself does give no warning, but the second-derivative test settles it: at both limits <span class="math inline">\(\mathbf{H}\)</span> has one negative eigenvalue (see the table above).</p>
+<p>Mathews shows that <span class="math inline">\((1.0, 0.8)\)</span> is not a minimum by comparing <span class="math inline">\(f(1.0, 0.8) = 1.7892\)</span> with <span class="math inline">\(f\)</span> at four neighbours: <span class="math inline">\(f(1.1, 0.9) = 1.7303\)</span> and <span class="math inline">\(f(0.9, 0.7) = 1.7783\)</span> are smaller, while <span class="math inline">\(f(0.9, 0.9) = 2.1123\)</span> and <span class="math inline">\(f(1.1, 0.7) = 2.1163\)</span> are larger. That comparison is made at the <em>starting</em> point, which is not a stationary point (<span class="math inline">\(\nabla f(1.0, 0.8) = (-0.15, -0.104)\)</span>), so it cannot classify the limit. The Hessian test at <span class="math inline">\((0.968536, 0.778354)\)</span> does.</p>
+<p><strong>Verification:</strong> at each of the five limits, <span class="math inline">\(\lVert \nabla f \rVert\)</span> falls below <span class="math inline">\(10^{-17}\)</span> within five steps, and the Hessian eigenvalues in the stationary-point table classify them. The smallest value, <span class="math inline">\(f = -1.846283\)</span> at <span class="math inline">\((-2.181752,\ 1.606977)\)</span>, is the global minimum.</p>
+</section>
+</section>
+<section id="example-6-iterating-to-the-minimum-and-a-starting-point-that-fails" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-iterating-to-the-minimum-and-a-starting-point-that-fails">Example 6 — Iterating to the minimum, and a starting point that fails</h2>
+<p>Given <span class="math inline">\(f(x, y) = \dfrac{x - y}{x^2 + y^2 + 2}\)</span> (the function of Examples 1 and 2) and the initial point <span class="math inline">\(\mathbf{P}_0 = (-0.3, 0.2)\)</span>, use Newton’s method to find <span class="math inline">\(\mathbf{P}_1\)</span> and <span class="math inline">\(\mathbf{P}_2\)</span>.</p>
+<p>The plots of the gradient components show the two curves <span class="math inline">\(f_x = 0\)</span> and <span class="math inline">\(f_y = 0\)</span> crossing at <span class="math inline">\((-1, 1)\)</span>. Since <span class="math inline">\(f_x = 0\)</span> means <span class="math inline">\(x^2 - 2xy - y^2 = 2\)</span> and <span class="math inline">\(f_y = 0\)</span> means <span class="math inline">\(x^2 + 2xy - y^2 = -2\)</span>, adding gives <span class="math inline">\(x^2 = y^2\)</span> and subtracting gives <span class="math inline">\(xy = -1\)</span>, so the only stationary points are <span class="math inline">\((-1, 1)\)</span> and <span class="math inline">\((1, -1)\)</span>.</p>
+<p><strong>Step 1</strong> (find <span class="math inline">\(\mathbf{P}_1\)</span>): the gradient and Hessian at <span class="math inline">\(\mathbf{P}_0\)</span> are those of Example 2(b),</p>
+<p><span class="math display">\[
+\nabla f(\mathbf{P}_0) \approx (0.403359,\ -0.425401), \qquad
+\mathbf{H}(\mathbf{P}_0) \approx \begin{pmatrix} 0.447659 &amp; -0.195579 \\ -0.195579 &amp; 0.380190 \end{pmatrix}.
+\]</span></p>
+<p>Solving <span class="math inline">\(\mathbf{H}(\mathbf{P}_0)\,\Delta\mathbf{P}_0^T = -\nabla f(\mathbf{P}_0)^T\)</span> gives <span class="math inline">\(\Delta\mathbf{P}_0 \approx (-0.531690,\ 0.845402)\)</span>, so</p>
+<p><span class="math display">\[
+\mathbf{P}_1 = \left(-\tfrac{120279}{144620},\ \tfrac{10799}{10330}\right) \approx (-0.831690,\ 1.045402), \qquad f(\mathbf{P}_1) = -0.495985 .
+\]</span></p>
+<p><strong>Step 2</strong> (find <span class="math inline">\(\mathbf{P}_2\)</span>): at <span class="math inline">\(\mathbf{P}_1\)</span>,</p>
+<p><span class="math display">\[
+\nabla f(\mathbf{P}_1) \approx (0.0462373,\ 0.00977846), \qquad
+\mathbf{H}(\mathbf{P}_1) \approx \begin{pmatrix} 0.302753 &amp; -0.0212462 \\ -0.0212462 &amp; 0.251305 \end{pmatrix},
+\]</span></p>
+<p><span class="math inline">\(\Delta\mathbf{P}_1 \approx (-0.156381,\ -0.0521319)\)</span>, and</p>
+<p><span class="math display">\[
+\mathbf{P}_2 \approx (-0.988071,\ 0.993270), \qquad f(\mathbf{P}_2) = -0.499976 .
+\]</span></p>
+<p>Continuing with <code>NewtonSearch</code> for five iterations:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>-0.300000000000</td>
+<td>0.200000000000</td>
+<td>-0.234741784038</td>
+<td>1.06</td>
+<td>0.586</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>-0.831689946066</td>
+<td>1.045401742498</td>
+<td>-0.495985069819</td>
+<td>0.174</td>
+<td>0.0473</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>-0.988071251848</td>
+<td>0.993269887406</td>
+<td>-0.499976331616</td>
+<td>0.0137</td>
+<td>0.00347</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>-0.999844582140</td>
+<td>0.999891872331</td>
+<td>-0.499999995519</td>
+<td><span class="math inline">\(1.89 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\(4.73 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>-0.999999970566</td>
+<td>0.999999976795</td>
+<td>-0.500000000000</td>
+<td><span class="math inline">\(3.75 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(9.37 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>-1.000000000000</td>
+<td>1.000000000000</td>
+<td>-0.500000000000</td>
+<td><span class="math inline">\(1.48 \times 10^{-15}\)</span></td>
+<td><span class="math inline">\(3.70 \times 10^{-16}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">\[
+\boxed{\ \mathbf{P}^* = (-1, 1), \qquad f(-1, 1) = -\tfrac12\ }
+\]</span></p>
+<p>The Hessian is positive definite at every iterate, <span class="math inline">\(f\)</span> decreases at every step, and the ratio <span class="math inline">\(\lVert \mathbf{P}_{k+1} - \mathbf{P}^* \rVert / \lVert \mathbf{P}_k - \mathbf{P}^* \rVert^2\)</span> rises from <span class="math inline">\(0.15\)</span> to <span class="math inline">\(1.05\)</span>: quadratic convergence.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f(-1, 1) = (0, 0)\)</span> and <span class="math inline">\(\mathbf{H}(-1, 1) = \tfrac14 \mathbf{I}\)</span> is positive definite. Since <span class="math inline">\(f \to 0\)</span> far from the origin and the only other stationary point is the maximum <span class="math inline">\((1, -1)\)</span>, <span class="math inline">\(f(-1, 1) = -\tfrac12\)</span> is the global minimum.</p>
+<section id="the-starting-point--3-2-divergence" class="level3">
+<h3 class="anchored" data-anchor-id="the-starting-point--3-2-divergence">The starting point <span class="math inline">\((-3, 2)\)</span>: divergence</h3>
+<p>Mathews’ caveat: Newton’s method requires a good initial point, as does the Newton-Raphson method for <span class="math inline">\(f(x) = 0\)</span>. From <span class="math inline">\(\mathbf{P}_0 = (-3, 2)\)</span> it fails. There</p>
+<p><span class="math display">\[
+\nabla f(-3, 2) = \left(-\tfrac{1}{15},\ \tfrac{1}{45}\right), \qquad
+\mathbf{H}(-3, 2) = \frac{1}{675}\begin{pmatrix} -6 &amp; 18 \\ 18 &amp; 22 \end{pmatrix},
+\]</span></p>
+<p>an indefinite matrix (eigenvalues <span class="math inline">\(-0.0219\)</span> and <span class="math inline">\(0.0456\)</span>). The Newton step is <span class="math inline">\(\Delta\mathbf{P}_0 = (-\tfrac{105}{38}, \tfrac{30}{19})\)</span>, which leads <em>away</em> from the minimum, to <span class="math inline">\(\mathbf{P}_1 = (-\tfrac{219}{38}, \tfrac{68}{19}) \approx (-5.763158,\ 3.578947)\)</span>, and <span class="math inline">\(f\)</span> rises from <span class="math inline">\(-\tfrac13\)</span> to <span class="math inline">\(-0.194535\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(x_k, y_k)\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \mathbf{P}_k \rVert / \lVert \mathbf{P}_{k-1} \rVert\)</span></th>
+<th><span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>-3.000000</td>
+<td>2.000000</td>
+<td>-0.333333</td>
+<td>3.61</td>
+<td>–</td>
+<td>0.0703</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>-5.763158</td>
+<td>3.578947</td>
+<td>-0.194535</td>
+<td>6.78</td>
+<td>1.8815</td>
+<td>0.0271</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>-9.092918</td>
+<td>5.555381</td>
+<td>-0.126777</td>
+<td>10.7</td>
+<td>1.5707</td>
+<td>0.0118</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>-13.905287</td>
+<td>8.441827</td>
+<td>-0.083816</td>
+<td>16.3</td>
+<td>1.5266</td>
+<td>0.00523</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>-21.027684</td>
+<td>12.731649</td>
+<td>-0.055685</td>
+<td>24.6</td>
+<td>1.5111</td>
+<td>0.00232</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>-31.652676</td>
+<td>19.142452</td>
+<td>-0.037068</td>
+<td>37.0</td>
+<td>1.5048</td>
+<td>0.00103</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>-47.552539</td>
+<td>28.743391</td>
+<td>-0.024696</td>
+<td>55.6</td>
+<td>1.5021</td>
+<td><span class="math inline">\(4.57 \times 10^{-4}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The distance from the origin grows at every step, by a factor that approaches <span class="math inline">\(1.5\)</span> (it is <span class="math inline">\(1.5000\)</span> to five digits from <span class="math inline">\(k = 11\)</span> on, in a run of 80 steps), <span class="math inline">\(f\)</span> increases at every step toward <span class="math inline">\(0\)</span>, and the gradient shrinks toward <span class="math inline">\(\mathbf{0}\)</span>. After Mathews’ ten iterations the point is <span class="math inline">\((-241.019696,\ 145.628489)\)</span>, with <span class="math inline">\(f = -0.004876\)</span>. Newton’s method is “diverging to the point at infinity”, in Mathews’ words. Far from the origin the surface flattens out and its gradient tends to zero, and the iteration chases that flat region instead of a stationary point. The Hessian is indefinite at every iterate computed (<span class="math inline">\(k = 0\)</span> to <span class="math inline">\(12\)</span>), and at each of them the Newton step points uphill (<span class="math inline">\(\nabla f \cdot \Delta\mathbf{P}_k &gt; 0\)</span>).</p>
+</section>
+<section id="convergence-to-a-maximum" class="level3">
+<h3 class="anchored" data-anchor-id="convergence-to-a-maximum">Convergence to a maximum</h3>
+<p>Because <span class="math inline">\(f(-x, -y) = -f(x, y)\)</span>, the gradient satisfies <span class="math inline">\(\nabla f(-\mathbf{X}) = \nabla f(\mathbf{X})\)</span> and the Hessian <span class="math inline">\(\mathbf{H}(-\mathbf{X}) = -\mathbf{H}(\mathbf{X})\)</span>, so the Newton step from <span class="math inline">\(-\mathbf{P}\)</span> is exactly the negative of the step from <span class="math inline">\(\mathbf{P}\)</span>. Started at <span class="math inline">\((0.3, -0.2)\)</span>, Newton’s method therefore produces the negatives of the iterates in the table above, <span class="math inline">\((0.831690, -1.045402)\)</span>, <span class="math inline">\((0.988071, -0.993270)\)</span>, <span class="math inline">\(\ldots\)</span>, and converges just as quickly to <span class="math inline">\((1, -1)\)</span>, where <span class="math inline">\(f = \tfrac12\)</span> is the <strong>maximum</strong> (<span class="math inline">\(\mathbf{H}(1, -1) = -\tfrac14 \mathbf{I}\)</span>). In one variable the same holds in general: by the theorem with <span class="math inline">\(n = 1\)</span>, <span class="math inline">\(p_{k+1} = p_k - f'(p_k)/f''(p_k)\)</span> started close enough to a maximum, where <span class="math inline">\(f'' &lt; 0\)</span>, converges to that maximum.</p>
+</section>
+</section>
+<section id="convergence-in-the-examples" class="level2">
+<h2 class="anchored" data-anchor-id="convergence-in-the-examples">Convergence in the Examples</h2>
+<p>The ratio <span class="math inline">\(e_{k+1}/e_k^2\)</span>, where <span class="math inline">\(e_k = \lVert \mathbf{P}_k - \mathbf{P}^* \rVert\)</span>, stays bounded in every converging run, which is what quadratic convergence means. It was measured in 400-digit arithmetic over the first seven steps (in some runs the first one or two ratios, taken far from <span class="math inline">\(\mathbf{P}^*\)</span>, are left out):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Run</th>
+<th>Limit</th>
+<th>Type</th>
+<th><span class="math inline">\(e_{k+1}/e_k^2\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Example 4 from <span class="math inline">\((0.99, 1.01)\)</span></td>
+<td><span class="math inline">\((1, 1)\)</span></td>
+<td>minimum</td>
+<td>alternates <span class="math inline">\(\approx 0.23\)</span> and <span class="math inline">\(\approx 23\)</span></td>
+</tr>
+<tr class="even">
+<td>Example 4 from <span class="math inline">\((1.8, 1.2)\)</span></td>
+<td><span class="math inline">\((1, 1)\)</span></td>
+<td>minimum</td>
+<td>alternates <span class="math inline">\(\approx 0.0034\)</span> and <span class="math inline">\(\approx 0.20\)</span></td>
+</tr>
+<tr class="odd">
+<td>Example 5 (i) from <span class="math inline">\((0, 0)\)</span></td>
+<td><span class="math inline">\((-0.025036, 0.000940)\)</span></td>
+<td>minimum</td>
+<td>between <span class="math inline">\(0.07\)</span> and <span class="math inline">\(1.52\)</span></td>
+</tr>
+<tr class="even">
+<td>Example 5 (ii) from <span class="math inline">\((2, 1.5)\)</span></td>
+<td><span class="math inline">\((2.148212, 1.587535)\)</span></td>
+<td>minimum</td>
+<td><span class="math inline">\(\to 1.07\)</span></td>
+</tr>
+<tr class="odd">
+<td>Example 5 (iii) from <span class="math inline">\((-2, 1.5)\)</span></td>
+<td><span class="math inline">\((-2.181752, 1.606977)\)</span></td>
+<td>minimum</td>
+<td><span class="math inline">\(\to 1.017\)</span></td>
+</tr>
+<tr class="even">
+<td>Example 5 from <span class="math inline">\((1.0, 0.8)\)</span></td>
+<td><span class="math inline">\((0.968536, 0.778354)\)</span></td>
+<td>saddle</td>
+<td>between <span class="math inline">\(0.06\)</span> and <span class="math inline">\(3.25\)</span></td>
+</tr>
+<tr class="odd">
+<td>Example 5 from <span class="math inline">\((-1.0, 0.8)\)</span></td>
+<td><span class="math inline">\((-0.902146, 0.721020)\)</span></td>
+<td>saddle</td>
+<td>between <span class="math inline">\(0.25\)</span> and <span class="math inline">\(3.1\)</span></td>
+</tr>
+<tr class="even">
+<td>Example 6 from <span class="math inline">\((-0.3, 0.2)\)</span></td>
+<td><span class="math inline">\((-1, 1)\)</span></td>
+<td>minimum</td>
+<td><span class="math inline">\(\to 1.06\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The local estimates of the order, <span class="math inline">\(\log(e_{k+1}/e_k) / \log(e_k/e_{k-1})\)</span>, approach <span class="math inline">\(2\)</span> in every one of these runs. In Example 3 the error is zero after one step.</p>
+</section>
+<section id="enhanced-newton-method-for-finding-a-minimum" class="level2">
+<h2 class="anchored" data-anchor-id="enhanced-newton-method-for-finding-a-minimum">Enhanced Newton Method for Finding a Minimum</h2>
+<p>Newton’s method can be modified by treating <span class="math inline">\(\mathbf{S}_k = -\nabla f(\mathbf{P}_k)\,\bigl(\mathbf{H}(\mathbf{P}_k)\bigr)^{-1}\)</span> as a <em>search direction</em>, as the gradient method uses the direction <span class="math inline">\(-\nabla f(\mathbf{P}_k)\)</span>, and doing a one-parameter minimisation (line search) along it:</p>
+<ol type="1">
+<li>Evaluate the gradient vector <span class="math inline">\(\nabla f(\mathbf{P}_k)\)</span> and the Hessian matrix <span class="math inline">\(\mathbf{H}(\mathbf{P}_k)\)</span>.</li>
+<li>Compute the search direction <span class="math inline">\(\mathbf{S}_k = -\nabla f(\mathbf{P}_k)\,\bigl(\mathbf{H}(\mathbf{P}_k)\bigr)^{-1}\)</span>.</li>
+<li>Minimise the function of one variable <span class="math inline">\(\phi(t) = f(\mathbf{P}_k + t\,\mathbf{S}_k)\)</span>, for instance with a golden ratio or quadratic interpolative search, giving a value <span class="math inline">\(t_k\)</span>. This is a minimum of <span class="math inline">\(f\)</span> along the search line; at an interior minimum <span class="math inline">\(\phi'(t_k) = \nabla f(\mathbf{P}_k + t_k\,\mathbf{S}_k) \cdot \mathbf{S}_k = 0\)</span>, so the gradient at the new point is perpendicular to the line.</li>
+<li>Set <span class="math inline">\(\mathbf{P}_{k+1} = \mathbf{P}_k + t_k\,\mathbf{S}_k\)</span>.</li>
+<li>Perform the termination test: are <span class="math inline">\(f(\mathbf{P}_k)\)</span> and <span class="math inline">\(f(\mathbf{P}_{k+1})\)</span> sufficiently close, and is <span class="math inline">\(\lVert \mathbf{P}_{k+1} - \mathbf{P}_k \rVert\)</span> small enough? If not, set <span class="math inline">\(k = k + 1\)</span> and repeat.</li>
+</ol>
+<p>With <span class="math inline">\(t_k = 1\)</span> this is the plain method (3). In general, Mathews says, the modified method is more reliable, and he leaves its investigation to the reader. Two of the runs above show what the line search can and cannot fix:</p>
+<ul>
+<li>In the Example 4 variant from <span class="math inline">\((1.8, 1.2)\)</span>, the direction at <span class="math inline">\(k = 1\)</span> points downhill but the full step overshoots and raises <span class="math inline">\(f\)</span> from <span class="math inline">\(0.637\)</span> to <span class="math inline">\(40.4\)</span>. A line search along that direction would pick a step that lowers <span class="math inline">\(f\)</span>.</li>
+<li>From <span class="math inline">\((-3, 2)\)</span> in Example 6, <span class="math inline">\(\mathbf{S}_k\)</span> points uphill at every iterate. If <span class="math inline">\(\mathbf{H}(\mathbf{P}_k)\)</span> is positive definite, then <span class="math inline">\(\nabla f \cdot \mathbf{S}_k = -\nabla f\, \mathbf{H}^{-1} \nabla f^{T} &lt; 0\)</span> and <span class="math inline">\(\mathbf{S}_k\)</span> is a descent direction, but here <span class="math inline">\(\mathbf{H}\)</span> is indefinite. A line search over <span class="math inline">\(t &gt; 0\)</span> along an uphill direction cannot lower <span class="math inline">\(f\)</span>. The direction itself has to be changed, for example to <span class="math inline">\(-\nabla f(\mathbf{P}_k)\)</span> or to the Newton direction of a modified, positive definite Hessian.</li>
+</ul>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Solve, don’t invert.</strong> Compute <span class="math inline">\(\Delta\mathbf{P}_k\)</span> from <span class="math inline">\(\mathbf{H}(\mathbf{P}_k)\,\Delta\mathbf{P}_k^T = -\nabla f(\mathbf{P}_k)^T\)</span> with a linear solver (for example a Cholesky factorisation, which also reports whether <span class="math inline">\(\mathbf{H}\)</span> is positive definite).</li>
+<li><strong>Cost per step.</strong> Each iteration needs the <span class="math inline">\(n\)</span> first partial derivatives, the <span class="math inline">\(n(n+1)/2\)</span> distinct second partial derivatives and the solution of an <span class="math inline">\(n \times n\)</span> system. The gradient method needs only the first derivatives but generally converges much more slowly.</li>
+<li><strong>Check what was found.</strong> The iteration stops where <span class="math inline">\(\nabla f = \mathbf{0}\)</span>, and that can be a saddle point (Example 5) or a maximum (Example 6). Test the Hessian at the final point.</li>
+<li><strong>Watch the starting point.</strong> Convergence is guaranteed only from close enough to <span class="math inline">\(\mathbf{P}^*\)</span>. Signs of trouble are a Hessian that is not positive definite and a step that increases <span class="math inline">\(f\)</span> (Example 6 from <span class="math inline">\((-3, 2)\)</span>). A safeguarded version takes a line search along the Newton direction, and falls back to <span class="math inline">\(-\nabla f\)</span> when that direction is not downhill.</li>
+<li><strong>Termination.</strong> Use <span class="math inline">\(\lVert \nabla f(\mathbf{P}_k) \rVert\)</span> and <span class="math inline">\(\lVert \Delta\mathbf{P}_k \rVert\)</span>, not only the change in <span class="math inline">\(f\)</span>. Near a minimum <span class="math inline">\(f(\mathbf{P}) - f(\mathbf{P}^*) \approx \tfrac12 (\mathbf{P} - \mathbf{P}^*)\,\mathbf{H}\,(\mathbf{P} - \mathbf{P}^*)^T\)</span> is quadratic in the error, so the values of <span class="math inline">\(f\)</span> settle long before the point does. In Example 6 the printed <span class="math inline">\(f(\mathbf{P}_4)\)</span> is already <span class="math inline">\(-0.500000000000\)</span> while <span class="math inline">\(\mathbf{P}_4\)</span> is still <span class="math inline">\(3.7 \times 10^{-8}\)</span> from <span class="math inline">\((-1, 1)\)</span>.</li>
+<li><strong>Flat valleys.</strong> When the Hessian at the minimum is badly conditioned (eigenvalues <span class="math inline">\(0.40\)</span> and <span class="math inline">\(1002\)</span> for Rosenbrock’s function), function values alone locate the minimum poorly along the valley. Newton’s method still converges quickly there, because it uses the curvature in each direction.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

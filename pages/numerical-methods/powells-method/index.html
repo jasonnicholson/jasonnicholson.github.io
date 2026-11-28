@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Powell’s Method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-taxi-cab-method-mathews-example-7-fx-y-x2---4x-y2---y---xy-mathbfx_0-2.55-1.75-3-iterations" id="toc-case-1-taxi-cab-method-mathews-example-7-fx-y-x2---4x-y2---y---xy-mathbfx_0-2.55-1.75-3-iterations" class="nav-link" data-scroll-target="#case-1-taxi-cab-method-mathews-example-7-fx-y-x2---4x-y2---y---xy-mathbfx_0-2.55-1.75-3-iterations">Case 1 — Taxi-cab method (Mathews’ Example 7), <span class="math inline">\(f(x, y) = x^2 - 4x + y^2 - y - xy\)</span>, <span class="math inline">\(\mathbf{X}_0 = (2.55,\ 1.75)\)</span>, <span class="math inline">\(3\)</span> iterations</a></li>
+  <li><a href="#case-2-powells-method-mathews-example-8-the-same-f-and-mathbfx_0-2-iterations" id="toc-case-2-powells-method-mathews-example-8-the-same-f-and-mathbfx_0-2-iterations" class="nav-link" data-scroll-target="#case-2-powells-method-mathews-example-8-the-same-f-and-mathbfx_0-2-iterations">Case 2 — Powell’s method (Mathews’ Example 8), the same <span class="math inline">\(f\)</span> and <span class="math inline">\(\mathbf{X}_0\)</span>, <span class="math inline">\(2\)</span> iterations</a></li>
+  <li><a href="#case-3-rosenbrocks-parabolic-valley-example-4-fx-y-100y---x22-1---x2-mathbfx_0-0.99-1.01-4-iterations-new" id="toc-case-3-rosenbrocks-parabolic-valley-example-4-fx-y-100y---x22-1---x2-mathbfx_0-0.99-1.01-4-iterations-new" class="nav-link" data-scroll-target="#case-3-rosenbrocks-parabolic-valley-example-4-fx-y-100y---x22-1---x2-mathbfx_0-0.99-1.01-4-iterations-new">Case 3 — Rosenbrock’s parabolic valley (Example 4), <span class="math inline">\(f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2\)</span>, <span class="math inline">\(\mathbf{X}_0 = (0.99,\ 1.01)\)</span>, <span class="math inline">\(4\)</span> iterations (new)</a></li>
+  </ul></li>
+  <li><a href="#line-searches" id="toc-line-searches" class="nav-link" data-scroll-target="#line-searches">Line Searches</a></li>
+  <li><a href="#the-taxi-cab-method" id="toc-the-taxi-cab-method" class="nav-link" data-scroll-target="#the-taxi-cab-method">The Taxi-Cab Method</a>
+  <ul class="collapse">
+  <li><a href="#example-1-the-taxi-cab-method-on-fx-y-x2---4x-y2---y---xy" id="toc-example-1-the-taxi-cab-method-on-fx-y-x2---4x-y2---y---xy" class="nav-link" data-scroll-target="#example-1-the-taxi-cab-method-on-fx-y-x2---4x-y2---y---xy">Example 1 — The taxi-cab method on <span class="math inline">\(f(x, y) = x^2 - 4x + y^2 - y - xy\)</span></a></li>
+  <li><a href="#example-2-the-taxi-cab-method-in-three-variables" id="toc-example-2-the-taxi-cab-method-in-three-variables" class="nav-link" data-scroll-target="#example-2-the-taxi-cab-method-in-three-variables">Example 2 — The taxi-cab method in three variables</a></li>
+  </ul></li>
+  <li><a href="#powells-method" id="toc-powells-method" class="nav-link" data-scroll-target="#powells-method">Powell’s Method</a>
+  <ul class="collapse">
+  <li><a href="#example-3-powells-method-on-fx-y-x2---4x-y2---y---xy" id="toc-example-3-powells-method-on-fx-y-x2---4x-y2---y---xy" class="nav-link" data-scroll-target="#example-3-powells-method-on-fx-y-x2---4x-y2---y---xy">Example 3 — Powell’s method on <span class="math inline">\(f(x, y) = x^2 - 4x + y^2 - y - xy\)</span></a></li>
+  <li><a href="#example-4-rosenbrocks-parabolic-valley" id="toc-example-4-rosenbrocks-parabolic-valley" class="nav-link" data-scroll-target="#example-4-rosenbrocks-parabolic-valley">Example 4 — Rosenbrock’s parabolic valley</a></li>
+  <li><a href="#example-5-three-local-minima-of-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x" id="toc-example-5-three-local-minima-of-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x" class="nav-link" data-scroll-target="#example-5-three-local-minima-of-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x">Example 5 — Three local minima of <span class="math inline">\(f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x\)</span></a></li>
+  <li><a href="#example-6-one-iteration-by-hand-fx-y-cos-x-sin-y" id="toc-example-6-one-iteration-by-hand-fx-y-cos-x-sin-y" class="nav-link" data-scroll-target="#example-6-one-iteration-by-hand-fx-y-cos-x-sin-y">Example 6 — One iteration by hand: <span class="math inline">\(f(x, y) = \cos x + \sin y\)</span></a></li>
+  </ul></li>
+  <li><a href="#enhanced-powells-method" id="toc-enhanced-powells-method" class="nav-link" data-scroll-target="#enhanced-powells-method">Enhanced Powell’s Method</a></li>
+  <li><a href="#mathews-graphical-runs-examples-7-and-8" id="toc-mathews-graphical-runs-examples-7-and-8" class="nav-link" data-scroll-target="#mathews-graphical-runs-examples-7-and-8">Mathews’ Graphical Runs (Examples 7 and 8)</a></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Powell’s Method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Powell’s method looks for a local minimum of a function <span class="math inline">\(f(\mathbf{X})\)</span> of <span class="math inline">\(n\)</span> variables, <span class="math inline">\(\mathbf{X} = (x_1, \ldots, x_n)\)</span>, using only values of <span class="math inline">\(f\)</span>: no derivatives are needed. It is built from <em>line searches</em>. From a point <span class="math inline">\(\mathbf{P}\)</span> in the direction <span class="math inline">\(\mathbf{U}\)</span>, the function <span class="math inline">\(\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U})\)</span> depends on the single variable <span class="math inline">\(\gamma\)</span>, and can be minimised with a one-variable method such as the <a href="../golden-ratio-search/">golden ratio search</a> or the <a href="../fibonacci-search/">Fibonacci search</a>. The simplest scheme, which Mathews calls the <em>taxi-cab method</em>, searches along the <span class="math inline">\(n\)</span> coordinate directions in turn, over and over. Its path is a staircase of segments parallel to the axes, and it can be slow when the level curves of <span class="math inline">\(f\)</span> are tilted, elongated ellipses.</p>
+<p>Powell’s method adds two steps to each sweep. After the <span class="math inline">\(n\)</span> line searches have taken the point <span class="math inline">\(\mathbf{P}_0\)</span> to <span class="math inline">\(\mathbf{P}_n\)</span>, the “average direction” of the sweep, <span class="math inline">\(\mathbf{P}_n - \mathbf{P}_0\)</span>, replaces the oldest search direction, and one more line search is made along it:</p>
+<p><span class="math display">\[
+\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{U}_k \quad (k = 1, \ldots, n), \qquad
+\mathbf{U}_n \leftarrow \mathbf{P}_n - \mathbf{P}_0, \qquad
+\mathbf{X}_{i} = \mathbf{P}_0 + \gamma\,\mathbf{U}_n ,
+\]</span></p>
+<p>where each <span class="math inline">\(\gamma_k\)</span> and <span class="math inline">\(\gamma\)</span> minimises <span class="math inline">\(f\)</span> along its line. Instead of a zig-zag, each iteration follows a “dog-leg” path. On a quadratic function with a positive definite Hessian and exact line searches, the directions this produces are <em>conjugate</em>, and the minimum of a two-variable quadratic is reached exactly within two iterations (Example 3), where the taxi-cab method only creeps towards it (Example 1).</p>
+<p>Mathews’ programs do every line search with Mathematica’s <code>FindMinimum</code>, started at <span class="math inline">\(\gamma = 0\)</span> (his hand-worked Example 6 starts it at <span class="math inline">\(\gamma = 0.5\)</span>, with the same results). In the runs below, every line search has been recomputed in 60-digit arithmetic and taken to the local minimum of <span class="math inline">\(\varphi\)</span> that is reached by going downhill from <span class="math inline">\(\gamma = 0\)</span>. Mathews’ printed points in Examples 1–6 differ from these by at most <span class="math inline">\(6 \times 10^{-8}\)</span> in any coordinate.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below shows the <strong>path of the line searches on a contour plot</strong> of <span class="math inline">\(f\)</span>, one line search per frame. The left panel is a fixed window. It has cyan contours of <span class="math inline">\(f\)</span>, the dashed line along which the current search runs, and the segment from where each search starts to where it stops: magenta for the searches of a sweep, orange for Powell’s dog-leg search along <span class="math inline">\(\mathbf{P}_n - \mathbf{P}_0\)</span>. Red dots mark the points found so far, and blue contours of <span class="math inline">\(f\)</span> pass through them (in Case 3, through the current point only). The right panel is new. It zooms on the current line search, so that searches far too small for the left panel stay visible. Its axes are offsets from the minimum, multiplied by the power of ten in the axis label, and its cyan contours are spread to fill each window. A hollow circle marks where the search starts and a red dot where it stops. The blue contour through the new point touches the dashed search line there, because at the minimum along a line the gradient is perpendicular to the line (formula (1) below); at the exact minimum <span class="math inline">\((3, 2)\)</span> in the last frame of Case 2 that contour shrinks to a point and is not drawn. In Case 3, <span class="math inline">\(f\)</span> at the new point falls so fast, from <span class="math inline">\(5.849 \times 10^{-8}\)</span> at <span class="math inline">\(\mathbf{X}_2\)</span> to <span class="math inline">\(2.428 \times 10^{-18}\)</span> at <span class="math inline">\(\mathbf{X}_3\)</span> and less after that, that this contour becomes too thin to show: from <span class="math inline">\(\mathbf{X}_2\)</span> on it is missing from the left panel, and from <span class="math inline">\(\mathbf{X}_3\)</span> on from the zoom panel as well. The title gives the step <span class="math inline">\(\gamma\)</span> and the new point. As in the worked examples, every line search goes to the first local minimum of <span class="math inline">\(\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U})\)</span> reached by going downhill from <span class="math inline">\(\gamma = 0\)</span>. In Cases 1 and 2, <span class="math inline">\(\varphi\)</span> is a parabola and the scripts compute its vertex exactly, in rational arithmetic. In Case 3 the script steps downhill from <span class="math inline">\(\gamma = 0\)</span>, doubling the step until <span class="math inline">\(\varphi\)</span> rises, and finishes with a golden ratio search, in 256-bit arithmetic.</p>
+<p>Mathews’ module links two animations, Animation 1 from his Example 7 and Animation 2 from his Example 8, but both archived animation pages show only an “Under Construction” banner and no animation, so it is not known whether he ever made them. Cases 1 and 2 rebuild them from the plotting programs of Examples 7 and 8, which survive (see <a href="#mathews-graphical-runs-examples-7-and-8">Mathews’ Graphical Runs</a> below): the same function, starting point, window <span class="math inline">\([2.5, 3.05] \times [1.6, 2.15]\)</span>, cyan contour levels and seven points. Two things are drawn differently in Case 2. Mathews draws every segment magenta, where here the dog-leg searches are orange. And Mathews joins the points with one polygon, so his dog-leg segment runs from <span class="math inline">\(\mathbf{P}_2\)</span> to <span class="math inline">\(\mathbf{X}_1\)</span>; here each search is drawn from where it starts, so the dog-leg runs from <span class="math inline">\(\mathbf{P}_0\)</span> through <span class="math inline">\(\mathbf{P}_2\)</span> to <span class="math inline">\(\mathbf{X}_1\)</span>, on the same line. Case 3 is new, with no Mathews original. Not animated are Example 2 (three variables), Examples 5 and 6, the iterations of Example 1 after the third and of Example 3 after the second (which stays at <span class="math inline">\((3, 2)\)</span>), and the enhanced method, which has no worked example.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-taxi-cab-method-mathews-example-7-fx-y-x2---4x-y2---y---xy-mathbfx_0-2.55-1.75-3-iterations" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-taxi-cab-method-mathews-example-7-fx-y-x2---4x-y2---y---xy-mathbfx_0-2.55-1.75-3-iterations">Case 1 — Taxi-cab method (Mathews’ Example 7), <span class="math inline">\(f(x, y) = x^2 - 4x + y^2 - y - xy\)</span>, <span class="math inline">\(\mathbf{X}_0 = (2.55,\ 1.75)\)</span>, <span class="math inline">\(3\)</span> iterations</h3>
+<p><strong>Behavior:</strong> The six line searches alternate between the <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> directions, so the path is a staircase, and each one stops where its line touches a contour of <span class="math inline">\(f\)</span>. The steps are <span class="math inline">\(\gamma = 13/40\)</span> and <span class="math inline">\(3/16\)</span>, and from then on each step is half the one before, down to <span class="math inline">\(3/256\)</span>. Each sweep after the first divides the distance to the minimum <span class="math inline">\((3, 2)\)</span> by <span class="math inline">\(4\)</span>, the factor <span class="math inline">\(b^2/(ac) = \tfrac14\)</span> of formula (2): it is <span class="math inline">\(0.1398\)</span> at <span class="math inline">\(\mathbf{X}_1\)</span>, <span class="math inline">\(0.03494\)</span> at <span class="math inline">\(\mathbf{X}_2\)</span> and <span class="math inline">\(0.008735\)</span> at <span class="math inline">\(\mathbf{X}_3 = (2.9921875,\ 1.99609375)\)</span>, where <span class="math inline">\(f + 7 = 4.578 \times 10^{-5}\)</span>. The staircase is still short of the minimum after three iterations, and the zoom panel’s window shrinks with every search after the first.</p>
+<p><a href="powellaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="powellaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ taxi-cab animation (Example 7) for f = x² − 4x + y² − y − xy from (2.55, 1.75): six line searches along the x and y directions make a magenta staircase towards the minimum (3, 2), ending at (2.9921875, 1.99609375), 0.008735 from it, with a right panel zoomed on each search</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-powells-method-mathews-example-8-the-same-f-and-mathbfx_0-2-iterations" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-powells-method-mathews-example-8-the-same-f-and-mathbfx_0-2-iterations">Case 2 — Powell’s method (Mathews’ Example 8), the same <span class="math inline">\(f\)</span> and <span class="math inline">\(\mathbf{X}_0\)</span>, <span class="math inline">\(2\)</span> iterations</h3>
+<p><strong>Behavior:</strong> The first two searches are those of Case 1. The dog-leg search then runs from <span class="math inline">\(\mathbf{P}_0 = \mathbf{X}_0\)</span> along <span class="math inline">\(\mathbf{U}_2 = \mathbf{P}_2 - \mathbf{P}_0 = (0.325,\ 0.1875)\)</span>, and its step <span class="math inline">\(\gamma = 706/511 \approx 1.382\)</span> carries it past <span class="math inline">\(\mathbf{P}_2\)</span> to <span class="math inline">\(\mathbf{X}_1 = (2.999021526,\ 2.009050881)\)</span>. After three line searches Powell’s method is <span class="math inline">\(0.009104\)</span> from the minimum, where the taxi-cab method of Case 1 is <span class="math inline">\(0.06988\)</span> from it. The two searches of iteration 2, along <span class="math inline">\((0, 1)\)</span> and <span class="math inline">\((0.325,\ 0.1875)\)</span>, end <span class="math inline">\(0.001094\)</span> and <span class="math inline">\(7.126 \times 10^{-5}\)</span> from <span class="math inline">\((3, 2)\)</span>, too close to tell apart in the left panel; the zoom panel separates them. The new direction <span class="math inline">\((0.0009708,\ -0.00898)\)</span> is conjugate to <span class="math inline">\((0.325,\ 0.1875)\)</span>, and the dog-leg search along it, with <span class="math inline">\(\gamma = 511/507\)</span>, lands exactly on <span class="math inline">\((3, 2)\)</span>, where <span class="math inline">\(f + 7 = 0\)</span>.</p>
+<p><a href="powellbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="powellbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Rebuild of Mathews’ Powell’s method animation (Example 8) for f = x² − 4x + y² − y − xy from (2.55, 1.75): two coordinate searches, an orange dog-leg search past P₂ to (2.999021526, 2.009050881), two more searches and a second dog-leg that lands exactly on the minimum (3, 2), with a right panel zoomed on each search</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-rosenbrocks-parabolic-valley-example-4-fx-y-100y---x22-1---x2-mathbfx_0-0.99-1.01-4-iterations-new" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-rosenbrocks-parabolic-valley-example-4-fx-y-100y---x22-1---x2-mathbfx_0-0.99-1.01-4-iterations-new">Case 3 — Rosenbrock’s parabolic valley (Example 4), <span class="math inline">\(f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2\)</span>, <span class="math inline">\(\mathbf{X}_0 = (0.99,\ 1.01)\)</span>, <span class="math inline">\(4\)</span> iterations (new)</h3>
+<p><strong>Behavior:</strong> The left panel shows the window <span class="math inline">\([0.985, 1.015] \times [0.985, 1.015]\)</span> and the valley floor <span class="math inline">\(y = x^2\)</span> (dotted). The first search, along <span class="math inline">\(x\)</span>, moves <span class="math inline">\(0.01498\)</span> to <span class="math inline">\(\mathbf{P}_1\)</span>, next to the valley floor (<span class="math inline">\(y - x^2 = 2.475 \times 10^{-5}\)</span>). The next four points (<span class="math inline">\(\mathbf{P}_2\)</span> and <span class="math inline">\(\mathbf{X}_1\)</span> of iteration 1, <span class="math inline">\(\mathbf{P}_1\)</span> and <span class="math inline">\(\mathbf{P}_2\)</span> of iteration 2) all lie within <span class="math inline">\(5.6 \times 10^{-5}\)</span> of <span class="math inline">\(\mathbf{P}_1\)</span>, and the distance to <span class="math inline">\((1, 1)\)</span> falls only from <span class="math inline">\(0.01117\)</span> to <span class="math inline">\(0.01111\)</span>. These steps show only in the zoom panel. The dog-leg search of iteration 1 starts at <span class="math inline">\(\mathbf{X}_0\)</span> and runs at <span class="math inline">\(0.095^\circ\)</span> to the first search, so in the left panel it covers it, and it stops <span class="math inline">\(1.226 \times 10^{-5}\)</span> short of <span class="math inline">\(\mathbf{P}_2\)</span> (<span class="math inline">\(\gamma = 0.9992\)</span>). The dog-leg search of iteration 2 is the breakthrough: its direction is only <span class="math inline">\(2.752 \times 10^{-5}\)</span> long, but its slope <span class="math inline">\(2.015\)</span> is close to the slope <span class="math inline">\(2\)</span> of the valley floor at <span class="math inline">\((1, 1)\)</span>, and <span class="math inline">\(\gamma = 402.7\)</span> carries it <span class="math inline">\(0.01108\)</span> down the valley to <span class="math inline">\(\mathbf{X}_2\)</span>, <span class="math inline">\(5.871 \times 10^{-5}\)</span> from the minimum. From then on the left panel hardly changes, and the zoom panel follows iterations 3 and 4 down to <span class="math inline">\(\mathbf{X}_3\)</span>, <span class="math inline">\(3.467 \times 10^{-9}\)</span> from <span class="math inline">\((1, 1)\)</span>, and <span class="math inline">\(\mathbf{X}_4\)</span>, <span class="math inline">\(2.607 \times 10^{-24}\)</span> from it.</p>
+<p><a href="powellcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="powellcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Powell’s method on Rosenbrock’s function from (0.99, 1.01): a search along x to the valley floor y = x², four line searches that barely move the point along the valley, then a dog-leg search with γ = 402.7 that jumps to within 5.871e−5 of the minimum (1, 1), and two more iterations that the right zoom panel follows down to 2.607e−24 from it</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="line-searches" class="level2">
+<h2 class="anchored" data-anchor-id="line-searches">Line Searches</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Line search
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given a point <span class="math inline">\(\mathbf{P}\)</span> and a direction <span class="math inline">\(\mathbf{U} \ne \mathbf{0}\)</span>, a <em>line search</em> finds a value <span class="math inline">\(\gamma^*\)</span> that minimises the function of one variable</p>
+<p><span class="math display">\[
+\varphi(\gamma) = f(\mathbf{P} + \gamma\,\mathbf{U}),
+\]</span></p>
+<p>and moves to the point <span class="math inline">\(\mathbf{P} + \gamma^*\,\mathbf{U}\)</span>. The step <span class="math inline">\(\gamma\)</span> may be positive or negative.</p>
+</div>
+</div>
+<p>If <span class="math inline">\(f\)</span> is unimodal along the line, the <a href="../golden-ratio-search/">golden ratio search</a> or the <a href="../fibonacci-search/">Fibonacci search</a> finds <span class="math inline">\(\gamma^*\)</span> on a bracketing interval. When <span class="math inline">\(\varphi\)</span> has several local minima, different line-search methods can stop at different ones, and Mathews notes that a golden ratio or Fibonacci search can give slightly different results from <code>FindMinimum</code>.</p>
+<p>For a quadratic function the line search can be done exactly. If <span class="math inline">\(f(\mathbf{X}) = c + \mathbf{b}\cdot\mathbf{X} + \tfrac12\,\mathbf{X}^{T}\!\mathbf{A}\,\mathbf{X}\)</span> with a symmetric matrix <span class="math inline">\(\mathbf{A}\)</span> (the Hessian of <span class="math inline">\(f\)</span>), then <span class="math inline">\(\varphi(\gamma) = f(\mathbf{P}) + \gamma\,\nabla f(\mathbf{P})\cdot\mathbf{U} + \tfrac12\gamma^2\,\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{U}\)</span> is a parabola in <span class="math inline">\(\gamma\)</span>.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Exact line search on a quadratic
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{U} &gt; 0\)</span>, the minimum of <span class="math inline">\(f\)</span> along the line <span class="math inline">\(\mathbf{P} + \gamma\,\mathbf{U}\)</span> is at</p>
+<p><span class="math display">\[
+\gamma^* = -\,\frac{\nabla f(\mathbf{P})\cdot\mathbf{U}}{\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{U}},
+\tag{1}
+\]</span></p>
+<p>and at that point <span class="math inline">\(\nabla f(\mathbf{P} + \gamma^*\mathbf{U})\cdot\mathbf{U} = 0\)</span>: the gradient is perpendicular to the search direction.</p>
+</div>
+</div>
+<p>Formula (1) gives every step of Examples 1, 2 and 3 as an exact fraction.</p>
+</section>
+<section id="the-taxi-cab-method" class="level2">
+<h2 class="anchored" data-anchor-id="the-taxi-cab-method">The Taxi-Cab Method</h2>
+<p>Let <span class="math inline">\(\mathbf{E}_k\)</span> be the <span class="math inline">\(k\)</span>-th standard base vector, with a <span class="math inline">\(1\)</span> in position <span class="math inline">\(k\)</span> and zeros elsewhere. Starting from <span class="math inline">\(\mathbf{X}_0\)</span>, the taxi-cab method minimises <span class="math inline">\(f\)</span> along <span class="math inline">\(\mathbf{E}_1, \mathbf{E}_2, \ldots, \mathbf{E}_n\)</span> in turn, which changes one coordinate at a time, and repeats the sweep.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Taxi-cab method
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Start with <span class="math inline">\(\mathbf{X}_0\)</span> and set <span class="math inline">\(i = 0\)</span>.</p>
+<ol type="1">
+<li>Set <span class="math inline">\(\mathbf{P}_0 = \mathbf{X}_i\)</span>.</li>
+<li>For <span class="math inline">\(k = 1, 2, \ldots, n\)</span>: find <span class="math inline">\(\gamma_k\)</span> that minimises <span class="math inline">\(f(\mathbf{P}_{k-1} + \gamma\,\mathbf{E}_k)\)</span> and set <span class="math inline">\(\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{E}_k\)</span>.</li>
+<li>Set <span class="math inline">\(i = i + 1\)</span> and <span class="math inline">\(\mathbf{X}_i = \mathbf{P}_n\)</span>.</li>
+<li>Repeat steps 1–3 for a fixed number of iterations or until the points stop changing.</li>
+</ol>
+</div>
+</div>
+<p>Mathews’ program takes the starting point and a maximum number of iterations, and each iteration is one sweep of <span class="math inline">\(n\)</span> line searches.</p>
+<p>For a two-variable quadratic the effect of one sweep can be worked out in general. Write the errors from the minimum as <span class="math inline">\((e_x, e_y)\)</span> and let the Hessian be <span class="math inline">\(\begin{pmatrix} a &amp; b \\ b &amp; c \end{pmatrix}\)</span> with <span class="math inline">\(a &gt; 0\)</span>, <span class="math inline">\(c &gt; 0\)</span> and <span class="math inline">\(ac &gt; b^2\)</span> (positive definite). The search along <span class="math inline">\(x\)</span> leaves <span class="math inline">\(e_x = -(b/a)\,e_y\)</span>, and the search along <span class="math inline">\(y\)</span> that follows replaces <span class="math inline">\(e_y\)</span> by</p>
+<p><span class="math display">\[
+e_y \;\longrightarrow\; \frac{b^2}{a\,c}\; e_y .
+\tag{2}
+\]</span></p>
+<p>The factor <span class="math inline">\(b^2/(ac)\)</span> is less than <span class="math inline">\(1\)</span>, so the method converges on such a quadratic, but it is close to <span class="math inline">\(1\)</span> when the level curves are long, narrow ellipses whose axes are tilted well away from the coordinate axes.</p>
+<section id="example-1-the-taxi-cab-method-on-fx-y-x2---4x-y2---y---xy" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-the-taxi-cab-method-on-fx-y-x2---4x-y2---y---xy">Example 1 — The taxi-cab method on <span class="math inline">\(f(x, y) = x^2 - 4x + y^2 - y - xy\)</span></h3>
+<p>Mathews starts at <span class="math inline">\(\mathbf{X}_0 = (2.55,\ 1.75)\)</span>, where <span class="math inline">\(f(\mathbf{X}_0) = -6.8475\)</span>, and runs <span class="math inline">\(10\)</span> iterations.</p>
+<p><strong>Step 1</strong> (search along <span class="math inline">\(\mathbf{E}_1\)</span>): with <span class="math inline">\(y = 1.75\)</span> fixed,</p>
+<p><span class="math display">\[
+f(x, 1.75) = x^2 - \tfrac{23}{4}x + \tfrac{21}{16},
+\]</span></p>
+<p>which is least at <span class="math inline">\(x = \tfrac{23}{8} = 2.875\)</span>. So <span class="math inline">\(\gamma_1 = 0.325\)</span>, <span class="math inline">\(\mathbf{P}_1 = (2.875,\ 1.75)\)</span> and <span class="math inline">\(f(\mathbf{P}_1) = -\tfrac{445}{64} = -6.953125\)</span>. Formula (1) gives the same step: <span class="math inline">\(\nabla f(\mathbf{X}_0) = (-0.65,\ -0.05)\)</span>, <span class="math inline">\(\mathbf{E}_1^T\mathbf{A}\,\mathbf{E}_1 = f_{xx} = 2\)</span> and <span class="math inline">\(\gamma_1 = 0.65/2\)</span>.</p>
+<p><strong>Step 2</strong> (search along <span class="math inline">\(\mathbf{E}_2\)</span>): with <span class="math inline">\(x = 2.875\)</span> fixed,</p>
+<p><span class="math display">\[
+f(2.875, y) = y^2 - \tfrac{31}{8}y - \tfrac{207}{64},
+\]</span></p>
+<p>which is least at <span class="math inline">\(y = \tfrac{31}{16} = 1.9375\)</span>. So <span class="math inline">\(\gamma_2 = 0.1875\)</span> and <span class="math inline">\(\mathbf{X}_1 = \mathbf{P}_2 = (2.875,\ 1.9375)\)</span>, with <span class="math inline">\(f(\mathbf{X}_1) = -\tfrac{1789}{256} = -6.98828125\)</span>.</p>
+<p><strong>Step 3</strong> (the pattern): in general the search along <span class="math inline">\(x\)</span> sets <span class="math inline">\(x = (4 + y)/2\)</span> and the search along <span class="math inline">\(y\)</span> sets <span class="math inline">\(y = (1 + x)/2\)</span>. Here <span class="math inline">\(a = c = 2\)</span> and <span class="math inline">\(b = -1\)</span>, so by (2) each sweep multiplies the errors by <span class="math inline">\(b^2/(ac) = \tfrac14\)</span>. From the first iteration on,</p>
+<p><span class="math display">\[
+\mathbf{X}_k = \left(3 - 2^{-(2k+1)},\ \ 2 - 2^{-(2k+2)}\right), \qquad f(\mathbf{X}_k) = -7 + 3 \cdot 2^{-(4k+4)}, \qquad k \ge 1.
+\]</span></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(k\)</span></th>
+<th><span class="math inline">\(x_k\)</span></th>
+<th><span class="math inline">\(y_k\)</span></th>
+<th><span class="math inline">\(f(\mathbf{X}_k) + 7\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td><span class="math inline">\(2.550000000000\)</span></td>
+<td><span class="math inline">\(1.750000000000\)</span></td>
+<td><span class="math inline">\(0.1525\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(2.875000000000\)</span></td>
+<td><span class="math inline">\(1.937500000000\)</span></td>
+<td><span class="math inline">\(0.01172\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(2.968750000000\)</span></td>
+<td><span class="math inline">\(1.984375000000\)</span></td>
+<td><span class="math inline">\(7.324 \times 10^{-4}\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(2.992187500000\)</span></td>
+<td><span class="math inline">\(1.996093750000\)</span></td>
+<td><span class="math inline">\(4.578 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(2.998046875000\)</span></td>
+<td><span class="math inline">\(1.999023437500\)</span></td>
+<td><span class="math inline">\(2.861 \times 10^{-6}\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(2.999511718750\)</span></td>
+<td><span class="math inline">\(1.999755859375\)</span></td>
+<td><span class="math inline">\(1.788 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td><span class="math inline">\(2.999877929688\)</span></td>
+<td><span class="math inline">\(1.999938964844\)</span></td>
+<td><span class="math inline">\(1.118 \times 10^{-8}\)</span></td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td><span class="math inline">\(2.999969482422\)</span></td>
+<td><span class="math inline">\(1.999984741211\)</span></td>
+<td><span class="math inline">\(6.985 \times 10^{-10}\)</span></td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td><span class="math inline">\(2.999992370605\)</span></td>
+<td><span class="math inline">\(1.999996185303\)</span></td>
+<td><span class="math inline">\(4.366 \times 10^{-11}\)</span></td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td><span class="math inline">\(2.999998092651\)</span></td>
+<td><span class="math inline">\(1.999999046326\)</span></td>
+<td><span class="math inline">\(2.728 \times 10^{-12}\)</span></td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td><span class="math inline">\(2.999999523163\)</span></td>
+<td><span class="math inline">\(1.999999761581\)</span></td>
+<td><span class="math inline">\(1.705 \times 10^{-13}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>After <span class="math inline">\(10\)</span> iterations, which is <span class="math inline">\(20\)</span> line searches,</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{X}_{10} = (2.999999523163,\ 1.999999761581), \qquad f(\mathbf{X}_{10}) = -6.99999999999983\ }
+\]</span></p>
+<p>and the distance to the minimum is <span class="math inline">\(5.331 \times 10^{-7}\)</span>. Each iteration changes one coordinate at a time, so the path is a staircase of segments parallel to the axes. Mathews’ run prints the same points to within <span class="math inline">\(3.4 \times 10^{-8}\)</span>; his <span class="math inline">\(\mathbf{X}_{10}\)</span> is <span class="math inline">\((2.999999515690,\ 1.999999757845)\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f(3, 2) = (0, 0)\)</span>, and the Hessian <span class="math inline">\(\mathbf{A} = \begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}\)</span> has eigenvalues <span class="math inline">\(1\)</span> and <span class="math inline">\(3\)</span>, so <span class="math inline">\((3, 2)\)</span> is the global minimum, with <span class="math inline">\(f(3, 2) = -7\)</span>. Each table entry was computed with exact fractions, and agrees with the closed form above.</p>
+</section>
+<section id="example-2-the-taxi-cab-method-in-three-variables" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-the-taxi-cab-method-in-three-variables">Example 2 — The taxi-cab method in three variables</h3>
+<p>Minimise</p>
+<p><span class="math display">\[
+f(x, y, z) = 3 - 4x + 2x^2 - 4y + 2xy + 2y^2 + 4z - 2xz - 2yz + 2z^2
+\]</span></p>
+<p>from <span class="math inline">\(\mathbf{X}_0 = (1,\ 0.5,\ 0)\)</span>, with <span class="math inline">\(5\)</span> iterations as Mathews does. Each iteration is three line searches, along <span class="math inline">\(x\)</span>, then <span class="math inline">\(y\)</span>, then <span class="math inline">\(z\)</span>, and each step <span class="math inline">\(\gamma_k\)</span> comes from formula (1) as an exact fraction.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Iteration</th>
+<th>Point</th>
+<th><span class="math inline">\(\gamma_k\)</span></th>
+<th><span class="math inline">\((x, y, z)\)</span></th>
+<th><span class="math inline">\(f\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>—</td>
+<td><span class="math inline">\(\mathbf{X}_0\)</span></td>
+<td>—</td>
+<td><span class="math inline">\((1.0000000000,\ 0.5000000000,\ 0.0000000000)\)</span></td>
+<td><span class="math inline">\(0.5000000000\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(\mathbf{P}_1\)</span></td>
+<td><span class="math inline">\(-1/4\)</span></td>
+<td><span class="math inline">\((0.7500000000,\ 0.5000000000,\ 0.0000000000)\)</span></td>
+<td><span class="math inline">\(0.3750000000\)</span></td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(\mathbf{P}_2\)</span></td>
+<td><span class="math inline">\(1/8\)</span></td>
+<td><span class="math inline">\((0.7500000000,\ 0.6250000000,\ 0.0000000000)\)</span></td>
+<td><span class="math inline">\(0.3437500000\)</span></td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td><span class="math inline">\(\mathbf{P}_3 = \mathbf{X}_1\)</span></td>
+<td><span class="math inline">\(-5/16\)</span></td>
+<td><span class="math inline">\((0.7500000000,\ 0.6250000000,\ -0.3125000000)\)</span></td>
+<td><span class="math inline">\(0.1484375000\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(\mathbf{P}_1\)</span></td>
+<td><span class="math inline">\(-7/32\)</span></td>
+<td><span class="math inline">\((0.5312500000,\ 0.6250000000,\ -0.3125000000)\)</span></td>
+<td><span class="math inline">\(0.0527343750\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(\mathbf{P}_2\)</span></td>
+<td><span class="math inline">\(-3/64\)</span></td>
+<td><span class="math inline">\((0.5312500000,\ 0.5781250000,\ -0.3125000000)\)</span></td>
+<td><span class="math inline">\(0.0483398438\)</span></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><span class="math inline">\(\mathbf{P}_3 = \mathbf{X}_2\)</span></td>
+<td><span class="math inline">\(-17/128\)</span></td>
+<td><span class="math inline">\((0.5312500000,\ 0.5781250000,\ -0.4453125000)\)</span></td>
+<td><span class="math inline">\(0.0130615234\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(\mathbf{P}_1\)</span></td>
+<td><span class="math inline">\(-11/256\)</span></td>
+<td><span class="math inline">\((0.4882812500,\ 0.5781250000,\ -0.4453125000)\)</span></td>
+<td><span class="math inline">\(0.0093688965\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(\mathbf{P}_2\)</span></td>
+<td><span class="math inline">\(-23/512\)</span></td>
+<td><span class="math inline">\((0.4882812500,\ 0.5332031250,\ -0.4453125000)\)</span></td>
+<td><span class="math inline">\(0.0053329468\)</span></td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td><span class="math inline">\(\mathbf{P}_3 = \mathbf{X}_3\)</span></td>
+<td><span class="math inline">\(-45/1024\)</span></td>
+<td><span class="math inline">\((0.4882812500,\ 0.5332031250,\ -0.4892578125)\)</span></td>
+<td><span class="math inline">\(0.0014705658\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(\mathbf{P}_1\)</span></td>
+<td><span class="math inline">\(1/2048\)</span></td>
+<td><span class="math inline">\((0.4887695313,\ 0.5332031250,\ -0.4892578125)\)</span></td>
+<td><span class="math inline">\(0.0014700890\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><span class="math inline">\(\mathbf{P}_2\)</span></td>
+<td><span class="math inline">\(-91/4096\)</span></td>
+<td><span class="math inline">\((0.4887695313,\ 0.5109863281,\ -0.4892578125)\)</span></td>
+<td><span class="math inline">\(0.0004829168\)</span></td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td><span class="math inline">\(\mathbf{P}_3 = \mathbf{X}_4\)</span></td>
+<td><span class="math inline">\(-89/8192\)</span></td>
+<td><span class="math inline">\((0.4887695313,\ 0.5109863281,\ -0.5001220703)\)</span></td>
+<td><span class="math inline">\(0.0002468526\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(\mathbf{P}_1\)</span></td>
+<td><span class="math inline">\(93/16384\)</span></td>
+<td><span class="math inline">\((0.4944458008,\ 0.5109863281,\ -0.5001220703)\)</span></td>
+<td><span class="math inline">\(0.0001824126\)</span></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><span class="math inline">\(\mathbf{P}_2\)</span></td>
+<td><span class="math inline">\(-271/32768\)</span></td>
+<td><span class="math inline">\((0.4944458008,\ 0.5027160645,\ -0.5001220703)\)</span></td>
+<td><span class="math inline">\(0.0000456180\)</span></td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td><span class="math inline">\(\mathbf{P}_3 = \mathbf{X}_5\)</span></td>
+<td><span class="math inline">\(-85/65536\)</span></td>
+<td><span class="math inline">\((0.4944458008,\ 0.5027160645,\ -0.5014190674)\)</span></td>
+<td><span class="math inline">\(0.0000422536\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(f\)</span> decreases at every line search, but slowly: after <span class="math inline">\(15\)</span> line searches</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{X}_5 = \left(\tfrac{8101}{16384},\ \tfrac{16473}{32768},\ -\tfrac{32861}{65536}\right) \approx (0.4944458008,\ 0.5027160645,\ -0.5014190674), \qquad f(\mathbf{X}_5) \approx 4.225 \times 10^{-5}\ }
+\]</span></p>
+<p>is still <span class="math inline">\(0.006343\)</span> from the minimum <span class="math inline">\(\left(\tfrac12,\ \tfrac12,\ -\tfrac12\right)\)</span>. Over these five iterations the distance to the minimum falls by a factor between about <span class="math inline">\(0.30\)</span> and <span class="math inline">\(0.48\)</span> per iteration, irregularly. In iterations 4 and 5 the first search moves <span class="math inline">\(x\)</span> in the opposite direction (<span class="math inline">\(\gamma_1 &gt; 0\)</span>) to all the earlier <span class="math inline">\(x\)</span> moves. Mathews’ run prints the same points to within <span class="math inline">\(5 \times 10^{-9}\)</span>.</p>
+<p><strong>Verification:</strong> solving <span class="math inline">\(\nabla f = \mathbf{0}\)</span> gives <span class="math inline">\(3x + y = 2\)</span> and <span class="math inline">\(x + 3y = 2\)</span> (after eliminating <span class="math inline">\(z = (x + y - 2)/2\)</span>), so the only stationary point is <span class="math inline">\(\left(\tfrac12,\ \tfrac12,\ -\tfrac12\right)\)</span>, where <span class="math inline">\(f = 0\)</span>. The Hessian <span class="math inline">\(\begin{pmatrix} 4 &amp; 2 &amp; -2 \\ 2 &amp; 4 &amp; -2 \\ -2 &amp; -2 &amp; 4 \end{pmatrix}\)</span> has eigenvalues <span class="math inline">\(2\)</span>, <span class="math inline">\(2\)</span> and <span class="math inline">\(8\)</span>, so this is the global minimum.</p>
+</section>
+</section>
+<section id="powells-method" class="level2">
+<h2 class="anchored" data-anchor-id="powells-method">Powell’s Method</h2>
+<p>The vector <span class="math inline">\(\mathbf{P}_n - \mathbf{P}_0\)</span> is the net move of one sweep, the “average direction” of the <span class="math inline">\(n\)</span> line searches in it. Powell’s method searches along this direction too, and keeps it as a search direction for the next sweep, dropping the oldest one. The directions start as the standard base vectors and are stored as the columns of a matrix,</p>
+<p><span class="math display">\[
+\mathbf{U} = \begin{bmatrix} \mathbf{U}_1 &amp; \mathbf{U}_2 &amp; \cdots &amp; \mathbf{U}_n \end{bmatrix} = \begin{bmatrix} \mathbf{E}_1 &amp; \mathbf{E}_2 &amp; \cdots &amp; \mathbf{E}_n \end{bmatrix} = \mathbf{I}.
+\]</span></p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Powell’s method (basic form)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Start with <span class="math inline">\(\mathbf{X}_0\)</span>, set <span class="math inline">\(\mathbf{U}_k = \mathbf{E}_k\)</span> for <span class="math inline">\(k = 1, \ldots, n\)</span>, and set <span class="math inline">\(i = 0\)</span>.</p>
+<ol type="1">
+<li>Set <span class="math inline">\(\mathbf{P}_0 = \mathbf{X}_i\)</span>.</li>
+<li>For <span class="math inline">\(k = 1, 2, \ldots, n\)</span>: find <span class="math inline">\(\gamma_k\)</span> that minimises <span class="math inline">\(f(\mathbf{P}_{k-1} + \gamma\,\mathbf{U}_k)\)</span> and set <span class="math inline">\(\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{U}_k\)</span>.</li>
+<li>Set <span class="math inline">\(\mathbf{U}_j = \mathbf{U}_{j+1}\)</span> for <span class="math inline">\(j = 1, \ldots, n - 1\)</span>, and set <span class="math inline">\(\mathbf{U}_n = \mathbf{P}_n - \mathbf{P}_0\)</span>.</li>
+<li>Set <span class="math inline">\(i = i + 1\)</span>.</li>
+<li>Find <span class="math inline">\(\gamma\)</span> that minimises <span class="math inline">\(f(\mathbf{P}_0 + \gamma\,\mathbf{U}_n)\)</span> and set <span class="math inline">\(\mathbf{X}_i = \mathbf{P}_0 + \gamma\,\mathbf{U}_n\)</span>.</li>
+<li>Repeat steps 1–5.</li>
+</ol>
+</div>
+</div>
+<p>Each iteration costs <span class="math inline">\(n + 1\)</span> line searches. Mathews’ program runs a fixed number of iterations, given as its second argument. If a sweep does not move at all, then <span class="math inline">\(\mathbf{P}_n = \mathbf{P}_0\)</span>, the new direction is the zero vector and the search in step 5 is meaningless; the iteration has then converged.</p>
+<p>Why the average direction works so well on a quadratic is explained by the next result, which holds for any quadratic with a positive definite Hessian and exact line searches.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Parallel lines give a conjugate direction
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(f(\mathbf{X}) = c + \mathbf{b}\cdot\mathbf{X} + \tfrac12\,\mathbf{X}^{T}\!\mathbf{A}\,\mathbf{X}\)</span> with <span class="math inline">\(\mathbf{A}\)</span> symmetric and positive definite. If <span class="math inline">\(\mathbf{Q}_1\)</span> minimises <span class="math inline">\(f\)</span> along a line with direction <span class="math inline">\(\mathbf{U}\)</span>, and <span class="math inline">\(\mathbf{Q}_2\)</span> minimises <span class="math inline">\(f\)</span> along a parallel line with the same direction <span class="math inline">\(\mathbf{U}\)</span>, then <span class="math inline">\(\mathbf{D} = \mathbf{Q}_2 - \mathbf{Q}_1\)</span> is <em>conjugate</em> to <span class="math inline">\(\mathbf{U}\)</span>:</p>
+<p><span class="math display">\[
+\mathbf{U}^{T}\!\mathbf{A}\,\mathbf{D} = 0 .
+\]</span></p>
+<p>In two variables it follows that a line search from <span class="math inline">\(\mathbf{Q}_1\)</span> along <span class="math inline">\(\mathbf{D}\)</span> ends at the minimum of <span class="math inline">\(f\)</span>, provided <span class="math inline">\(\mathbf{D} \neq \mathbf{0}\)</span>.</p>
+</div>
+</div>
+<p><em>Proof.</em> At both points the gradient is perpendicular to <span class="math inline">\(\mathbf{U}\)</span>, so <span class="math inline">\(\mathbf{U}\cdot\nabla f(\mathbf{Q}_1) = \mathbf{U}\cdot\nabla f(\mathbf{Q}_2) = 0\)</span>. Since <span class="math inline">\(\nabla f(\mathbf{Q}_2) - \nabla f(\mathbf{Q}_1) = \mathbf{A}\,\mathbf{D}\)</span>, subtracting gives <span class="math inline">\(\mathbf{U}^T\!\mathbf{A}\,\mathbf{D} = 0\)</span>. If <span class="math inline">\(\mathbf{X} = \mathbf{Q}_1 + \gamma^*\mathbf{D}\)</span> minimises <span class="math inline">\(f\)</span> along <span class="math inline">\(\mathbf{D}\)</span>, then <span class="math inline">\(\nabla f(\mathbf{X})\cdot\mathbf{D} = 0\)</span>, and <span class="math inline">\(\nabla f(\mathbf{X})\cdot\mathbf{U} = \nabla f(\mathbf{Q}_1)\cdot\mathbf{U} + \gamma^*\,\mathbf{D}^T\!\mathbf{A}\,\mathbf{U} = 0\)</span>. In two variables, <span class="math inline">\(\mathbf{U}\)</span> and <span class="math inline">\(\mathbf{D}\)</span> are linearly independent (two nonzero vectors conjugate under a positive definite <span class="math inline">\(\mathbf{A}\)</span> cannot be parallel), so <span class="math inline">\(\nabla f(\mathbf{X}) = \mathbf{0}\)</span>. <span class="math inline">\(\square\)</span></p>
+<p>In Powell’s method the point <span class="math inline">\(\mathbf{X}_1\)</span> minimises <span class="math inline">\(f\)</span> along <span class="math inline">\(\mathbf{U}_2\)</span> (step 5 of the first iteration), and the second sweep ends with a search along the same <span class="math inline">\(\mathbf{U}_2\)</span>. So for <span class="math inline">\(n = 2\)</span> the theorem applies with <span class="math inline">\(\mathbf{Q}_1 = \mathbf{X}_1\)</span> and <span class="math inline">\(\mathbf{Q}_2 = \mathbf{P}_2\)</span> of the second iteration, and <span class="math inline">\(\mathbf{X}_2\)</span> is the exact minimum. As a general result for <span class="math inline">\(n\)</span> variables, <span class="citation" data-cites="powell1964efficient">Powell (<a href="#ref-powell1964efficient" role="doc-biblioref">1964</a>)</span> showed that, with exact line searches on a quadratic with a positive definite Hessian, the directions added by the method are mutually conjugate, and the minimum is reached after <span class="math inline">\(n\)</span> iterations, provided the direction set stays linearly independent.</p>
+<section id="example-3-powells-method-on-fx-y-x2---4x-y2---y---xy" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-powells-method-on-fx-y-x2---4x-y2---y---xy">Example 3 — Powell’s method on <span class="math inline">\(f(x, y) = x^2 - 4x + y^2 - y - xy\)</span></h3>
+<p>This is the function and starting point of Example 1, <span class="math inline">\(\mathbf{X}_0 = (2.55,\ 1.75)\)</span>, now with Powell’s method and <span class="math inline">\(3\)</span> iterations.</p>
+<p><strong>Iteration 1, steps 1–2.</strong> The two coordinate searches are the same as in Example 1: <span class="math inline">\(\gamma_1 = 0.325\)</span> gives <span class="math inline">\(\mathbf{P}_1 = (2.875,\ 1.75)\)</span>, and <span class="math inline">\(\gamma_2 = 0.1875\)</span> gives <span class="math inline">\(\mathbf{P}_2 = (2.875,\ 1.9375)\)</span>.</p>
+<p><strong>Iteration 1, step 3.</strong> The new directions are</p>
+<p><span class="math display">\[
+\mathbf{U}_1 = \mathbf{E}_2 = (0,\ 1), \qquad \mathbf{U}_2 = \mathbf{P}_2 - \mathbf{P}_0 = (0.325,\ 0.1875) = \left(\tfrac{13}{40},\ \tfrac{3}{16}\right).
+\]</span></p>
+<p><strong>Iteration 1, step 5.</strong> Along <span class="math inline">\(\mathbf{P}_0 + \gamma\,\mathbf{U}_2\)</span>,</p>
+<p><span class="math display">\[
+\varphi(\gamma) = f(2.55 + 0.325\gamma,\ 1.75 + 0.1875\gamma) = \tfrac{511}{6400}\gamma^2 - \tfrac{353}{1600}\gamma - \tfrac{2739}{400},
+\]</span></p>
+<p>which is least at <span class="math inline">\(\gamma = \tfrac{706}{511} \approx 1.381605\)</span>. This step goes past <span class="math inline">\(\mathbf{P}_2\)</span> (where <span class="math inline">\(\gamma = 1\)</span>), and</p>
+<p><span class="math display">\[
+\mathbf{X}_1 = \left(\tfrac{3065}{1022},\ \tfrac{8213}{4088}\right) \approx (2.999021526419,\ 2.009050880626), \qquad f(\mathbf{X}_1) = -\tfrac{228925}{32704} \approx -6.999908268102 .
+\]</span></p>
+<p><strong>Iteration 2.</strong> From <span class="math inline">\(\mathbf{P}_0 = \mathbf{X}_1\)</span>, the search along <span class="math inline">\(\mathbf{U}_1 = (0, 1)\)</span> has <span class="math inline">\(\gamma_1 = -\tfrac{39}{4088}\)</span> and gives <span class="math inline">\(\mathbf{P}_1 = \left(\tfrac{3065}{1022},\ \tfrac{4087}{2044}\right) \approx (2.999021526419,\ 1.999510763209)\)</span>. The search along <span class="math inline">\(\mathbf{U}_2 = (0.325,\ 0.1875)\)</span> has <span class="math inline">\(\gamma_2 = \tfrac{780}{261121}\)</span> and gives <span class="math inline">\(\mathbf{P}_2 \approx (2.999992340716,\ 2.000070848381)\)</span>. The new direction is</p>
+<p><span class="math display">\[
+\mathbf{U}_2 \leftarrow \mathbf{P}_2 - \mathbf{P}_0 = \left(\tfrac{507}{522242},\ -\tfrac{18759}{2088968}\right) \approx (0.0009708143,\ -0.0089800322),
+\]</span></p>
+<p>and it is conjugate to the old <span class="math inline">\(\mathbf{U}_2 = \left(\tfrac{13}{40}, \tfrac{3}{16}\right)\)</span>: with <span class="math inline">\(\mathbf{A} = \begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}\)</span>, the product <span class="math inline">\(\left(\tfrac{13}{40}, \tfrac{3}{16}\right)\mathbf{A}\left(\tfrac{507}{522242}, -\tfrac{18759}{2088968}\right)^T\)</span> is exactly <span class="math inline">\(0\)</span>. The line search along it has <span class="math inline">\(\gamma = \tfrac{511}{507}\)</span> and lands exactly on the minimum:</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{X}_2 = (3,\ 2), \qquad f(\mathbf{X}_2) = -7\ }
+\]</span></p>
+<p><strong>Iteration 3.</strong> Every search from <span class="math inline">\((3, 2)\)</span> returns <span class="math inline">\(\gamma = 0\)</span>, so <span class="math inline">\(\mathbf{X}_3 = (3, 2)\)</span> (in exact arithmetic the new direction <span class="math inline">\(\mathbf{P}_2 - \mathbf{P}_0\)</span> is the zero vector).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Point</th>
+<th><span class="math inline">\(\gamma\)</span></th>
+<th><span class="math inline">\((x, y)\)</span></th>
+<th><span class="math inline">\(f\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_0\)</span></td>
+<td>—</td>
+<td><span class="math inline">\((2.550000000000,\ 1.750000000000)\)</span></td>
+<td><span class="math inline">\(-6.847500000000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 1)</td>
+<td><span class="math inline">\(13/40\)</span></td>
+<td><span class="math inline">\((2.875000000000,\ 1.750000000000)\)</span></td>
+<td><span class="math inline">\(-6.953125000000\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 1)</td>
+<td><span class="math inline">\(3/16\)</span></td>
+<td><span class="math inline">\((2.875000000000,\ 1.937500000000)\)</span></td>
+<td><span class="math inline">\(-6.988281250000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{X}_1\)</span></td>
+<td><span class="math inline">\(706/511\)</span></td>
+<td><span class="math inline">\((2.999021526419,\ 2.009050880626)\)</span></td>
+<td><span class="math inline">\(-6.999908268102\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 2)</td>
+<td><span class="math inline">\(-39/4088\)</span></td>
+<td><span class="math inline">\((2.999021526419,\ 1.999510763209)\)</span></td>
+<td><span class="math inline">\(-6.999999281942\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 2)</td>
+<td><span class="math inline">\(780/261121\)</span></td>
+<td><span class="math inline">\((2.999992340716,\ 2.000070848381)\)</span></td>
+<td><span class="math inline">\(-6.999999994379\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_2\)</span></td>
+<td><span class="math inline">\(511/507\)</span></td>
+<td><span class="math inline">\((3,\ 2)\)</span></td>
+<td><span class="math inline">\(-7\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{X}_3\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\((3,\ 2)\)</span></td>
+<td><span class="math inline">\(-7\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Powell’s method reaches the minimum exactly after <span class="math inline">\(6\)</span> line searches, where the taxi-cab method of Example 1 is still <span class="math inline">\(5.331 \times 10^{-7}\)</span> away after <span class="math inline">\(20\)</span>. Mathews’ run agrees with these points to within <span class="math inline">\(6 \times 10^{-8}\)</span>; his machine-precision line searches print <span class="math inline">\(\mathbf{X}_2 = (2.999999967922,\ 1.999999981493)\)</span>, and <span class="math inline">\((3, 2)\)</span> in iteration 3.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f(3, 2) = (0, 0)\)</span> and <span class="math inline">\(\mathbf{A}\)</span> is positive definite (Example 1), so <span class="math inline">\((3, 2)\)</span> is the minimum; every entry of the table was computed with exact fractions.</p>
+</section>
+<section id="example-4-rosenbrocks-parabolic-valley" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-rosenbrocks-parabolic-valley">Example 4 — Rosenbrock’s parabolic valley</h3>
+<p>Minimise</p>
+<p><span class="math display">\[
+f(x, y) = 100\,(y - x^2)^2 + (1 - x)^2 ,
+\]</span></p>
+<p>the function Rosenbrock introduced around 1960 as a test problem. Its minimum <span class="math inline">\(f(1, 1) = 0\)</span> lies at the bottom of a long, curved, narrow valley along <span class="math inline">\(y = x^2\)</span>. Mathews graphs the surface over <span class="math inline">\([0.5, 1.5] \times [0.5, 1.5]\)</span> and runs <span class="math inline">\(4\)</span> iterations of Powell’s method from <span class="math inline">\(\mathbf{X}_0 = (0.99,\ 1.01)\)</span>, where <span class="math inline">\(f(\mathbf{X}_0) = 0.089501\)</span>. Here the line searches are no longer parabolas, and they were done numerically, each to the first local minimum downhill from <span class="math inline">\(\gamma = 0\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Point</th>
+<th><span class="math inline">\(\gamma\)</span></th>
+<th><span class="math inline">\((x, y)\)</span></th>
+<th><span class="math inline">\(f\)</span></th>
+<th>distance to <span class="math inline">\((1, 1)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_0\)</span></td>
+<td>—</td>
+<td><span class="math inline">\((0.990000000000,\ 1.010000000000)\)</span></td>
+<td><span class="math inline">\(0.089501\)</span></td>
+<td><span class="math inline">\(0.01414\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 1)</td>
+<td><span class="math inline">\(0.01497525\)</span></td>
+<td><span class="math inline">\((1.004975246918,\ 1.010000000000)\)</span></td>
+<td><span class="math inline">\(2.481 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(0.01117\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 1)</td>
+<td><span class="math inline">\(-2.475308 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\((1.004975246918,\ 1.009975246918)\)</span></td>
+<td><span class="math inline">\(2.475 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(0.01115\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{X}_1\)</span></td>
+<td><span class="math inline">\(0.9991810\)</span></td>
+<td><span class="math inline">\((1.004962981965,\ 1.009975267191)\)</span></td>
+<td><span class="math inline">\(2.469 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(0.01114\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 2)</td>
+<td><span class="math inline">\(-2.467207 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\((1.004962981965,\ 1.009950595119)\)</span></td>
+<td><span class="math inline">\(2.463 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(0.01112\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 2)</td>
+<td><span class="math inline">\(-8.170159 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\((1.004950746949,\ 1.009950615343)\)</span></td>
+<td><span class="math inline">\(2.457 \times 10^{-5}\)</span></td>
+<td><span class="math inline">\(0.01111\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_2\)</span></td>
+<td><span class="math inline">\(402.7456\)</span></td>
+<td><span class="math inline">\((1.000035383584,\ 1.000046843962)\)</span></td>
+<td><span class="math inline">\(5.849 \times 10^{-8}\)</span></td>
+<td><span class="math inline">\(5.871 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 3)</td>
+<td><span class="math inline">\(-8.020124 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\((1.000023373250,\ 1.000046863814)\)</span></td>
+<td><span class="math inline">\(5.477 \times 10^{-10}\)</span></td>
+<td><span class="math inline">\(5.237 \times 10^{-5}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 3)</td>
+<td><span class="math inline">\(1.883024\)</span></td>
+<td><span class="math inline">\((1.000000334427,\ 1.000000443799)\)</span></td>
+<td><span class="math inline">\(5.177 \times 10^{-12}\)</span></td>
+<td><span class="math inline">\(5.557 \times 10^{-7}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{X}_3\)</span></td>
+<td><span class="math inline">\(1.009498\)</span></td>
+<td><span class="math inline">\((1.000000001541,\ 1.000000003106)\)</span></td>
+<td><span class="math inline">\(2.428 \times 10^{-18}\)</span></td>
+<td><span class="math inline">\(3.467 \times 10^{-9}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 4)</td>
+<td><span class="math inline">\(1.259732 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\((1.000000000000,\ 1.000000000000)\)</span></td>
+<td><span class="math inline">\(1.160 \times 10^{-24}\)</span></td>
+<td><span class="math inline">\(2.631 \times 10^{-13}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 4)</td>
+<td><span class="math inline">\(4.496595 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\((1.000000000000,\ 1.000000000000)\)</span></td>
+<td><span class="math inline">\(5.546 \times 10^{-31}\)</span></td>
+<td><span class="math inline">\(1.657 \times 10^{-15}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_4\)</span></td>
+<td><span class="math inline">\(1.000000478\)</span></td>
+<td><span class="math inline">\((1.000000000000,\ 1.000000000000)\)</span></td>
+<td><span class="math inline">\(1.154 \times 10^{-46}\)</span></td>
+<td><span class="math inline">\(2.607 \times 10^{-24}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The first search lands next to the valley floor <span class="math inline">\(y = x^2\)</span> (at <span class="math inline">\(\mathbf{P}_1\)</span>, <span class="math inline">\(y - x^2 = 2.5 \times 10^{-5}\)</span>), and the next four line searches crawl along it: from <span class="math inline">\(\mathbf{P}_1\)</span> of iteration 1 to <span class="math inline">\(\mathbf{P}_2\)</span> of iteration 2 the distance to <span class="math inline">\((1, 1)\)</span> only falls from <span class="math inline">\(0.01117\)</span> to <span class="math inline">\(0.01111\)</span>. The breakthrough is the dog-leg step of iteration 2. Its direction <span class="math inline">\(\mathbf{U}_2 = \mathbf{P}_2 - \mathbf{P}_0 \approx (-1.2235 \times 10^{-5},\ -2.4652 \times 10^{-5})\)</span> is tiny, but its slope <span class="math inline">\(2.015\)</span> is nearly the slope <span class="math inline">\(2\)</span> of the valley floor <span class="math inline">\(y = x^2\)</span> at <span class="math inline">\((1, 1)\)</span>, and the line search goes <span class="math inline">\(402.7\)</span> times its length along it, cutting the distance to the minimum from <span class="math inline">\(0.01111\)</span> to <span class="math inline">\(5.871 \times 10^{-5}\)</span>. After four iterations the run is at <span class="math inline">\((1, 1)\)</span> to within <span class="math inline">\(3 \times 10^{-24}\)</span>.</p>
+<p>Mathews’ printed points agree with these to within <span class="math inline">\(1.3 \times 10^{-12}\)</span> up to <span class="math inline">\(\mathbf{P}_2\)</span> of iteration 2, and to within <span class="math inline">\(3.7 \times 10^{-9}\)</span> from <span class="math inline">\(\mathbf{X}_2\)</span> on. His run uses machine precision, and his last three values of <span class="math inline">\(f\)</span> stay near <span class="math inline">\(1.3 \times 10^{-25}\)</span> instead of falling further.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f(1, 1) = (0, 0)\)</span>, the Hessian <span class="math inline">\(\mathbf{H}(1, 1) = \begin{pmatrix} 802 &amp; -400 \\ -400 &amp; 200 \end{pmatrix}\)</span> has eigenvalues <span class="math inline">\(0.3994\)</span> and <span class="math inline">\(1001.6\)</span>, and <span class="math inline">\(f \ge 0\)</span> everywhere with <span class="math inline">\(f(1, 1) = 0\)</span>, so <span class="math inline">\((1, 1)\)</span> is the global minimum. The very different eigenvalues are the narrow valley: at <span class="math inline">\((1, 1)\)</span> the curvature of <span class="math inline">\(f\)</span> across the valley is about <span class="math inline">\(2500\)</span> times its curvature along it.</p>
+</section>
+<section id="example-5-three-local-minima-of-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x" class="level3">
+<h3 class="anchored" data-anchor-id="example-5-three-local-minima-of-fx-y-5x2-x4---9x2-y-3y2-2y4-tfrac14-x">Example 5 — Three local minima of <span class="math inline">\(f(x, y) = 5x^2 + x^4 - 9x^2 y + 3y^2 + 2y^4 + \tfrac14 x\)</span></h3>
+<p>Mathews labels this one Exercise 5: use Powell’s method to find the minima of <span class="math inline">\(f\)</span>, and estimate their locations from graphs of <span class="math inline">\(f\)</span>, which he draws over <span class="math inline">\([-3, 3] \times [-0.5, 2]\)</span>. He then goes for the minimum near each of three points, starting Powell’s method at <span class="math inline">\((0, 0)\)</span>, <span class="math inline">\((2, 1.5)\)</span> and <span class="math inline">\((-2, 1.5)\)</span>, with <span class="math inline">\(2\)</span> iterations each time. The line searches were done numerically, as in Example 4.</p>
+<p><strong>Case (i): the minimum near <span class="math inline">\((0, 0)\)</span>.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Point</th>
+<th><span class="math inline">\(\gamma\)</span></th>
+<th><span class="math inline">\((x, y)\)</span></th>
+<th><span class="math inline">\(f\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_0\)</span></td>
+<td>—</td>
+<td><span class="math inline">\((0.000000000000,\ 0.000000000000)\)</span></td>
+<td><span class="math inline">\(0.000000000000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 1)</td>
+<td><span class="math inline">\(-0.02499375\)</span></td>
+<td><span class="math inline">\((-0.024993754683,\ 0.000000000000)\)</span></td>
+<td><span class="math inline">\(-0.003124609570\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 1)</td>
+<td><span class="math inline">\(9.370306 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\((-0.024993754683,\ 0.000937030563)\)</span></td>
+<td><span class="math inline">\(-0.003127243654\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{X}_1\)</span></td>
+<td><span class="math inline">\(1.001693\)</span></td>
+<td><span class="math inline">\((-0.025036057316,\ 0.000938616513)\)</span></td>
+<td><span class="math inline">\(-0.003127252570\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 2)</td>
+<td><span class="math inline">\(1.588627 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\((-0.025036057316,\ 0.000940205141)\)</span></td>
+<td><span class="math inline">\(-0.003127252578\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 2)</td>
+<td><span class="math inline">\(1.439605 \times 10^{-6}\)</span></td>
+<td><span class="math inline">\((-0.025036093297,\ 0.000940206490)\)</span></td>
+<td><span class="math inline">\(-0.003127252578\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_2\)</span></td>
+<td><span class="math inline">\(1.000853\)</span></td>
+<td><span class="math inline">\((-0.025036093327,\ 0.000940207845)\)</span></td>
+<td><span class="math inline">\(-0.003127252578\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(\mathbf{X}_2\)</span> is within <span class="math inline">\(9 \times 10^{-17}\)</span> of the minimum. Mathews prints <span class="math inline">\(\mathbf{X}_2 = (-0.025036117326,\ 0.000940208142)\)</span>, <span class="math inline">\(2.4 \times 10^{-8}\)</span> from it.</p>
+<p><strong>Case (ii): the minimum near <span class="math inline">\((2, 1.5)\)</span>.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Point</th>
+<th><span class="math inline">\(\gamma\)</span></th>
+<th><span class="math inline">\((x, y)\)</span></th>
+<th><span class="math inline">\(f\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_0\)</span></td>
+<td>—</td>
+<td><span class="math inline">\((2.000000000000,\ 1.500000000000)\)</span></td>
+<td><span class="math inline">\(-0.625000000000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 1)</td>
+<td><span class="math inline">\(0.05416015\)</span></td>
+<td><span class="math inline">\((2.054160154431,\ 1.500000000000)\)</span></td>
+<td><span class="math inline">\(-0.673034216268\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 1)</td>
+<td><span class="math inline">\(0.03230541\)</span></td>
+<td><span class="math inline">\((2.054160154431,\ 1.532305411865)\)</span></td>
+<td><span class="math inline">\(-0.705159105443\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{X}_1\)</span></td>
+<td><span class="math inline">\(2.735421\)</span></td>
+<td><span class="math inline">\((2.148150843063,\ 1.588368913524)\)</span></td>
+<td><span class="math inline">\(-0.763654912119\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 2)</td>
+<td><span class="math inline">\(-8.691538 \times 10^{-4}\)</span></td>
+<td><span class="math inline">\((2.148150843063,\ 1.587499759730)\)</span></td>
+<td><span class="math inline">\(-0.763680032306\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 2)</td>
+<td><span class="math inline">\(1.130429 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\((2.148212067282,\ 1.587536278710)\)</span></td>
+<td><span class="math inline">\(-0.763680059158\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_2\)</span></td>
+<td><span class="math inline">\(1.001050\)</span></td>
+<td><span class="math inline">\((2.148212131548,\ 1.587535404706)\)</span></td>
+<td><span class="math inline">\(-0.763680059186\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(\mathbf{X}_2\)</span> is <span class="math inline">\(1.4 \times 10^{-9}\)</span> from the minimum.</p>
+<p><strong>Case (iii): the minimum near <span class="math inline">\((-2, 1.5)\)</span>.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Point</th>
+<th><span class="math inline">\(\gamma\)</span></th>
+<th><span class="math inline">\((x, y)\)</span></th>
+<th><span class="math inline">\(f\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_0\)</span></td>
+<td>—</td>
+<td><span class="math inline">\((-2.000000000000,\ 1.500000000000)\)</span></td>
+<td><span class="math inline">\(-1.625000000000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 1)</td>
+<td><span class="math inline">\(-0.06886679\)</span></td>
+<td><span class="math inline">\((-2.068866785213,\ 1.500000000000)\)</span></td>
+<td><span class="math inline">\(-1.703804065800\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 1)</td>
+<td><span class="math inline">\(0.04101303\)</span></td>
+<td><span class="math inline">\((-2.068866785213,\ 1.541013026985)\)</span></td>
+<td><span class="math inline">\(-1.755938774583\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{X}_1\)</span></td>
+<td><span class="math inline">\(2.637715\)</span></td>
+<td><span class="math inline">\((-2.181650937215,\ 1.608180667456)\)</span></td>
+<td><span class="math inline">\(-1.846228690920\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{P}_1\)</span> (iteration 2)</td>
+<td><span class="math inline">\(-1.262418 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\((-2.181650937215,\ 1.606918249556)\)</span></td>
+<td><span class="math inline">\(-1.846282880617\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{P}_2\)</span> (iteration 2)</td>
+<td><span class="math inline">\(1.463631 \times 10^{-3}\)</span></td>
+<td><span class="math inline">\((-2.181751732804,\ 1.606978277510)\)</span></td>
+<td><span class="math inline">\(-1.846282959494\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\mathbf{X}_2\)</span></td>
+<td><span class="math inline">\(1.001425\)</span></td>
+<td><span class="math inline">\((-2.181751876396,\ 1.606976564601)\)</span></td>
+<td><span class="math inline">\(-1.846282959604\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="math inline">\(\mathbf{X}_2\)</span> is <span class="math inline">\(3.8 \times 10^{-9}\)</span> from the minimum.</p>
+<p>In cases (ii) and (iii) the dog-leg step of the first iteration (<span class="math inline">\(\gamma = 2.735\)</span> and <span class="math inline">\(2.638\)</span>) goes well past <span class="math inline">\(\mathbf{P}_2\)</span>, and it brings the point to within about <span class="math inline">\(10^{-3}\)</span> of the minimum (<span class="math inline">\(8.4 \times 10^{-4}\)</span> and <span class="math inline">\(1.2 \times 10^{-3}\)</span>). In all three cases Mathews’ printed points agree with these to within <span class="math inline">\(2.4 \times 10^{-8}\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f = \mathbf{0}\)</span> has exactly five real solutions (eliminating <span class="math inline">\(x\)</span> leaves a polynomial in <span class="math inline">\(y\)</span> with five real roots, and each root gives one <span class="math inline">\(x\)</span>), computed here in 50-digit arithmetic. Three are minima, where both eigenvalues of the Hessian are positive:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Minimum</th>
+<th><span class="math inline">\(f\)</span></th>
+<th>Hessian eigenvalues</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((-0.0250360933,\ 0.0009402078)\)</span></td>
+<td><span class="math inline">\(-0.003127252578\)</span></td>
+<td><span class="math inline">\(5.950,\ 10.04\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((2.1482121303,\ 1.5875354040)\)</span></td>
+<td><span class="math inline">\(-0.763680059186\)</span></td>
+<td><span class="math inline">\(10.23,\ 93.06\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\((-2.1817518731,\ 1.6069765627)\)</span></td>
+<td><span class="math inline">\(-1.846282959604\)</span></td>
+<td><span class="math inline">\(11.09,\ 95.09\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The other two, near <span class="math inline">\((0.9685,\ 0.7784)\)</span> and <span class="math inline">\((-0.9021,\ 0.7210)\)</span>, are saddle points, with Hessian eigenvalues of both signs. The minimum near <span class="math inline">\((-2.18, 1.61)\)</span> has the smallest value of <span class="math inline">\(f\)</span>, and since <span class="math inline">\(f \to \infty\)</span> as <span class="math inline">\(\lVert(x, y)\rVert \to \infty\)</span>, it is the global minimum.</p>
+</section>
+<section id="example-6-one-iteration-by-hand-fx-y-cos-x-sin-y" class="level3">
+<h3 class="anchored" data-anchor-id="example-6-one-iteration-by-hand-fx-y-cos-x-sin-y">Example 6 — One iteration by hand: <span class="math inline">\(f(x, y) = \cos x + \sin y\)</span></h3>
+<p>Use Powell’s method to find <span class="math inline">\(\mathbf{X}_1\)</span> and <span class="math inline">\(\mathbf{X}_2\)</span> for <span class="math inline">\(f(x, y) = \cos x + \sin y\)</span>, starting from <span class="math inline">\(\mathbf{X}_0 = (5.5,\ 2)\)</span>, where <span class="math inline">\(f(\mathbf{X}_0) = 1.617967201117\)</span>.</p>
+<p><strong>Step 1.</strong> <span class="math inline">\(\mathbf{U} = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{pmatrix}\)</span> and <span class="math inline">\(\mathbf{P}_0 = \mathbf{X}_0 = (5.5,\ 2)\)</span>.</p>
+<p><strong>Step 2</strong> (<span class="math inline">\(k = 1\)</span>): along <span class="math inline">\(\mathbf{U}_1 = (1, 0)\)</span>,</p>
+<p><span class="math display">\[
+f(\mathbf{P}_0 + \gamma\,\mathbf{U}_1) = \cos(5.5 + \gamma) + \sin 2 .
+\]</span></p>
+<p>Its derivative at <span class="math inline">\(\gamma = 0\)</span> is <span class="math inline">\(-\sin 5.5 \approx 0.7055 &gt; 0\)</span>, so the search goes downhill towards negative <span class="math inline">\(\gamma\)</span>, to the minimum of the cosine at <span class="math inline">\(5.5 + \gamma = \pi\)</span>:</p>
+<p><span class="math display">\[
+\gamma_1 = \pi - 5.5 \approx -2.358407346, \qquad \mathbf{P}_1 = (\pi,\ 2) \approx (3.141592654,\ 2), \qquad f(\mathbf{P}_1) = -1 + \sin 2 \approx -0.090702573 .
+\]</span></p>
+<p><strong>Step 3</strong> (<span class="math inline">\(k = 2\)</span>): along <span class="math inline">\(\mathbf{U}_2 = (0, 1)\)</span>,</p>
+<p><span class="math display">\[
+f(\mathbf{P}_1 + \gamma\,\mathbf{U}_2) = -1 + \sin(2 + \gamma),
+\]</span></p>
+<p>whose derivative at <span class="math inline">\(\gamma = 0\)</span> is <span class="math inline">\(\cos 2 \approx -0.4161 &lt; 0\)</span>, so the search goes towards positive <span class="math inline">\(\gamma\)</span>, to the minimum of the sine at <span class="math inline">\(2 + \gamma = 3\pi/2\)</span>:</p>
+<p><span class="math display">\[
+\gamma_2 = \tfrac{3\pi}{2} - 2 \approx 2.712388980, \qquad \mathbf{P}_2 = \left(\pi,\ \tfrac{3\pi}{2}\right) \approx (3.141592654,\ 4.712388980), \qquad f(\mathbf{P}_2) = -2 .
+\]</span></p>
+<p><strong>Step 4</strong> (new direction):</p>
+<p><span class="math display">\[
+\mathbf{U}_2 \leftarrow \mathbf{P}_2 - \mathbf{P}_0 = \left(\pi - 5.5,\ \tfrac{3\pi}{2} - 2\right) \approx (-2.358407346,\ 2.712388980), \qquad
+\mathbf{U} = \begin{pmatrix} 0 &amp; -2.358407346 \\ 1 &amp; 2.712388980 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 5</strong> (dog-leg search):</p>
+<p><span class="math display">\[
+f(\mathbf{P}_0 + \gamma\,\mathbf{U}_2) = \cos(5.5 - 2.358407346\,\gamma) + \sin(2 + 2.712388980\,\gamma).
+\]</span></p>
+<p>This decreases all the way from <span class="math inline">\(\gamma = 0\)</span> to <span class="math inline">\(\gamma = 1\)</span>, where it reaches <span class="math inline">\(-2\)</span>, the smallest value <span class="math inline">\(f\)</span> can take. So <span class="math inline">\(\gamma = 1\)</span> and</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{X}_1 = \left(\pi,\ \tfrac{3\pi}{2}\right) \approx (3.141592654,\ 4.712388980), \qquad f(\mathbf{X}_1) = -2\ }
+\]</span></p>
+<p><strong>Iteration 2.</strong> <span class="math inline">\(\mathbf{X}_1\)</span> is already the minimum, so every line search of the second iteration returns <span class="math inline">\(\gamma = 0\)</span>, and <span class="math inline">\(\mathbf{X}_2 = \mathbf{X}_1\)</span>.</p>
+<p>This agrees with Mathews’ module, which prints <span class="math inline">\(\gamma_1 = -2.35841\)</span>, <span class="math inline">\(\gamma = 1\)</span> and <span class="math inline">\(\mathbf{X}_1 = (3.14159,\ 4.71239)\)</span>, and with his one-iteration program run. The textbook version of this example (Example 8.7 of Mathews and Fink, <em>Numerical Methods Using MATLAB</em>, 4th ed., 2004), linked from the module’s proof page, instead prints <span class="math inline">\(\gamma = 0.9816697\)</span>, <span class="math inline">\(\mathbf{X}_1 = (3.1848261,\ 4.6626615)\)</span> and <span class="math inline">\(\mathbf{X}_2 = (3.1698887,\ 4.7197876)\)</span>. Its <span class="math inline">\(\mathbf{X}_1\)</span> is not the minimum along its line: along the textbook’s own direction <span class="math inline">\((-2.3584042,\ 2.7123803)\)</span> the minimum is at <span class="math inline">\(\gamma = 1.0000024\)</span>, where <span class="math inline">\(f\)</span> is <span class="math inline">\(-2\)</span> to ten decimals, while its printed <span class="math inline">\(\mathbf{X}_1\)</span> has <span class="math inline">\(f = -1.997829\)</span>.</p>
+<p><strong>Verification:</strong> <span class="math inline">\(\nabla f = (-\sin x,\ \cos y)\)</span> is zero at <span class="math inline">\(\left(\pi, \tfrac{3\pi}{2}\right)\)</span>, the Hessian there is <span class="math inline">\(\begin{pmatrix} -\cos\pi &amp; 0 \\ 0 &amp; -\sin\tfrac{3\pi}{2} \end{pmatrix} = \mathbf{I}\)</span>, and <span class="math inline">\(f \ge -2\)</span> everywhere, so <span class="math inline">\(\mathbf{X}_1\)</span> is a global minimum.</p>
+</section>
+</section>
+<section id="enhanced-powells-method" class="level2">
+<h2 class="anchored" data-anchor-id="enhanced-powells-method">Enhanced Powell’s Method</h2>
+<p>The basic method always discards the oldest direction <span class="math inline">\(\mathbf{U}_1\)</span> and always accepts the average direction <span class="math inline">\(\mathbf{P}_n - \mathbf{P}_0\)</span>. Mathews points out two weaknesses. It would be better to discard the direction <span class="math inline">\(\mathbf{U}_r\)</span> along which <span class="math inline">\(f\)</span> decreased most, because that direction is likely to be a large component of <span class="math inline">\(\mathbf{P}_n - \mathbf{P}_0\)</span>; if it is kept, then as the iterations go on the direction set tends to become linearly dependent, a direction is lost, and the points may not converge to the minimum. And the average direction need not be a good direction in which to search. (In Example 4 the two directions held after the third iteration already make an angle of only about <span class="math inline">\(10.7^\circ\)</span>.)</p>
+<p>The enhanced method keeps the sweep of the basic method but decides, after each sweep, whether to change the direction set at all.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Algorithm — Enhanced Powell’s method (Mathews’ outline)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Set <span class="math inline">\(\mathbf{P}_0 = \mathbf{X}_i\)</span>.</li>
+<li>For <span class="math inline">\(k = 1, \ldots, n\)</span>: find <span class="math inline">\(\gamma_k\)</span> that minimises <span class="math inline">\(f(\mathbf{P}_{k-1} + \gamma\,\mathbf{U}_k)\)</span> and set <span class="math inline">\(\mathbf{P}_k = \mathbf{P}_{k-1} + \gamma_k\,\mathbf{U}_k\)</span>.</li>
+<li>Let <span class="math inline">\(\Delta f_k = f(\mathbf{P}_k) - f(\mathbf{P}_{k-1})\)</span> for <span class="math inline">\(k = 1, \ldots, n\)</span>. Find the subscript <span class="math inline">\(r\)</span> with <span class="math inline">\(\Delta f = \lvert \Delta f_r \rvert = \max_k \lvert \Delta f_k \rvert\)</span>, the largest decrease, so <span class="math inline">\(\mathbf{U}_r\)</span> is the direction of largest decrease in step 2.</li>
+<li>Set <span class="math inline">\(i = i + 1\)</span>.</li>
+<li>Let <span class="math inline">\(f_0 = f(\mathbf{P}_0)\)</span>, <span class="math inline">\(f_n = f(\mathbf{P}_n)\)</span>, and <span class="math inline">\(f_E = f(2\mathbf{P}_n - \mathbf{P}_0)\)</span>, the value one further step along the average direction. If <span class="math display">\[
+f_E \ge f_0 \qquad \text{or} \qquad 2\,(f_0 - 2 f_n + f_E)\,(f_0 - f_n - \Delta f)^2 \ \ge\ \Delta f\,(f_0 - f_E)^2 ,
+\]</span> set <span class="math inline">\(\mathbf{X}_i = \mathbf{P}_n\)</span>, keep the directions, and go to step 1. Otherwise continue.</li>
+<li>Set <span class="math inline">\(\mathbf{U}_r = \mathbf{P}_n - \mathbf{P}_0\)</span>.</li>
+<li>Find <span class="math inline">\(\gamma\)</span> that minimises <span class="math inline">\(f(\mathbf{P}_0 + \gamma\,\mathbf{U}_r)\)</span> and set <span class="math inline">\(\mathbf{X}_i = \mathbf{P}_0 + \gamma\,\mathbf{U}_r\)</span>.</li>
+<li>Repeat steps 1–7.</li>
+</ol>
+</div>
+</div>
+<p>When either test in step 5 holds, the direction set is left unchanged. The first test, <span class="math inline">\(f_E \ge f_0\)</span>, says that there is no further decrease of <span class="math inline">\(f\)</span> in the average direction. The second says that the decrease along the direction of greatest decrease, <span class="math inline">\(\mathbf{U}_r\)</span>, was not a major part of the total decrease of <span class="math inline">\(f\)</span> in step 2. Otherwise <span class="math inline">\(\mathbf{U}_r\)</span> is replaced by the average direction, and <span class="math inline">\(f\)</span> is minimised along it. Stopping rules based on <span class="math inline">\(\lVert \mathbf{X}_i - \mathbf{X}_{i-1} \rVert\)</span> or on the change in <span class="math inline">\(f(\mathbf{X}_i)\)</span> are usually tested in steps 5 and 7. Mathews leaves the enhanced method for the reader to investigate, and his module has no worked example of it.</p>
+</section>
+<section id="mathews-graphical-runs-examples-7-and-8" class="level2">
+<h2 class="anchored" data-anchor-id="mathews-graphical-runs-examples-7-and-8">Mathews’ Graphical Runs (Examples 7 and 8)</h2>
+<p>Mathews’ Examples 7 and 8 repeat the first three iterations of Example 1 (taxi-cab) and Example 3 (Powell) with programs that also collect the points in a list and draw them. Each draws seven frames on the window <span class="math inline">\([2.5, 3.05] \times [1.6, 2.15]\)</span>: frame <span class="math inline">\(j\)</span> joins the first <span class="math inline">\(j\)</span> points with a magenta polygon, marks them with red dots, and adds in blue the contour of <span class="math inline">\(f\)</span> through each point drawn so far, over a fixed set of cyan contours from <span class="math inline">\(-6.6915\)</span> to <span class="math inline">\(-6.99995\)</span>. Figures 1 and 2 of his module are frames of these two runs. The seven points are, with <span class="math inline">\(f\)</span> rounded as in his contour list:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Frame</th>
+<th>Taxi-cab (Example 7)</th>
+<th><span class="math inline">\(f\)</span></th>
+<th>Powell (Example 8)</th>
+<th><span class="math inline">\(f\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(\mathbf{X}_0 = (2.55,\ 1.75)\)</span></td>
+<td><span class="math inline">\(-6.8475\)</span></td>
+<td><span class="math inline">\(\mathbf{X}_0 = (2.55,\ 1.75)\)</span></td>
+<td><span class="math inline">\(-6.8475\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\((2.875,\ 1.75)\)</span></td>
+<td><span class="math inline">\(-6.95313\)</span></td>
+<td><span class="math inline">\(\mathbf{P}_1 = (2.875,\ 1.75)\)</span></td>
+<td><span class="math inline">\(-6.95313\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">\(\mathbf{X}_1 = (2.875,\ 1.9375)\)</span></td>
+<td><span class="math inline">\(-6.98828\)</span></td>
+<td><span class="math inline">\(\mathbf{P}_2 = (2.875,\ 1.9375)\)</span></td>
+<td><span class="math inline">\(-6.98828\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><span class="math inline">\((2.96875,\ 1.9375)\)</span></td>
+<td><span class="math inline">\(-6.99707\)</span></td>
+<td><span class="math inline">\(\mathbf{X}_1 = (2.999021526,\ 2.009050881)\)</span></td>
+<td><span class="math inline">\(-6.99991\)</span></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><span class="math inline">\(\mathbf{X}_2 = (2.96875,\ 1.984375)\)</span></td>
+<td><span class="math inline">\(-6.99927\)</span></td>
+<td><span class="math inline">\(\mathbf{P}_1 = (2.999021526,\ 1.999510763)\)</span></td>
+<td><span class="math inline">\(-7.00000\)</span></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><span class="math inline">\((2.9921875,\ 1.984375)\)</span></td>
+<td><span class="math inline">\(-6.99982\)</span></td>
+<td><span class="math inline">\(\mathbf{P}_2 = (2.999992341,\ 2.000070848)\)</span></td>
+<td><span class="math inline">\(-7.00000\)</span></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><span class="math inline">\(\mathbf{X}_3 = (2.9921875,\ 1.99609375)\)</span></td>
+<td><span class="math inline">\(-6.99995\)</span></td>
+<td><span class="math inline">\(\mathbf{X}_2 = (3,\ 2)\)</span></td>
+<td><span class="math inline">\(-7\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The Powell program collects ten points (the last three are iteration 3, all at <span class="math inline">\((3, 2)\)</span>), but the plotting loop draws only the first seven. Because the list is drawn as one polygon, the dog-leg segment is drawn from <span class="math inline">\(\mathbf{P}_2\)</span> to <span class="math inline">\(\mathbf{X}_1\)</span>, although the search that produced <span class="math inline">\(\mathbf{X}_1\)</span> ran along the line from <span class="math inline">\(\mathbf{P}_0\)</span> through <span class="math inline">\(\mathbf{P}_2\)</span>; the two segments lie on the same line. After three iterations the taxi-cab path is still <span class="math inline">\(0.00873\)</span> from the minimum, while Powell’s path has reached it. Cases 1 and 2 of the <a href="#animations">Animations</a> above rebuild these two runs.</p>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>The line search decides the result.</strong> Mathews’ searches start at <span class="math inline">\(\gamma = 0\)</span> and stop at a nearby local minimum. A search that looks over a wider bracket can stop at a different local minimum of <span class="math inline">\(\varphi\)</span>, and then Powell’s method can end in a different basin. In Example 5 the three cases differ only in the starting point.</li>
+<li><strong>Accuracy of the line search.</strong> In general, <span class="math inline">\(\varphi\)</span> is flat near its minimum, so a line search in floating-point arithmetic locates the minimiser only to about the square root of the machine precision (about <span class="math inline">\(10^{-8}\)</span> relative, in double precision). The differences of up to <span class="math inline">\(6 \times 10^{-8}\)</span> between Mathews’ printed points and the exact ones are of this size.</li>
+<li><strong>Stopping.</strong> Mathews’ programs run a fixed number of iterations. A practical code stops when <span class="math inline">\(\lVert \mathbf{X}_i - \mathbf{X}_{i-1} \rVert\)</span> or the decrease of <span class="math inline">\(f\)</span> over an iteration falls below a tolerance, and must not search along a zero direction <span class="math inline">\(\mathbf{P}_n - \mathbf{P}_0\)</span>.</li>
+<li><strong>Direction sets.</strong> The basic method can lose a direction when the set becomes nearly linearly dependent; the enhanced method above, or periodically resetting the directions to <span class="math inline">\(\mathbf{E}_1, \ldots, \mathbf{E}_n\)</span>, guards against this.</li>
+<li><strong>Comparison with derivative methods.</strong> Powell’s method needs only values of <span class="math inline">\(f\)</span>. When the gradient and Hessian are available, <a href="../newtons-search-method/">Newton’s search method</a> minimises a quadratic in one step and converges quadratically near a minimum with a positive definite Hessian, at the cost of computing those derivatives.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+<div id="ref-powell1964efficient" class="csl-entry" role="listitem">
+Powell, M. J. D. 1964. <span>“An Efficient Method for Finding the Minimum of a Function of Several Variables Without Calculating Derivatives.”</span> <em>The Computer Journal</em> 7 (2): 155–62. <a href="https://doi.org/10.1093/comjnl/7.2.155">https://doi.org/10.1093/comjnl/7.2.155</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Taylor Series Method for ODE’s – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1" id="toc-case-1" class="nav-link" data-scroll-target="#case-1">Case 1 — Taylor order 3 step-refinement sweep, <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span>, <span class="math inline">\(m = 12\)</span> to <span class="math inline">\(150\)</span> subintervals</a></li>
+  <li><a href="#case-2" id="toc-case-2" class="nav-link" data-scroll-target="#case-2">Case 2 — Taylor order 4 step-refinement sweep, <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span>, <span class="math inline">\(m = 12\)</span> to <span class="math inline">\(150\)</span> subintervals</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Taylor Series Method for ODE’s</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>The Taylor series method solves an initial value problem <span class="math inline">\(y' = f(t,y)\)</span>, <span class="math inline">\(y(t_0) = y_0\)</span> on <span class="math inline">\([t_0, b]\)</span> at the nodes <span class="math inline">\(t_n = t_0 + nh\)</span>. The Taylor method uses the ODE to compute higher derivatives analytically, then advances via a truncated Taylor series <span class="math inline">\(y_{n+1} = y_n + hy'_n + \frac{h^2}{2}y''_n + \cdots\)</span>. The method of order <span class="math inline">\(p\)</span> keeps the terms through <span class="math inline">\(h^p\)</span>:</p>
+<p><span class="math display">\[
+y_{n+1} = y_n + h\,y'_n + \frac{h^2}{2!}\,y''_n + \cdots + \frac{h^p}{p!}\,y^{(p)}_n ,
+\]</span></p>
+<p>where each <span class="math inline">\(y^{(k)}_n\)</span> comes from differentiating the ODE with the chain rule and evaluating at <span class="math inline">\((t_n, y_n)\)</span>: <span class="math inline">\(y' = f\)</span>, <span class="math inline">\(y'' = f_t + f_y\,f\)</span>, and so on. For this page’s <span class="math inline">\(f(t,y) = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y'' = -\sqrt[3]{y} - \tfrac{t}{3}\,y^{-2/3}\,y'\)</span>.</p>
+<p>Mathews assumes that <span class="math inline">\(f\)</span> is continuous and satisfies a Lipschitz condition in <span class="math inline">\(y\)</span>; the method also needs the partial derivatives of <span class="math inline">\(f\)</span> through order <span class="math inline">\(p-1\)</span>. Here <span class="math inline">\(f\)</span> is smooth wherever <span class="math inline">\(y &gt; 0\)</span>, and the solution stays positive on <span class="math inline">\([0, 5]\)</span>, decreasing after its peak to <span class="math inline">\(y(5) \approx 0.00812\)</span>.</p>
+<p>In general, if <span class="math inline">\(f\)</span> is in <span class="math inline">\(C^p\)</span> near the solution (so <span class="math inline">\(y \in C^{p+1}[t_0, b]\)</span>), the local truncation error is <span class="math inline">\(O(h^{p+1})\)</span> and the global error <span class="math inline">\(|y(t_n) - y_n|\)</span> is <span class="math inline">\(O(h^p)\)</span>, including at <span class="math inline">\(t = b\)</span>. On the runs of <a href="#case-1">Case 1</a> (<span class="math inline">\(p = 3\)</span>) and <a href="#case-2">Case 2</a> (<span class="math inline">\(p = 4\)</span>), halving <span class="math inline">\(h\)</span> from <span class="math inline">\(5/60\)</span> to <span class="math inline">\(5/120\)</span> divides the largest node error by <span class="math inline">\(8.8\)</span> and by <span class="math inline">\(17.9\)</span>, close to <span class="math inline">\(2^3 = 8\)</span> and <span class="math inline">\(2^4 = 16\)</span>. The error in <span class="math inline">\(y(5)\)</span> printed in the frames falls less regularly: over the same halving, by <span class="math inline">\(4.0\)</span> for order 3 and <span class="math inline">\(580\)</span> for order 4, partly because at <span class="math inline">\(m = 60\)</span> the last steps lie in the shaded region.</p>
+<p>The method is explicit, so stability limits its step as well as accuracy. On <span class="math inline">\(y' = \lambda y\)</span> with real <span class="math inline">\(\lambda &lt; 0\)</span>, one step multiplies <span class="math inline">\(y_n\)</span> by <span class="math inline">\(1 + h\lambda + \cdots + (h\lambda)^p/p!\)</span>, which exceeds 1 in size once <span class="math inline">\(h|\lambda|\)</span> passes <span class="math inline">\(2.513\)</span> for <span class="math inline">\(p = 3\)</span> or <span class="math inline">\(2.785\)</span> for <span class="math inline">\(p = 4\)</span>. On this page’s problem <span class="math inline">\(\partial f/\partial y = -t/(3y^{2/3})\)</span> reaches <span class="math inline">\(-41.3\)</span> at <span class="math inline">\(t = 5\)</span>, where <span class="math inline">\(y\)</span> is small, so coarse steps pass the limit in the tail (the shaded regions), and the runs with <span class="math inline">\(m = 12\)</span> to <span class="math inline">\(36\)</span> for order 3 (<a href="#case-1">Case 1</a>) and <span class="math inline">\(m = 12\)</span> to <span class="math inline">\(32\)</span> for order 4 (<a href="#case-2">Case 2</a>) leave the reference there. A higher order is no cure: at <span class="math inline">\(m = 16\)</span> the order-3 run ends at <span class="math inline">\(y(5) \approx 0.156\)</span> and the order-4 run at <span class="math inline">\(y(5) \approx -7666\)</span>. The method’s other cost is the derivatives, which must be redone for every new <span class="math inline">\(f\)</span> and grow quickly with <span class="math inline">\(p\)</span>: this page’s <span class="math inline">\(y''''\)</span> has eight terms over <span class="math inline">\(27y^{8/3}\)</span>.</p>
+<p><a href="../eulers-method-for-odes/">Euler’s method</a> is the case <span class="math inline">\(p = 1\)</span>, and <a href="../heuns-method/">Heun’s method</a> and the <a href="../runge-kutta-method/">Runge-Kutta method</a> reach orders 2 and 4 from values of <span class="math inline">\(f\)</span> alone; all three animate a step-refinement sweep on the same problem. <a href="../big-o-truncation-error/">Big “O” Truncation Error</a> explains the <span class="math inline">\(O(h^p)\)</span> notation, and <a href="../maclaurin-and-taylor-series/">Maclaurin and Taylor Series</a> covers the series itself.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below repeats Mathews’ <strong>step-refinement sweep</strong> for the IVP <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span> over <span class="math inline">\([0,5]\)</span>. Each frame is a complete Taylor-method run with <span class="math inline">\(m\)</span> subintervals (<span class="math inline">\(h=5/m\)</span>), for the 21 values of Mathews’ animations, <span class="math inline">\(m = 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 70, 80, 90, 100, 120, 150\)</span>, drawn over a fine-step reference solution and labelled with the computed <span class="math inline">\(y(5)\)</span> and its error. Computed points below <span class="math inline">\(y=-0.3\)</span> are marked by triangles on the bottom edge, and the run’s true minimum is printed. Here <span class="math inline">\(\sqrt[3]{y}\)</span> is the real cube root, so runs that go negative stay real.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1" class="level3">
+<h3 class="anchored" data-anchor-id="case-1">Case 1 — Taylor order 3 step-refinement sweep, <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span>, <span class="math inline">\(m = 12\)</span> to <span class="math inline">\(150\)</span> subintervals</h3>
+<p><strong>Behavior:</strong> With order <span class="math inline">\(p=3\)</span>, three derivative terms are used per step. The local truncation error is <span class="math inline">\(O(h^4)\)</span> and the global error is <span class="math inline">\(O(h^3)\)</span>, the same order as a third-order Runge–Kutta method. The Taylor method requires explicit symbolic derivatives of the ODE right-hand side. The reference solution rises from <span class="math inline">\(y(0)=1\)</span> to about <span class="math inline">\(1.4498\)</span> near <span class="math inline">\(t=0.88\)</span>, then decays to <span class="math inline">\(y(5)=0.0081199\)</span>. For <span class="math inline">\(m=12\)</span> through <span class="math inline">\(36\)</span> the computed curve visibly leaves the reference in the tail: it ends at <span class="math inline">\(y(5)\approx-4.47\)</span> for <span class="math inline">\(m=12\)</span> and <span class="math inline">\(-109\)</span> for <span class="math inline">\(m=14\)</span>, and at <span class="math inline">\(m=20\)</span> it jumps from <span class="math inline">\(0.0068\)</span> at <span class="math inline">\(t=4\)</span> to <span class="math inline">\(1.22\)</span> at <span class="math inline">\(t=4.25\)</span> before ending at <span class="math inline">\(0.0895\)</span>. From <span class="math inline">\(m=40\)</span> on, each run decreases steadily after its peak and stays within <span class="math inline">\(3\times10^{-4}\)</span> of the reference at every node; at <span class="math inline">\(m=100\)</span> (<span class="math inline">\(h=0.05\)</span>) the largest node error is <span class="math inline">\(1.3\times10^{-5}\)</span> and the error in <span class="math inline">\(y(5)\)</span> is <span class="math inline">\(-1.2\times10^{-9}\)</span>. The cause is stability: <span class="math inline">\(\partial f/\partial y=-t/(3y^{2/3})\)</span> reaches <span class="math inline">\(-41.3\)</span> at <span class="math inline">\(t=5\)</span>, so for steps longer than about <span class="math inline">\(h=0.0609\)</span> (<span class="math inline">\(m\le82\)</span>; here <span class="math inline">\(m=12\)</span> to <span class="math inline">\(80\)</span>), <span class="math inline">\(h\,|\partial f/\partial y|\)</span> along the reference solution exceeds order-3 Taylor’s stability limit <span class="math inline">\(2.513\)</span> before <span class="math inline">\(t=5\)</span> (the shaded region in those frames); on <span class="math inline">\(y'=\lambda y\)</span> with real <span class="math inline">\(\lambda&lt;0\)</span> the method amplifies errors once <span class="math inline">\(h|\lambda|\)</span> exceeds this limit. For <span class="math inline">\(m=12\)</span> to <span class="math inline">\(48\)</span> the error at <span class="math inline">\(t=5\)</span> is larger than at the last node before the shaded region. At <span class="math inline">\(m=80\)</span> the shaded region begins at <span class="math inline">\(t\approx4.96\)</span>, inside the final step (which starts at <span class="math inline">\(t=4.9375\)</span>), so no step is taken from inside it and every step still contracts errors; at least one step amplifies errors for each <span class="math inline">\(m\)</span> from <span class="math inline">\(12\)</span> to <span class="math inline">\(77\)</span>. For <span class="math inline">\(m=52\)</span> to <span class="math inline">\(80\)</span> the error in <span class="math inline">\(y(5)\)</span> stays below <span class="math inline">\(3.1\times10^{-9}\)</span>; at <span class="math inline">\(m=12\)</span> the shading starts at <span class="math inline">\(t\approx3.07\)</span>. For <span class="math inline">\(m=90\)</span> to <span class="math inline">\(150\)</span>, <span class="math inline">\(h\,|\partial f/\partial y|\)</span> stays below <span class="math inline">\(2.513\)</span> up to <span class="math inline">\(t=5\)</span>. Mathews’ printed <span class="math inline">\(y(5)\)</span> is reproduced to every printed digit for 19 of the 21 values of <span class="math inline">\(m\)</span>; the exceptions are <span class="math inline">\(m=12\)</span> and <span class="math inline">\(14\)</span>, whose runs go negative before <span class="math inline">\(t=5\)</span>. There Mathews’ frames show different values (for example <span class="math inline">\(y(5)=0.1766603\)</span> at <span class="math inline">\(m=12\)</span>) because his program replaces each <span class="math inline">\(y^{k/3}\)</span> by <span class="math inline">\(\operatorname{Sign}(y)\,|y|^{k/3}\)</span>, including even <span class="math inline">\(k\)</span>. For <span class="math inline">\(y&lt;0\)</span> that flips the sign of <span class="math inline">\(y^{2/3}\)</span> and <span class="math inline">\(y^{4/3}\)</span>, so his higher derivatives are no longer those of the ODE. Applying his rule reproduces all 21 of his printed values; this page keeps the true real-cube-root derivatives.</p>
+<p><a href="taylorderivativeaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="taylorderivativeaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Taylor order-3 step-refinement sweep for y’ = 1 - t·y^(1/3), y(0)=1 on [0,5]: each frame is a complete run with m subintervals, m = 12 to 150, drawn over a gray reference curve that peaks near 1.45 at t ≈ 0.88 and decays to 0.0081 at t = 5. For m = 12 to 36 the run leaves the reference in the tail, dropping off the bottom of the plot for m = 12 and 14 and spiking to 1.22 at m = 20, and for m = 12 to 80 a shaded region marks where h·|∂f/∂y| along the reference curve exceeds 2.513 (at m = 80 only part of the final step); from m = 40 on the run lies on the reference, with y(5) = 0.0081199 at m = 150</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-2">Case 2 — Taylor order 4 step-refinement sweep, <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span>, <span class="math inline">\(m = 12\)</span> to <span class="math inline">\(150\)</span> subintervals</h3>
+<p><strong>Behavior:</strong> With order <span class="math inline">\(p=4\)</span>, four derivative terms are used per step, all computed analytically. The local truncation error is <span class="math inline">\(O(h^5)\)</span> and the global error is <span class="math inline">\(O(h^4)\)</span>, the same order as RK4. For <span class="math inline">\(m=12\)</span> through <span class="math inline">\(32\)</span> the computed curve visibly leaves the reference in the tail and goes negative, although the exact solution stays positive: <span class="math inline">\(y(5)\approx-7666\)</span> for <span class="math inline">\(m=16\)</span>; at <span class="math inline">\(m=20\)</span> the values turn negative at <span class="math inline">\(t=4.25\)</span>, reach about <span class="math inline">\(-10.4\)</span> at <span class="math inline">\(t=4.5\)</span> and end at <span class="math inline">\(y(5)\approx-5.25\)</span>; and <span class="math inline">\(y(5)\approx-0.081\)</span> for <span class="math inline">\(m=32\)</span>. From <span class="math inline">\(m=36\)</span> on, each run stays within <span class="math inline">\(2.7\times10^{-3}\)</span> of the reference at every node (at <span class="math inline">\(m=36\)</span> and <span class="math inline">\(40\)</span> it still turns up once near the end, by about <span class="math inline">\(0.0015\)</span> and <span class="math inline">\(0.0005\)</span>, too little to see), and from <span class="math inline">\(m=40\)</span> on the error in <span class="math inline">\(y(5)\)</span> falls at every refinement, to <span class="math inline">\(4.8\times10^{-12}\)</span> at <span class="math inline">\(m=150\)</span>. At <span class="math inline">\(m=100\)</span> (<span class="math inline">\(h=0.05\)</span>) the largest node error is <span class="math inline">\(8.0\times10^{-7}\)</span>, more than 16 times smaller than the <span class="math inline">\(1.3\times10^{-5}\)</span> of order 3. Stability is again the cause for the coarse runs. For steps longer than about <span class="math inline">\(h=0.0675\)</span> (<span class="math inline">\(m\le74\)</span>; here <span class="math inline">\(m=12\)</span> to <span class="math inline">\(70\)</span>), <span class="math inline">\(h\,|\partial f/\partial y|\)</span> along the reference solution exceeds order-4 Taylor’s stability limit <span class="math inline">\(2.785\)</span> before <span class="math inline">\(t=5\)</span> (the shaded region in those frames). For <span class="math inline">\(m=12\)</span> to <span class="math inline">\(60\)</span> each run has steps that genuinely amplify error, and the error at <span class="math inline">\(t=5\)</span> is larger than at the last node before the shaded region. At <span class="math inline">\(m=70\)</span> the shaded region, from <span class="math inline">\(t\approx4.91\)</span>, contains one step start (<span class="math inline">\(t\approx4.93\)</span>), but that step’s actual error factor is <span class="math inline">\(0.92\)</span> and no step of the run amplifies error, so the small rise from <span class="math inline">\(5.5\times10^{-10}\)</span> at <span class="math inline">\(t\approx4.86\)</span> to <span class="math inline">\(7.2\times10^{-10}\)</span> at <span class="math inline">\(t=5\)</span> is new truncation error rather than amplification. At <span class="math inline">\(m=12\)</span> the shading starts at <span class="math inline">\(t\approx3.10\)</span>. For <span class="math inline">\(m=80\)</span> to <span class="math inline">\(150\)</span>, <span class="math inline">\(h\,|\partial f/\partial y|\)</span> stays below <span class="math inline">\(2.785\)</span> up to <span class="math inline">\(t=5\)</span>. Mathews’ printed <span class="math inline">\(y(5)\)</span> is reproduced to every printed digit for <span class="math inline">\(m=32\)</span> to <span class="math inline">\(150\)</span>; for <span class="math inline">\(m=12\)</span> to <span class="math inline">\(28\)</span> the runs go negative before <span class="math inline">\(t=5\)</span>, and there, as in Case 1, his frames show different values (for example <span class="math inline">\(y(5)=0.0711898\)</span> at <span class="math inline">\(m=20\)</span>); the same rule, here also applied to <span class="math inline">\(y^{8/3}\)</span>, reproduces all 21 of his order-4 values.</p>
+<p><a href="taylorderivativebb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="taylorderivativebb.gif" class="img-fluid figure-img"></p>
+<figcaption>Taylor order-4 step-refinement sweep for y’ = 1 - t·y^(1/3), y(0)=1 on [0,5]: each frame is a complete run with m subintervals, m = 12 to 150, drawn over a gray reference curve that peaks near 1.45 at t ≈ 0.88 and decays to 0.0081 at t = 5. For m = 12 to 32 the run goes negative in the tail, dropping off the bottom of the plot for m = 12 to 28 (as low as -7751 at m = 16), and for m = 12 to 70 a shaded region marks where h·|∂f/∂y| along the reference curve exceeds 2.785; from m = 36 on the run lies on the reference, with y(5) = 0.0081199 at m = 150</figcaption>
+</figure>
+</div>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

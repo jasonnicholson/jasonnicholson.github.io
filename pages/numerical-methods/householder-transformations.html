@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Householder Transformations – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#householder-reflections" id="toc-householder-reflections" class="nav-link active" data-scroll-target="#householder-reflections">Householder Reflections</a></li>
+  <li><a href="#householders-method" id="toc-householders-method" class="nav-link" data-scroll-target="#householders-method">Householder’s Method</a>
+  <ul class="collapse">
+  <li><a href="#reduction-to-tridiagonal-form" id="toc-reduction-to-tridiagonal-form" class="nav-link" data-scroll-target="#reduction-to-tridiagonal-form">Reduction to tridiagonal form</a></li>
+  <li><a href="#applying-one-transformation-cheaply" id="toc-applying-one-transformation-cheaply" class="nav-link" data-scroll-target="#applying-one-transformation-cheaply">Applying one transformation cheaply</a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  </ul></li>
+  <li><a href="#example-1-a-4-times-4-matrix-by-hand" id="toc-example-1-a-4-times-4-matrix-by-hand" class="nav-link" data-scroll-target="#example-1-a-4-times-4-matrix-by-hand">Example 1 — A <span class="math inline">\(4 \times 4\)</span> matrix by hand</a></li>
+  <li><a href="#example-2-the-same-matrix-with-the-step-subroutine" id="toc-example-2-the-same-matrix-with-the-step-subroutine" class="nav-link" data-scroll-target="#example-2-the-same-matrix-with-the-step-subroutine">Example 2 — The same matrix with the step subroutine</a></li>
+  <li><a href="#example-3-a-5-times-5-matrix" id="toc-example-3-a-5-times-5-matrix" class="nav-link" data-scroll-target="#example-3-a-5-times-5-matrix">Example 3 — A <span class="math inline">\(5 \times 5\)</span> matrix</a></li>
+  <li><a href="#example-4-a-6-times-6-matrix-step-by-step-and-with-loops" id="toc-example-4-a-6-times-6-matrix-step-by-step-and-with-loops" class="nav-link" data-scroll-target="#example-4-a-6-times-6-matrix-step-by-step-and-with-loops">Example 4 — A <span class="math inline">\(6 \times 6\)</span> matrix, step by step and with loops</a></li>
+  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation Notes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Householder Transformations</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<p>Householder’s method takes a real symmetric <span class="math inline">\(n \times n\)</span> matrix <span class="math inline">\(\mathbf{A}\)</span> and, in exactly <span class="math inline">\(n - 2\)</span> steps, produces a symmetric <strong>tridiagonal</strong> matrix with the same eigenvalues. Each step is an orthogonal similarity transformation <span class="math inline">\(\mathbf{A}_k = \mathbf{P}_k\mathbf{A}_{k-1}\mathbf{P}_k\)</span> by a <em>Householder matrix</em> <span class="math inline">\(\mathbf{P}_k\)</span>, a reflection. <a href="jacobi-method/">Jacobi’s method</a> also uses orthogonal similarity transformations, but each of its rotations makes only one symmetric pair of entries zero, and later rotations can make them nonzero again, so it needs many sweeps. A Householder step makes a whole column below the subdiagonal zero at once (and, by symmetry, the matching row), and later steps leave those zeros in place. The tridiagonal result is the starting point of the <a href="qr-method/">QR method</a>, which then finds all the eigenvalues cheaply.</p>
+<p>The <a href="qr-method/#reduction-to-tridiagonal-hessenberg-form">QR method</a> page shows the same reduction with the matrices <span class="math inline">\(\mathbf{P}_k\)</span> written out, and its <a href="qr-method/#case-2-householder-reduction-of-example-4-then-53-unshifted-qr-steps">Case 2 animation</a> shows the matrix of Example 1 below being reduced and then iterated to its eigenvalues. This page develops the reflection itself, the cheap way of applying it, and all of Mathews’ worked examples. For a matrix that is not symmetric the same steps give an upper Hessenberg matrix instead; see <a href="../../pages/numerical-methods/hessenberg-factorization.html">Hessenberg Factorization</a>.</p>
+<section id="householder-reflections" class="level2">
+<h2 class="anchored" data-anchor-id="householder-reflections">Householder Reflections</h2>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Householder reflection
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\mathbf{X}\)</span> and <span class="math inline">\(\mathbf{Y}\)</span> are vectors in <span class="math inline">\(\mathbb{R}^n\)</span> with the same norm, <span class="math inline">\(\lVert\mathbf{X}\rVert = \lVert\mathbf{Y}\rVert\)</span>, and <span class="math inline">\(\mathbf{X} \neq \mathbf{Y}\)</span>, there is an orthogonal symmetric matrix <span class="math inline">\(\mathbf{P}\)</span> such that <span class="math inline">\(\mathbf{Y} = \mathbf{P}\mathbf{X}\)</span>, namely</p>
+<p><span class="math display">\[
+\mathbf{P} = \mathbf{I} - 2\mathbf{W}\mathbf{W}^{T}, \qquad \mathbf{W} = \frac{\mathbf{X} - \mathbf{Y}}{\lVert\mathbf{X} - \mathbf{Y}\rVert}.
+\tag{1}
+\]</span></p>
+<p>Since <span class="math inline">\(\mathbf{P}\)</span> is both orthogonal and symmetric, <span class="math inline">\(\mathbf{P}^{-1} = \mathbf{P}^{T} = \mathbf{P}\)</span>.</p>
+</div>
+</div>
+<p><strong>Proof.</strong> <span class="math inline">\(\mathbf{P}^{T} = \mathbf{I} - 2(\mathbf{W}\mathbf{W}^{T})^{T} = \mathbf{P}\)</span>, and because <span class="math inline">\(\mathbf{W}^{T}\mathbf{W} = 1\)</span>,</p>
+<p><span class="math display">\[
+\mathbf{P}^{T}\mathbf{P} = \mathbf{I} - 4\mathbf{W}\mathbf{W}^{T} + 4\mathbf{W}(\mathbf{W}^{T}\mathbf{W})\mathbf{W}^{T} = \mathbf{I}.
+\]</span></p>
+<p>Since <span class="math inline">\(\lVert\mathbf{X}\rVert = \lVert\mathbf{Y}\rVert\)</span>, we have <span class="math inline">\(\lVert\mathbf{X} - \mathbf{Y}\rVert^2 = 2\mathbf{X}^{T}\mathbf{X} - 2\mathbf{Y}^{T}\mathbf{X} = 2(\mathbf{X} - \mathbf{Y})^{T}\mathbf{X}\)</span>, so</p>
+<p><span class="math display">\[
+\mathbf{P}\mathbf{X} = \mathbf{X} - 2\,\frac{(\mathbf{X} - \mathbf{Y})\,(\mathbf{X} - \mathbf{Y})^{T}\mathbf{X}}{\lVert\mathbf{X} - \mathbf{Y}\rVert^{2}} = \mathbf{X} - (\mathbf{X} - \mathbf{Y}) = \mathbf{Y}. \qquad \blacksquare
+\]</span></p>
+<p><strong>Geometry.</strong> <span class="math inline">\(\mathbf{P}\)</span> leaves every vector orthogonal to <span class="math inline">\(\mathbf{W}\)</span> unchanged and reverses <span class="math inline">\(\mathbf{W}\)</span>, so it is the mirror reflection in the hyperplane through the origin orthogonal to <span class="math inline">\(\mathbf{W}\)</span> (in the plane, a line). That mirror contains <span class="math inline">\(\mathbf{X} + \mathbf{Y}\)</span>, because <span class="math inline">\((\mathbf{X} - \mathbf{Y})^{T}(\mathbf{X} + \mathbf{Y}) = \lVert\mathbf{X}\rVert^2 - \lVert\mathbf{Y}\rVert^2 = 0\)</span>: it bisects the angle between <span class="math inline">\(\mathbf{X}\)</span> and <span class="math inline">\(\mathbf{Y}\)</span>, and reflecting in it carries <span class="math inline">\(\mathbf{X}\)</span> to <span class="math inline">\(\mathbf{Y}\)</span>. Hence the name Householder <em>reflection</em>.</p>
+<p>To create zeros we choose <span class="math inline">\(\mathbf{Y}\)</span> to agree with <span class="math inline">\(\mathbf{X}\)</span> in its first <span class="math inline">\(k\)</span> components and to put the whole length of the rest of <span class="math inline">\(\mathbf{X}\)</span> into component <span class="math inline">\(k + 1\)</span>.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Corollary — Householder matrix
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(\mathbf{X} = (x_1, \ldots, x_n)^{T}\)</span>, let <span class="math inline">\(k\)</span> be an integer with <span class="math inline">\(1 \le k \le n - 2\)</span>, and assume <span class="math inline">\((x_{k+1}, \ldots, x_n) \neq \mathbf{0}\)</span>. Define, with <span class="math inline">\(\operatorname{sign}(0)\)</span> taken as <span class="math inline">\(+1\)</span>,</p>
+<p><span class="math display">\[
+S = \operatorname{sign}(x_{k+1})\sqrt{x_{k+1}^2 + x_{k+2}^2 + \cdots + x_n^2}, \qquad R = \sqrt{2\,(x_{k+1} + S)\,S},
+\tag{2}
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{W}_k = \frac{1}{R}\,(0, \ldots, 0,\ x_{k+1} + S,\ x_{k+2}, \ldots, x_n)^{T}, \qquad \mathbf{P}_k = \mathbf{I} - 2\mathbf{W}_k\mathbf{W}_k^{T}.
+\tag{3}
+\]</span></p>
+<p>Then <span class="math inline">\(\mathbf{P}_k\)</span> is symmetric and orthogonal and</p>
+<p><span class="math display">\[
+\mathbf{P}_k\mathbf{X} = (x_1, \ldots, x_k,\ -S,\ 0, \ldots, 0)^{T}.
+\tag{4}
+\]</span></p>
+</div>
+</div>
+<p>This is the theorem with <span class="math inline">\(\mathbf{Y} = (x_1, \ldots, x_k, -S, 0, \ldots, 0)^{T}\)</span>, which has the same norm as <span class="math inline">\(\mathbf{X}\)</span> and differs from it, because <span class="math inline">\(x_{k+1}\)</span> and <span class="math inline">\(S\)</span> never have opposite signs, so <span class="math inline">\(\lvert x_{k+1} + S\rvert = \lvert x_{k+1}\rvert + \lvert S\rvert &gt; 0\)</span>. Then <span class="math inline">\(\mathbf{X} - \mathbf{Y} = (0, \ldots, 0, x_{k+1} + S, x_{k+2}, \ldots, x_n)^{T}\)</span>, and its squared length is <span class="math inline">\((x_{k+1} + S)^2 + (S^2 - x_{k+1}^2) = 2(x_{k+1} + S)S = R^2\)</span>, so <span class="math inline">\(\mathbf{W}_k = (\mathbf{X} - \mathbf{Y})/R\)</span> is the unit vector of (1). Because <span class="math inline">\(\mathbf{W}_k\)</span> is zero in its first <span class="math inline">\(k\)</span> components, <span class="math inline">\(\mathbf{P}_k\)</span> has an identity block in its upper-left <span class="math inline">\(k \times k\)</span> corner and leaves the first <span class="math inline">\(k\)</span> components of any vector unchanged, so <span class="math inline">\(\mathbf{P}_k\mathbf{A}\)</span> keeps the first <span class="math inline">\(k\)</span> rows of <span class="math inline">\(\mathbf{A}\)</span>, <span class="math inline">\(\mathbf{A}\mathbf{P}_k\)</span> keeps the first <span class="math inline">\(k\)</span> columns, and <span class="math inline">\(\mathbf{P}_k\mathbf{A}\mathbf{P}_k\)</span> keeps the leading <span class="math inline">\(k \times k\)</span> block.</p>
+<p><strong>Notation on the QR method page.</strong> The <a href="qr-method/#reduction-to-tridiagonal-hessenberg-form">QR method</a> page writes the same matrix as <span class="math inline">\(\mathbf{P} = \mathbf{I} - 2\mathbf{v}\mathbf{v}^{T}/(\mathbf{v}^{T}\mathbf{v})\)</span> with <span class="math inline">\(\mathbf{v} = \mathbf{x} - \alpha\mathbf{e}_1\)</span> and <span class="math inline">\(\alpha = -\operatorname{sign}(x_1)\lVert\mathbf{x}\rVert\)</span>, where <span class="math inline">\(\mathbf{x}\)</span> is the part of the column below the diagonal. The two are identical: <span class="math inline">\(\alpha = -S\)</span>, the full-length <span class="math inline">\(\mathbf{v}\)</span> of that page (zero in its first <span class="math inline">\(k\)</span> components) is <span class="math inline">\(R\,\mathbf{W}_k\)</span>, <span class="math inline">\(\mathbf{v}^{T}\mathbf{v} = R^2\)</span>, and the new subdiagonal entry <span class="math inline">\(\alpha\)</span> is the <span class="math inline">\(-S\)</span> of (4).</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Caution — the sign of <span class="math inline">\(S\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The sign of <span class="math inline">\(S\)</span> is chosen equal to the sign of <span class="math inline">\(x_{k+1}\)</span> so that <span class="math inline">\(x_{k+1} + S\)</span> is a sum of two numbers of the same sign; then <span class="math inline">\(R^2 = 2\left(|x_{k+1}| + \lVert\mathbf{x}\rVert\right)\lVert\mathbf{x}\rVert \ge 2\lVert\mathbf{x}\rVert^2\)</span>, where <span class="math inline">\(\mathbf{x} = (x_{k+1}, \ldots, x_n)\)</span>. The opposite sign would also satisfy the theorem in exact arithmetic, but <span class="math inline">\(x_{k+1} - \operatorname{sign}(x_{k+1})\lVert\mathbf{x}\rVert\)</span> can cancel. For <span class="math inline">\(\mathbf{x} = (1, 10^{-8})\)</span> in double precision, <span class="math inline">\(\lVert\mathbf{x}\rVert\)</span> rounds to exactly <span class="math inline">\(1\)</span>; the recommended sign gives <span class="math inline">\(\mathbf{v} = (2, 10^{-8})\)</span> and <span class="math inline">\(\mathbf{P}\mathbf{x} = (-1, 0)\)</span>, while the other sign gives <span class="math inline">\(\mathbf{v} = (0, 10^{-8})\)</span> and <span class="math inline">\(\mathbf{P}\mathbf{x} = (1, -10^{-8})\)</span>, which has not been reduced at all.</p>
+<p>Two special cases need care in a program. If <span class="math inline">\(x_{k+1} = 0\)</span>, the sign must not be taken as <span class="math inline">\(0\)</span>; take <span class="math inline">\(+1\)</span> (any <span class="math inline">\(\pm 1\)</span> works, since then <span class="math inline">\((x_{k+1} + S)S = S^2 &gt; 0\)</span> and there is nothing to cancel). Mathews’ step subroutine uses Mathematica’s <code>Sign</code>, which returns <span class="math inline">\(0\)</span> there and makes <span class="math inline">\(R = 0\)</span>, while his loop program (Example 4) tests <code>A1[[k+1,k]] &lt; 0</code> and so uses <span class="math inline">\(+1\)</span>. If <span class="math inline">\(x_{k+1} = \cdots = x_n = 0\)</span>, the column is already reduced and the step is skipped (<span class="math inline">\(\mathbf{P}_k = \mathbf{I}\)</span>). None of Mathews’ examples meets either case.</p>
+</div>
+</div>
+</section>
+<section id="householders-method" class="level2">
+<h2 class="anchored" data-anchor-id="householders-method">Householder’s Method</h2>
+<section id="reduction-to-tridiagonal-form" class="level3">
+<h3 class="anchored" data-anchor-id="reduction-to-tridiagonal-form">Reduction to tridiagonal form</h3>
+<p>Start with <span class="math inline">\(\mathbf{A}_0 = \mathbf{A}\)</span>, a real symmetric <span class="math inline">\(n \times n\)</span> matrix, and construct Householder matrices <span class="math inline">\(\mathbf{P}_1, \mathbf{P}_2, \ldots, \mathbf{P}_{n-2}\)</span> so that</p>
+<p><span class="math display">\[
+\mathbf{A}_k = \mathbf{P}_k\mathbf{A}_{k-1}\mathbf{P}_k \quad \text{for } k = 1, 2, \ldots, n - 2,
+\tag{5}
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf{P}_k\)</span> comes from the Corollary with <span class="math inline">\(\mathbf{X}\)</span> equal to column <span class="math inline">\(k\)</span> of <span class="math inline">\(\mathbf{A}_{k-1}\)</span>. Then <span class="math inline">\(\mathbf{A}_k\)</span> has zeros below the subdiagonal in columns <span class="math inline">\(1, \ldots, k\)</span>, and <span class="math inline">\(\mathbf{H} = \mathbf{A}_{n-2}\)</span> is a symmetric tridiagonal matrix similar to <span class="math inline">\(\mathbf{A}\)</span>. This process is called <strong>Householder’s method</strong>.</p>
+<p>Here is the pattern for <span class="math inline">\(n = 5\)</span>, where <span class="math inline">\(\times\)</span> stands for an entry that may be nonzero. In the first step <span class="math inline">\(\mathbf{P}_1\)</span> has an identity block of size <span class="math inline">\(1\)</span>, so the product <span class="math inline">\(\mathbf{P}_1\mathbf{A}_0\mathbf{P}_1\)</span> does not change <span class="math inline">\(a_{11}\)</span>, and by (4) column 1 becomes <span class="math inline">\((a_{11}, -S, 0, 0, 0)^{T}\)</span> (row 1 likewise, by symmetry):</p>
+<p><span class="math display">\[
+\mathbf{P}_1 = \begin{pmatrix} 1 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \end{pmatrix}, \qquad
+\mathbf{A}_1 = \begin{pmatrix} a_{11} &amp; \times &amp; 0 &amp; 0 &amp; 0 \\ \times &amp; \times &amp; \times &amp; \times &amp; \times \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \end{pmatrix}.
+\]</span></p>
+<p><span class="math inline">\(\mathbf{P}_2\)</span> has an identity block of size <span class="math inline">\(2\)</span>, so it does not disturb the zeros already made, and it reduces column 2; <span class="math inline">\(\mathbf{P}_3\)</span> has an identity block of size <span class="math inline">\(3\)</span> and reduces column 3:</p>
+<p><span class="math display">\[
+\mathbf{A}_2 = \begin{pmatrix} \times &amp; \times &amp; 0 &amp; 0 &amp; 0 \\ \times &amp; \times &amp; \times &amp; 0 &amp; 0 \\ 0 &amp; \times &amp; \times &amp; \times &amp; \times \\ 0 &amp; 0 &amp; \times &amp; \times &amp; \times \\ 0 &amp; 0 &amp; \times &amp; \times &amp; \times \end{pmatrix}, \qquad
+\mathbf{A}_3 = \begin{pmatrix} \times &amp; \times &amp; 0 &amp; 0 &amp; 0 \\ \times &amp; \times &amp; \times &amp; 0 &amp; 0 \\ 0 &amp; \times &amp; \times &amp; \times &amp; 0 \\ 0 &amp; 0 &amp; \times &amp; \times &amp; \times \\ 0 &amp; 0 &amp; 0 &amp; \times &amp; \times \end{pmatrix}.
+\]</span></p>
+<p>Three transformations reduce a <span class="math inline">\(5 \times 5\)</span> matrix to tridiagonal form, and in general <span class="math inline">\(n - 2\)</span> are needed. Each <span class="math inline">\(\mathbf{P}_k\)</span> is orthogonal, so <span class="math inline">\(\mathbf{H} = \mathbf{U}^{T}\mathbf{A}\mathbf{U}\)</span> with <span class="math inline">\(\mathbf{U} = \mathbf{P}_1\mathbf{P}_2\cdots\mathbf{P}_{n-2}\)</span> orthogonal. <span class="math inline">\(\mathbf{H}\)</span> therefore has the eigenvalues of <span class="math inline">\(\mathbf{A}\)</span>, the same characteristic polynomial and the same sum of squared entries; the examples below check all three. If <span class="math inline">\(\mathbf{H}\mathbf{y} = \lambda\mathbf{y}\)</span>, then <span class="math inline">\(\mathbf{A}(\mathbf{U}\mathbf{y}) = \lambda\,\mathbf{U}\mathbf{y}\)</span>, so eigenvectors of <span class="math inline">\(\mathbf{H}\)</span> give eigenvectors of <span class="math inline">\(\mathbf{A}\)</span>.</p>
+</section>
+<section id="applying-one-transformation-cheaply" class="level3">
+<h3 class="anchored" data-anchor-id="applying-one-transformation-cheaply">Applying one transformation cheaply</h3>
+<p>The matrix <span class="math inline">\(\mathbf{P}_k\)</span> is never formed in practice; the product <span class="math inline">\(\mathbf{P}\mathbf{A}\mathbf{P}\)</span> can be computed from a few vectors.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem — Computation of one Householder transformation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\mathbf{P} = \mathbf{I} - 2\mathbf{W}\mathbf{W}^{T}\)</span> is a Householder matrix (<span class="math inline">\(\mathbf{W}^{T}\mathbf{W} = 1\)</span>) and <span class="math inline">\(\mathbf{A}\)</span> is symmetric, let</p>
+<p><span class="math display">\[
+\mathbf{V} = \mathbf{A}\mathbf{W}, \qquad c = \mathbf{W}^{T}\mathbf{V}, \qquad \mathbf{Q} = \mathbf{V} - c\,\mathbf{W}.
+\tag{6}
+\]</span></p>
+<p>Then</p>
+<p><span class="math display">\[
+\mathbf{P}\mathbf{A}\mathbf{P} = \mathbf{A} - 2\mathbf{W}\mathbf{Q}^{T} - 2\mathbf{Q}\mathbf{W}^{T}.
+\tag{7}
+\]</span></p>
+</div>
+</div>
+<p><strong>Proof.</strong> Expanding, and using <span class="math inline">\(\mathbf{W}^{T}\mathbf{A} = (\mathbf{A}\mathbf{W})^{T} = \mathbf{V}^{T}\)</span> because <span class="math inline">\(\mathbf{A}\)</span> is symmetric,</p>
+<p><span class="math display">\[
+\mathbf{P}\mathbf{A}\mathbf{P} = \mathbf{A} - 2\mathbf{W}\mathbf{V}^{T} - 2\mathbf{V}\mathbf{W}^{T} + 4c\,\mathbf{W}\mathbf{W}^{T},
+\]</span></p>
+<p>and <span class="math inline">\(2\mathbf{W}\mathbf{Q}^{T} + 2\mathbf{Q}\mathbf{W}^{T} = 2\mathbf{W}\mathbf{V}^{T} + 2\mathbf{V}\mathbf{W}^{T} - 4c\,\mathbf{W}\mathbf{W}^{T}\)</span>. <span class="math inline">\(\blacksquare\)</span></p>
+<p>Forming <span class="math inline">\(\mathbf{P}\mathbf{A}\mathbf{P}\)</span> as two matrix products takes about <span class="math inline">\(2n^3\)</span> multiplications; (6) and (7) take one matrix–vector product and two outer products, each about <span class="math inline">\(n^2\)</span> multiplications. So each step costs a multiple of <span class="math inline">\(n^2\)</span> operations and the whole reduction a multiple of <span class="math inline">\(n^3\)</span> (these are general operation counts, not measured timings).</p>
+</section>
+<section id="algorithm" class="level3">
+<h3 class="anchored" data-anchor-id="algorithm">Algorithm</h3>
+<p>For <span class="math inline">\(k = 1, 2, \ldots, n - 2\)</span>, with <span class="math inline">\(\mathbf{X}\)</span> the <span class="math inline">\(k\)</span>th column of <span class="math inline">\(\mathbf{A}_{k-1}\)</span>:</p>
+<ol type="1">
+<li>compute <span class="math inline">\(S\)</span> and <span class="math inline">\(R\)</span> from (2) and <span class="math inline">\(\mathbf{W}\)</span> from (3);</li>
+<li>compute <span class="math inline">\(\mathbf{V} = \mathbf{A}_{k-1}\mathbf{W}\)</span>, <span class="math inline">\(c = \mathbf{W}^{T}\mathbf{V}\)</span> and <span class="math inline">\(\mathbf{Q} = \mathbf{V} - c\,\mathbf{W}\)</span>;</li>
+<li>set <span class="math inline">\(\mathbf{A}_k = \mathbf{A}_{k-1} - 2\mathbf{W}\mathbf{Q}^{T} - 2\mathbf{Q}\mathbf{W}^{T}\)</span>.</li>
+</ol>
+<p>The new entries in positions <span class="math inline">\((k+1, k)\)</span> and <span class="math inline">\((k, k+1)\)</span> are <span class="math inline">\(-S\)</span>; the rest of column <span class="math inline">\(k\)</span> below them and of row <span class="math inline">\(k\)</span> beyond them are zero. The last subdiagonal entry, in position <span class="math inline">\((n, n-1)\)</span>, is not of this form; it is whatever the last step leaves there. In floating-point arithmetic those zeros come out as rounding noise (below <span class="math inline">\(1.1 \times 10^{-15}\)</span> in double precision in Examples 1, 3 and 4), so programs set them to zero: Mathews’ step subroutine applies <code>Chop</code> to each <span class="math inline">\(\mathbf{A}_k\)</span>, and his loop program assigns the zeros and the value <span class="math inline">\(-S\)</span> directly.</p>
+</section>
+</section>
+<section id="example-1-a-4-times-4-matrix-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-a-4-times-4-matrix-by-hand">Example 1 — A <span class="math inline">\(4 \times 4\)</span> matrix by hand</h2>
+<p>Use Householder’s method to reduce the symmetric matrix</p>
+<p><span class="math display">\[
+\mathbf{A}_0 = \begin{pmatrix} 4 &amp; 2 &amp; 2 &amp; 1 \\ 2 &amp; -3 &amp; 1 &amp; 1 \\ 2 &amp; 1 &amp; 3 &amp; 1 \\ 1 &amp; 1 &amp; 1 &amp; 2 \end{pmatrix}
+\]</span></p>
+<p>to symmetric tridiagonal form. Two steps are needed (<span class="math inline">\(n - 2 = 2\)</span>). This is the matrix of Example 4 on the <a href="qr-method/#example-4-householder-reduction-then-the-unshifted-qr-method">QR method</a> page, which writes out <span class="math inline">\(\mathbf{P}_1\)</span> and <span class="math inline">\(\mathbf{P}_2\)</span> and then runs the QR iteration on the result.</p>
+<p><strong>Step 1</strong> (<span class="math inline">\(k = 1\)</span>). Column 1 is <span class="math inline">\(\mathbf{X} = (4, 2, 2, 1)^{T}\)</span> and <span class="math inline">\(x_2 = 2 &gt; 0\)</span>, so</p>
+<p><span class="math display">\[
+S = \sqrt{2^2 + 2^2 + 1^2} = 3, \qquad R = \sqrt{2(2 + 3)\,3} = \sqrt{30} \approx 5.477226,
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{W} = \frac{1}{\sqrt{30}}(0,\ 5,\ 2,\ 1)^{T} = \left(0, \sqrt{\tfrac56}, \sqrt{\tfrac{2}{15}}, \tfrac{1}{\sqrt{30}}\right)^{T} \approx (0,\ 0.912871,\ 0.365148,\ 0.182574)^{T}.
+\]</span></p>
+<p><strong>Step 2.</strong> With <span class="math inline">\(\mathbf{V} = \mathbf{A}_0\mathbf{W}\)</span>,</p>
+<p><span class="math display">\[
+\mathbf{V} = \sqrt{30}\left(\tfrac12, -\tfrac25, \tfrac25, \tfrac{3}{10}\right)^{T}, \qquad c = \mathbf{W}^{T}\mathbf{V} = -\tfrac{9}{10}, \qquad
+\mathbf{Q} = \mathbf{V} + \tfrac{9}{10}\mathbf{W} = \sqrt{30}\left(\tfrac12, -\tfrac14, \tfrac{23}{50}, \tfrac{33}{100}\right)^{T},
+\]</span></p>
+<p>that is, <span class="math inline">\(\mathbf{V} \approx (2.738613, -2.190890, 2.190890, 1.643168)^{T}\)</span> and <span class="math inline">\(\mathbf{Q} \approx (2.738613, -1.369306, 2.519524, 1.807484)^{T}\)</span>.</p>
+<p><strong>Step 3.</strong> The correction <span class="math inline">\(2\mathbf{W}\mathbf{Q}^{T}\)</span> has rational entries, and <span class="math inline">\(2\mathbf{Q}\mathbf{W}^{T}\)</span> is its transpose:</p>
+<p><span class="math display">\[
+2\mathbf{W}\mathbf{Q}^{T} = \begin{pmatrix} 0 &amp; 0 &amp; 0 &amp; 0 \\ 5 &amp; -2.5 &amp; 4.6 &amp; 3.3 \\ 2 &amp; -1 &amp; 1.84 &amp; 1.32 \\ 1 &amp; -0.5 &amp; 0.92 &amp; 0.66 \end{pmatrix}, \qquad
+\mathbf{A}_1 = \mathbf{A}_0 - 2\mathbf{W}\mathbf{Q}^{T} - 2\mathbf{Q}\mathbf{W}^{T} = \begin{pmatrix} 4 &amp; -3 &amp; 0 &amp; 0 \\ -3 &amp; 2 &amp; -\tfrac{13}{5} &amp; -\tfrac95 \\[1mm] 0 &amp; -\tfrac{13}{5} &amp; -\tfrac{17}{25} &amp; -\tfrac{31}{25} \\[1mm] 0 &amp; -\tfrac95 &amp; -\tfrac{31}{25} &amp; \tfrac{17}{25} \end{pmatrix}.
+\]</span></p>
+<p>Column 1 is now <span class="math inline">\((4, -3, 0, 0)^{T}\)</span>, as (4) predicts with <span class="math inline">\(-S = -3\)</span>.</p>
+<p><strong>Step 4</strong> (<span class="math inline">\(k = 2\)</span>). Column 2 of <span class="math inline">\(\mathbf{A}_1\)</span> has <span class="math inline">\(x_3 = -\tfrac{13}{5} &lt; 0\)</span>, so <span class="math inline">\(S\)</span> is negative:</p>
+<p><span class="math display">\[
+S = -\sqrt{\left(\tfrac{13}{5}\right)^2 + \left(\tfrac95\right)^2} = -\sqrt{10} \approx -3.162278, \qquad
+R = \sqrt{2\left(-\tfrac{13}{5} - \sqrt{10}\right)\left(-\sqrt{10}\right)} = \sqrt{20 + \tfrac{26\sqrt{10}}{5}} \approx 6.036874,
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{W} = \frac{1}{R}\left(0,\ 0,\ -\tfrac{13}{5} - \sqrt{10},\ -\tfrac95\right)^{T} \approx (0,\ 0,\ -0.954514,\ -0.298168)^{T}.
+\]</span></p>
+<p><strong>Step 5.</strong> <span class="math inline">\(\mathbf{V} = \mathbf{A}_1\mathbf{W} \approx (0,\ 3.018437,\ 1.018797,\ 0.980843)^{T}\)</span>, <span class="math inline">\(c = \mathbf{W}^{T}\mathbf{V} = -\tfrac{2\sqrt{10}}{5} \approx -1.264911\)</span> and <span class="math inline">\(\mathbf{Q} = \mathbf{V} - c\,\mathbf{W} \approx (0,\ 3.018437,\ -0.188578,\ 0.603687)^{T}\)</span>. Then</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} = \mathbf{A}_2 = \mathbf{A}_1 - 2\mathbf{W}\mathbf{Q}^{T} - 2\mathbf{Q}\mathbf{W}^{T} = \begin{pmatrix} 4 &amp; -3 &amp; 0 &amp; 0 \\ -3 &amp; 2 &amp; \sqrt{10} &amp; 0 \\ 0 &amp; \sqrt{10} &amp; -\tfrac75 &amp; -\tfrac15 \\[1mm] 0 &amp; 0 &amp; -\tfrac15 &amp; \tfrac75 \end{pmatrix} \approx \begin{pmatrix} 4 &amp; -3 &amp; 0 &amp; 0 \\ -3 &amp; 2 &amp; 3.162278 &amp; 0 \\ 0 &amp; 3.162278 &amp; -1.4 &amp; -0.2 \\ 0 &amp; 0 &amp; -0.2 &amp; 1.4 \end{pmatrix}\ }
+\]</span></p>
+<p>Every number above agrees with Mathews’ printout.</p>
+<p><strong>Verification.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Invariant</th>
+<th><span class="math inline">\(\mathbf{A}_0\)</span></th>
+<th><span class="math inline">\(\mathbf{H}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>characteristic polynomial</td>
+<td><span class="math inline">\((\lambda^2 - 8\lambda + 9)(\lambda^2 + 2\lambda - 6)\)</span></td>
+<td><span class="math inline">\((\lambda^2 - 8\lambda + 9)(\lambda^2 + 2\lambda - 6)\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>sum of squared entries</td>
+<td><span class="math inline">\(62\)</span></td>
+<td><span class="math inline">\(16 + 2 \cdot 9 + 4 + 2 \cdot 10 + 2 \cdot \tfrac{49}{25} + 2 \cdot \tfrac{1}{25} = 62\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Both matrices have the eigenvalues <span class="math inline">\(4 \pm \sqrt7 \approx 6.645751,\ 1.354249\)</span> and <span class="math inline">\(-1 \pm \sqrt7 \approx 1.645751,\ -3.645751\)</span>. The QR method page finds them by iterating on <span class="math inline">\(\mathbf{H}\)</span>.</p>
+</section>
+<section id="example-2-the-same-matrix-with-the-step-subroutine" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-the-same-matrix-with-the-step-subroutine">Example 2 — The same matrix with the step subroutine</h2>
+<p>Mathews next packages Steps 1–5 as a Mathematica subroutine, <code>HouseholderStep[k]</code>. It takes column <span class="math inline">\(k\)</span> of <span class="math inline">\(\mathbf{A}_{k-1}\)</span>, computes <span class="math inline">\(S\)</span> (with Mathematica’s <code>Sign</code>; see the caution above), <span class="math inline">\(R\)</span>, <span class="math inline">\(\mathbf{W}\)</span>, <span class="math inline">\(\mathbf{V}\)</span>, <span class="math inline">\(c\)</span> and <span class="math inline">\(\mathbf{Q}\)</span>, forms <span class="math inline">\(\mathbf{A}_k = \mathbf{A}_{k-1} - 2\mathbf{W}\mathbf{Q}^{T} - 2\mathbf{Q}\mathbf{W}^{T}\)</span>, replaces entries that are rounding noise by zero, and prints every intermediate quantity. His Example 2 calls it for <span class="math inline">\(k = 1\)</span> and <span class="math inline">\(k = 2\)</span> on the matrix of Example 1, so it prints the same numbers: <span class="math inline">\(S = 3\)</span>, <span class="math inline">\(R = \sqrt{30}\)</span>, <span class="math inline">\(c = -0.9\)</span> and <span class="math inline">\(\mathbf{A}_1\)</span> in the first call, <span class="math inline">\(S \approx -3.162278\)</span>, <span class="math inline">\(R \approx 6.036874\)</span>, <span class="math inline">\(c \approx -1.264911\)</span> and the matrix <span class="math inline">\(\mathbf{H}\)</span> of Example 1 in the second. The verification of Example 1 therefore covers Example 2 too.</p>
+</section>
+<section id="example-3-a-5-times-5-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-a-5-times-5-matrix">Example 3 — A <span class="math inline">\(5 \times 5\)</span> matrix</h2>
+<p>Use the Householder step algorithm to reduce</p>
+<p><span class="math display">\[
+\mathbf{A}_0 = \begin{pmatrix} 5 &amp; 1 &amp; 2 &amp; 2 &amp; 4 \\ 1 &amp; 1 &amp; 2 &amp; 1 &amp; 0 \\ 2 &amp; 2 &amp; 0 &amp; 2 &amp; 1 \\ 2 &amp; 1 &amp; 2 &amp; 1 &amp; 2 \\ 4 &amp; 0 &amp; 1 &amp; 2 &amp; 4 \end{pmatrix}
+\]</span></p>
+<p>to symmetric tridiagonal form (Mathews’ Exercise 3). Three steps are needed.</p>
+<p><strong>Step 1</strong> (<span class="math inline">\(k = 1\)</span>, <span class="math inline">\(x_2 = 1\)</span>). <span class="math inline">\(S = \sqrt{1 + 4 + 4 + 16} = 5\)</span>, <span class="math inline">\(R = \sqrt{2(1 + 5)\,5} = 2\sqrt{15} \approx 7.745967\)</span> and</p>
+<p><span class="math display">\[
+\mathbf{W} = \frac{1}{2\sqrt{15}}(0, 6, 2, 2, 4)^{T} = \frac{\sqrt{15}}{15}(0, 3, 1, 1, 2)^{T}, \qquad
+\mathbf{V} = \sqrt{15}\left(1, \tfrac25, \tfrac23, \tfrac23, \tfrac{11}{15}\right)^{T}, \qquad c = 4,
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{Q} = \mathbf{V} - 4\mathbf{W} = \sqrt{15}\left(1, -\tfrac25, \tfrac25, \tfrac25, \tfrac15\right)^{T}, \qquad
+\mathbf{A}_1 = \begin{pmatrix} 5 &amp; -5 &amp; 0 &amp; 0 &amp; 0 \\ -5 &amp; 5.8 &amp; 0.4 &amp; -0.6 &amp; 0.4 \\ 0 &amp; 0.4 &amp; -1.6 &amp; 0.4 &amp; -1 \\ 0 &amp; -0.6 &amp; 0.4 &amp; -0.6 &amp; 0 \\ 0 &amp; 0.4 &amp; -1 &amp; 0 &amp; 2.4 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 2</strong> (<span class="math inline">\(k = 2\)</span>, <span class="math inline">\(x_3 = 0.4\)</span>). <span class="math inline">\(S = \sqrt{0.4^2 + 0.6^2 + 0.4^2} = \tfrac{\sqrt{17}}{5} \approx 0.824621\)</span>, <span class="math inline">\(R \approx 1.421160\)</span>, <span class="math inline">\(\mathbf{W} \approx (0, 0, 0.861705, -0.422190, 0.281460)^{T}\)</span>, <span class="math inline">\(\mathbf{V} \approx (0, 0.710580, -1.829064, 0.597996, -0.186201)^{T}\)</span>, <span class="math inline">\(c \approx -1.880990\)</span>, <span class="math inline">\(\mathbf{Q} \approx (0, 0.710580, -0.208206, -0.196139, 0.343223)^{T}\)</span> and</p>
+<p><span class="math display">\[
+\mathbf{A}_2 \approx \begin{pmatrix} 5 &amp; -5 &amp; 0 &amp; 0 &amp; 0 \\ -5 &amp; 5.8 &amp; -0.824621 &amp; 0 &amp; 0 \\ 0 &amp; -0.824621 &amp; -0.882353 &amp; 0.562224 &amp; -1.474311 \\ 0 &amp; 0 &amp; 0.562224 &amp; -0.931233 &amp; 0.400222 \\ 0 &amp; 0 &amp; -1.474311 &amp; 0.400222 &amp; 2.013586 \end{pmatrix}.
+\]</span></p>
+<p><strong>Step 3</strong> (<span class="math inline">\(k = 3\)</span>, <span class="math inline">\(x_4 \approx 0.562224\)</span>). <span class="math inline">\(S = \sqrt{0.562224^2 + 1.474311^2} \approx 1.577875\)</span>, <span class="math inline">\(R \approx 2.598772\)</span>, <span class="math inline">\(\mathbf{W} \approx (0, 0, 0, 0.823504, -0.567311)^{T}\)</span>, <span class="math inline">\(\mathbf{V} \approx (0, 0, 1.299386, -0.993924, -0.812744)^{T}\)</span>, <span class="math inline">\(c \approx -0.357422\)</span>, <span class="math inline">\(\mathbf{Q} \approx (0, 0, 1.299386, -0.699586, -1.015513)^{T}\)</span> and</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} = \mathbf{A}_3 \approx \begin{pmatrix} 5 &amp; -5 &amp; 0 &amp; 0 &amp; 0 \\ -5 &amp; 5.8 &amp; -0.824621 &amp; 0 &amp; 0 \\ 0 &amp; -0.824621 &amp; -0.882353 &amp; -1.577875 &amp; 0 \\ 0 &amp; 0 &amp; -1.577875 &amp; 1.373214 &amp; 1.279015 \\ 0 &amp; 0 &amp; 0 &amp; 1.279015 &amp; -0.290861 \end{pmatrix}\ }
+\]</span></p>
+<p>In exact form the diagonal is <span class="math inline">\(\left(5, \tfrac{29}{5}, -\tfrac{15}{17}, \tfrac{174968}{127415}, -\tfrac{436}{1499}\right)\)</span> and the subdiagonal is <span class="math inline">\(\left(-5, -\tfrac{\sqrt{17}}{5}, -\tfrac{2\sqrt{4497}}{85}, \tfrac{465\sqrt{17}}{1499}\right)\)</span>. The first three subdiagonal entries are the values <span class="math inline">\(-S\)</span> of Steps 1–3; the last one, in position <span class="math inline">\((5, 4)\)</span>, is what Step 3 leaves there. Mathews’ printed <span class="math inline">\(\mathbf{A}_1\)</span>, <span class="math inline">\(\mathbf{A}_2\)</span> and <span class="math inline">\(\mathbf{H}\)</span> (to ten significant digits) agree with these.</p>
+<p><strong>Verification.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Invariant</th>
+<th><span class="math inline">\(\mathbf{A}_0\)</span></th>
+<th><span class="math inline">\(\mathbf{H}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>characteristic polynomial</td>
+<td><span class="math inline">\(\lambda^5 - 11\lambda^4 + 60\lambda^2 + 3\lambda - 17\)</span></td>
+<td><span class="math inline">\(\lambda^5 - 11\lambda^4 + 60\lambda^2 + 3\lambda - 17\)</span> <span class="math inline">\(\checkmark\)</span> (exact)</td>
+</tr>
+<tr class="even">
+<td>sum of squared entries</td>
+<td><span class="math inline">\(121\)</span></td>
+<td><span class="math inline">\(121\)</span> <span class="math inline">\(\checkmark\)</span> (exact)</td>
+</tr>
+<tr class="odd">
+<td>eigenvalues</td>
+<td><span class="math inline">\(10.449283,\ 2.652048,\ -2.043362,\ -0.577672,\ 0.519702\)</span></td>
+<td>the same <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The characteristic polynomial can also be found directly from <span class="math inline">\(\mathbf{A}_0\)</span> by the <a href="../../pages/numerical-methods/faddeev-leverrier-method.html">Faddeev–Leverrier method</a>.</p>
+</section>
+<section id="example-4-a-6-times-6-matrix-step-by-step-and-with-loops" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-a-6-times-6-matrix-step-by-step-and-with-loops">Example 4 — A <span class="math inline">\(6 \times 6\)</span> matrix, step by step and with loops</h2>
+<p>Reduce</p>
+<p><span class="math display">\[
+\mathbf{A}_0 = \begin{pmatrix} 4 &amp; 1 &amp; 2 &amp; -5 &amp; 1 &amp; 4 \\ 1 &amp; 2 &amp; 0 &amp; 4 &amp; 5 &amp; 3 \\ 2 &amp; 0 &amp; 3 &amp; -1 &amp; 2 &amp; 1 \\ -5 &amp; 4 &amp; -1 &amp; 1 &amp; 5 &amp; 2 \\ 1 &amp; 5 &amp; 2 &amp; 5 &amp; -2 &amp; 4 \\ 4 &amp; 3 &amp; 1 &amp; 2 &amp; 4 &amp; 1 \end{pmatrix}
+\]</span></p>
+<p>to symmetric tridiagonal form. Mathews sets this matrix twice: in Exercise 4 with the step subroutine and in Exercise 5 with a loop program. His solution to Exercise 4 is missing from the archive, so the steps below are computed here; his printout for Exercise 5 survives and agrees with them.</p>
+<p><strong>Steps 1–4.</strong> Four steps are needed. At each step <span class="math inline">\(x_{k+1}\)</span> is the entry <span class="math inline">\((k+1, k)\)</span> of <span class="math inline">\(\mathbf{A}_{k-1}\)</span>, and the new subdiagonal entry is <span class="math inline">\(-S\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_{k+1}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(S\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(R\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(c\)</span></th>
+<th style="text-align: right;">new entry <span class="math inline">\((k+1, k)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;"><span class="math inline">\(1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(\sqrt{47} \approx 6.855655\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(10.378406\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.680418\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-6.855655\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><span class="math inline">\(-2.554759\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.924429\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(5.661007\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.314259\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.924429\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;"><span class="math inline">\(-1.852266\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-4.758240\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.931503\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.892871\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.758240\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;"><span class="math inline">\(7.198901\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(7.994421\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(15.586008\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.319391\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-7.994421\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The intermediate matrices are</p>
+<p><span class="math display">\[
+\mathbf{A}_1 \approx \begin{pmatrix} 4 &amp; -6.855655 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\ -6.855655 &amp; -0.148936 &amp; -2.554759 &amp; -1.271014 &amp; 0.254203 &amp; -0.587704 \\ 0 &amp; -2.554759 &amp; 1.838438 &amp; -1.064127 &amp; 0.536182 &amp; -0.935679 \\ 0 &amp; -1.271014 &amp; -1.064127 &amp; 8.580394 &amp; 7.175530 &amp; 0.903135 \\ 0 &amp; 0.254203 &amp; 0.536182 &amp; 7.175530 &amp; -3.173428 &amp; 1.266086 \\ 0 &amp; -0.587704 &amp; -0.935679 &amp; 0.903135 &amp; 1.266086 &amp; -2.096469 \end{pmatrix},
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{A}_2 \approx \begin{pmatrix} 4 &amp; -6.855655 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\ -6.855655 &amp; -0.148936 &amp; 2.924429 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 2.924429 &amp; 1.268511 &amp; -1.852266 &amp; -4.218333 &amp; 1.189802 \\ 0 &amp; 0 &amp; -1.852266 &amp; 8.245411 &amp; 6.103051 &amp; 1.325829 \\ 0 &amp; 0 &amp; -4.218333 &amp; 6.103051 &amp; -2.731037 &amp; 0.654665 \\ 0 &amp; 0 &amp; 1.189802 &amp; 1.325829 &amp; 0.654665 &amp; -1.633949 \end{pmatrix},
+\]</span></p>
+<p><span class="math display">\[
+\mathbf{A}_3 \approx \begin{pmatrix} 4 &amp; -6.855655 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\ -6.855655 &amp; -0.148936 &amp; 2.924429 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 2.924429 &amp; 1.268511 &amp; 4.758240 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 4.758240 &amp; 2.664909 &amp; 7.198901 &amp; -3.476578 \\ 0 &amp; 0 &amp; 0 &amp; 7.198901 &amp; 0.939948 &amp; -3.248054 \\ 0 &amp; 0 &amp; 0 &amp; -3.476578 &amp; -3.248054 &amp; 0.275569 \end{pmatrix},
+\]</span></p>
+<p>and the fourth step gives</p>
+<p><span class="math display">\[
+\boxed{\ \mathbf{H} = \mathbf{A}_4 \approx \begin{pmatrix} 4 &amp; -6.855655 &amp; 0 &amp; 0 &amp; 0 &amp; 0 \\ -6.855655 &amp; -0.148936 &amp; 2.924429 &amp; 0 &amp; 0 &amp; 0 \\ 0 &amp; 2.924429 &amp; 1.268511 &amp; 4.758240 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 4.758240 &amp; 2.664909 &amp; -7.994421 &amp; 0 \\ 0 &amp; 0 &amp; 0 &amp; -7.994421 &amp; 3.358187 &amp; 1.759360 \\ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1.759360 &amp; -2.142670 \end{pmatrix}\ }
+\]</span></p>
+<p>The entry <span class="math inline">\(-0.148936\)</span> is exactly <span class="math inline">\(-\tfrac{7}{47}\)</span>, and <span class="math inline">\(-6.855655 = -\sqrt{47}\)</span>; the later entries have no short closed form.</p>
+<p><strong>The loop program (Mathews’ Exercise 5).</strong> Mathews’ “traditional” program does the same arithmetic with explicit loops and uses the fact that once columns <span class="math inline">\(1, \ldots, k - 1\)</span> are reduced, only row and column <span class="math inline">\(k\)</span> and the trailing block below and to the right of them change. At step <span class="math inline">\(k\)</span> it computes <span class="math inline">\(\mathbf{W}\)</span>, <span class="math inline">\(\mathbf{V}\)</span>, <span class="math inline">\(c\)</span> and <span class="math inline">\(\mathbf{Q}\)</span> only in components <span class="math inline">\(k + 1, \ldots, n\)</span>, writes <span class="math inline">\(-S\)</span> into positions <span class="math inline">\((k+1, k)\)</span> and <span class="math inline">\((k, k+1)\)</span> and zeros into the rest of column and row <span class="math inline">\(k\)</span>, and updates the trailing block by <span class="math inline">\(a_{jj} \leftarrow a_{jj} - 4q_jw_j\)</span> and <span class="math inline">\(a_{ij} = a_{ji} \leftarrow a_{ij} - 2w_iq_j - 2q_iw_j\)</span> for <span class="math inline">\(j &gt; i\)</span>. Reimplemented in double precision, it reproduces the step algorithm’s <span class="math inline">\(\mathbf{H}\)</span> to within <span class="math inline">\(5.3 \times 10^{-15}\)</span>, and Mathews’ printed <span class="math inline">\(\mathbf{A}_1\)</span>, <span class="math inline">\(\mathbf{A}_2\)</span>, <span class="math inline">\(\mathbf{A}_3\)</span> and <span class="math inline">\(\mathbf{H}\)</span> agree with the matrices above in every printed digit (he prints ten significant digits).</p>
+<p><strong>Verification.</strong> In 50-digit arithmetic, the entries of <span class="math inline">\(\mathbf{H}\)</span> outside the tridiagonal band are below <span class="math inline">\(6 \times 10^{-51}\)</span>, and</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Invariant</th>
+<th><span class="math inline">\(\mathbf{A}_0\)</span></th>
+<th><span class="math inline">\(\mathbf{H}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>characteristic polynomial</td>
+<td><span class="math inline">\(\lambda^6 - 9\lambda^5 - 125\lambda^4 + 662\lambda^3 + 5036\lambda^2 - 3305\lambda - 21448\)</span></td>
+<td>the same <span class="math inline">\(\checkmark\)</span> (eigenvalues agree to <span class="math inline">\(5 \times 10^{-50}\)</span>)</td>
+</tr>
+<tr class="even">
+<td>trace</td>
+<td><span class="math inline">\(9\)</span></td>
+<td><span class="math inline">\(9\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="odd">
+<td>sum of squared entries</td>
+<td><span class="math inline">\(331\)</span></td>
+<td><span class="math inline">\(331\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>eigenvalues</td>
+<td><span class="math inline">\(12.302275,\ 9.328149,\ -7.411262,\ -5.311125,\ 2.225498,\ -2.133536\)</span></td>
+<td>the same <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Accumulating <span class="math inline">\(\mathbf{U} = \mathbf{P}_1\mathbf{P}_2\mathbf{P}_3\mathbf{P}_4\)</span> and multiplying the eigenvectors of <span class="math inline">\(\mathbf{H}\)</span> by <span class="math inline">\(\mathbf{U}\)</span> gives eigenvectors of <span class="math inline">\(\mathbf{A}_0\)</span> with residual <span class="math inline">\(\max|\mathbf{A}_0\mathbf{X} - \mathbf{X}\boldsymbol{\Lambda}| = 4.4 \times 10^{-15}\)</span> in double precision.</p>
+</section>
+<section id="implementation-notes" class="level2">
+<h2 class="anchored" data-anchor-id="implementation-notes">Implementation Notes</h2>
+<ul>
+<li><strong>Never form <span class="math inline">\(\mathbf{P}_k\)</span>.</strong> Store <span class="math inline">\(\mathbf{W}\)</span> and use (6)–(7); keep <span class="math inline">\(\mathbf{W}\)</span> (or <span class="math inline">\(\mathbf{v}\)</span>) for each step if eigenvectors are wanted, since <span class="math inline">\(\mathbf{U}\mathbf{y} = \mathbf{P}_1(\mathbf{P}_2(\cdots\mathbf{P}_{n-2}\mathbf{y}))\)</span> can be applied one reflection at a time.</li>
+<li><strong>Work on the trailing block.</strong> As in Mathews’ loop program, step <span class="math inline">\(k\)</span> only needs rows and columns <span class="math inline">\(k, \ldots, n\)</span>, and symmetry halves the work again.</li>
+<li><strong>Choose the sign of <span class="math inline">\(S\)</span> to match <span class="math inline">\(x_{k+1}\)</span></strong>, use <span class="math inline">\(+1\)</span> (never <span class="math inline">\(0\)</span>) when <span class="math inline">\(x_{k+1} = 0\)</span>, and skip a step whose subcolumn is already zero (see the caution above).</li>
+<li><strong>Set the created zeros explicitly.</strong> In floating point they come out as rounding noise (at most <span class="math inline">\(1.1 \times 10^{-15}\)</span> in the three examples above).</li>
+<li><strong>Nonsymmetric matrices.</strong> Without symmetry the left and right products no longer clear the same entries, but the same <span class="math inline">\(\mathbf{P}_k\)</span> still make column <span class="math inline">\(k\)</span> zero below the subdiagonal; the result is upper Hessenberg rather than tridiagonal. See <a href="../../pages/numerical-methods/hessenberg-factorization.html">Hessenberg Factorization</a> and the <a href="qr-method/">QR method</a>, whose iterations keep both forms.</li>
+</ul>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Runge-Kutta-Fehlberg Method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1" id="toc-case-1" class="nav-link" data-scroll-target="#case-1">Case 1 - Adaptive RKF45 vs RKF54, <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0)=0.5\)</span>, <span class="math inline">\(t \in [0,1.1]\)</span></a></li>
+  <li><a href="#case-2" id="toc-case-2" class="nav-link" data-scroll-target="#case-2">Case 2 - Adaptive RKF45 vs RKF54, <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span>, <span class="math inline">\(t \in [0,5]\)</span></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Runge-Kutta-Fehlberg Method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>The Runge-Kutta-Fehlberg method (RKF45) is an adaptive-step one-step solver for the initial value problem <span class="math inline">\(y' = f(t, y)\)</span>, <span class="math inline">\(y(t_0) = y_0\)</span>. At each step it computes embedded 4th- and 5th-order approximations from the same stage evaluations, estimates the local error from their difference, and adjusts the step size to meet a tolerance. From the current point <span class="math inline">\((t_j, y_j)\)</span> and a trial step <span class="math inline">\(h\)</span>, the six stages are</p>
+<p><span class="math display">\[
+\begin{aligned}
+k_1 &amp;= h\,f(t_j,\ y_j),\\
+k_2 &amp;= h\,f\!\left(t_j + \tfrac{1}{4}h,\ y_j + \tfrac{1}{4}k_1\right),\\
+k_3 &amp;= h\,f\!\left(t_j + \tfrac{3}{8}h,\ y_j + \tfrac{3}{32}k_1 + \tfrac{9}{32}k_2\right),\\
+k_4 &amp;= h\,f\!\left(t_j + \tfrac{12}{13}h,\ y_j + \tfrac{1932}{2197}k_1 - \tfrac{7200}{2197}k_2 + \tfrac{7296}{2197}k_3\right),\\
+k_5 &amp;= h\,f\!\left(t_j + h,\ y_j + \tfrac{439}{216}k_1 - 8k_2 + \tfrac{3680}{513}k_3 - \tfrac{845}{4104}k_4\right),\\
+k_6 &amp;= h\,f\!\left(t_j + \tfrac{1}{2}h,\ y_j - \tfrac{8}{27}k_1 + 2k_2 - \tfrac{3544}{2565}k_3 + \tfrac{1859}{4104}k_4 - \tfrac{11}{40}k_5\right),
+\end{aligned}
+\]</span></p>
+<p>and the 4th- and 5th-order updates are</p>
+<p><span class="math display">\[
+\begin{aligned}
+y_4 &amp;= y_j + \tfrac{25}{216}k_1 + \tfrac{1408}{2565}k_3 + \tfrac{2197}{4104}k_4 - \tfrac{1}{5}k_5,\\
+y_5 &amp;= y_j + \tfrac{16}{135}k_1 + \tfrac{6656}{12825}k_3 + \tfrac{28561}{56430}k_4 - \tfrac{9}{50}k_5 + \tfrac{2}{55}k_6.
+\end{aligned}
+\]</span></p>
+<p>The difference <span class="math inline">\(|y_5 - y_4|\)</span> estimates the local error of <span class="math inline">\(y_4\)</span>. It shrinks like <span class="math inline">\(h^5\)</span>, so <span class="math inline">\(|y_5 - y_4|/h\)</span> is an error per unit step that shrinks like <span class="math inline">\(h^4\)</span>. A step is accepted when <span class="math inline">\(|y_5 - y_4|/h \le \varepsilon\)</span>, where <span class="math inline">\(\varepsilon\)</span> is the requested tolerance; RKF45 then carries <span class="math inline">\(y_{j+1} = y_4\)</span> forward, and the variant RKF54 carries <span class="math inline">\(y_5\)</span>. Accepted or not, the next step size is</p>
+<p><span class="math display">\[
+h_{new} = s\,h, \qquad s = 0.84\left(\frac{\varepsilon h}{|y_5 - y_4|}\right)^{1/4},
+\]</span></p>
+<p>clamped to at most <span class="math inline">\(h_{max}=0.25\)</span> (and at least <span class="math inline">\(h_{min}=10^{-6}\)</span>, which neither case reaches), and a rejected step is retried from the same point. The factor <span class="math inline">\(0.84\)</span> rounds Mathews’ <span class="math inline">\(2^{-1/4}\)</span>; if <span class="math inline">\(|y_5 - y_4|\)</span> scaled exactly like <span class="math inline">\(h^5\)</span>, the new step would bring <span class="math inline">\(|y_5 - y_4|/h\)</span> to about <span class="math inline">\(\varepsilon/2\)</span>.</p>
+<p>The method needs <span class="math inline">\(f\)</span> continuous and Lipschitz in <span class="math inline">\(y\)</span> near the solution, so that the solution is unique, and <span class="math inline">\(f\)</span> smooth enough for the orders below. In <a href="#case-2">Case 2</a>, <span class="math inline">\(f = 1 - t\sqrt[3]{y}\)</span> is not differentiable at <span class="math inline">\(y = 0\)</span>, but the solution stays above <span class="math inline">\(y(5) \approx 0.00812\)</span>.</p>
+<p>In general, if <span class="math inline">\(f\)</span> has continuous partial derivatives through order 5 near the solution (which makes <span class="math inline">\(y \in C^6\)</span>), the 4th- and 5th-order formulas have local errors <span class="math inline">\(O(h^5)\)</span> and <span class="math inline">\(O(h^6)\)</span>, so for small <span class="math inline">\(h\)</span>, <span class="math inline">\(y_5 - y_4\)</span> is dominated by the error of <span class="math inline">\(y_4\)</span>; with fixed steps the global errors are <span class="math inline">\(O(h^4)\)</span> and <span class="math inline">\(O(h^5)\)</span>. On Case 1’s problem, halving one step at <span class="math inline">\(t = 0\)</span> from <span class="math inline">\(0.025\)</span> to <span class="math inline">\(0.0125\)</span> divides <span class="math inline">\(|y_5 - y_4|\)</span> by <span class="math inline">\(30.7\)</span> and the errors of <span class="math inline">\(y_4\)</span> and <span class="math inline">\(y_5\)</span> by <span class="math inline">\(27.9\)</span> and <span class="math inline">\(65.6\)</span>, near <span class="math inline">\(2^5 = 32\)</span> and <span class="math inline">\(2^6 = 64\)</span>. The animations show the step-size controller, not these rates.</p>
+<p>The tolerance bounds local, not global, error. In <a href="#case-1">Case 1</a> the accepted <span class="math inline">\(|y_5 - y_4|\)</span> sum to <span class="math inline">\(5.6\times10^{-7}\)</span>, yet RKF45 ends <span class="math inline">\(4.5\times10^{-3}\)</span> from <span class="math inline">\(y(1.1) = 139.88\)</span>: near the pole of <span class="math inline">\(\tan(t + \arctan 0.5)\)</span> at <span class="math inline">\(t \approx 1.1071\)</span>, errors grow up to <span class="math inline">\(1.6\times10^{4}\)</span>-fold by <span class="math inline">\(t = 1.1\)</span>, but the individually grown estimates give only <span class="math inline">\(2.2\times10^{-3}\)</span>. The estimate needs small <span class="math inline">\(h\)</span>: the step <span class="math inline">\(h = 0.136\)</span> from <span class="math inline">\(t = 0.1\)</span> underestimates its error 10.5-fold, causing nearly half the final error (<span class="math inline">\(h = 0.25\)</span> from <span class="math inline">\(t = 0\)</span>: 34-fold, <a href="#animations">Animations</a> introduction).</p>
+<p>The <a href="../eulers-method-for-odes/">Euler</a>, <a href="../heuns-method/">Heun</a>, <a href="../taylor-series-method-for-odes/">Taylor Series</a>, <a href="../runge-kutta-method/">Runge-Kutta</a>, <a href="../adams-bashforth-moulton-method/">Adams-Bashforth-Moulton</a> and <a href="../milne-simpsons-method/">Milne-Simpson</a> pages solve Case 2’s problem with fixed steps, and <a href="../adaptive-simpsons-rule/">Adaptive Simpson’s Rule</a> uses the same compare-two-estimates idea for integrals.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>The first animation below reconstructs the legacy Example 1 setup from the Mathews module: <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0)=0.5\)</span>, on <span class="math inline">\([0,1.1]\)</span>. The dashed black curve is the exact solution <span class="math inline">\(y(t)=\tan\!\left(t + \arctan(0.5)\right)\)</span>. The step controller is not the module’s: its RKF45 and RKF54 subroutines accept a step when <span class="math inline">\(|y_5 - y_4| &lt; \varepsilon\)</span> or <span class="math inline">\(h &lt; 2h_{min}\)</span>, start from <span class="math inline">\(h=0.25\)</span> (here <span class="math inline">\(0.1\)</span>) and have a minimum step size <span class="math inline">\(h_{min}=0.001\)</span>. At the same <span class="math inline">\(\varepsilon=10^{-6}\)</span> they take 120 points; the step reaches <span class="math inline">\(h_{min}\)</span> at <span class="math inline">\(t \approx 1.055\)</span>, and the last 8 of the 119 steps, from <span class="math inline">\(t \approx 1.092\)</span> on, are accepted only by the <span class="math inline">\(h &lt; 2h_{min}\)</span> condition. They end with errors of <span class="math inline">\(7.0\times10^{-2}\)</span> (RKF45) and <span class="math inline">\(6.5\times10^{-2}\)</span> (RKF54) at <span class="math inline">\(t=1.1\)</span>, against <span class="math inline">\(4.5\times10^{-3}\)</span> and <span class="math inline">\(3.2\times10^{-3}\)</span> here (Case 1). Most of that difference is the first step of <span class="math inline">\(0.25\)</span>: its error estimate, <span class="math inline">\(1.7\times10^{-7}\)</span>, passes either acceptance test, but its true error is <span class="math inline">\(5.6\)</span>–<span class="math inline">\(5.7\times10^{-6}\)</span>, which this problem magnifies about <span class="math inline">\(1.1\times10^{4}\)</span> times by <span class="math inline">\(t=1.1\)</span>; started from <span class="math inline">\(h=0.25\)</span>, the controller used here ends with errors of <span class="math inline">\(6.6\times10^{-2}\)</span> and <span class="math inline">\(6.3\times10^{-2}\)</span>.</p>
+<p>Because the recovered archive did not include legacy RKF animated GIF portals for this topic, the first animation is reconstructed from the worked-example equations and plot behavior in the module links/images. The module’s Examples 6–8, which solve a second problem, the Riccati equation <span class="math inline">\(y' = t^2 + y^2\)</span>, with the module’s RKF45 and RKF54 subroutines (Example 6), compare those results with its closed-form Bessel-function solution (Example 7) and derive that solution with Mathematica’s DSolve (Example 8), are not animated here.</p>
+<p>The second animation uses the same IVP shown on the Euler’s Method page (in both its forward Euler and modified Euler cases) and on the Runge-Kutta, Taylor Series and Adams-Bashforth-Moulton pages: <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span>, on <span class="math inline">\([0,5]\)</span>, with a dashed high-accuracy reference trajectory from fixed-step RK4 at <span class="math inline">\(h=10^{-4}\)</span>. This IVP is not one of the module’s examples; it is used here so that this page can be compared with those pages.</p>
+<section id="case-1" class="level3">
+<h3 class="anchored" data-anchor-id="case-1">Case 1 - Adaptive RKF45 vs RKF54, <span class="math inline">\(y' = 1 + y^2\)</span>, <span class="math inline">\(y(0)=0.5\)</span>, <span class="math inline">\(t \in [0,1.1]\)</span></h3>
+<p><strong>Behavior:</strong> Both adaptive traces follow the exact solution to within a relative error of <span class="math inline">\(3.3\times10^{-5}\)</span> all the way to <span class="math inline">\(y(1.1)=139.88\)</span>, just short of the pole of <span class="math inline">\(\tan\)</span> at <span class="math inline">\(t=1.1071\)</span>; the logarithmic <span class="math inline">\(y\)</span>-axis keeps the whole run in view. The step shrinks from <span class="math inline">\(0.136\)</span> near <span class="math inline">\(t=0.1\)</span> to <span class="math inline">\(5\times10^{-5}\)</span> near <span class="math inline">\(t=1.1\)</span>, so 187 of the 259 computed points lie in <span class="math inline">\(t \ge 1.05\)</span> and the marker slows as it nears the pole (each frame adds up to four accepted steps). RKF45 and RKF54 share the error estimate and the step rule, so their steps agree to within <span class="math inline">\(0.05\%\)</span> and the curves coincide (blue over magenta). They differ only in whether <span class="math inline">\(y_4\)</span> or <span class="math inline">\(y_5\)</span> is carried forward, and RKF54 ends closer to the exact value: errors <span class="math inline">\(3.2\times10^{-3}\)</span> against <span class="math inline">\(4.5\times10^{-3}\)</span> at <span class="math inline">\(t=1.1\)</span>.</p>
+<p><a href="rungekuttafehlbergaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="rungekuttafehlbergaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Adaptive RKF45 and RKF54 trajectories versus exact solution for y’ = 1 + y^2, y(0)=0.5 on [0,1.1], with y on a logarithmic axis</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2" class="level3">
+<h3 class="anchored" data-anchor-id="case-2">Case 2 - Adaptive RKF45 vs RKF54, <span class="math inline">\(y' = 1 - t\sqrt[3]{y}\)</span>, <span class="math inline">\(y(0)=1\)</span>, <span class="math inline">\(t \in [0,5]\)</span></h3>
+<p><strong>Behavior:</strong> RKF45 and RKF54 match the dashed reference to within <span class="math inline">\(7\times10^{-7}\)</span> at every accepted point. The controller takes the maximum step <span class="math inline">\(h=0.25\)</span> over the hump (<span class="math inline">\(0.1 \le t \le 1.35\)</span>) and keeps <span class="math inline">\(h\)</span> between <span class="math inline">\(0.189\)</span> and <span class="math inline">\(0.25\)</span> until <span class="math inline">\(t \approx 2.4\)</span>, past the steepest point (<span class="math inline">\(y'=-0.930\)</span> at <span class="math inline">\(t=2.19\)</span>). It then cuts the step as the solution bends into its flat tail: below <span class="math inline">\(0.04\)</span> from <span class="math inline">\(t=3\)</span> on, and the smallest step it chooses is <span class="math inline">\(0.027\)</span>, near <span class="math inline">\(t=3.27\)</span>. The corners visible on the hump are the straight segments drawn between accepted points <span class="math inline">\(0.25\)</span> apart (up to <span class="math inline">\(0.0091\)</span> below the curve, near <span class="math inline">\(t=0.48\)</span>), not integration error. These steps are set by the tolerance, not by stability: <span class="math inline">\(\partial f/\partial y=-t/(3y^{2/3})\)</span> reaches <span class="math inline">\(-41.3\)</span> at <span class="math inline">\(t=5\)</span>, so for fixed steps longer than about <span class="math inline">\(h=0.0732\)</span>, <span class="math inline">\(h\,|\partial f/\partial y|\)</span> would exceed the 4th-order RKF update’s stability limit <span class="math inline">\(3.02\)</span> before <span class="math inline">\(t=5\)</span>, while every accepted step here keeps <span class="math inline">\(h\,|\partial f/\partial y|\)</span> below <span class="math inline">\(1.3\)</span>.</p>
+<p><a href="rungekuttafehlbergbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="rungekuttafehlbergbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Adaptive RKF45 and RKF54 trajectories versus high-accuracy RK4 reference for y’ = 1 - t cbrt(y), y(0)=1 on [0,5]</figcaption>
+</figure>
+</div>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

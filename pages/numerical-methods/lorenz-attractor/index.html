@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Lorenz Attractor – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../contact.html"> 
+<span class="menu-text">Contact</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#animations" id="toc-animations" class="nav-link" data-scroll-target="#animations">Animations</a>
+  <ul class="collapse">
+  <li><a href="#case-1-example-1-runge-kutta-path-against-the-true-solution-r-28-mathbfz_0-10--10-20-m-1000-h-0.02-on-0-20" id="toc-case-1-example-1-runge-kutta-path-against-the-true-solution-r-28-mathbfz_0-10--10-20-m-1000-h-0.02-on-0-20" class="nav-link" data-scroll-target="#case-1-example-1-runge-kutta-path-against-the-true-solution-r-28-mathbfz_0-10--10-20-m-1000-h-0.02-on-0-20">Case 1 — Example 1: Runge-Kutta path against the true solution, <span class="math inline">\(r = 28\)</span>, <span class="math inline">\(\mathbf{Z}_0 = (10, -10, 20)\)</span>, <span class="math inline">\(m = 1000\)</span>, <span class="math inline">\(h = 0.02\)</span> on <span class="math inline">\([0, 20]\)</span></a></li>
+  <li><a href="#case-2-example-2s-interval-0-50-true-solutions-from-10--10-20-and-10-10-10--10-20" id="toc-case-2-example-2s-interval-0-50-true-solutions-from-10--10-20-and-10-10-10--10-20" class="nav-link" data-scroll-target="#case-2-example-2s-interval-0-50-true-solutions-from-10--10-20-and-10-10-10--10-20">Case 2 — Example 2’s interval <span class="math inline">\([0, 50]\)</span>: true solutions from <span class="math inline">\((10, -10, 20)\)</span> and <span class="math inline">\((10 + 10^{-10}, -10, 20)\)</span></a></li>
+  <li><a href="#case-3-examples-5-and-6-rössler-attractors-a-b-c-0.2-0.2-5.7-and-0.343-1.82-9.75-mathbfz_0-9-0-1-m-1000-h-0.05-on-0-50" id="toc-case-3-examples-5-and-6-rössler-attractors-a-b-c-0.2-0.2-5.7-and-0.343-1.82-9.75-mathbfz_0-9-0-1-m-1000-h-0.05-on-0-50" class="nav-link" data-scroll-target="#case-3-examples-5-and-6-rössler-attractors-a-b-c-0.2-0.2-5.7-and-0.343-1.82-9.75-mathbfz_0-9-0-1-m-1000-h-0.05-on-0-50">Case 3 — Examples 5 and 6: Rössler attractors, <span class="math inline">\((a, b, c) = (0.2, 0.2, 5.7)\)</span> and <span class="math inline">\((0.343, 1.82, 9.75)\)</span>, <span class="math inline">\(\mathbf{Z}_0 = (9, 0, 1)\)</span>, <span class="math inline">\(m = 1000\)</span>, <span class="math inline">\(h = 0.05\)</span> on <span class="math inline">\([0, 50]\)</span></a></li>
+  </ul></li>
+  <li><a href="#the-lorenz-equations" id="toc-the-lorenz-equations" class="nav-link" data-scroll-target="#the-lorenz-equations">The Lorenz Equations</a>
+  <ul class="collapse">
+  <li><a href="#equilibrium-points" id="toc-equilibrium-points" class="nav-link" data-scroll-target="#equilibrium-points">Equilibrium points</a></li>
+  </ul></li>
+  <li><a href="#runge-kutta-method-for-systems" id="toc-runge-kutta-method-for-systems" class="nav-link" data-scroll-target="#runge-kutta-method-for-systems">Runge-Kutta Method for Systems</a></li>
+  <li><a href="#example-1-runge-kutta-solution-of-the-lorenz-system-r-28" id="toc-example-1-runge-kutta-solution-of-the-lorenz-system-r-28" class="nav-link" data-scroll-target="#example-1-runge-kutta-solution-of-the-lorenz-system-r-28">Example 1 — Runge-Kutta solution of the Lorenz system, <span class="math inline">\(r = 28\)</span></a></li>
+  <li><a href="#example-2-adaptive-solution-of-the-lorenz-system-over-a-longer-interval" id="toc-example-2-adaptive-solution-of-the-lorenz-system-over-a-longer-interval" class="nav-link" data-scroll-target="#example-2-adaptive-solution-of-the-lorenz-system-over-a-longer-interval">Example 2 — Adaptive solution of the Lorenz system over a longer interval</a></li>
+  <li><a href="#examples-3-and-4-the-lorenz-system-at-r-47019" id="toc-examples-3-and-4-the-lorenz-system-at-r-47019" class="nav-link" data-scroll-target="#examples-3-and-4-the-lorenz-system-at-r-47019">Examples 3 and 4 — The Lorenz system at <span class="math inline">\(r = 470/19\)</span></a>
+  <ul class="collapse">
+  <li><a href="#example-3-runge-kutta-solution-0-le-t-le-20-m-1000" id="toc-example-3-runge-kutta-solution-0-le-t-le-20-m-1000" class="nav-link" data-scroll-target="#example-3-runge-kutta-solution-0-le-t-le-20-m-1000">Example 3 — Runge-Kutta solution, <span class="math inline">\(0 \le t \le 20\)</span>, <span class="math inline">\(m = 1000\)</span></a></li>
+  <li><a href="#example-4-adaptive-solution-0-le-t-le-50" id="toc-example-4-adaptive-solution-0-le-t-le-50" class="nav-link" data-scroll-target="#example-4-adaptive-solution-0-le-t-le-50">Example 4 — Adaptive solution, <span class="math inline">\(0 \le t \le 50\)</span></a></li>
+  </ul></li>
+  <li><a href="#the-rössler-attractor" id="toc-the-rössler-attractor" class="nav-link" data-scroll-target="#the-rössler-attractor">The Rössler Attractor</a></li>
+  <li><a href="#example-5-rössler-system-a-0.2-b-0.2-c-5.7" id="toc-example-5-rössler-system-a-0.2-b-0.2-c-5.7" class="nav-link" data-scroll-target="#example-5-rössler-system-a-0.2-b-0.2-c-5.7">Example 5 — Rössler system, <span class="math inline">\(a = 0.2\)</span>, <span class="math inline">\(b = 0.2\)</span>, <span class="math inline">\(c = 5.7\)</span></a></li>
+  <li><a href="#example-6-rössler-system-a-0.343-b-1.82-c-9.75-screw-chaos" id="toc-example-6-rössler-system-a-0.343-b-1.82-c-9.75-screw-chaos" class="nav-link" data-scroll-target="#example-6-rössler-system-a-0.343-b-1.82-c-9.75-screw-chaos">Example 6 — Rössler system, <span class="math inline">\(a = 0.343\)</span>, <span class="math inline">\(b = 1.82\)</span>, <span class="math inline">\(c = 9.75\)</span> (screw chaos)</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lorenz Attractor</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="../">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>The Lorenz equations are a system of three nonlinear first-order differential equations that Edward Lorenz obtained in 1963 by simplifying a model of convection in a layer of fluid heated from below, a crude model of convection in the atmosphere:</p>
+<p><span class="math display">\[
+x' = \sigma\,(y - x), \qquad y' = r\,x - y - x\,z, \qquad z' = x\,y - b\,z .
+\]</span></p>
+<p>With Lorenz’s parameter values <span class="math inline">\(\sigma = 10\)</span>, <span class="math inline">\(r = 28\)</span>, <span class="math inline">\(b = 8/3\)</span> a typical solution does not settle down to a steady state or a periodic motion. It winds around two unstable equilibrium points, switching from one to the other at irregular times, and two solutions that start close together separate, on average, exponentially fast. The set the solutions are drawn to is the <em>Lorenz attractor</em>, a famous example of a strange attractor and of chaos.</p>
+<p>No formula gives the solution, so it is computed numerically. Mathews solves the initial value problem <span class="math inline">\(\mathbf{Z}' = \mathbf{F}(t, \mathbf{Z})\)</span>, <span class="math inline">\(\mathbf{Z}(t_0) = \mathbf{Z}_0\)</span>, with <span class="math inline">\(\mathbf{Z} = (x, y, z)\)</span>, with the classical fourth-order <a href="../runge-kutta-method/">Runge-Kutta method</a> applied to the whole vector at once, with a fixed step <span class="math inline">\(h\)</span>:</p>
+<p><span class="math display">\[
+\mathbf{Z}_{j+1} = \mathbf{Z}_j + \tfrac16\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr),
+\]</span></p>
+<p>and also with Mathematica’s adaptive solver over a longer interval. The same tools then draw the Rössler attractor, a simpler-looking system with only one nonlinear term. Because these solutions are chaotic, every computed trajectory on this page was checked against an independent high-accuracy solution (for the chaotic runs, a high-order Taylor series method in 50-digit arithmetic), and the page reports how long each numerical solution stays close to the true one.</p>
+</section>
+<section id="animations" class="level2">
+<h2 class="anchored" data-anchor-id="animations">Animations</h2>
+<p>Each animation below traces solutions of these systems <strong>in three dimensions or in a projection</strong>, beside their <strong>coordinate functions against time</strong> and, for the Lorenz system, the <strong>distance between two solutions on a log scale</strong>. Because the motion is chaotic, a numerical path is not drawn as if it were the solution. Cases 1 and 3 draw the Runge-Kutta path (5) that Mathews computes (orange) over the true solution (navy) and report the distance between them; Case 2 draws two true solutions. Each “true solution” is a reference computed in the script itself by a Taylor series method of order <span class="math inline">\(30\)</span> with step <span class="math inline">\(0.01\)</span> in <span class="math inline">\(200\)</span>-bit (about <span class="math inline">\(60\)</span>-digit) arithmetic; it agrees with the independent references used in the examples below to within <span class="math inline">\(2.2 \times 10^{-14}\)</span> over <span class="math inline">\(0 \le t \le 50\)</span>. The last frame of each animation is held for three seconds.</p>
+<p>Mathews’ module links no animation, and his animation archive has none for the Lorenz or Rössler systems, so all three animations are new, with no Mathews original. Their equations and starting values are those of Examples 1, 2, 5 and 6, with Mathews’ “about 1000” Runge-Kutta steps; the intervals are this page’s choice, since Mathews’ were lost. Not animated are Examples 3 and 4 at <span class="math inline">\(r = 470/19\)</span>, whose starting values are lost (their tables describe the runs from this page’s starts A and B); the adaptive <code>NDSolve</code> runs of Example 2, which leave the true solution part way through the interval (Case 2 shows why, with true solutions on that interval instead); and some of Mathews’ graphs of the solutions that are animated: the projections on the coordinate planes in Examples 1, 5 and 6, <span class="math inline">\(y(t)\)</span> in those three examples, <span class="math inline">\(z(t)\)</span> in Example 1, and the 3-D curve of Example 2.</p>
+<p>Julia source scripts that generated these animations are linked under each case.</p>
+<section id="case-1-example-1-runge-kutta-path-against-the-true-solution-r-28-mathbfz_0-10--10-20-m-1000-h-0.02-on-0-20" class="level3">
+<h3 class="anchored" data-anchor-id="case-1-example-1-runge-kutta-path-against-the-true-solution-r-28-mathbfz_0-10--10-20-m-1000-h-0.02-on-0-20">Case 1 — Example 1: Runge-Kutta path against the true solution, <span class="math inline">\(r = 28\)</span>, <span class="math inline">\(\mathbf{Z}_0 = (10, -10, 20)\)</span>, <span class="math inline">\(m = 1000\)</span>, <span class="math inline">\(h = 0.02\)</span> on <span class="math inline">\([0, 20]\)</span></h3>
+<p><strong>Behavior:</strong> Five Runge-Kutta steps are drawn per frame. At first the orange path and the navy true solution lie on top of each other, winding around <span class="math inline">\(C_+\)</span> and <span class="math inline">\(C_-\)</span> in turn. The distance between them, checked at every step, first exceeds <span class="math inline">\(0.01\)</span> at <span class="math inline">\(t = 1.72\)</span> (purple dot) and does not grow steadily: it is <span class="math inline">\(0.164\)</span> at <span class="math inline">\(t = 2\)</span> and <span class="math inline">\(0.0394\)</span> at <span class="math inline">\(t = 5\)</span>. It first exceeds <span class="math inline">\(1\)</span> at <span class="math inline">\(t = 6.86\)</span> (red dot), and from then on it stays above <span class="math inline">\(1\)</span>, reaching <span class="math inline">\(44.2\)</span> at <span class="math inline">\(t = 15.90\)</span>: the two curves now visibly separate in the 3-D view and in <span class="math inline">\(x(t)\)</span>. The Runge-Kutta path keeps winding around the same two equilibria, inside the box of the true solution, but along a different path. It changes the sign of <span class="math inline">\(x\)</span> <span class="math inline">\(10\)</span> times instead of <span class="math inline">\(12\)</span> and ends at <span class="math inline">\(\mathbf{Z}_{1000} = (3.613, 3.758, 20.98)\)</span>, a distance <span class="math inline">\(8.24\)</span> from the true value <span class="math inline">\((5.666, 1.866, 28.74)\)</span>.</p>
+<p><a href="lorenzaa.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lorenzaa.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta path of the Lorenz system with σ = 10, r = 28, b = 8/3 from (10, −10, 20), with m = 1000 steps of h = 0.02 on [0, 20], traced in orange in 3-D over the navy true solution, around the equilibria C₊ and C₋, with x(t) of both and the distance between them on a log scale; the distance first exceeds 0.01 at t = 1.72 and 1 at t = 6.86, after which the two curves separate, and at t = 20 the Runge-Kutta point (3.613, 3.758, 20.98) is 8.24 from the true point (5.666, 1.866, 28.74)</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-2-example-2s-interval-0-50-true-solutions-from-10--10-20-and-10-10-10--10-20" class="level3">
+<h3 class="anchored" data-anchor-id="case-2-example-2s-interval-0-50-true-solutions-from-10--10-20-and-10-10-10--10-20">Case 2 — Example 2’s interval <span class="math inline">\([0, 50]\)</span>: true solutions from <span class="math inline">\((10, -10, 20)\)</span> and <span class="math inline">\((10 + 10^{-10}, -10, 20)\)</span></h3>
+<p><strong>Behavior:</strong> Both solutions are computed in <span class="math inline">\(60\)</span>-digit arithmetic, so what separates them is the change of <span class="math inline">\(10^{-10}\)</span> in <span class="math inline">\(x(0)\)</span>, not numerical error. The left panel is the projection on the <span class="math inline">\(xy\)</span>-plane and the top right panel <span class="math inline">\(x(t)\)</span>, the graphs Mathews draws in Example 2; the last <span class="math inline">\(1.5\)</span> time units are bold. The distance between the solutions grows roughly like <span class="math inline">\(10^{-10} e^{0.90\,t}\)</span> (dashed line), where <span class="math inline">\(0.90\)</span> is the largest Lyapunov exponent found in Example 1, though not steadily (a least-squares fit of <span class="math inline">\(\ln(\text{distance})\)</span> on <span class="math inline">\(2 \le t \le 24.97\)</span> has slope <span class="math inline">\(0.853\)</span>). It first exceeds <span class="math inline">\(10^{-6}\)</span> at <span class="math inline">\(t = 7.09\)</span>, <span class="math inline">\(10^{-2}\)</span> at <span class="math inline">\(t = 18.93\)</span> and <span class="math inline">\(1\)</span> at <span class="math inline">\(t = 24.97\)</span> (red dot), when the two <span class="math inline">\(x(t)\)</span> curves begin to part. From then on it stays between <span class="math inline">\(0.49\)</span> and <span class="math inline">\(45.35\)</span>, the size of the attractor, and the two solutions wind around <span class="math inline">\(C_+\)</span> and <span class="math inline">\(C_-\)</span> in the same region but at different times: on <span class="math inline">\([0, 50]\)</span> the solution from <span class="math inline">\((10, -10, 20)\)</span> changes the sign of <span class="math inline">\(x\)</span> <span class="math inline">\(28\)</span> times and the other <span class="math inline">\(31\)</span> times, and at <span class="math inline">\(t = 50\)</span> they are at <span class="math inline">\((2.067, 3.591, 19.02)\)</span> and <span class="math inline">\((-8.053, -1.247, 33.64)\)</span>. An initial error of <span class="math inline">\(10^{-10}\)</span>, far below anything a plot can show, is all it takes to lose the solution halfway through Example 2’s interval.</p>
+<p><a href="lorenzbb.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lorenzbb.gif" class="img-fluid figure-img"></p>
+<figcaption>Two true solutions of the Lorenz system with σ = 10, r = 28, b = 8/3 on [0, 50], from (10, −10, 20) in navy and from (10 + 10⁻¹⁰, −10, 20) in red, traced in the xy-plane with the last 1.5 time units in bold, with x(t) of both and the distance between them on a log scale against the line 10⁻¹⁰ e^(0.90 t); the distance first exceeds 1 at t = 24.97, after which the two x(t) curves differ</figcaption>
+</figure>
+</div>
+</section>
+<section id="case-3-examples-5-and-6-rössler-attractors-a-b-c-0.2-0.2-5.7-and-0.343-1.82-9.75-mathbfz_0-9-0-1-m-1000-h-0.05-on-0-50" class="level3">
+<h3 class="anchored" data-anchor-id="case-3-examples-5-and-6-rössler-attractors-a-b-c-0.2-0.2-5.7-and-0.343-1.82-9.75-mathbfz_0-9-0-1-m-1000-h-0.05-on-0-50">Case 3 — Examples 5 and 6: Rössler attractors, <span class="math inline">\((a, b, c) = (0.2, 0.2, 5.7)\)</span> and <span class="math inline">\((0.343, 1.82, 9.75)\)</span>, <span class="math inline">\(\mathbf{Z}_0 = (9, 0, 1)\)</span>, <span class="math inline">\(m = 1000\)</span>, <span class="math inline">\(h = 0.05\)</span> on <span class="math inline">\([0, 50]\)</span></h3>
+<p><strong>Behavior:</strong> The two Runge-Kutta solutions are traced together, five steps per frame, Example 5 on the left and Example 6 on the right. Each spirals outward around the <span class="math inline">\(z\)</span>-axis close to the <span class="math inline">\(xy\)</span>-plane, and each spike of <span class="math inline">\(z\)</span> above <span class="math inline">\(5\)</span> comes about <span class="math inline">\(0.3\)</span> to <span class="math inline">\(0.6\)</span> time units after <span class="math inline">\(x\)</span> reaches a maximum above <span class="math inline">\(c\)</span>. Example 5 has four such spikes on <span class="math inline">\([0, 50]\)</span>, the tallest <span class="math inline">\(23.65\)</span> at <span class="math inline">\(t = 6.26\)</span>. Example 6 has eight; the four tallest, from <span class="math inline">\(51.80\)</span> to <span class="math inline">\(65.98\)</span>, make its attractor much taller. The largest distance so far between the orange Runge-Kutta path and the navy true solution is printed in each title: it ends at <span class="math inline">\(0.057\)</span> for Example 5 and <span class="math inline">\(0.47\)</span> for Example 6, whose distance first exceeds <span class="math inline">\(0.1\)</span> at <span class="math inline">\(t = 26.50\)</span>. Unlike the Lorenz runs, these paths stay close to the true solutions over the whole interval.</p>
+<p><a href="lorenzcc.jl">Julia source</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lorenzcc.gif" class="img-fluid figure-img"></p>
+<figcaption>Runge-Kutta paths of the Rössler system x′ = −(y + z), y′ = x + a y, z′ = b + x z − c z from (9, 0, 1) with m = 1000 steps of h = 0.05 on [0, 50], for Example 5 (a = b = 0.2, c = 5.7, left) and Example 6 (a = 0.343, b = 1.82, c = 9.75, right), traced in orange in 3-D over the navy true solution, with x(t) and z(t) below; each spirals outward near the xy-plane and spikes in z, up to 23.65 in Example 5 and 65.98 in Example 6, and the largest distance from the true solution is 0.057 and 0.47</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="the-lorenz-equations" class="level2">
+<h2 class="anchored" data-anchor-id="the-lorenz-equations">The Lorenz Equations</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Lorenz system
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <em>Lorenz system</em> is</p>
+<p><span class="math display">\[
+x' = \sigma\,(y - x), \qquad y' = r\,x - y - x\,z, \qquad z' = x\,y - b\,z,
+\tag{1}
+\]</span></p>
+<p>with positive parameters <span class="math inline">\(\sigma\)</span>, <span class="math inline">\(r\)</span> and <span class="math inline">\(b\)</span>. In the convection model, <span class="math inline">\(\sigma\)</span> is the Prandtl number, <span class="math inline">\(r = Ra/Ra_c\)</span> is the Rayleigh number divided by its critical value, and <span class="math inline">\(b\)</span> is a geometric factor. Lorenz used <span class="math inline">\(\sigma = 10\)</span>, <span class="math inline">\(r = 28\)</span> and <span class="math inline">\(b = 8/3\)</span>. Mathews writes <span class="math inline">\(p\)</span> for <span class="math inline">\(\sigma\)</span> and <span class="math inline">\(c\)</span> for <span class="math inline">\(b\)</span>.</p>
+</div>
+</div>
+<p>Two structural facts hold for every choice of the parameters.</p>
+<ul>
+<li><strong>Symmetry.</strong> Replacing <span class="math inline">\((x, y, z)\)</span> by <span class="math inline">\((-x, -y, z)\)</span> leaves (1) unchanged, so the mirror image of a solution in the <span class="math inline">\(z\)</span>-axis is again a solution.</li>
+<li><strong>Volume contraction.</strong> The divergence of the vector field is <span class="math display">\[
+\frac{\partial x'}{\partial x} + \frac{\partial y'}{\partial y} + \frac{\partial z'}{\partial z} = -(\sigma + 1 + b),
+\]</span> a negative constant, so every volume of initial points shrinks by the factor <span class="math inline">\(e^{-(\sigma + 1 + b)t}\)</span> along the flow. For Lorenz’s values <span class="math inline">\(\sigma + 1 + b = 41/3\)</span>, and the factor is <span class="math inline">\(e^{-41/3} \approx 1.16 \times 10^{-6}\)</span> per unit of time. The attractor therefore has zero volume.</li>
+</ul>
+<section id="equilibrium-points" class="level3">
+<h3 class="anchored" data-anchor-id="equilibrium-points">Equilibrium points</h3>
+<p>Setting the three right-hand sides of (1) to zero gives <span class="math inline">\(y = x\)</span>, <span class="math inline">\(z = x^2/b\)</span> and <span class="math inline">\(x\bigl(r - 1 - x^2/b\bigr) = 0\)</span>. The origin <span class="math inline">\((0, 0, 0)\)</span> is always an equilibrium; it corresponds to no convection. For <span class="math inline">\(r &gt; 1\)</span> there are two more,</p>
+<p><span class="math display">\[
+C_{\pm} = \Bigl(\pm\sqrt{b\,(r - 1)},\ \pm\sqrt{b\,(r - 1)},\ r - 1\Bigr),
+\tag{2}
+\]</span></p>
+<p>which correspond to steady convection, the fluid turning one way or the other. For <span class="math inline">\(\sigma = 10\)</span>, <span class="math inline">\(r = 28\)</span>, <span class="math inline">\(b = 8/3\)</span> they are <span class="math inline">\(C_\pm = (\pm 6\sqrt{2}, \pm 6\sqrt{2}, 27) \approx (\pm 8.4853, \pm 8.4853, 27)\)</span>.</p>
+<p><strong>The origin.</strong> The Jacobian matrix of (1) at the origin has the eigenvalue <span class="math inline">\(-b\)</span> and the two roots of <span class="math inline">\(\lambda^2 + (\sigma + 1)\lambda + \sigma(1 - r) = 0\)</span>. For <span class="math inline">\(0 &lt; r &lt; 1\)</span> the product of those two roots, <span class="math inline">\(\sigma(1 - r)\)</span>, is positive and their sum is negative, so all three eigenvalues are negative and the origin is stable. For <span class="math inline">\(r &gt; 1\)</span> the product is negative, one root is positive, and the origin is unstable. At <span class="math inline">\(r = 28\)</span> the eigenvalues are <span class="math inline">\(-8/3\)</span> and <span class="math inline">\((-11 \pm \sqrt{1201})/2\)</span>, that is <span class="math inline">\(-2.6667\)</span>, <span class="math inline">\(11.8277\)</span> and <span class="math inline">\(-22.8277\)</span>.</p>
+<p><strong>The points <span class="math inline">\(C_\pm\)</span>.</strong> At both points the Jacobian has the characteristic polynomial</p>
+<p><span class="math display">\[
+\lambda^3 + (\sigma + b + 1)\,\lambda^2 + b\,(\sigma + r)\,\lambda + 2\sigma b\,(r - 1) = 0.
+\tag{3}
+\]</span></p>
+<p>All coefficients are positive for <span class="math inline">\(r &gt; 1\)</span>, so by the Routh-Hurwitz criterion all three roots have negative real part exactly when the product of the two middle coefficients exceeds the last one, <span class="math inline">\((\sigma + b + 1)\,b\,(\sigma + r) &gt; 2\sigma b\,(r - 1)\)</span>. This rearranges to <span class="math inline">\(r\,(\sigma - b - 1) &lt; \sigma\,(\sigma + b + 3)\)</span>.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Stability of steady convection
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(\sigma &gt; b + 1\)</span> and <span class="math inline">\(r &gt; 1\)</span>. The equilibrium points <span class="math inline">\(C_\pm\)</span> are asymptotically stable if</p>
+<p><span class="math display">\[
+r &lt; r_H = \frac{\sigma\,(\sigma + b + 3)}{\sigma - b - 1},
+\tag{4}
+\]</span></p>
+<p>and unstable if <span class="math inline">\(r &gt; r_H\)</span>. At <span class="math inline">\(r = r_H\)</span> two eigenvalues of (3) are a purely imaginary pair (a Hopf bifurcation), and the linearization alone does not decide stability.</p>
+</div>
+</div>
+<p>Mathews prints condition (4) with an equals sign, as if <span class="math inline">\(C_\pm\)</span> were stable only at <span class="math inline">\(r = r_H\)</span>; the inequality is the correct statement. For <span class="math inline">\(\sigma = 10\)</span> and <span class="math inline">\(b = 8/3\)</span>,</p>
+<p><span class="math display">\[
+r_H = \frac{10\,(10 + \tfrac83 + 3)}{10 - \tfrac83 - 1} = \frac{470}{19} \approx 24.7368,
+\]</span></p>
+<p>so Lorenz’s <span class="math inline">\(r = 28\)</span> lies beyond the threshold and both <span class="math inline">\(C_\pm\)</span> are unstable. The table lists the roots of (3) at the two values of <span class="math inline">\(r\)</span> used in the examples.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 47%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(r\)</span></th>
+<th>Eigenvalues at <span class="math inline">\(C_\pm\)</span></th>
+<th>Stability of <span class="math inline">\(C_\pm\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(28\)</span></td>
+<td><span class="math inline">\(-13.8546\)</span>, <span class="math inline">\(\ 0.0940 \pm 10.1945\,i\)</span></td>
+<td>unstable spiral (complex pair has positive real part)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(470/19 \approx 24.7368\)</span></td>
+<td><span class="math inline">\(-41/3 \approx -13.6667\)</span>, <span class="math inline">\(\ \pm \tfrac{4\sqrt{2090}}{19}\,i \approx \pm 9.6245\,i\)</span></td>
+<td>borderline: purely imaginary pair</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> at <span class="math inline">\(r = 470/19\)</span> the polynomial (3) factors exactly as <span class="math inline">\(\tfrac{1}{57}(3\lambda + 41)(19\lambda^2 + 1760)\)</span>. Scanning <span class="math inline">\(r\)</span> from <span class="math inline">\(1.0001\)</span> to <span class="math inline">\(60\)</span> in <span class="math inline">\(200{,}000\)</span> steps, the largest real part of the roots of (3) is negative at every sample with <span class="math inline">\(r &lt; 470/19\)</span> and positive at every sample with <span class="math inline">\(r &gt; 470/19\)</span>. Near <span class="math inline">\(C_\pm\)</span> at <span class="math inline">\(r = r_H\)</span> a solution turns about the point with angular frequency <span class="math inline">\(\omega = \sqrt{1760/19} \approx 9.6245\)</span>, a period of <span class="math inline">\(2\pi/\omega \approx 0.6528\)</span>.</p>
+</section>
+</section>
+<section id="runge-kutta-method-for-systems" class="level2">
+<h2 class="anchored" data-anchor-id="runge-kutta-method-for-systems">Runge-Kutta Method for Systems</h2>
+<p>Mathews writes the three equations as one vector equation,</p>
+<p><span class="math display">\[
+\mathbf{Z}' = \mathbf{F}(t, \mathbf{Z}), \qquad \mathbf{Z}(t_0) = \mathbf{Z}_0, \qquad \mathbf{Z} = (x, y, z), \quad \mathbf{F} = (f_1, f_2, f_3),
+\]</span></p>
+<p>on an interval <span class="math inline">\(t_0 \le t \le t_m\)</span> divided into <span class="math inline">\(m\)</span> subintervals.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Runge-Kutta method in three dimensions
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With <span class="math inline">\(h = (t_m - t_0)/m\)</span> and <span class="math inline">\(t_j = t_0 + j\,h\)</span>, for <span class="math inline">\(j = 0, 1, \ldots, m - 1\)</span>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbf{k}_1 &amp;= h\,\mathbf{F}(t_j, \mathbf{Z}_j), \\
+\mathbf{k}_2 &amp;= h\,\mathbf{F}\bigl(t_j + \tfrac h2, \mathbf{Z}_j + \tfrac12\mathbf{k}_1\bigr), \\
+\mathbf{k}_3 &amp;= h\,\mathbf{F}\bigl(t_j + \tfrac h2, \mathbf{Z}_j + \tfrac12\mathbf{k}_2\bigr), \\
+\mathbf{k}_4 &amp;= h\,\mathbf{F}(t_j + h, \mathbf{Z}_j + \mathbf{k}_3), \\
+\mathbf{Z}_{j+1} &amp;= \mathbf{Z}_j + \tfrac16\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr).
+\end{aligned}
+\tag{5}
+\]</span></p>
+</div>
+</div>
+<p>This is the scalar Runge-Kutta method of order 4 with every quantity replaced by a vector; Mathews’ subroutine returns the list of points <span class="math inline">\(\mathbf{Z}_0, \mathbf{Z}_1, \ldots, \mathbf{Z}_m\)</span>. For a smooth <span class="math inline">\(\mathbf{F}\)</span> its global error on a fixed interval is <span class="math inline">\(O(h^4)\)</span>. On the Lorenz system this holds over a short interval: for the start of Example 1, the error at <span class="math inline">\(t = 0.5\)</span> falls by the factors <span class="math inline">\(21.0\)</span>, <span class="math inline">\(18.4\)</span>, <span class="math inline">\(17.2\)</span>, <span class="math inline">\(16.5\)</span> and <span class="math inline">\(16.3\)</span> as <span class="math inline">\(h\)</span> is halved from <span class="math inline">\(0.02\)</span> to <span class="math inline">\(0.000625\)</span>, approaching <span class="math inline">\(2^4 = 16\)</span>. Over longer intervals the chaos takes over, as Example 1 shows. Mathews remarks that the curve “twists a lot in 3D space” and uses about <span class="math inline">\(1000\)</span> subintervals to draw it with good resolution.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>What survives in the archive
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Mathews’ module states each example’s equations and initial values, but the intervals, step counts, plots and output of his solutions were images that are missing from the archive; only his remarks between them survive. Where this page needs a value his surviving text does not give (an interval, a number of steps, and the initial values in Examples 3 and 4), it says so and states the value it uses.</p>
+</div>
+</div>
+</section>
+<section id="example-1-runge-kutta-solution-of-the-lorenz-system-r-28" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-runge-kutta-solution-of-the-lorenz-system-r-28">Example 1 — Runge-Kutta solution of the Lorenz system, <span class="math inline">\(r = 28\)</span></h2>
+<p>Solve</p>
+<p><span class="math display">\[
+\begin{aligned}
+x' &amp;= -10\,x + 10\,y, &amp; x(0) &amp;= 10, \\
+y' &amp;= 28\,x - y - x\,z, &amp; y(0) &amp;= -10, \\
+z' &amp;= -\tfrac83\,z + x\,y, &amp; z(0) &amp;= 20,
+\end{aligned}
+\]</span></p>
+<p>which is (1) with Lorenz’s parameters <span class="math inline">\(\sigma = 10\)</span>, <span class="math inline">\(r = 28\)</span>, <span class="math inline">\(b = 8/3\)</span>.</p>
+<p><strong>Setup.</strong> Mathews uses his Runge-Kutta subroutine (5) with about <span class="math inline">\(1000\)</span> subintervals and plots the solution curve in 3D, its projections on the three coordinate planes, and the coordinate functions <span class="math inline">\(x(t)\)</span>, <span class="math inline">\(y(t)\)</span>, <span class="math inline">\(z(t)\)</span>. His interval is not in the surviving text; this page uses <span class="math inline">\(0 \le t \le 20\)</span> with <span class="math inline">\(m = 1000\)</span>, so <span class="math inline">\(h = 0.02\)</span>.</p>
+<p><strong>Step 1</strong> (first step, <span class="math inline">\(j = 0\)</span>): at <span class="math inline">\(\mathbf{Z}_0 = (10, -10, 20)\)</span>,</p>
+<p><span class="math display">\[
+\mathbf{F}(0, \mathbf{Z}_0) = \bigl(10(-10 - 10),\ 28 \cdot 10 + 10 - 200,\ -100 - \tfrac{160}{3}\bigr) = \bigl(-200,\ 90,\ -\tfrac{460}{3}\bigr),
+\]</span></p>
+<p>so <span class="math inline">\(\mathbf{k}_1 = 0.02\,\mathbf{F} = (-4,\ 1.8,\ -3.0667)\)</span>. The other three stages follow (5), and the steps repeat <span class="math inline">\(1000\)</span> times.</p>
+<p><strong>Step 2</strong> (the computed path): the table compares the Runge-Kutta values with the reference solution at selected times.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 41%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th>Runge-Kutta, <span class="math inline">\(h = 0.02\)</span></th>
+<th>Reference solution</th>
+<th>Distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0.5\)</span></td>
+<td><span class="math inline">\((-9.5859,\ 0.0031,\ 37.2146)\)</span></td>
+<td><span class="math inline">\((-9.5873,\ 0.0025,\ 37.2169)\)</span></td>
+<td><span class="math inline">\(0.00275\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\((8.3939,\ 13.9951,\ 16.6773)\)</span></td>
+<td><span class="math inline">\((8.3960,\ 13.9975,\ 16.6818)\)</span></td>
+<td><span class="math inline">\(0.00554\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\((4.7971,\ 9.5435,\ 6.6833)\)</span></td>
+<td><span class="math inline">\((4.8680,\ 9.6785,\ 6.7439)\)</span></td>
+<td><span class="math inline">\(0.164\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(5\)</span></td>
+<td><span class="math inline">\((-4.6985,\ -1.6299,\ 27.1184)\)</span></td>
+<td><span class="math inline">\((-4.6740,\ -1.6053,\ 27.0997)\)</span></td>
+<td><span class="math inline">\(0.0394\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(7\)</span></td>
+<td><span class="math inline">\((-3.2142,\ -6.3090,\ 6.9110)\)</span></td>
+<td><span class="math inline">\((-1.4388,\ -2.8438,\ 6.2036)\)</span></td>
+<td><span class="math inline">\(3.96\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(10\)</span></td>
+<td><span class="math inline">\((9.7948,\ 3.1987,\ 35.1591)\)</span></td>
+<td><span class="math inline">\((9.2272,\ 4.1186,\ 33.3093)\)</span></td>
+<td><span class="math inline">\(2.14\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(20\)</span></td>
+<td><span class="math inline">\((3.6132,\ 3.7584,\ 20.9819)\)</span></td>
+<td><span class="math inline">\((5.6661,\ 1.8663,\ 28.7362)\)</span></td>
+<td><span class="math inline">\(8.24\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Result.</strong> The computed curve winds around <span class="math inline">\(C_+\)</span> and <span class="math inline">\(C_-\)</span> in turn. The true solution changes the sign of <span class="math inline">\(x\)</span>, crossing from the side of one equilibrium to the other, <span class="math inline">\(12\)</span> times in <span class="math inline">\(0 \le t \le 20\)</span>, and stays in the box <span class="math inline">\(-17.99 \le x \le 17.87\)</span>, <span class="math inline">\(-24.17 \le y \le 23.93\)</span>, <span class="math inline">\(5.72 \le z \le 44.70\)</span>. But the Runge-Kutta path is the true solution only at the start. Checked at every <span class="math inline">\(t = 0, 0.02, \ldots, 20\)</span>, the distance between the two first exceeds <span class="math inline">\(0.01\)</span> at <span class="math inline">\(t = 1.72\)</span> and first exceeds <span class="math inline">\(1\)</span> at <span class="math inline">\(t = 6.86\)</span>; it does not grow steadily (it is <span class="math inline">\(0.164\)</span> at <span class="math inline">\(t = 2\)</span> and <span class="math inline">\(0.0394\)</span> at <span class="math inline">\(t = 5\)</span>), but after <span class="math inline">\(t \approx 7\)</span> the Runge-Kutta values follow a different path around the same attractor (they stay inside the box of the true solution).</p>
+<p><strong>Verification.</strong> A smaller step only delays the separation. The time at which the distance from the reference first exceeds <span class="math inline">\(1\)</span> is:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 75%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(m\)</span></th>
+<th><span class="math inline">\(h\)</span></th>
+<th>First <span class="math inline">\(t\)</span> with distance <span class="math inline">\(&gt; 1\)</span> (checked at <span class="math inline">\(t = 0, 0.02, \ldots, 20\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(1000\)</span></td>
+<td><span class="math inline">\(0.02\)</span></td>
+<td><span class="math inline">\(6.86\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(2000\)</span></td>
+<td><span class="math inline">\(0.01\)</span></td>
+<td><span class="math inline">\(7.24\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(4000\)</span></td>
+<td><span class="math inline">\(0.005\)</span></td>
+<td><span class="math inline">\(15.04\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(8000\)</span></td>
+<td><span class="math inline">\(0.0025\)</span></td>
+<td><span class="math inline">\(18.82\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(16000\)</span></td>
+<td><span class="math inline">\(0.00125\)</span></td>
+<td>never on <span class="math inline">\([0, 20]\)</span> (largest distance <span class="math inline">\(0.42\)</span>)</td>
+</tr>
+</tbody>
+</table>
+<p>Over a short interval each halving of <span class="math inline">\(h\)</span> divides the Runge-Kutta error by about <span class="math inline">\(16\)</span> (as shown after (5)), but on the attractor errors grow on average like <span class="math inline">\(e^{\lambda t}\)</span> with <span class="math inline">\(\lambda \approx 0.90\)</span> (the largest Lyapunov exponent, estimated as <span class="math inline">\(0.9036\)</span> and <span class="math inline">\(0.9019\)</span> from runs of length <span class="math inline">\(2000\)</span> and <span class="math inline">\(4000\)</span>). Dividing an error by <span class="math inline">\(16\)</span> therefore buys on average only about <span class="math inline">\(\ln 16 / 0.90 \approx 3\)</span> units of time; the actual gains in the table are irregular. The reference solution itself was computed by a Taylor series method of order <span class="math inline">\(30\)</span> with step <span class="math inline">\(0.01\)</span> in <span class="math inline">\(50\)</span>-digit arithmetic, and it agrees with an order-<span class="math inline">\(40\)</span>, <span class="math inline">\(60\)</span>-digit run to within <span class="math inline">\(2.2 \times 10^{-14}\)</span> over <span class="math inline">\(0 \le t \le 50\)</span>.</p>
+</section>
+<section id="example-2-adaptive-solution-of-the-lorenz-system-over-a-longer-interval" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-adaptive-solution-of-the-lorenz-system-over-a-longer-interval">Example 2 — Adaptive solution of the Lorenz system over a longer interval</h2>
+<p>Solve the initial value problem of Example 1 again, this time with Mathematica’s <code>NDSolve</code> procedure.</p>
+<p><strong>Setup.</strong> <code>NDSolve</code> chooses its own step sizes to meet an error tolerance, and Mathews uses it to solve over an interval larger than in Example 1. He warns that without an option raising the step limit, <code>NDSolve</code> stops with the message “Maximum number of 1000 steps reached at the point t == 11.146875180780313”. He plots the curve in 3D (noting that it needs many plot points to show the “true curve”), its projection on the <span class="math inline">\(xy\)</span>-plane, and <span class="math inline">\(x(t)\)</span>. His interval is not in the surviving text; this page uses <span class="math inline">\(0 \le t \le 50\)</span>.</p>
+<p><strong>Step 1</strong> (the step count): an adaptive solver needs thousands of steps on this interval. Three double-precision SciPy solvers, at the four tolerance settings in the table below, took between <span class="math inline">\(2145\)</span> and <span class="math inline">\(7160\)</span> steps on <span class="math inline">\(0 \le t \le 50\)</span>; the LSODA solver at tolerance <span class="math inline">\(10^{-8}\)</span> had used up <span class="math inline">\(1000\)</span> steps by <span class="math inline">\(t \approx 7.15\)</span>.</p>
+<p><strong>Step 2</strong> (the solution): the reference values are</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th><span class="math inline">\(10\)</span></th>
+<th><span class="math inline">\(20\)</span></th>
+<th><span class="math inline">\(30\)</span></th>
+<th><span class="math inline">\(40\)</span></th>
+<th><span class="math inline">\(50\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x\)</span></td>
+<td><span class="math inline">\(9.2272\)</span></td>
+<td><span class="math inline">\(5.6661\)</span></td>
+<td><span class="math inline">\(5.1964\)</span></td>
+<td><span class="math inline">\(-1.8113\)</span></td>
+<td><span class="math inline">\(2.0666\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y\)</span></td>
+<td><span class="math inline">\(4.1186\)</span></td>
+<td><span class="math inline">\(1.8663\)</span></td>
+<td><span class="math inline">\(2.3362\)</span></td>
+<td><span class="math inline">\(-1.8074\)</span></td>
+<td><span class="math inline">\(3.5908\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(z\)</span></td>
+<td><span class="math inline">\(33.3093\)</span></td>
+<td><span class="math inline">\(28.7362\)</span></td>
+<td><span class="math inline">\(27.2607\)</span></td>
+<td><span class="math inline">\(18.9150\)</span></td>
+<td><span class="math inline">\(19.0205\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>On <span class="math inline">\(0 \le t \le 50\)</span> the solution changes the sign of <span class="math inline">\(x\)</span> <span class="math inline">\(28\)</span> times, at irregular intervals, and stays in the box <span class="math inline">\(-17.99 \le x \le 18.72\)</span>, <span class="math inline">\(-24.17 \le y \le 25.54\)</span>, <span class="math inline">\(3.65 \le z \le 46.13\)</span>.</p>
+<p><strong>Verification.</strong> Every double-precision solver eventually loses the true solution, however tight its tolerance:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 11%">
+<col style="width: 21%">
+<col style="width: 49%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Solver (SciPy)</th>
+<th>Tolerance</th>
+<th>Steps on <span class="math inline">\([0, 50]\)</span></th>
+<th>First <span class="math inline">\(t\)</span> with distance from reference <span class="math inline">\(&gt; 1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DOP853 (order 8)</td>
+<td><span class="math inline">\(10^{-12}\)</span></td>
+<td><span class="math inline">\(3966\)</span></td>
+<td><span class="math inline">\(28.75\)</span></td>
+</tr>
+<tr class="even">
+<td>DOP853 (order 8)</td>
+<td><span class="math inline">\(10^{-10}\)</span></td>
+<td><span class="math inline">\(2218\)</span></td>
+<td><span class="math inline">\(22.01\)</span></td>
+</tr>
+<tr class="odd">
+<td>LSODA</td>
+<td><span class="math inline">\(10^{-8}\)</span></td>
+<td><span class="math inline">\(7160\)</span></td>
+<td><span class="math inline">\(16.55\)</span></td>
+</tr>
+<tr class="even">
+<td>RK45</td>
+<td><span class="math inline">\(10^{-6}\)</span></td>
+<td><span class="math inline">\(2145\)</span></td>
+<td><span class="math inline">\(13.50\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>With errors growing like <span class="math inline">\(e^{0.90\,t}\)</span>, an error of <span class="math inline">\(10^{-12}\)</span> reaches size <span class="math inline">\(1\)</span> after about <span class="math inline">\(\ln(10^{12})/0.90 \approx 31\)</span> time units, close to the <span class="math inline">\(28.75\)</span> observed. Even a solver with no truncation error, working in double precision, would lose the solution at about <span class="math inline">\(t \approx \ln(10^{16})/0.90 \approx 41\)</span>, because rounding errors of order <span class="math inline">\(10^{-16}\)</span> grow just as fast. After an adaptive solution loses the true one, it keeps winding around <span class="math inline">\(C_+\)</span> and <span class="math inline">\(C_-\)</span> in the same region (the values of each of the four runs on <span class="math inline">\([0, 50]\)</span> stay inside the reference solution’s box, to within <span class="math inline">\(10^{-4}\)</span>), but along a different path: the four runs change the sign of <span class="math inline">\(x\)</span> <span class="math inline">\(29\)</span> to <span class="math inline">\(37\)</span> times instead of <span class="math inline">\(28\)</span>. The reference solution in the table is accurate over the whole interval because it carries 50 digits.</p>
+</section>
+<section id="examples-3-and-4-the-lorenz-system-at-r-47019" class="level2">
+<h2 class="anchored" data-anchor-id="examples-3-and-4-the-lorenz-system-at-r-47019">Examples 3 and 4 — The Lorenz system at <span class="math inline">\(r = 470/19\)</span></h2>
+<p><strong>Example 3.</strong> Solve</p>
+<p><span class="math display">\[
+x' = -10\,x + 10\,y, \qquad y' = \tfrac{470}{19}\,x - y - x\,z, \qquad z' = -\tfrac83\,z + x\,y
+\]</span></p>
+<p>with the Runge-Kutta method (5). <strong>Example 4.</strong> Solve the same system with an adaptive solver (Mathews uses <code>NDSolve</code>).</p>
+<p>This is (1) with <span class="math inline">\(\sigma = 10\)</span>, <span class="math inline">\(b = 8/3\)</span> and <span class="math inline">\(r = 470/19 \approx 24.7368\)</span>, exactly the threshold <span class="math inline">\(r_H\)</span> of (4): the value of <span class="math inline">\(r\)</span> at which the equilibria <span class="math inline">\(C_\pm\)</span> lose their stability. Mathews’ problem statement gives only the equations, and his initial values were in the lost images. His surviving text says he follows a “green” curve and a “blue” curve, and that the last <span class="math inline">\(322\)</span> computed points, found by trial and error, show what is happening (the word naming the curve is missing). This page uses two starting points:</p>
+<ul>
+<li><strong>Start A:</strong> <span class="math inline">\(\mathbf{Z}_0 = (10, -10, 20)\)</span>, the initial values of Example 1;</li>
+<li><strong>Start B:</strong> <span class="math inline">\(\mathbf{Z}_0 = \bigl(\sqrt{3608/57},\ \sqrt{3608/57},\ 470/19\bigr) \approx (7.9560,\ 7.9560,\ 24.7368)\)</span>, one unit above the equilibrium <span class="math inline">\(C_+ = \bigl(\sqrt{3608/57}, \sqrt{3608/57}, 451/19\bigr) \approx (7.9560, 7.9560, 23.7368)\)</span> given by (2).</li>
+</ul>
+<section id="example-3-runge-kutta-solution-0-le-t-le-20-m-1000" class="level3">
+<h3 class="anchored" data-anchor-id="example-3-runge-kutta-solution-0-le-t-le-20-m-1000">Example 3 — Runge-Kutta solution, <span class="math inline">\(0 \le t \le 20\)</span>, <span class="math inline">\(m = 1000\)</span></h3>
+<p><strong>Start A.</strong> The Runge-Kutta values (with <span class="math inline">\(h = 0.02\)</span>) against the reference solution:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 41%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th>Runge-Kutta, <span class="math inline">\(h = 0.02\)</span></th>
+<th>Reference solution</th>
+<th>Distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\((-2.5677,\ -4.5031,\ 8.9412)\)</span></td>
+<td><span class="math inline">\((-2.5661,\ -4.5002,\ 8.9407)\)</span></td>
+<td><span class="math inline">\(0.00335\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\((11.6915,\ 16.7635,\ 21.5025)\)</span></td>
+<td><span class="math inline">\((11.6929,\ 16.7623,\ 21.5095)\)</span></td>
+<td><span class="math inline">\(0.0072\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(5\)</span></td>
+<td><span class="math inline">\((0.5736,\ 1.1935,\ 14.8913)\)</span></td>
+<td><span class="math inline">\((0.5909,\ 1.2218,\ 14.9259)\)</span></td>
+<td><span class="math inline">\(0.0479\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(7\)</span></td>
+<td><span class="math inline">\((-1.0147,\ -1.8736,\ 6.5572)\)</span></td>
+<td><span class="math inline">\((-0.1413,\ -0.2599,\ 6.4878)\)</span></td>
+<td><span class="math inline">\(1.84\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(10\)</span></td>
+<td><span class="math inline">\((3.8387,\ 5.8113,\ 13.7088)\)</span></td>
+<td><span class="math inline">\((4.5265,\ 5.5655,\ 17.7373)\)</span></td>
+<td><span class="math inline">\(4.09\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(20\)</span></td>
+<td><span class="math inline">\((11.0718,\ 16.3470,\ 20.0282)\)</span></td>
+<td><span class="math inline">\((-0.1965,\ 0.0707,\ 14.7615)\)</span></td>
+<td><span class="math inline">\(20.5\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>As in Example 1, the distance first exceeds <span class="math inline">\(0.01\)</span> at <span class="math inline">\(t = 1.16\)</span> and <span class="math inline">\(1\)</span> at <span class="math inline">\(t = 6.94\)</span>, so from about <span class="math inline">\(t = 7\)</span> on the Runge-Kutta path is no longer the solution from start A. The true solution changes the sign of <span class="math inline">\(x\)</span> <span class="math inline">\(9\)</span> times in <span class="math inline">\(0 \le t \le 20\)</span>. Between <span class="math inline">\(t \approx 7.8\)</span> and <span class="math inline">\(t \approx 16.6\)</span> it stays on the <span class="math inline">\(C_+\)</span> side and spirals outward around <span class="math inline">\(C_+\)</span>: the <span class="math inline">\(12\)</span> successive maxima of <span class="math inline">\(z\)</span> in that stretch increase from <span class="math inline">\(29.40\)</span> to <span class="math inline">\(35.28\)</span>, until the solution is thrown across to the other side. This is its longest stay on one side in <span class="math inline">\(0 \le t \le 50\)</span>.</p>
+<p><strong>Start B.</strong> Starting one unit from <span class="math inline">\(C_+\)</span>, the solution circles <span class="math inline">\(C_+\)</span> about <span class="math inline">\(30\)</span> times in <span class="math inline">\(0 \le t \le 20\)</span> (it has <span class="math inline">\(30\)</span> maxima of <span class="math inline">\(z\)</span>, close to <span class="math inline">\(20/0.6528 \approx 30.6\)</span> turns of period <span class="math inline">\(2\pi/\omega\)</span>). Its distance from <span class="math inline">\(C_+\)</span> stays between <span class="math inline">\(0.756\)</span> and <span class="math inline">\(1.000\)</span>, and <span class="math inline">\(x\)</span> stays above <span class="math inline">\(7.44\)</span>, so it never leaves the neighbourhood of <span class="math inline">\(C_+\)</span> on this interval. Here the Runge-Kutta path with <span class="math inline">\(h = 0.02\)</span> is accurate: it differs from an adaptive solution with tolerance <span class="math inline">\(10^{-13}\)</span> by at most <span class="math inline">\(0.0021\)</span> on <span class="math inline">\([0, 20]\)</span>.</p>
+</section>
+<section id="example-4-adaptive-solution-0-le-t-le-50" class="level3">
+<h3 class="anchored" data-anchor-id="example-4-adaptive-solution-0-le-t-le-50">Example 4 — Adaptive solution, <span class="math inline">\(0 \le t \le 50\)</span></h3>
+<p><strong>Start A.</strong> The reference values are</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th><span class="math inline">\(10\)</span></th>
+<th><span class="math inline">\(20\)</span></th>
+<th><span class="math inline">\(30\)</span></th>
+<th><span class="math inline">\(40\)</span></th>
+<th><span class="math inline">\(50\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x\)</span></td>
+<td><span class="math inline">\(4.5265\)</span></td>
+<td><span class="math inline">\(-0.1965\)</span></td>
+<td><span class="math inline">\(4.7936\)</span></td>
+<td><span class="math inline">\(-9.5530\)</span></td>
+<td><span class="math inline">\(1.7223\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(y\)</span></td>
+<td><span class="math inline">\(5.5655\)</span></td>
+<td><span class="math inline">\(0.0707\)</span></td>
+<td><span class="math inline">\(-1.4246\)</span></td>
+<td><span class="math inline">\(-13.1505\)</span></td>
+<td><span class="math inline">\(0.4716\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(z\)</span></td>
+<td><span class="math inline">\(17.7373\)</span></td>
+<td><span class="math inline">\(14.7615\)</span></td>
+<td><span class="math inline">\(28.1102\)</span></td>
+<td><span class="math inline">\(20.3887\)</span></td>
+<td><span class="math inline">\(19.8312\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>On <span class="math inline">\(0 \le t \le 50\)</span> the solution changes the sign of <span class="math inline">\(x\)</span> <span class="math inline">\(26\)</span> times and stays in the box <span class="math inline">\(-17.03 \le x \le 16.46\)</span>, <span class="math inline">\(-22.52 \le y \le 21.48\)</span>, <span class="math inline">\(3.36 \le z \le 40.13\)</span>. It does not settle at <span class="math inline">\(C_\pm\)</span> or on a periodic orbit: the largest Lyapunov exponent along it is positive, estimated as <span class="math inline">\(0.8215\)</span> and <span class="math inline">\(0.8150\)</span> from runs of length <span class="math inline">\(2000\)</span> and <span class="math inline">\(4000\)</span>, so the motion at <span class="math inline">\(r = r_H\)</span> is still chaotic. As in Example 2, double-precision adaptive solvers lose the true solution part way: at tolerance <span class="math inline">\(10^{-12}\)</span> (DOP853) the distance from the reference first exceeds <span class="math inline">\(1\)</span> at <span class="math inline">\(t = 32.26\)</span>, at <span class="math inline">\(10^{-10}\)</span> at <span class="math inline">\(t = 20.68\)</span>.</p>
+<p><strong>Start B, followed longer.</strong> At <span class="math inline">\(r = r_H\)</span> the linearization at <span class="math inline">\(C_+\)</span> has a purely imaginary pair, so it cannot say whether nearby solutions approach <span class="math inline">\(C_+\)</span> or leave it. For start B the computation shows the solution moving away from <span class="math inline">\(C_+\)</span>, but very slowly. Over <span class="math inline">\(0 \le t \le 300\)</span> the solution never changes the sign of <span class="math inline">\(x\)</span> (<span class="math inline">\(x \ge 7.20\)</span> throughout), and its distance from <span class="math inline">\(C_+\)</span> creeps up:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Time window</th>
+<th>Distance from <span class="math inline">\(C_+\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0 \le t \le 10\)</span></td>
+<td><span class="math inline">\(0.756\)</span> to <span class="math inline">\(1.000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(90 \le t \le 100\)</span></td>
+<td><span class="math inline">\(0.829\)</span> to <span class="math inline">\(1.061\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(190 \le t \le 200\)</span></td>
+<td><span class="math inline">\(0.943\)</span> to <span class="math inline">\(1.212\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(290 \le t \le 300\)</span></td>
+<td><span class="math inline">\(1.123\)</span> to <span class="math inline">\(1.455\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification.</strong> Start B was integrated with an adaptive eighth-order method at tolerances <span class="math inline">\(10^{-12}\)</span> and <span class="math inline">\(10^{-10}\)</span>, which give the same distances to three decimals. For start A, the reference solution was computed as in Example 1 and agrees with an order-<span class="math inline">\(40\)</span>, <span class="math inline">\(60\)</span>-digit run to within <span class="math inline">\(3.6 \times 10^{-15}\)</span> over <span class="math inline">\(0 \le t \le 50\)</span>.</p>
+</section>
+</section>
+<section id="the-rössler-attractor" class="level2">
+<h2 class="anchored" data-anchor-id="the-rössler-attractor">The Rössler Attractor</h2>
+<p>In 1976 Otto Rössler, studying oscillations in chemical reactions, proposed a system with a chaotic attractor that has only one nonlinear term. Mathews notes that Rössler was looking for a minimal system that would show chaos, and that his system looks simpler than the Lorenz system but is harder to analyze.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — Rössler system
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <em>Rössler system</em> is</p>
+<p><span class="math display">\[
+x' = -(y + z), \qquad y' = x + a\,y, \qquad z' = b + x\,z - c\,z,
+\tag{6}
+\]</span></p>
+<p>with positive parameters <span class="math inline">\(a\)</span>, <span class="math inline">\(b\)</span>, <span class="math inline">\(c\)</span>. Rössler used <span class="math inline">\(a = 0.2\)</span>, <span class="math inline">\(b = 0.2\)</span>, <span class="math inline">\(c = 5.7\)</span>; Mathews gives <span class="math inline">\(a = 0.343\)</span>, <span class="math inline">\(b = 1.82\)</span>, <span class="math inline">\(c = 9.75\)</span> as values that produce Rössler’s “screw” chaos.</p>
+</div>
+</div>
+<p>While <span class="math inline">\(z\)</span> is small, the first two equations make a solution spiral outward around the <span class="math inline">\(z\)</span>-axis. Once <span class="math inline">\(x\)</span> exceeds <span class="math inline">\(c\)</span>, the factor <span class="math inline">\(x - c\)</span> in <span class="math inline">\(z' = b + (x - c)\,z\)</span> is positive and <span class="math inline">\(z\)</span> grows rapidly; the large <span class="math inline">\(z\)</span> then drives <span class="math inline">\(x\)</span> down through <span class="math inline">\(x' = -(y + z)\)</span>, <span class="math inline">\(z\)</span> collapses, and the solution starts a new spiral closer to the <span class="math inline">\(z\)</span>-axis. In Example 5, after each of the first six spikes with <span class="math inline">\(z &gt; 5\)</span>, the distance from the <span class="math inline">\(z\)</span>-axis drops from a maximum of <span class="math inline">\(10.4\)</span> to <span class="math inline">\(12.4\)</span> in the three time units before the spike to a minimum of <span class="math inline">\(1.8\)</span> to <span class="math inline">\(5.0\)</span> within four time units after it.</p>
+<p><strong>Equilibrium points.</strong> From <span class="math inline">\(y' = 0\)</span>, <span class="math inline">\(y = -x/a\)</span>; from <span class="math inline">\(x' = 0\)</span>, <span class="math inline">\(z = -y = x/a\)</span>; and <span class="math inline">\(z' = 0\)</span> then gives <span class="math inline">\(x^2 - c\,x + a\,b = 0\)</span>. When <span class="math inline">\(c^2 &gt; 4ab\)</span> there are two equilibria,</p>
+<p><span class="math display">\[
+x = \frac{c \pm \sqrt{c^2 - 4ab}}{2}, \qquad y = -\frac{x}{a}, \qquad z = \frac{x}{a}.
+\tag{7}
+\]</span></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 24%">
+<col style="width: 53%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameters</th>
+<th>Equilibrium</th>
+<th>Eigenvalues of the Jacobian</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(a = b = 0.2\)</span>, <span class="math inline">\(c = 5.7\)</span></td>
+<td><span class="math inline">\((0.0070,\ -0.0351,\ 0.0351)\)</span></td>
+<td><span class="math inline">\(0.0970 \pm 0.9952\,i\)</span>, <span class="math inline">\(\ -5.6870\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td><span class="math inline">\((5.6930,\ -28.4649,\ 28.4649)\)</span></td>
+<td><span class="math inline">\(0.1930\)</span>, <span class="math inline">\(\ -4.6 \times 10^{-6} \pm 5.4280\,i\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(a = 0.343\)</span>, <span class="math inline">\(b = 1.82\)</span>, <span class="math inline">\(c = 9.75\)</span></td>
+<td><span class="math inline">\((0.0645,\ -0.1879,\ 0.1879)\)</span></td>
+<td><span class="math inline">\(0.1619 \pm 0.9844\,i\)</span>, <span class="math inline">\(\ -9.6663\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td><span class="math inline">\((9.6855,\ -28.2377,\ 28.2377)\)</span></td>
+<td><span class="math inline">\(0.3291\)</span>, <span class="math inline">\(\ -0.0253 \pm 5.4066\,i\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Both equilibria are unstable for both parameter sets, since each has an eigenvalue with positive real part. The one near the origin repels along a spiral (complex pair with positive real part) and attracts strongly along a third direction (large negative eigenvalue).</p>
+</section>
+<section id="example-5-rössler-system-a-0.2-b-0.2-c-5.7" class="level2">
+<h2 class="anchored" data-anchor-id="example-5-rössler-system-a-0.2-b-0.2-c-5.7">Example 5 — Rössler system, <span class="math inline">\(a = 0.2\)</span>, <span class="math inline">\(b = 0.2\)</span>, <span class="math inline">\(c = 5.7\)</span></h2>
+<p>Solve</p>
+<p><span class="math display">\[
+x' = -(y + z), \quad x(0) = 9; \qquad y' = x + 0.2\,y, \quad y(0) = 0; \qquad z' = 0.2 + x\,z - 5.7\,z, \quad z(0) = 1.
+\]</span></p>
+<p><strong>Setup.</strong> Mathews uses the Runge-Kutta subroutine (5) with about <span class="math inline">\(1000\)</span> subintervals and plots the curve in 3D, its projections on the coordinate planes, and <span class="math inline">\(x(t)\)</span>, <span class="math inline">\(y(t)\)</span>, <span class="math inline">\(z(t)\)</span>. His interval is not in the surviving text; this page uses <span class="math inline">\(0 \le t \le 50\)</span> with <span class="math inline">\(m = 1000\)</span>, so <span class="math inline">\(h = 0.05\)</span>.</p>
+<p><strong>Solution.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 41%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th>Runge-Kutta, <span class="math inline">\(h = 0.05\)</span></th>
+<th>Reference solution</th>
+<th>Distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(10\)</span></td>
+<td><span class="math inline">\((2.5400,\ -2.2537,\ 0.0533)\)</span></td>
+<td><span class="math inline">\((2.5400,\ -2.2533,\ 0.0533)\)</span></td>
+<td><span class="math inline">\(0.00038\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(20\)</span></td>
+<td><span class="math inline">\((-7.9806,\ 1.6433,\ 0.0148)\)</span></td>
+<td><span class="math inline">\((-7.9801,\ 1.6427,\ 0.0148)\)</span></td>
+<td><span class="math inline">\(0.00078\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(30\)</span></td>
+<td><span class="math inline">\((2.1091,\ 6.2854,\ 0.2086)\)</span></td>
+<td><span class="math inline">\((2.1108,\ 6.2862,\ 0.2091)\)</span></td>
+<td><span class="math inline">\(0.0020\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(40\)</span></td>
+<td><span class="math inline">\((5.0855,\ -2.9111,\ 0.1027)\)</span></td>
+<td><span class="math inline">\((5.0823,\ -2.9039,\ 0.1026)\)</span></td>
+<td><span class="math inline">\(0.0079\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(50\)</span></td>
+<td><span class="math inline">\((-4.7958,\ -3.7310,\ 0.0185)\)</span></td>
+<td><span class="math inline">\((-4.8199,\ -3.7306,\ 0.0185)\)</span></td>
+<td><span class="math inline">\(0.024\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The solution turns <span class="math inline">\(8.60\)</span> times around the <span class="math inline">\(z\)</span>-axis in <span class="math inline">\(0 \le t \le 50\)</span>. It has <span class="math inline">\(z &lt; 1\)</span> for <span class="math inline">\(87\%\)</span> of that time, with occasional spikes of <span class="math inline">\(z\)</span>: the maxima of <span class="math inline">\(z\)</span> in <span class="math inline">\(0 \le t \le 100\)</span> range from <span class="math inline">\(0.08\)</span> to <span class="math inline">\(23.65\)</span>. It stays in the box <span class="math inline">\(-9.20 \le x \le 11.52\)</span>, <span class="math inline">\(-10.90 \le y \le 7.92\)</span>, <span class="math inline">\(0.013 \le z \le 23.65\)</span>, and the reference solution stays in the same box up to <span class="math inline">\(t = 200\)</span>. The Rössler attractor is far less sensitive than the Lorenz attractor: here the Runge-Kutta path stays within <span class="math inline">\(0.058\)</span> of the true solution over the whole interval.</p>
+<p><strong>Verification.</strong> The largest Lyapunov exponent is positive, about <span class="math inline">\(0.07\)</span> (estimates from runs of length <span class="math inline">\(2000\)</span> to <span class="math inline">\(40000\)</span> lie between <span class="math inline">\(0.069\)</span> and <span class="math inline">\(0.074\)</span> and settle near <span class="math inline">\(0.071\)</span>), so the motion is chaotic, but errors grow about <span class="math inline">\(13\)</span> times more slowly than for the Lorenz system. The <span class="math inline">\(26\)</span> maxima of <span class="math inline">\(x\)</span> in <span class="math inline">\(50 \le t \le 200\)</span> range from <span class="math inline">\(3.68\)</span> to <span class="math inline">\(11.40\)</span> and are all different (the closest two differ by <span class="math inline">\(0.0046\)</span>): the solution has not settled onto a periodic orbit. The reference was computed by an order-<span class="math inline">\(30\)</span> Taylor series method in <span class="math inline">\(50\)</span>-digit arithmetic, and an order-<span class="math inline">\(25\)</span>, <span class="math inline">\(40\)</span>-digit run rounds to the same double-precision numbers at every saved point of <span class="math inline">\(0 \le t \le 200\)</span>.</p>
+</section>
+<section id="example-6-rössler-system-a-0.343-b-1.82-c-9.75-screw-chaos" class="level2">
+<h2 class="anchored" data-anchor-id="example-6-rössler-system-a-0.343-b-1.82-c-9.75-screw-chaos">Example 6 — Rössler system, <span class="math inline">\(a = 0.343\)</span>, <span class="math inline">\(b = 1.82\)</span>, <span class="math inline">\(c = 9.75\)</span> (screw chaos)</h2>
+<p>Solve</p>
+<p><span class="math display">\[
+x' = -(y + z), \quad x(0) = 9; \qquad y' = x + 0.343\,y, \quad y(0) = 0; \qquad z' = 1.82 + x\,z - 9.75\,z, \quad z(0) = 1.
+\]</span></p>
+<p><strong>Setup.</strong> As in Example 5: the Runge-Kutta method (5) on <span class="math inline">\(0 \le t \le 50\)</span> with <span class="math inline">\(m = 1000\)</span>, <span class="math inline">\(h = 0.05\)</span> (the interval is this page’s choice).</p>
+<p><strong>Solution.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 41%">
+<col style="width: 33%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th>Runge-Kutta, <span class="math inline">\(h = 0.05\)</span></th>
+<th>Reference solution</th>
+<th>Distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(10\)</span></td>
+<td><span class="math inline">\((-5.1531,\ 6.9844,\ 0.1266)\)</span></td>
+<td><span class="math inline">\((-5.1526,\ 6.9831,\ 0.1266)\)</span></td>
+<td><span class="math inline">\(0.0014\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(20\)</span></td>
+<td><span class="math inline">\((6.4058,\ -5.9564,\ 0.4058)\)</span></td>
+<td><span class="math inline">\((6.4158,\ -5.9560,\ 0.4066)\)</span></td>
+<td><span class="math inline">\(0.010\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(30\)</span></td>
+<td><span class="math inline">\((1.8927,\ 8.6662,\ 0.4667)\)</span></td>
+<td><span class="math inline">\((1.8712,\ 8.6530,\ 0.4632)\)</span></td>
+<td><span class="math inline">\(0.026\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(40\)</span></td>
+<td><span class="math inline">\((-14.3937,\ -0.1918,\ 0.0754)\)</span></td>
+<td><span class="math inline">\((-14.3667,\ -0.1975,\ 0.0755)\)</span></td>
+<td><span class="math inline">\(0.028\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(50\)</span></td>
+<td><span class="math inline">\((5.6680,\ -9.9831,\ 0.3276)\)</span></td>
+<td><span class="math inline">\((5.9099,\ -10.1856,\ 0.3383)\)</span></td>
+<td><span class="math inline">\(0.32\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Compared with Example 5 the attractor is larger and its spikes are taller: on <span class="math inline">\(0 \le t \le 50\)</span> the solution stays in the box <span class="math inline">\(-14.37 \le x \le 17.63\)</span>, <span class="math inline">\(-19.60 \le y \le 11.20\)</span>, <span class="math inline">\(0.075 \le z \le 65.98\)</span>, and the maxima of <span class="math inline">\(z\)</span> in <span class="math inline">\(0 \le t \le 100\)</span> range from <span class="math inline">\(0.82\)</span> to <span class="math inline">\(65.98\)</span>. It turns <span class="math inline">\(6.83\)</span> times around the <span class="math inline">\(z\)</span>-axis in <span class="math inline">\(0 \le t \le 50\)</span>. The Runge-Kutta path with <span class="math inline">\(h = 0.05\)</span> is less accurate here: its distance from the reference first exceeds <span class="math inline">\(0.1\)</span> at <span class="math inline">\(t = 26.5\)</span> and reaches <span class="math inline">\(0.47\)</span> at <span class="math inline">\(t = 44.8\)</span>, its largest value on <span class="math inline">\([0, 50]\)</span>.</p>
+<p><strong>Verification.</strong> The largest Lyapunov exponent is positive, estimated as <span class="math inline">\(0.1421\)</span> and <span class="math inline">\(0.1433\)</span> from runs of length <span class="math inline">\(2000\)</span> and <span class="math inline">\(4000\)</span>, so this motion is chaotic too, with errors growing about twice as fast as in Example 5. The <span class="math inline">\(33\)</span> maxima of <span class="math inline">\(x\)</span> in <span class="math inline">\(50 \le t \le 200\)</span> range from <span class="math inline">\(6.08\)</span> to <span class="math inline">\(17.64\)</span> and are all different (the closest two differ by <span class="math inline">\(0.016\)</span>). The reference was computed as in Example 5, with the same agreement between the two runs.</p>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

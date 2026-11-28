@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Nonlinear Curve Fitting – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#the-least-squares-line-in-the-transformed-variables" id="toc-the-least-squares-line-in-the-transformed-variables" class="nav-link" data-scroll-target="#the-least-squares-line-in-the-transformed-variables">The Least-Squares Line in the Transformed Variables</a></li>
+  <li><a href="#exponential-fit-by-data-linearization" id="toc-exponential-fit-by-data-linearization" class="nav-link" data-scroll-target="#exponential-fit-by-data-linearization">Exponential Fit by Data Linearization</a>
+  <ul class="collapse">
+  <li><a href="#example-1-exponential-fit-to-five-points" id="toc-example-1-exponential-fit-to-five-points" class="nav-link" data-scroll-target="#example-1-exponential-fit-to-five-points">Example 1 — Exponential fit to five points</a></li>
+  </ul></li>
+  <li><a href="#power-fit-by-data-linearization" id="toc-power-fit-by-data-linearization" class="nav-link" data-scroll-target="#power-fit-by-data-linearization">Power Fit by Data Linearization</a>
+  <ul class="collapse">
+  <li><a href="#example-2-power-fit-to-five-points" id="toc-example-2-power-fit-to-five-points" class="nav-link" data-scroll-target="#example-2-power-fit-to-five-points">Example 2 — Power fit to five points</a></li>
+  </ul></li>
+  <li><a href="#example-3-choosing-between-an-exponential-and-a-power-fit" id="toc-example-3-choosing-between-an-exponential-and-a-power-fit" class="nav-link" data-scroll-target="#example-3-choosing-between-an-exponential-and-a-power-fit">Example 3 — Choosing Between an Exponential and a Power Fit</a>
+  <ul class="collapse">
+  <li><a href="#a-the-exponential-fit" id="toc-a-the-exponential-fit" class="nav-link" data-scroll-target="#a-the-exponential-fit">3(a) — The exponential fit</a></li>
+  <li><a href="#a-the-power-fit" id="toc-a-the-power-fit" class="nav-link" data-scroll-target="#a-the-power-fit">3(a) — The power fit</a></li>
+  <li><a href="#b-how-it-was-done" id="toc-b-how-it-was-done" class="nav-link" data-scroll-target="#b-how-it-was-done">3(b) — How it was done</a></li>
+  <li><a href="#c-which-curve-fits-better" id="toc-c-which-curve-fits-better" class="nav-link" data-scroll-target="#c-which-curve-fits-better">3(c) — Which curve fits better?</a></li>
+  </ul></li>
+  <li><a href="#linearization-is-not-least-squares-in-y" id="toc-linearization-is-not-least-squares-in-y" class="nav-link" data-scroll-target="#linearization-is-not-least-squares-in-y">Linearization Is Not Least Squares in <span class="math inline">\(y\)</span></a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Nonlinear Curve Fitting</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>Many data sets follow a curve rather than a line: a quantity that grows by a fixed factor per unit step, <span class="math inline">\(y = c\,e^{ax}\)</span>, or one that scales like a power of <span class="math inline">\(x\)</span>, <span class="math inline">\(y = c\,x^{a}\)</span>. Given data points <span class="math inline">\((x_1, y_1), \ldots, (x_n, y_n)\)</span>, we want the constants <span class="math inline">\(a\)</span> and <span class="math inline">\(c\)</span>. Both models are nonlinear in <span class="math inline">\(a\)</span>, so fitting them by least squares directly leads to nonlinear equations for the coefficients.</p>
+<p>The <strong>data linearization method</strong> avoids this. Taking logarithms turns either curve into a straight line <span class="math inline">\(Y = AX + B\)</span> in new variables: <span class="math inline">\(X = x\)</span>, <span class="math inline">\(Y = \ln y\)</span> for the exponential, and <span class="math inline">\(X = \ln x\)</span>, <span class="math inline">\(Y = \ln y\)</span> for the power function. The transformed points <span class="math inline">\((X_k, Y_k)\)</span> are fitted with the <a href="least-squares-lines/">least-squares line</a>, whose coefficients solve the normal equations</p>
+<p><span class="math display">\[
+\Bigl(\sum_{k=1}^{n} X_k^2\Bigr) A + \Bigl(\sum_{k=1}^{n} X_k\Bigr) B = \sum_{k=1}^{n} X_k Y_k, \qquad
+\Bigl(\sum_{k=1}^{n} X_k\Bigr) A + n B = \sum_{k=1}^{n} Y_k,
+\]</span></p>
+<p>and the curve is recovered from <span class="math inline">\(a = A\)</span> and <span class="math inline">\(c = e^{B}\)</span>. Mathews’ module does this for an exponential fit (Example 1), a power fit (Example 2), and both fits to one data set, choosing the better one by the sum of squared residuals (Example 3). The line is the least-squares fit to the <em>logarithms</em> of the data, so the curve it gives is not, in general, the curve that minimises the squared errors in <span class="math inline">\(y\)</span> itself; the last section of this page computes those direct fits for comparison. Every fit on this page has been recomputed in 50-digit arithmetic.</p>
+</section>
+<section id="the-least-squares-line-in-the-transformed-variables" class="level2">
+<h2 class="anchored" data-anchor-id="the-least-squares-line-in-the-transformed-variables">The Least-Squares Line in the Transformed Variables</h2>
+<p>Both methods on this page end with the same step: fitting a line <span class="math inline">\(Y = AX + B\)</span> to points <span class="math inline">\((X_k, Y_k)\)</span>, <span class="math inline">\(k = 1, \ldots, n\)</span>, so that the sum of the squared vertical deviations</p>
+<p><span class="math display">\[
+\sum_{k=1}^{n} \bigl(A X_k + B - Y_k\bigr)^2
+\]</span></p>
+<p>is as small as possible. Setting its partial derivatives with respect to <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> to zero gives two linear equations.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Normal equations for the line <span class="math inline">\(Y = AX + B\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+\begin{aligned}
+\Bigl(\sum X_k^2\Bigr) A + \Bigl(\sum X_k\Bigr) B &amp;= \sum X_k Y_k, \\
+\Bigl(\sum X_k\Bigr) A + n B &amp;= \sum Y_k,
+\end{aligned}
+\tag{1}
+\]</span></p>
+<p>with all sums over <span class="math inline">\(k = 1, \ldots, n\)</span>. When the <span class="math inline">\(X_k\)</span> are not all equal, the determinant <span class="math inline">\(\Delta = n \sum X_k^2 - \bigl(\sum X_k\bigr)^2\)</span> is positive and the solution is</p>
+<p><span class="math display">\[
+A = \frac{n \sum X_k Y_k - \sum X_k \sum Y_k}{\Delta}, \qquad
+B = \frac{\sum X_k^2 \sum Y_k - \sum X_k \sum X_k Y_k}{\Delta}.
+\tag{2}
+\]</span></p>
+</div>
+</div>
+<p>The second equation of (1) says <span class="math inline">\(B = \bar Y - A \bar X\)</span>, where <span class="math inline">\(\bar X\)</span> and <span class="math inline">\(\bar Y\)</span> are the means: the line passes through the centroid <span class="math inline">\((\bar X, \bar Y)\)</span> of the transformed points, and the deviations <span class="math inline">\(A X_k + B - Y_k\)</span> sum to zero. Both facts give a quick check on every example below. The <a href="least-squares-lines/">least-squares lines</a> page derives (1) and treats the line in detail.</p>
+</section>
+<section id="exponential-fit-by-data-linearization" class="level2">
+<h2 class="anchored" data-anchor-id="exponential-fit-by-data-linearization">Exponential Fit by Data Linearization</h2>
+<p>Suppose the data are to be fitted by</p>
+<p><span class="math display">\[
+y = c\,e^{ax}.
+\tag{3}
+\]</span></p>
+<p>Taking the natural logarithm of both sides gives <span class="math inline">\(\ln y = \ln\bigl(c\,e^{ax}\bigr) = \ln c + \ln e^{ax}\)</span>, so</p>
+<p><span class="math display">\[
+\ln y = a x + \ln c .
+\]</span></p>
+<p>With the change of variables <span class="math inline">\(X = x\)</span>, <span class="math inline">\(Y = \ln y\)</span> and the constants <span class="math inline">\(A = a\)</span>, <span class="math inline">\(B = \ln c\)</span>, this is the line <span class="math inline">\(Y = AX + B\)</span>.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Data linearization for <span class="math inline">\(y = c\,e^{ax}\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Transform the data: <span class="math inline">\((X_k, Y_k) = (x_k, \ln y_k)\)</span> for <span class="math inline">\(k = 1, \ldots, n\)</span>.</li>
+<li>Fit the least-squares line <span class="math inline">\(Y = AX + B\)</span> to the points <span class="math inline">\((X_k, Y_k)\)</span> by solving the normal equations (1).</li>
+<li>Recover the coefficients of the curve: <span class="math display">\[
+a = A, \qquad c = e^{B}.
+\tag{4}
+\]</span></li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>The ordinates must be positive
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The exponential fit takes the logarithm of every <span class="math inline">\(y_k\)</span>, so it needs <span class="math inline">\(y_k &gt; 0\)</span> for all <span class="math inline">\(k\)</span>; the <span class="math inline">\(x_k\)</span> may be zero or negative. (The caution in Mathews’ solution of Example 1 names the abscissas, but it is the ordinates that are logged in this fit, and Example 1 itself has <span class="math inline">\(x_1 = 0\)</span>.)</p>
+</div>
+</div>
+<section id="example-1-exponential-fit-to-five-points" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-exponential-fit-to-five-points">Example 1 — Exponential fit to five points</h3>
+<p>Fit the curve <span class="math inline">\(y = c\,e^{ax}\)</span> to the data points</p>
+<p><span class="math display">\[
+(0, 1.5), \quad (1, 2.5), \quad (2, 3.5), \quad (3, 5.0), \quad (4, 7.5).
+\]</span></p>
+<p><strong>Step 1</strong>: Transform the data with <span class="math inline">\(X_k = x_k\)</span>, <span class="math inline">\(Y_k = \ln y_k\)</span>, and form the products needed in (1) (values rounded to six decimals).</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y_k = \ln y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k^2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k Y_k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.5</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.405465</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2.5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.916291</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.916291</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3.5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1.252763</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2.505526</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5.0</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1.609438</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">4.828314</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7.5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2.014903</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">8.059612</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(\sum\)</span></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">6.198860</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">16.309742</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 2</strong>: The normal equations (1) are</p>
+<p><span class="math display">\[
+\begin{aligned}
+30 A + 10 B &amp;= 16.309742, \\
+10 A + 5 B &amp;= 6.198860 .
+\end{aligned}
+\]</span></p>
+<p><strong>Step 3</strong>: Here <span class="math inline">\(\Delta = 5 \cdot 30 - 10^2 = 50\)</span>, and formula (2) gives</p>
+<p><span class="math display">\[
+A = \frac{5(16.309742) - 10(6.198860)}{50} = \frac{19.560115}{50} = 0.391202, \qquad
+B = \frac{30(6.198860) - 10(16.309742)}{50} = \frac{22.868367}{50} = 0.457367 .
+\]</span></p>
+<p>(The numerators are computed from the unrounded sums.)</p>
+<p><strong>Step 4</strong>: By (4), <span class="math inline">\(a = A = 0.391202\)</span> and <span class="math inline">\(c = e^{0.457367} = 1.57991\)</span>. The exponential fit is</p>
+<p><span class="math display">\[
+\boxed{\,y = 1.57991\, e^{0.391202\,x}\,}
+\]</span></p>
+<p><strong>Verification:</strong> substituting the computed <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> back into the normal equations:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Equation</th>
+<th>Left-hand side</th>
+<th>Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(30(0.391202) + 10(0.457367) = 16.309742\)</span></td>
+<td><span class="math inline">\(16.309742\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(10(0.391202) + 5(0.457367) = 6.198860\)</span></td>
+<td><span class="math inline">\(6.198860\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>(the left-hand sides use the unrounded <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>). The line passes through the centroid <span class="math inline">\((\bar X, \bar Y) = (2, 1.239772)\)</span>. The fitted curve and its residuals at the data points are:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f(x_k) = 1.57991\,e^{0.391202 x_k}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f(x_k) - y_k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1.5</td>
+<td style="text-align: right;">1.5799</td>
+<td style="text-align: right;">0.0799</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2.5</td>
+<td style="text-align: right;">2.3363</td>
+<td style="text-align: right;">−0.1637</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3.5</td>
+<td style="text-align: right;">3.4548</td>
+<td style="text-align: right;">−0.0452</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5.0</td>
+<td style="text-align: right;">5.1088</td>
+<td style="text-align: right;">0.1088</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7.5</td>
+<td style="text-align: right;">7.5548</td>
+<td style="text-align: right;">0.0548</td>
+</tr>
+</tbody>
+</table>
+<p>The sum of the squared residuals is <span class="math inline">\(\sum (f(x_k) - y_k)^2 = 0.0500688\)</span>.</p>
+<p>Mathews carries out these steps in Mathematica: he stores the points, takes the logarithm of the ordinates, fits the line with Mathematica’s built-in least-squares routine Fit, reads <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> off the fitted expression, plots the line in the <span class="math inline">\(XY\)</span>-plane, and graphs the curve in the <span class="math inline">\(xy\)</span>-plane.</p>
+</section>
+</section>
+<section id="power-fit-by-data-linearization" class="level2">
+<h2 class="anchored" data-anchor-id="power-fit-by-data-linearization">Power Fit by Data Linearization</h2>
+<p>Suppose instead the data are to be fitted by the power function</p>
+<p><span class="math display">\[
+y = c\,x^{a}.
+\tag{5}
+\]</span></p>
+<p>Taking logarithms gives <span class="math inline">\(\ln y = \ln c + \ln x^{a}\)</span>, so</p>
+<p><span class="math display">\[
+\ln y = a \ln x + \ln c .
+\]</span></p>
+<p>With the change of variables <span class="math inline">\(X = \ln x\)</span>, <span class="math inline">\(Y = \ln y\)</span> and the constants <span class="math inline">\(A = a\)</span>, <span class="math inline">\(B = \ln c\)</span>, this is again the line <span class="math inline">\(Y = AX + B\)</span>.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Data linearization for <span class="math inline">\(y = c\,x^{a}\)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li>Transform the data: <span class="math inline">\((X_k, Y_k) = (\ln x_k, \ln y_k)\)</span> for <span class="math inline">\(k = 1, \ldots, n\)</span>.</li>
+<li>Fit the least-squares line <span class="math inline">\(Y = AX + B\)</span> to the points <span class="math inline">\((X_k, Y_k)\)</span> by solving the normal equations (1).</li>
+<li>Recover the coefficients of the curve: <span class="math display">\[
+a = A, \qquad c = e^{B}.
+\tag{6}
+\]</span></li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Both coordinates must be positive
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The power fit takes the logarithm of every <span class="math inline">\(x_k\)</span> and every <span class="math inline">\(y_k\)</span>, so it needs <span class="math inline">\(x_k &gt; 0\)</span> and <span class="math inline">\(y_k &gt; 0\)</span>. A data point with <span class="math inline">\(x_k = 0\)</span>, such as <span class="math inline">\((0, 1.5)\)</span> in Example 1, cannot be used.</p>
+</div>
+</div>
+<section id="example-2-power-fit-to-five-points" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-power-fit-to-five-points">Example 2 — Power fit to five points</h3>
+<p>Fit the curve <span class="math inline">\(y = c\,x^{a}\)</span> to the data points</p>
+<p><span class="math display">\[
+(1, 1.1), \quad (2, 2.8), \quad (3, 5.2), \quad (4, 8.0), \quad (5, 11.1).
+\]</span></p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Where these data come from
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The image holding the data points of Mathews’ Example 2 is missing from the archive, but his printed results survive: <span class="math inline">\(B = 0.0709788\)</span>, <span class="math inline">\(a = 1.44232\)</span> and <span class="math inline">\(c = 1.07356\)</span>. With abscissas <span class="math inline">\(x_k = 1, 2, 3, 4, 5\)</span>, a search over every set of ordinates with one decimal place (each within <span class="math inline">\(3\)</span> of the curve <span class="math inline">\(1.07356\,x^{1.44232}\)</span>) finds exactly one set that reproduces <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> to all of Mathews’ printed digits, the one above; a search in steps of <span class="math inline">\(0.05\)</span> (each ordinate within <span class="math inline">\(1\)</span> of the curve) finds the same set and no other. We take these to be Mathews’ data.</p>
+</div>
+</div>
+<p><strong>Step 1</strong>: Transform the data with <span class="math inline">\(X_k = \ln x_k\)</span>, <span class="math inline">\(Y_k = \ln y_k\)</span> (values rounded to six decimals).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k = \ln x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y_k = \ln y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k^2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k Y_k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.095310</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2.8</td>
+<td style="text-align: right;">0.693147</td>
+<td style="text-align: right;">1.029619</td>
+<td style="text-align: right;">0.480453</td>
+<td style="text-align: right;">0.713678</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5.2</td>
+<td style="text-align: right;">1.098612</td>
+<td style="text-align: right;">1.648659</td>
+<td style="text-align: right;">1.206949</td>
+<td style="text-align: right;">1.811237</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8.0</td>
+<td style="text-align: right;">1.386294</td>
+<td style="text-align: right;">2.079442</td>
+<td style="text-align: right;">1.921812</td>
+<td style="text-align: right;">2.882718</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">11.1</td>
+<td style="text-align: right;">1.609438</td>
+<td style="text-align: right;">2.406945</td>
+<td style="text-align: right;">2.590290</td>
+<td style="text-align: right;">3.873829</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(\sum\)</span></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">4.787492</td>
+<td style="text-align: right;">7.259975</td>
+<td style="text-align: right;">6.199504</td>
+<td style="text-align: right;">9.281461</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 2</strong>: The normal equations (1) are</p>
+<p><span class="math display">\[
+\begin{aligned}
+6.199504\, A + 4.787492\, B &amp;= 9.281461, \\
+4.787492\, A + 5 B &amp;= 7.259975 .
+\end{aligned}
+\]</span></p>
+<p><strong>Step 3</strong>: Here <span class="math inline">\(\Delta = 5(6.199504) - 4.787492^2 = 8.077445\)</span>, and formula (2) gives</p>
+<p><span class="math display">\[
+A = \frac{11.650236}{8.077445} = 1.44232, \qquad B = \frac{0.573327}{8.077445} = 0.0709788,
+\]</span></p>
+<p>with the numerators computed from the unrounded sums.</p>
+<p><strong>Step 4</strong>: By (6), <span class="math inline">\(a = A = 1.44232\)</span> and <span class="math inline">\(c = e^{0.0709788} = 1.07356\)</span>. The power fit is</p>
+<p><span class="math display">\[
+\boxed{\,y = 1.07356\, x^{1.44232}\,}
+\]</span></p>
+<p>These are Mathews’ printed values, which is how the data were recovered.</p>
+<p><strong>Verification:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Equation</th>
+<th>Left-hand side</th>
+<th>Right-hand side</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">\(6.199504(1.44232) + 4.787492(0.0709788) = 9.281461\)</span></td>
+<td><span class="math inline">\(9.281461\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\(4.787492(1.44232) + 5(0.0709788) = 7.259975\)</span></td>
+<td><span class="math inline">\(7.259975\)</span> <span class="math inline">\(\checkmark\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>(again with the unrounded <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>). The line passes through the centroid <span class="math inline">\((\bar X, \bar Y) = (0.957498, 1.451995)\)</span>. The fitted curve and its residuals:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f(x_k) = 1.07356\,x_k^{1.44232}\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f(x_k) - y_k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.1</td>
+<td style="text-align: right;">1.0736</td>
+<td style="text-align: right;">−0.0264</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2.8</td>
+<td style="text-align: right;">2.9175</td>
+<td style="text-align: right;">0.1175</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5.2</td>
+<td style="text-align: right;">5.2358</td>
+<td style="text-align: right;">0.0358</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8.0</td>
+<td style="text-align: right;">7.9284</td>
+<td style="text-align: right;">−0.0716</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">11.1</td>
+<td style="text-align: right;">10.9386</td>
+<td style="text-align: right;">−0.1614</td>
+</tr>
+</tbody>
+</table>
+<p>The sum of the squared residuals is <span class="math inline">\(\sum (f(x_k) - y_k)^2 = 0.0469525\)</span>.</p>
+</section>
+</section>
+<section id="example-3-choosing-between-an-exponential-and-a-power-fit" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-choosing-between-an-exponential-and-a-power-fit">Example 3 — Choosing Between an Exponential and a Power Fit</h2>
+<p>A scientist often has to decide which formula fits a set of data best. Mathews poses three parts for the data points</p>
+<p><span class="math display">\[
+(1, 2), \quad (2, 4), \quad (3, 8), \quad (4, 13), \quad (5, 21).
+\]</span></p>
+<p><strong>(a)</strong> Find both the exponential fit <span class="math inline">\(y = c\,e^{ax}\)</span> and the power fit <span class="math inline">\(y = c\,x^{a}\)</span>. <strong>(b)</strong> Describe how this was done and which transformations were used. <strong>(c)</strong> Decide which curve fits the data best.</p>
+<section id="a-the-exponential-fit" class="level3">
+<h3 class="anchored" data-anchor-id="a-the-exponential-fit">3(a) — The exponential fit</h3>
+<p>The transformation is <span class="math inline">\(X_k = x_k\)</span>, <span class="math inline">\(Y_k = \ln y_k\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y_k = \ln y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k^2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k Y_k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.693147</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.693147</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1.386294</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2.772589</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2.079442</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">6.238325</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2.564949</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">10.259797</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3.044522</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">15.222612</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(\sum\)</span></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">9.768355</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">35.186470</td>
+</tr>
+</tbody>
+</table>
+<p>The normal equations are</p>
+<p><span class="math display">\[
+\begin{aligned}
+55 A + 15 B &amp;= 35.186470, \\
+15 A + 5 B &amp;= 9.768355,
+\end{aligned}
+\]</span></p>
+<p>with <span class="math inline">\(\Delta = 5 \cdot 55 - 15^2 = 50\)</span>, so <span class="math inline">\(A = 29.407028/50 = 0.588141\)</span> and <span class="math inline">\(B = 9.462466/50 = 0.189249\)</span>. Then <span class="math inline">\(a = 0.588141\)</span>, <span class="math inline">\(c = e^{0.189249} = 1.20834\)</span>, and</p>
+<p><span class="math display">\[
+\boxed{\,f_1(x) = 1.20834\, e^{0.588141\,x}\,}
+\]</span></p>
+<p>Substituting back: <span class="math inline">\(55(0.588141) + 15(0.189249) = 35.186470\)</span> and <span class="math inline">\(15(0.588141) + 5(0.189249) = 9.768355\)</span> (with the unrounded <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span>) <span class="math inline">\(\checkmark\)</span>.</p>
+</section>
+<section id="a-the-power-fit" class="level3">
+<h3 class="anchored" data-anchor-id="a-the-power-fit">3(a) — The power fit</h3>
+<p>The transformation is <span class="math inline">\(X_k = \ln x_k\)</span>, <span class="math inline">\(Y_k = \ln y_k\)</span>. The <span class="math inline">\(X_k\)</span> are those of Example 2 and the <span class="math inline">\(Y_k\)</span> those of the exponential fit just above:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k = \ln x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(Y_k = \ln y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k^2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(X_k Y_k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.693147</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0.693147</td>
+<td style="text-align: right;">1.386294</td>
+<td style="text-align: right;">0.480453</td>
+<td style="text-align: right;">0.960906</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">1.098612</td>
+<td style="text-align: right;">2.079442</td>
+<td style="text-align: right;">1.206949</td>
+<td style="text-align: right;">2.284500</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">1.386294</td>
+<td style="text-align: right;">2.564949</td>
+<td style="text-align: right;">1.921812</td>
+<td style="text-align: right;">3.555775</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">1.609438</td>
+<td style="text-align: right;">3.044522</td>
+<td style="text-align: right;">2.590290</td>
+<td style="text-align: right;">4.899970</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(\sum\)</span></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">4.787492</td>
+<td style="text-align: right;">9.768355</td>
+<td style="text-align: right;">6.199504</td>
+<td style="text-align: right;">11.701151</td>
+</tr>
+</tbody>
+</table>
+<p>The normal equations are</p>
+<p><span class="math display">\[
+\begin{aligned}
+6.199504\, A + 4.787492\, B &amp;= 11.701151, \\
+4.787492\, A + 5 B &amp;= 9.768355,
+\end{aligned}
+\]</span></p>
+<p>with <span class="math inline">\(\Delta = 8.077445\)</span> as in Example 2, so <span class="math inline">\(A = 11.739835/8.077445 = 1.45341\)</span> and <span class="math inline">\(B = 4.539797/8.077445 = 0.562034\)</span>. Then <span class="math inline">\(a = 1.45341\)</span>, <span class="math inline">\(c = e^{0.562034} = 1.75424\)</span>, and</p>
+<p><span class="math display">\[
+\boxed{\,f_2(x) = 1.75424\, x^{1.45341}\,}
+\]</span></p>
+<p>Substituting back: <span class="math inline">\(6.199504(1.45341) + 4.787492(0.562034) = 11.701151\)</span> and <span class="math inline">\(4.787492(1.45341) + 5(0.562034) = 9.768355\)</span> (with the unrounded <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span>) <span class="math inline">\(\checkmark\)</span>.</p>
+</section>
+<section id="b-how-it-was-done" class="level3">
+<h3 class="anchored" data-anchor-id="b-how-it-was-done">3(b) — How it was done</h3>
+<p>Neither curve can be fitted by a linear least-squares problem as it stands, because <span class="math inline">\(a\)</span> enters nonlinearly. Taking logarithms turns each into a straight line:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Fit</th>
+<th>Curve</th>
+<th><span class="math inline">\(X\)</span></th>
+<th><span class="math inline">\(Y\)</span></th>
+<th>Line</th>
+<th>Back-transformation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>exponential</td>
+<td><span class="math inline">\(y = c\,e^{ax}\)</span></td>
+<td><span class="math inline">\(x\)</span></td>
+<td><span class="math inline">\(\ln y\)</span></td>
+<td><span class="math inline">\(Y = AX + B\)</span></td>
+<td><span class="math inline">\(a = A\)</span>, <span class="math inline">\(c = e^{B}\)</span></td>
+</tr>
+<tr class="even">
+<td>power</td>
+<td><span class="math inline">\(y = c\,x^{a}\)</span></td>
+<td><span class="math inline">\(\ln x\)</span></td>
+<td><span class="math inline">\(\ln y\)</span></td>
+<td><span class="math inline">\(Y = AX + B\)</span></td>
+<td><span class="math inline">\(a = A\)</span>, <span class="math inline">\(c = e^{B}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>In each case the least-squares line through the transformed points is found from the normal equations (1), and its slope and intercept are converted back into <span class="math inline">\(a\)</span> and <span class="math inline">\(c\)</span>. All the data here have <span class="math inline">\(x_k &gt; 0\)</span> and <span class="math inline">\(y_k &gt; 0\)</span>, so both transformations apply.</p>
+</section>
+<section id="c-which-curve-fits-better" class="level3">
+<h3 class="anchored" data-anchor-id="c-which-curve-fits-better">3(c) — Which curve fits better?</h3>
+<p>Mathews compares the sums of the squares of the residuals of the two curves; computed in the original variables they are</p>
+<p><span class="math display">\[
+E_1 = \sum_{k=1}^{5} \bigl(f_1(x_k) - y_k\bigr)^2, \qquad
+E_2 = \sum_{k=1}^{5} \bigl(f_2(x_k) - y_k\bigr)^2 .
+\]</span></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(x_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f_1(x_k)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f_1(x_k) - y_k\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f_2(x_k)\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(f_2(x_k) - y_k\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2.1758</td>
+<td style="text-align: right;">0.1758</td>
+<td style="text-align: right;">1.7542</td>
+<td style="text-align: right;">−0.2458</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3.9178</td>
+<td style="text-align: right;">−0.0822</td>
+<td style="text-align: right;">4.8041</td>
+<td style="text-align: right;">0.8041</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">7.0545</td>
+<td style="text-align: right;">−0.9455</td>
+<td style="text-align: right;">8.6605</td>
+<td style="text-align: right;">0.6605</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">12.7027</td>
+<td style="text-align: right;">−0.2973</td>
+<td style="text-align: right;">13.1561</td>
+<td style="text-align: right;">0.1561</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">22.8729</td>
+<td style="text-align: right;">1.8729</td>
+<td style="text-align: right;">18.1961</td>
+<td style="text-align: right;">−2.8039</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">\[
+E_1 = 4.52766, \qquad E_2 = 9.02945 .
+\]</span></p>
+<p>Since <span class="math inline">\(E_1 &lt; E_2\)</span>, the exponential fit <span class="math inline">\(f_1(x) = 1.20834\,e^{0.588141\,x}\)</span> is the better of the two. The same ranking holds for the sums of squared deviations of the lines in the <span class="math inline">\(XY\)</span>-plane, <span class="math inline">\(0.0311798\)</span> for the exponential fit against <span class="math inline">\(0.0777152\)</span> for the power fit.</p>
+</section>
+</section>
+<section id="linearization-is-not-least-squares-in-y" class="level2">
+<h2 class="anchored" data-anchor-id="linearization-is-not-least-squares-in-y">Linearization Is Not Least Squares in <span class="math inline">\(y\)</span></h2>
+<p>This section is not part of Mathews’ module; it shows what the data linearization method gives up. The least-squares fit of <span class="math inline">\(y = c\,e^{ax}\)</span> in the original variables minimises</p>
+<p><span class="math display">\[
+E(a, c) = \sum_{k=1}^{n} \bigl(c\,e^{a x_k} - y_k\bigr)^2 .
+\]</span></p>
+<p>Setting <span class="math inline">\(\partial E/\partial c = 0\)</span> and <span class="math inline">\(\partial E/\partial a = 0\)</span> (and dividing the second by <span class="math inline">\(2c\)</span>, for <span class="math inline">\(c \neq 0\)</span>) gives the nonlinear normal equations</p>
+<p><span class="math display">\[
+c \sum_{k=1}^{n} e^{2 a x_k} = \sum_{k=1}^{n} y_k\, e^{a x_k}, \qquad
+\sum_{k=1}^{n} \bigl(c\,e^{a x_k} - y_k\bigr)\, x_k\, e^{a x_k} = 0 .
+\tag{7}
+\]</span></p>
+<p>The first equation gives <span class="math inline">\(c\)</span> in terms of <span class="math inline">\(a\)</span>, and substituting it into the second leaves one equation in <span class="math inline">\(a\)</span>, to be solved by a root finder such as the <a href="newton-raphson-method/">Newton-Raphson method</a>, with the linearized fit as a natural starting guess. For the power function, replace <span class="math inline">\(e^{a x_k}\)</span> by <span class="math inline">\(x_k^{a}\)</span> and the factor <span class="math inline">\(x_k\)</span> in the second equation by <span class="math inline">\(\ln x_k\)</span>. Solving these equations for the four fits above gives:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 20%">
+<col style="width: 15%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Data</th>
+<th>Model</th>
+<th>Linearized fit</th>
+<th style="text-align: right;"><span class="math inline">\(E\)</span></th>
+<th>Direct least-squares fit</th>
+<th style="text-align: right;"><span class="math inline">\(E\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Example 1</td>
+<td><span class="math inline">\(c\,e^{ax}\)</span></td>
+<td><span class="math inline">\(1.57991\,e^{0.391202x}\)</span></td>
+<td style="text-align: right;">0.0500688</td>
+<td><span class="math inline">\(1.61087\,e^{0.383575x}\)</span></td>
+<td style="text-align: right;">0.0408661</td>
+</tr>
+<tr class="even">
+<td>Example 2</td>
+<td><span class="math inline">\(c\,x^{a}\)</span></td>
+<td><span class="math inline">\(1.07356\,x^{1.44232}\)</span></td>
+<td style="text-align: right;">0.0469525</td>
+<td><span class="math inline">\(1.02217\,x^{1.48217}\)</span></td>
+<td style="text-align: right;">0.00974157</td>
+</tr>
+<tr class="odd">
+<td>Example 3</td>
+<td><span class="math inline">\(c\,e^{ax}\)</span></td>
+<td><span class="math inline">\(1.20834\,e^{0.588141x}\)</span></td>
+<td style="text-align: right;">4.52766</td>
+<td><span class="math inline">\(1.56571\,e^{0.521523x}\)</span></td>
+<td style="text-align: right;">1.07912</td>
+</tr>
+<tr class="even">
+<td>Example 3</td>
+<td><span class="math inline">\(c\,x^{a}\)</span></td>
+<td><span class="math inline">\(1.75424\,x^{1.45341}\)</span></td>
+<td style="text-align: right;">9.02945</td>
+<td><span class="math inline">\(1.06460\,x^{1.84138}\)</span></td>
+<td style="text-align: right;">1.50774</td>
+</tr>
+</tbody>
+</table>
+<p>In each case the reduced equation in <span class="math inline">\(a\)</span> changes sign only once for <span class="math inline">\(a\)</span> within <span class="math inline">\(2\)</span> of the direct value <span class="math inline">\(a^{*}\)</span>, the Hessian of <span class="math inline">\(E\)</span> there is positive definite (so the point is a minimum), and a grid search over <span class="math inline">\(|a - a^{*}| \le 1\)</span>, <span class="math inline">\(0.01 \le c \le 3c^{*}\)</span> around the direct fit <span class="math inline">\((a^{*}, c^{*})\)</span> finds no smaller <span class="math inline">\(E\)</span>. The direct fits lower <span class="math inline">\(E\)</span> by factors of <span class="math inline">\(1.23\)</span>, <span class="math inline">\(4.82\)</span>, <span class="math inline">\(4.20\)</span> and <span class="math inline">\(5.99\)</span>. In Example 3 the exponential model still beats the power model, <span class="math inline">\(1.07912\)</span> against <span class="math inline">\(1.50774\)</span>, so the conclusion of part (c) does not depend on how the curves are fitted.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Logarithms reweight the data
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When a residual is small compared with <span class="math inline">\(y_k\)</span>, <span class="math inline">\(\ln f(x_k) - \ln y_k \approx \bigl(f(x_k) - y_k\bigr)/y_k\)</span>, so the linearized fit approximately minimises the sum of squared <em>relative</em> errors. Points with large <span class="math inline">\(y_k\)</span> count for less, and the fitted curve can miss them by more. In Example 3 the linearized exponential fit has its largest residual, <span class="math inline">\(1.8729\)</span>, at the largest ordinate <span class="math inline">\(y_5 = 21\)</span>; the direct fit misses that point by only <span class="math inline">\(0.2415\)</span>, and its largest residual is <span class="math inline">\(0.6376\)</span>, at <span class="math inline">\((1, 2)\)</span>. The linearized fit is still useful: it is quick, needs only the linear normal equations (1), and is a good starting guess for solving (7).</p>
+</div>
+</div>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-11-22">
+<meta name="description" content="Madsen’s stage test needs the derivative at the previous iterate. Vestermark’s 2002 C++ port stores the function value there instead, which makes the test depend on the units of x.">
+
+<title>A one-line slip in Newton_Real.cpp – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">A one-line slip in Newton_Real.cpp</h1>
+                  <div>
+        <div class="description">
+          Madsen’s stage test needs the derivative at the previous iterate. Vestermark’s 2002 C++ port stores the function value there instead, which makes the test depend on the units of x.
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">math</div>
+                <div class="quarto-category">programming</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 22, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#madsens-two-stages" id="toc-madsens-two-stages" class="nav-link active" data-scroll-target="#madsens-two-stages">Madsen’s two stages</a></li>
+  <li><a href="#the-line" id="toc-the-line" class="nav-link" data-scroll-target="#the-line">The line</a></li>
+  <li><a href="#why-it-matters-units" id="toc-why-it-matters-units" class="nav-link" data-scroll-target="#why-it-matters-units">Why it matters: units</a>
+  <ul class="collapse">
+  <li><a href="#example-a-double-root" id="toc-example-a-double-root" class="nav-link" data-scroll-target="#example-a-double-root">Example: a double root</a></li>
+  </ul></li>
+  <li><a href="#fixing-the-line-does-not-fix-double-roots" id="toc-fixing-the-line-does-not-fix-double-roots" class="nav-link" data-scroll-target="#fixing-the-line-does-not-fix-double-roots">Fixing the line does not fix double roots</a></li>
+  <li><a href="#how-much-does-it-cost-in-practice" id="toc-how-much-does-it-cost-in-practice" class="nav-link" data-scroll-target="#how-much-does-it-cost-in-practice">How much does it cost in practice?</a></li>
+  <li><a href="#back-to-quadratic-convergence-at-multiple-roots" id="toc-back-to-quadratic-convergence-at-multiple-roots" class="nav-link" data-scroll-target="#back-to-quadratic-convergence-at-multiple-roots">Back to quadratic convergence at multiple roots</a></li>
+  <li><a href="#which-version-to-use" id="toc-which-version-to-use" class="nav-link" data-scroll-target="#which-version-to-use">Which version to use</a></li>
+  <li><a href="#reproducing-this" id="toc-reproducing-this" class="nav-link" data-scroll-target="#reproducing-this">Reproducing this</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+
+<p>The <a href="../../../pages/numerical-methods/madsen-reid-method/index.html">Madsen-Reid page</a> on this site ports <code>newton_real</code> from Henrik Vestermark’s <a href="https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp"><code>Newton_Real.cpp</code></a>. That file, dated 2002, is a C++ port of Kaj Madsen’s 1973 Newton root finder for polynomials. It is also the file I had several AI models convert to MATLAB in <a href="../../../posts/2026/05/03-madsen-reid-model-comparison.html">May</a>.</p>
+<p>I did not find this myself. The pages in this site’s numerical-methods section were written by AI agents, and I have been having Claude, Anthropic’s AI model, review them. In its review of the Madsen-Reid page, Claude flagged one line that does not do what the algorithm says. It also built and ran every test in this post and drafted the post itself. I am publishing it because the finding holds up, and because Madsen and Reid’s own report and Vestermark’s current code both point the same way, as shown below. Madsen’s method decides when to switch to plain Newton steps using an estimate of <span class="math inline">\(P''\)</span>. That estimate is a divided difference of <span class="math inline">\(P'\)</span> at two successive iterates. In the 2002 code, the “previous” value is the polynomial <span class="math inline">\(P\)</span> at the previous iterate instead of its derivative <span class="math inline">\(P'\)</span>. So the code subtracts a derivative from a function value.</p>
+<p>This post covers four things:</p>
+<ul>
+<li>the line itself;</li>
+<li>why it is wrong;</li>
+<li>what it costs, which is usually little and occasionally four times the iterations;</li>
+<li>why fixing the line still leaves double roots unsolved. Vestermark’s current solver already handles that part.</li>
+</ul>
+<section id="madsens-two-stages" class="level2">
+<h2 class="anchored" data-anchor-id="madsens-two-stages">Madsen’s two stages</h2>
+<p>Each iteration computes the Newton step <span class="math inline">\(\Delta z = P(z)/P'(z)\)</span> and takes it in one of two stages.</p>
+<ul>
+<li><strong>Stage 1</strong> checks every step. If <span class="math inline">\(|P|\)</span> does not increase at <span class="math inline">\(z - \Delta z\)</span>, the method also tries <span class="math inline">\(z - 2\Delta z,\ z - 3\Delta z, \dots\)</span> and keeps the best point. Near a root of multiplicity <span class="math inline">\(m\)</span>, the best point is about <span class="math inline">\(z - m\,\Delta z\)</span>, the multiplicity-corrected Newton step, which converges quadratically. This is how Madsen’s method keeps quadratic convergence at multiple roots. If <span class="math inline">\(|P|\)</span> increases instead, the step is halved.</li>
+<li><strong>Stage 2</strong> takes plain Newton steps with no checks. Near a simple root that is the fastest option. Near a multiple root, plain Newton converges only linearly.</li>
+</ul>
+<p>The switch to Stage 2 rests on a theorem of Ostrowski. Newton’s method converges from <span class="math inline">\(w\)</span> if</p>
+<p><span class="math display">\[
+2\left|\frac{P(w)}{P'(w)}\right| \max_{z \in K} |P''(z)| \le |P'(w)|,
+\]</span></p>
+<p>where <span class="math inline">\(K\)</span> is the disc with centre <span class="math inline">\(w - P(w)/P'(w)\)</span> and radius <span class="math inline">\(|P(w)/P'(w)|\)</span>. Madsen replaces the maximum by <span class="math inline">\(|P''|\)</span> at the current iterate. He estimates <span class="math inline">\(P''\)</span>, at no extra cost, by the divided difference of <span class="math inline">\(P'\)</span> between the previous and current iterates. Vestermark’s description of the test, in section 6.3 of <a href="https://www.hvks.com/Numerical/Downloads/HVE%20Practical%20Implementation%20of%20Polynomial%20root%20finders.pdf">his current paper</a>, is the one followed here:</p>
+<p><span class="math display">\[
+P''(z_k) \approx \frac{P'(z_{k-1}) - P'(z_k)}{z_{k-1} - z_k}.
+\]</span></p>
+<p>Stage 2 is used when the previous step was a plain Newton step and</p>
+<p><span class="math display">\[
+\rho_k = \frac{2\,|P(z_k)|\,|P'(z_{k-1}) - P'(z_k)|}{|P'(z_k)|^2\,|z_{k-1} - z_k|} \le 1 .
+\]</span></p>
+<p>The ratio <span class="math inline">\(\rho\)</span> is dimensionless. If you rescale <span class="math inline">\(x\)</span>, or multiply <span class="math inline">\(P\)</span> by a constant, <span class="math inline">\(\rho\)</span> does not change. That is the property the code loses.</p>
+</section>
+<section id="the-line" class="level2">
+<h2 class="anchored" data-anchor-id="the-line">The line</h2>
+<p>In <code>newton_real</code>, the variables <code>fz</code> and <code>fz1</code> hold <span class="math inline">\(P(z_k)\)</span> and <span class="math inline">\(P'(z_k)\)</span>. The variables <code>f</code> and <code>u</code> hold <span class="math inline">\(|P(z_k)|^2\)</span> and <span class="math inline">\(|P'(z_k)|^2\)</span>. <code>fz0</code> and <code>z0</code> are meant to hold <span class="math inline">\(P'\)</span> and <span class="math inline">\(z\)</span> at the previous iterate. The relevant lines, quoted from the file with Claude’s comments marked <code>&lt;-</code>, are:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>z0 <span class="op">=</span> complex<span class="op">&lt;</span><span class="dt">double</span><span class="op">&gt;</span> <span class="op">(</span><span class="dv">0</span><span class="op">);</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>fz0 <span class="op">=</span> complex<span class="op">&lt;</span><span class="dt">double</span><span class="op">&gt;</span> <span class="op">(</span> a<span class="op">[</span> n <span class="op">-</span> <span class="dv">1</span> <span class="op">]</span> <span class="op">);</span>        <span class="co">// &lt;- P'(0): correct for z0 = 0</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>u <span class="op">=</span> feval<span class="op">(</span> n <span class="op">-</span> <span class="dv">1</span><span class="op">,</span> a1<span class="op">,</span> z<span class="op">,</span> <span class="op">&amp;</span>fz1 <span class="op">);</span>             <span class="co">// &lt;- fz1 = P'(z_k), u = |P'(z_k)|^2</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>fwz <span class="op">=</span> fz0 <span class="op">-</span> fz1<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>wz <span class="op">=</span> z0 <span class="op">-</span> z<span class="op">;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>f2 <span class="op">=</span> <span class="op">(</span> fwz<span class="op">.</span>real<span class="op">()</span> <span class="op">*</span> fwz<span class="op">.</span>real<span class="op">()</span> <span class="op">+</span> fwz<span class="op">.</span>imag<span class="op">()</span> <span class="op">*</span> fwz<span class="op">.</span>imag<span class="op">()</span> <span class="op">)</span> <span class="op">/</span> <span class="op">(</span> wz<span class="op">.</span>real<span class="op">()</span> <span class="op">*</span> wz<span class="op">.</span>real<span class="op">()</span> <span class="op">+</span> wz<span class="op">.</span>imag<span class="op">()</span> <span class="op">*</span> wz<span class="op">.</span>imag<span class="op">()</span> <span class="op">);</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>stage1 <span class="op">=</span> f2<span class="op">/</span>u <span class="op">&gt;</span> u<span class="op">/</span>f<span class="op">/</span><span class="dv">4</span> <span class="op">||</span> f <span class="op">!=</span> ff<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">...</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>z0 <span class="op">=</span> z<span class="op">;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>f0 <span class="op">=</span> f<span class="op">;</span> fz0 <span class="op">=</span> fz<span class="op">;</span>                            <span class="co">// &lt;- fz = P(z_k), not P'(z_k)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>All three magnitudes are squared, so <code>f2/u &gt; u/f/4</code> is exactly <span class="math inline">\(\rho_k &gt; 1\)</span>, with <code>f != ff</code> covering “the previous step was not plain”. The test is right as written, provided <code>fz0</code> holds the previous derivative.</p>
+<p>Before the loop it does. <code>a[n-1]</code> is <span class="math inline">\(P'(0)\)</span>, and the previous point <code>z0</code> is the origin. Inside the loop, <code>fz0 = fz</code> overwrites it with <span class="math inline">\(P(z_{k-1})\)</span>. So from the second iteration on, the code uses</p>
+<p><span class="math display">\[
+w = P(z_{k-1}) - P'(z_k) \qquad\text{instead of}\qquad P'(z_{k-1}) - P'(z_k).
+\]</span></p>
+<p><code>fz0</code> is used nowhere else in the routine, so the fix is one token:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>f0 <span class="op">=</span> f<span class="op">;</span> fz0 <span class="op">=</span> fz1<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="why-it-matters-units" class="level2">
+<h2 class="anchored" data-anchor-id="why-it-matters-units">Why it matters: units</h2>
+<p>If <span class="math inline">\(x\)</span> has units, <span class="math inline">\(P'\)</span> has the units of <span class="math inline">\(P\)</span> divided by those of <span class="math inline">\(x\)</span>, so <span class="math inline">\(P(z_{k-1}) - P'(z_k)\)</span> adds quantities with different units. To see the effect without units, substitute <span class="math inline">\(x = s\,t\)</span> and solve <span class="math inline">\(Q(t) = P(s\,t)/s^n\)</span> instead. It is the same problem, with roots <span class="math inline">\(t = x/s\)</span>. Madsen’s ratio <span class="math inline">\(\rho\)</span> is the same for <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span>, but the code’s version is not.</p>
+<p>Close to a root, <span class="math inline">\(P(z_{k-1})\)</span> becomes negligible beside <span class="math inline">\(P'(z_k)\)</span>. The code’s test then reduces to <span class="math inline">\(2|\Delta z_k| \le |\Delta z_{k-1}|\)</span>, “the new Newton step is at most half the last one”. Farther out, the <span class="math inline">\(P\)</span> term can be any size relative to <span class="math inline">\(P'\)</span>, depending on <span class="math inline">\(s\)</span>.</p>
+<section id="example-a-double-root" class="level3">
+<h3 class="anchored" data-anchor-id="example-a-double-root">Example: a double root</h3>
+<p>The page’s Case 2 polynomial is <span class="math inline">\(P(x) = (x-1)^2(x+2) = x^3 - 3x + 2\)</span>. Start it at <span class="math inline">\(x_0 = -0.7\)</span>, with the step limit <span class="math inline">\(r_0 = 3.5\)</span> that a start of <span class="math inline">\(-0.7\)</span> gets on that page. (From the start point <code>newton_real</code> picks for itself, this polynomial reaches the double root in 4 iterations under every version in this post.)</p>
+<p>The first iteration is a Stage-1 step to <span class="math inline">\(1.7556\)</span>, which is a plain step and passes the stage test, so the second step is plain Newton in both versions. After that the two versions split.</p>
+<ul>
+<li><strong>Published code:</strong> at <span class="math inline">\(z = 1.412\)</span>, the code’s <span class="math inline">\(\rho\)</span> is 0.32, so the iteration stays in Stage 2. Plain Newton then halves the error at every step, and <span class="math inline">\(\rho\)</span> creeps toward 1 from below: 0.65, 0.82, 0.91, …, 0.999990, 0.999997. It first exceeds 1, at 1.00001, in iteration 21, and one lengthened step ends the search.
+<ul>
+<li>Result: 21 iterations, stages 1, 2 (×19), 1. Final error <span class="math inline">\(3.5 \times 10^{-11}\)</span>.</li>
+</ul></li>
+<li><strong>Corrected code:</strong> at the same <span class="math inline">\(z = 1.412\)</span>, <span class="math inline">\(\rho = 1.24\)</span>. The iteration returns to Stage 1, where the doubled step wins every time. The errors go <span class="math inline">\(0.41 \to 2.3 \times 10^{-2} \to 9.1 \times 10^{-5} \to 1.4 \times 10^{-9}\)</span>, which is quadratic convergence.
+<ul>
+<li>Result: 5 iterations, stages 1, 2, 1, 1, 1. Final error <span class="math inline">\(1.4 \times 10^{-9}\)</span>.</li>
+</ul></li>
+</ul>
+<p>Both final errors are near the <span class="math inline">\(\sqrt{\varepsilon}\)</span> accuracy a double root allows in double precision.</p>
+<p>Now repeat the same problem in rescaled form, <span class="math inline">\(Q(t) = P(s\,t)/s^3\)</span> started at <span class="math inline">\(t_0 = -0.7/s\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(s\)</span></th>
+<th>Published: iterations (stages)</th>
+<th>Corrected: iterations (stages)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.01</td>
+<td>5 (11111)</td>
+<td>5 (12111)</td>
+</tr>
+<tr class="even">
+<td>0.1</td>
+<td>5 (11111)</td>
+<td>5 (12111)</td>
+</tr>
+<tr class="odd">
+<td>0.5</td>
+<td>21 (12222222222222222221)</td>
+<td>5 (12111)</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>21 (12222222222222222221)</td>
+<td>5 (12111)</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>20 (1222222222222222221)</td>
+<td>5 (12111)</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>5 (12111)</td>
+<td>5 (12111)</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>5 (12111)</td>
+<td>5 (12111)</td>
+</tr>
+</tbody>
+</table>
+<p>The corrected code makes the same decisions at every scale. The published code’s decisions depend on the units of <span class="math inline">\(x\)</span>, and the slow run happens only for <span class="math inline">\(s\)</span> near 1. That is the scale where <span class="math inline">\(P(z_{k-1})\)</span> and <span class="math inline">\(P'(z_k)\)</span> are similar in size and partly cancel.</p>
+</section>
+</section>
+<section id="fixing-the-line-does-not-fix-double-roots" class="level2">
+<h2 class="anchored" data-anchor-id="fixing-the-line-does-not-fix-double-roots">Fixing the line does not fix double roots</h2>
+<p>For a root of multiplicity <span class="math inline">\(m\)</span>, write <span class="math inline">\(e = z - \zeta\)</span>. Then <span class="math inline">\(P \approx c\,e^m\)</span>, and the exact ratio tends to</p>
+<p><span class="math display">\[
+\frac{2\,|P|\,|P''|}{|P'|^2} \to \frac{2(m-1)}{m}.
+\]</span></p>
+<ul>
+<li><strong>Simple root (<span class="math inline">\(m = 1\)</span>):</strong> the ratio goes to 0 and the test passes, as intended.</li>
+<li><strong><span class="math inline">\(m \ge 3\)</span>:</strong> the ratio is at least <span class="math inline">\(4/3\)</span>, the test fails, and the iteration stays in Stage 1 with its lengthened steps.</li>
+<li><strong>Double root (<span class="math inline">\(m = 2\)</span>):</strong> the ratio is exactly 1.</li>
+</ul>
+<p>So at a double root, the error of the divided difference decides the test, and that error changes sign with the side the iterates come from. Start the same polynomial at <span class="math inline">\(x_0 = -0.3\)</span> and the iterates approach the root from below: 0.752, 0.882, 0.942, ….</p>
+<p>The corrected test now sits just under 1 (0.89, 0.95, 0.98, …, 0.999994). The corrected code takes 18 iterations, 16 of them in Stage 2. The published code happens to fail its test at <span class="math inline">\(z = 0.882\)</span> (<span class="math inline">\(\rho = 1.16\)</span>) and takes 5.</p>
+<p>Vestermark has already found and fixed this part. Section 6.9 of his <a href="https://www.hvks.com/Numerical/Downloads/HVE%20Practical%20Implementation%20of%20Polynomial%20root%20finders.pdf">Practical Implementation of Polynomial Root Finders</a> (version 8, 26 October 2026) gives the same <span class="math inline">\(2(m-1)/m\)</span> expansion. It shows a double-root search that takes 22 iterations, mostly in Stage 2, on <span class="math inline">\((z-2)^2(z-1)(z-3)(z^2+1)\)</span>. Since version 01.40, his solver applies a safety factor of 2: it requires <span class="math inline">\(4\,|P|\,|P''| \le |P'|^2\)</span>, which is <span class="math inline">\(\rho \le 1/2\)</span>. A sufficient condition with a margin is still sufficient, and a double root’s ratio of 1 now fails, so the search stays in Stage 1. In <code>newton_real</code> the margin is a second one-line change:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>stage1 <span class="op">=</span> f2<span class="op">/</span>u <span class="op">&gt;</span> u<span class="op">/</span>f<span class="op">/</span><span class="dv">16</span> <span class="op">||</span> f <span class="op">!=</span> ff<span class="op">;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Claude built three versions of the 2002 file: as published, with <code>fz0 = fz1</code>, and with both changes. They reproduce his numbers, 22 iterations without the margin and 5 with it:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Search</th>
+<th>Published</th>
+<th><code>fz0 = fz1</code></th>
+<th><code>fz0 = fz1</code> and margin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\((x-1)^2(x+2)\)</span>, <span class="math inline">\(x_0 = -0.7\)</span></td>
+<td>21</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\((x-1)^2(x+2)\)</span>, <span class="math inline">\(x_0 = -0.3\)</span></td>
+<td>5</td>
+<td>18</td>
+<td>5</td>
+</tr>
+<tr class="odd">
+<td>double root 2 of <span class="math inline">\((z-2)^2(z-1)(z-3)(z^2+1)\)</span>, own start</td>
+<td>22</td>
+<td>22</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="how-much-does-it-cost-in-practice" class="level2">
+<h2 class="anchored" data-anchor-id="how-much-does-it-cost-in-practice">How much does it cost in practice?</h2>
+<p>The examples above are single searches chosen to show the effect. For a broader view, Claude ran the three versions on two sets of 200 random real polynomials of degree 4 to 30, with the polynomial coefficients drawn from <span class="math inline">\(N(0,1)\)</span>:</p>
+<ul>
+<li><strong>Set A:</strong> random polynomials as drawn.</li>
+<li><strong>Set B:</strong> a random polynomial of degree 2 to 28 multiplied by <span class="math inline">\((x - r)^2\)</span>, with <span class="math inline">\(r\)</span> uniform on <span class="math inline">\([-2, 2]\)</span>, so every polynomial has a real double root.</li>
+</ul>
+<p>The reference roots came from <code>mpmath.polyroots</code> at 60 digits. A root’s error is measured relative to <span class="math inline">\(\max(1, |\text{root}|)\)</span>. Each polynomial was solved once, from <code>newton_real</code>’s own start point.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Published</th>
+<th><code>fz0 = fz1</code></th>
+<th><code>fz0 = fz1</code> and margin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Set A, total iterations</td>
+<td>13 365</td>
+<td>13 339</td>
+<td>13 335</td>
+</tr>
+<tr class="even">
+<td>Set A, largest relative root error</td>
+<td><span class="math inline">\(1.8 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\(1.8 \times 10^{-13}\)</span></td>
+<td><span class="math inline">\(1.8 \times 10^{-13}\)</span></td>
+</tr>
+<tr class="odd">
+<td>Set B, total iterations</td>
+<td>14 889</td>
+<td>14 932</td>
+<td>14 145</td>
+</tr>
+<tr class="even">
+<td>Set B, root searches with 10 or more Stage-2 steps in a row</td>
+<td>55</td>
+<td>61</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td>Set B, searches stopped by the 50-iteration limit</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Set B, median of the largest relative root error</td>
+<td><span class="math inline">\(7.8 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\(8.1 \times 10^{-9}\)</span></td>
+<td><span class="math inline">\(7.8 \times 10^{-9}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Next, Claude rescaled every polynomial exactly with <span class="math inline">\(s = 1/64\)</span>, <span class="math inline">\(8\)</span> and <span class="math inline">\(1024\)</span>. These are powers of two, so the rescaled coefficients carry no rounding. Then it counted the polynomials whose sequence of stage decisions changed:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Rescaling</th>
+<th>Published</th>
+<th><code>fz0 = fz1</code></th>
+<th><code>fz0 = fz1</code> and margin</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(s = 1/64\)</span>, set A / set B</td>
+<td>197 / 198</td>
+<td>3 / 35</td>
+<td>3 / 15</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(s = 8\)</span>, set A / set B</td>
+<td>64 / 101</td>
+<td>5 / 36</td>
+<td>5 / 15</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(s = 1024\)</span>, set A / set B</td>
+<td>71 / 102</td>
+<td>5 / 33</td>
+<td>5 / 13</td>
+</tr>
+</tbody>
+</table>
+<p>Claude has not traced the few changes left in the corrected versions. They are rounding effects. For example, the start point is computed with logarithms and exponentials, so it does not scale exactly, and in set B a double root’s ratio of 1 can tip either way.</p>
+<p>So the slip is real but mostly harmless:</p>
+<ul>
+<li>It moves the stage decision in most polynomials whenever the units of <span class="math inline">\(x\)</span> change.</li>
+<li>It does not change the roots or their accuracy.</li>
+<li>On these sets, correcting it changes the total iterations by 0.2% (set A, fewer) and 0.3% (set B, more).</li>
+</ul>
+<p>It can still cost a lot in a single search, as the 21-iteration example shows. At double roots, the larger effect is the borderline test itself, which only the margin removes: with it, set B needs 5% fewer iterations and no long Stage-2 runs.</p>
+</section>
+<section id="back-to-quadratic-convergence-at-multiple-roots" class="level2">
+<h2 class="anchored" data-anchor-id="back-to-quadratic-convergence-at-multiple-roots">Back to quadratic convergence at multiple roots</h2>
+<p>Madsen’s lengthened steps do converge quadratically at multiple roots, as long as the iteration stays in Stage 1. The stage test decides whether it does.</p>
+<ul>
+<li><strong>Published code:</strong> the decision depends on the units of <span class="math inline">\(x\)</span>.</li>
+<li><strong>Corrected derivative:</strong> the decision is right for <span class="math inline">\(m \ge 3\)</span> and a coin toss at <span class="math inline">\(m = 2\)</span>.</li>
+<li><strong>Corrected derivative with the factor-2 margin:</strong> Stage 1 is kept at every multiple root.</li>
+</ul>
+</section>
+<section id="which-version-to-use" class="level2">
+<h2 class="anchored" data-anchor-id="which-version-to-use">Which version to use</h2>
+<ul>
+<li><strong><a href="https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp"><code>Newton_Real.cpp</code></a>, 2002:</strong> the file on hvks.com still has <code>fz0 = fz</code>. Any port of it carries the same line unless the port changed it. That includes the MATLAB conversions in my May post and the scripts behind this site’s Madsen-Reid page, which says so.</li>
+<li><strong>C++ listings in his Fast Polynomial Root Finder papers, Parts One and Two (October 2023):</strong> these write the divided difference with the previous derivative, <code>p1zprev</code>. In the printed listings, though, <code>p1zprev</code> is set to <span class="math inline">\(P'(0)\)</span> before the loop and is not updated inside it.</li>
+<li><strong>His current reference, the JavaScript of the <a href="https://hvks.com/Numerical/websolver.html">web solver</a>:</strong> this is what version 8 of the paper describes. It stores the derivative (<code>fz0=fz1</code>) and applies the factor-2 margin.</li>
+</ul>
+<p>If you use the 2002 file, make both one-line changes.</p>
+</section>
+<section id="reproducing-this" class="level2">
+<h2 class="anchored" data-anchor-id="reproducing-this">Reproducing this</h2>
+<p>All the numbers above come from the published file compiled with g++. Claude used three scratch copies of it, edited only on the two lines shown, plus a small driver.</p>
+<ul>
+<li><strong>Building on Linux:</strong> <code>stdafx.h</code> can be an empty header that defines <code>_DBL_RADIX</code> as <code>FLT_RADIX</code>. The file uses the <code>register</code> keyword, so compile with <code>-std=c++14</code>.</li>
+<li><strong>Forcing a start point:</strong> the forced starts reset <code>z</code>, <code>dz</code>, <code>f</code> and <code>r0</code> after the line <code>r0 = 2.5 * u;</code>, which leaves <code>z0</code> and <code>fz0</code> at their initial values.</li>
+<li><strong>Counting:</strong> iteration counts are the loop’s <code>itercnt</code> for each root search. The random sets use NumPy’s <code>default_rng(20261122)</code>.</li>
+</ul>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>K. Madsen, “A root-finding algorithm based on Newton’s method”, <em>BIT</em> 13 (1973) 71–75. <a href="https://doi.org/10.1007/BF01933524">doi:10.1007/BF01933524</a></li>
+<li>A. Ostrowski, <em>Solution of Equations and Systems of Equations</em>, Academic Press, 1966. Theorem 7.1.</li>
+<li>H. Vestermark, <a href="https://www.hvks.com/Numerical/Downloads/Newton_Real.cpp"><code>Newton_Real.cpp</code></a>, Future Team ApS, 2002.</li>
+<li>H. Vestermark, <a href="https://www.hvks.com/Numerical/Downloads/HVE%20Fast%20Polynomial%20Root%20Finder%20-%20Part%20one.pdf">Fast Polynomial Root Finder, Part One</a> and <a href="https://www.hvks.com/Numerical/Downloads/HVE%20Fast%20Polynomial%20Root%20Finder%20-%20Part%20two.pdf">Part Two</a>, October 2023.</li>
+<li>H. Vestermark, <a href="https://www.hvks.com/Numerical/Downloads/HVE%20Practical%20Implementation%20of%20Polynomial%20root%20finders.pdf">Practical Implementation of Polynomial Root Finders</a>, version 8, 26 October 2026, sections 6.3 and 6.9.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

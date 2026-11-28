@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Finite Difference Method – Jason H. Nicholson</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-b85bc7c33db8c58e0ec93c3465666fed.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-e8d73ba0db6485cb7457c5fee269cd24.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-fb0f570ac9af106c2463ebab5abcf132.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = true;
+    const queryPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const darkModeDefault = queryPrefersDark.matches;
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    queryPrefersDark.addEventListener("change", e => {
+      if(window.localStorage.getItem("quarto-color-scheme") !== null)
+        return;
+      const alternate = e.matches
+      toggleColorMode(alternate);
+      localAlternateSentinel = e.matches ? 'alternate' : 'default'; // this is used alongside local storage!
+      toggleGiscusIfUsed(alternate, darkModeDefault);
+    });
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jason H. Nicholson</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-pages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Pages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-pages">    
+        <li>
+    <a class="dropdown-item" href="../../pages/calculators/index.html">
+ <span class="dropdown-text">Calculators</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/numerical-methods/index.html">
+ <span class="dropdown-text">Numerical Methods</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/regularizeNd/index.html">
+ <span class="dropdown-text">regularizeNd</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../pages/system-identification/index.html">
+ <span class="dropdown-text">System Identification</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#description" id="toc-description" class="nav-link active" data-scroll-target="#description">Description</a></li>
+  <li><a href="#the-wave-equation" id="toc-the-wave-equation" class="nav-link" data-scroll-target="#the-wave-equation">The Wave Equation</a></li>
+  <li><a href="#derivation-of-the-difference-equation" id="toc-derivation-of-the-difference-equation" class="nav-link" data-scroll-target="#derivation-of-the-difference-equation">Derivation of the Difference Equation</a></li>
+  <li><a href="#starting-values" id="toc-starting-values" class="nav-link" data-scroll-target="#starting-values">Starting Values</a></li>
+  <li><a href="#stability" id="toc-stability" class="nav-link" data-scroll-target="#stability">Stability</a></li>
+  <li><a href="#dalemberts-solution-and-exact-rows" id="toc-dalemberts-solution-and-exact-rows" class="nav-link" data-scroll-target="#dalemberts-solution-and-exact-rows">D’Alembert’s Solution and Exact Rows</a></li>
+  <li><a href="#algorithm" id="toc-algorithm" class="nav-link" data-scroll-target="#algorithm">Algorithm</a></li>
+  <li><a href="#example-1-fx-sinpi-x-sin2pi-x-r-1" id="toc-example-1-fx-sinpi-x-sin2pi-x-r-1" class="nav-link" data-scroll-target="#example-1-fx-sinpi-x-sin2pi-x-r-1">Example 1 — <span class="math inline">\(f(x) = \sin(\pi x) + \sin(2\pi x)\)</span>, <span class="math inline">\(r = 1\)</span></a>
+  <ul class="collapse">
+  <li><a href="#what-the-exact-second-row-is-worth" id="toc-what-the-exact-second-row-is-worth" class="nav-link" data-scroll-target="#what-the-exact-second-row-is-worth">What the exact second row is worth</a></li>
+  </ul></li>
+  <li><a href="#example-2-a-plucked-string-r-1" id="toc-example-2-a-plucked-string-r-1" class="nav-link" data-scroll-target="#example-2-a-plucked-string-r-1">Example 2 — a plucked string, <span class="math inline">\(r = 1\)</span></a></li>
+  <li><a href="#example-3-the-same-string-with-r-1.02-instability" id="toc-example-3-the-same-string-with-r-1.02-instability" class="nav-link" data-scroll-target="#example-3-the-same-string-with-r-1.02-instability">Example 3 — the same string with <span class="math inline">\(r = 1.02\)</span>: instability</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Finite Difference Method</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>← <a href="./">Numerical Methods</a></p>
+<p>Source inspiration: <span class="citation" data-cites="mathewsSite">(<a href="#ref-mathewsSite" role="doc-biblioref">Mathew 2000-2019</a>)</span>.</p>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description</h2>
+<p>This page covers the finite difference method for a hyperbolic partial differential equation, the one-dimensional <strong>wave equation</strong>, as Mathews’ module “Finite Difference Method for Hyperbolic Equations” does. The problem is to find the displacement <span class="math inline">\(u(x, t)\)</span> of a vibrating string with fixed ends, <span class="math inline">\(u_{tt} = c^2 u_{xx}\)</span> for <span class="math inline">\(0 &lt; x &lt; a\)</span> and <span class="math inline">\(0 &lt; t &lt; b\)</span>, given its initial position <span class="math inline">\(u(x, 0) = f(x)\)</span> and initial velocity <span class="math inline">\(u_t(x, 0) = g(x)\)</span>.</p>
+<p>The method covers the rectangle <span class="math inline">\(0 \le x \le a\)</span>, <span class="math inline">\(0 \le t \le b\)</span> with a grid of spacing <span class="math inline">\(h\)</span> in <span class="math inline">\(x\)</span> and <span class="math inline">\(k\)</span> in <span class="math inline">\(t\)</span>, replaces both second derivatives by central differences, and solves the resulting difference equation for the newest time level. With <span class="math inline">\(u_{i,j} \approx u(x_i, t_j)\)</span> and the ratio <span class="math inline">\(r = ck/h\)</span>, each new row of the grid comes from the two rows before it:</p>
+<p><span class="math display">\[
+u_{i,j+1} = (2 - 2r^2)\,u_{i,j} + r^2\,(u_{i+1,j} + u_{i-1,j}) - u_{i,j-1}.
+\]</span></p>
+<p>The first row is <span class="math inline">\(f\)</span>, and a second row is built from <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> with a Taylor expansion. This is an explicit method: the rows are computed one after another, with no system of equations to solve. As a general result, it is stable when <span class="math inline">\(r \le 1\)</span>; for <span class="math inline">\(r &gt; 1\)</span> the shortest wavelengths that a fine enough grid can carry grow geometrically. When <span class="math inline">\(r = 1\)</span> and the second row is exact, every value it computes is exact. Mathews’ three examples show both sides: Examples 1 and 2 use <span class="math inline">\(r = 1\)</span> and reproduce the exact solution to rounding error, and Example 3 takes <span class="math inline">\(r = 1.02\)</span> and is unstable.</p>
+</section>
+<section id="the-wave-equation" class="level2">
+<h2 class="anchored" data-anchor-id="the-wave-equation">The Wave Equation</h2>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition — The wave equation problem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Find <span class="math inline">\(u(x, t)\)</span> satisfying</p>
+<p><span class="math display">\[
+u_{tt}(x, t) = c^2\, u_{xx}(x, t) \qquad \text{for } 0 &lt; x &lt; a \text{ and } 0 &lt; t &lt; b,
+\tag{1}
+\]</span></p>
+<p>with the boundary and initial conditions</p>
+<p><span class="math display">\[
+\begin{aligned}
+u(0, t) &amp;= 0 \quad \text{and} \quad u(a, t) = 0 &amp;&amp; \text{for } 0 \le t \le b, \\
+u(x, 0) &amp;= f(x) &amp;&amp; \text{for } 0 \le x \le a, \\
+u_t(x, 0) &amp;= g(x) &amp;&amp; \text{for } 0 &lt; x &lt; a.
+\end{aligned}
+\tag{2}
+\]</span></p>
+</div>
+</div>
+<p>The wave equation models the displacement <span class="math inline">\(u\)</span> of an elastic string held fixed at <span class="math inline">\(x = 0\)</span> and <span class="math inline">\(x = a\)</span>; <span class="math inline">\(c\)</span> is the speed at which waves travel along it. Analytic solutions can be found with Fourier series or with d’Alembert’s formula below, but the problem serves as the prototype of a hyperbolic equation, and the same difference method applies where no formula is available.</p>
+</section>
+<section id="derivation-of-the-difference-equation" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-of-the-difference-equation">Derivation of the Difference Equation</h2>
+<p>Partition the rectangle <span class="math inline">\(R = \{(x, t) : 0 \le x \le a,\ 0 \le t \le b\}\)</span> into <span class="math inline">\(n - 1\)</span> by <span class="math inline">\(m - 1\)</span> rectangles with sides <span class="math inline">\(h = a/(n - 1)\)</span> and <span class="math inline">\(k = b/(m - 1)\)</span>. Following Mathews, the grid points are numbered from <span class="math inline">\(1\)</span>:</p>
+<p><span class="math display">\[
+x_i = (i - 1)h, \quad i = 1, \ldots, n, \qquad t_j = (j - 1)k, \quad j = 1, \ldots, m,
+\]</span></p>
+<p>and <span class="math inline">\(u_{i,j}\)</span> denotes the approximation to <span class="math inline">\(u(x_i, t_j)\)</span>. The bottom row <span class="math inline">\(j = 1\)</span> is the known initial position, <span class="math inline">\(u_{i,1} = f(x_i)\)</span>, and the end columns are the fixed ends, <span class="math inline">\(u_{1,j} = u_{n,j} = 0\)</span>.</p>
+<p>The central-difference formulas for the two second derivatives are</p>
+<p><span class="math display">\[
+u_{tt}(x, t) = \frac{u(x, t + k) - 2u(x, t) + u(x, t - k)}{k^2} + O(k^2),
+\tag{3}
+\]</span></p>
+<p><span class="math display">\[
+u_{xx}(x, t) = \frac{u(x + h, t) - 2u(x, t) + u(x - h, t)}{h^2} + O(h^2).
+\tag{4}
+\]</span></p>
+<p>Dropping the <span class="math inline">\(O(k^2)\)</span> and <span class="math inline">\(O(h^2)\)</span> terms and substituting into (1) gives the difference equation</p>
+<p><span class="math display">\[
+\frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{k^2} = c^2\, \frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{h^2}.
+\tag{5}
+\]</span></p>
+<p>With the substitution <span class="math inline">\(r = ck/h\)</span> it becomes <span class="math inline">\(u_{i,j+1} - 2u_{i,j} + u_{i,j-1} = r^2 (u_{i+1,j} - 2u_{i,j} + u_{i-1,j})\)</span>, which is solved for the value on the newest row:</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Explicit formula for the wave equation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+u_{i,j+1} = (2 - 2r^2)\,u_{i,j} + r^2\,(u_{i+1,j} + u_{i-1,j}) - u_{i,j-1}, \qquad i = 2, 3, \ldots, n - 1,
+\tag{6}
+\]</span></p>
+<p>where <span class="math inline">\(r = ck/h\)</span>.</p>
+</div>
+</div>
+<p>Formula (6) computes row <span class="math inline">\(j + 1\)</span> from four known values: three neighbouring values <span class="math inline">\(u_{i-1,j}\)</span>, <span class="math inline">\(u_{i,j}\)</span>, <span class="math inline">\(u_{i+1,j}\)</span> in row <span class="math inline">\(j\)</span> and the value <span class="math inline">\(u_{i,j-1}\)</span> directly below in row <span class="math inline">\(j - 1\)</span>. This four-point pattern is the <em>stencil</em> of the method. Because it reaches back two rows, two starting rows are needed.</p>
+</section>
+<section id="starting-values" class="level2">
+<h2 class="anchored" data-anchor-id="starting-values">Starting Values</h2>
+<p>The first row is <span class="math inline">\(u_{i,1} = f(x_i) = f_i\)</span>. The second row, at <span class="math inline">\(t = k\)</span>, is not given, so it is built from Taylor’s formula in <span class="math inline">\(t\)</span> about <span class="math inline">\((x_i, 0)\)</span>. To first order, <span class="math inline">\(u(x_i, k) = u(x_i, 0) + u_t(x_i, 0)\,k + O(k^2)\)</span>, and with <span class="math inline">\(g_i = g(x_i)\)</span> this gives</p>
+<p><span class="math display">\[
+u_{i,2} = f_i + k\,g_i, \qquad i = 2, 3, \ldots, n - 1.
+\tag{7}
+\]</span></p>
+<p>Errors in the second row are carried through the rest of the grid by formula (6), so a better second row is worth having. When <span class="math inline">\(f\)</span> has a second derivative, the wave equation turns the unknown <span class="math inline">\(u_{tt}\)</span> at <span class="math inline">\(t = 0\)</span> into a known <span class="math inline">\(x\)</span>-derivative of <span class="math inline">\(f\)</span>:</p>
+<p><span class="math display">\[
+u_{tt}(x_i, 0) = c^2 u_{xx}(x_i, 0) = c^2 f''(x_i) = c^2\, \frac{f_{i+1} - 2f_i + f_{i-1}}{h^2} + O(h^2).
+\]</span></p>
+<p>Taylor’s formula of order 2, <span class="math inline">\(u(x, k) = u(x, 0) + u_t(x, 0)\,k + \tfrac12 u_{tt}(x, 0)\,k^2 + O(k^3)\)</span>, then gives</p>
+<p><span class="math display">\[
+u(x_i, k) = f_i + k g_i + \frac{c^2 k^2}{2h^2}\,(f_{i+1} - 2f_i + f_{i-1}) + O(h^2)\,O(k^2) + O(k^3),
+\]</span></p>
+<p>and with <span class="math inline">\(r = ck/h\)</span> this simplifies to the second-row formula that Mathews’ program uses:</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Second row
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[
+u_{i,2} = (1 - r^2) f_i + k g_i + \frac{r^2}{2}\,(f_{i+1} + f_{i-1}), \qquad i = 2, 3, \ldots, n - 1.
+\tag{8}
+\]</span></p>
+</div>
+</div>
+</section>
+<section id="stability" class="level2">
+<h2 class="anchored" data-anchor-id="stability">Stability</h2>
+<p>Mathews calls the method <em>stable</em> if an error made at one stage of the calculation is eventually damped out, and states that stability of formula (6) requires <span class="math inline">\(r = ck/h \le 1\)</span>. The condition is a general result, and a Fourier analysis shows where it comes from; it also shows that for <span class="math inline">\(r \le 1\)</span> errors are not damped but stay bounded. Since the boundary values are zero, look for solutions of (6) of the form <span class="math inline">\(u_{i,j} = \lambda^{j} \sin(p\pi x_i/a)\)</span>, one for each mode <span class="math inline">\(p = 1, 2, \ldots, n - 2\)</span> that the grid can represent. Substituting into (6) and dividing by <span class="math inline">\(\lambda^{j-1}\sin(p\pi x_i/a)\)</span> gives</p>
+<p><span class="math display">\[
+\lambda^2 - (2 - 4r^2 s_p)\,\lambda + 1 = 0, \qquad s_p = \sin^2\!\left(\frac{p\pi h}{2a}\right).
+\tag{9}
+\]</span></p>
+<p>The two roots have product <span class="math inline">\(1\)</span>. If <span class="math inline">\(|2 - 4r^2 s_p| &lt; 2\)</span>, that is <span class="math inline">\(r^2 s_p &lt; 1\)</span>, they are complex conjugates of modulus <span class="math inline">\(1\)</span>, and the mode neither grows nor decays. If <span class="math inline">\(r^2 s_p = 1\)</span> they coincide at <span class="math inline">\(\lambda = -1\)</span> and the mode can grow, but only linearly. If <span class="math inline">\(r^2 s_p &gt; 1\)</span>, they are real and negative, and one of them has modulus greater than <span class="math inline">\(1\)</span>: the mode grows geometrically and changes sign at every step. Since <span class="math inline">\(s_p &lt; 1\)</span> for every mode, <span class="math inline">\(r \le 1\)</span> gives <span class="math inline">\(r^2 s_p &lt; 1\)</span>, and all modes stay bounded. As <span class="math inline">\(h \to 0\)</span> the largest <span class="math inline">\(s_p\)</span> approaches <span class="math inline">\(1\)</span>, so <span class="math inline">\(r \le 1\)</span> is the condition that works for every grid.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Stability condition (general result)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The explicit formula (6) for the wave equation is stable when</p>
+<p><span class="math display">\[
+r = \frac{ck}{h} \le 1.
+\]</span></p>
+<p>For <span class="math inline">\(r &gt; 1\)</span>, on any grid fine enough that <span class="math inline">\(r^2 s_{n-2} &gt; 1\)</span>, the highest modes the grid can carry grow without bound as the rows are computed.</p>
+</div>
+</div>
+<p>The condition has a physical reading. The exact value <span class="math inline">\(u(x, t)\)</span> depends on the initial data in <span class="math inline">\([x - ct,\ x + ct]\)</span>, while the value <span class="math inline">\(u_{i,j}\)</span> computed by (6) can depend only on initial values in <span class="math inline">\([x_i - (j-1)h,\ x_i + (j-1)h]\)</span>, because each row reaches one grid point further to each side. The numerical interval contains the true one only when <span class="math inline">\(h/k \ge c\)</span>, which is <span class="math inline">\(r \le 1\)</span> (the Courant–Friedrichs–Lewy condition). Implicit methods, which are more work to implement, have no stability restriction on <span class="math inline">\(r\)</span>.</p>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>On a coarse grid the threshold is slightly above 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Only the modes <span class="math inline">\(p \le n - 2\)</span> exist on a given grid, so the exact threshold there is <span class="math inline">\(r = 1/\sqrt{s_{n-2}}\)</span>, slightly above <span class="math inline">\(1\)</span>. For the grid of Examples 1 to 3 (<span class="math inline">\(n = 11\)</span>, <span class="math inline">\(h = 0.1\)</span>) it is <span class="math inline">\(1/\sin(9\pi/20) \approx 1.0125\)</span>; only mode <span class="math inline">\(p = 9\)</span> is unstable at <span class="math inline">\(r = 1.02\)</span>.</p>
+</div>
+</div>
+</section>
+<section id="dalemberts-solution-and-exact-rows" class="level2">
+<h2 class="anchored" data-anchor-id="dalemberts-solution-and-exact-rows">D’Alembert’s Solution and Exact Rows</h2>
+<p>The French mathematician Jean Le Rond d’Alembert (1717–1783) found that</p>
+<p><span class="math display">\[
+u(x, t) = F(x + ct) + G(x - ct)
+\tag{10}
+\]</span></p>
+<p>solves the wave equation (1), as direct substitution shows: <span class="math inline">\(u_{tt} = c^2 F''(x + ct) + c^2 G''(x - ct) = c^2 u_{xx}\)</span>. The boundary conditions <span class="math inline">\(u(0, t) = u(a, t) = 0\)</span> hold when <span class="math inline">\(F\)</span> and <span class="math inline">\(G\)</span> are odd and have period <span class="math inline">\(2a\)</span>: <span class="math inline">\(F(-z) = -F(z)\)</span>, <span class="math inline">\(F(z + 2a) = F(z)\)</span>, and likewise for <span class="math inline">\(G\)</span>. The solution with <span class="math inline">\(u(x, 0) = f(x)\)</span> and <span class="math inline">\(u_t(x, 0) = 0\)</span> is</p>
+<p><span class="math display">\[
+u(x, t) = \tfrac12 \bigl(\tilde f(x + ct) + \tilde f(x - ct)\bigr),
+\tag{11}
+\]</span></p>
+<p>where <span class="math inline">\(\tilde f\)</span> is the odd extension of <span class="math inline">\(f\)</span> with period <span class="math inline">\(2a\)</span>. The initial shape splits into two halves that travel left and right at speed <span class="math inline">\(c\)</span> and are reflected, upside down, at the fixed ends.</p>
+<p>When <span class="math inline">\(r = 1\)</span>, that is <span class="math inline">\(k = h/c\)</span>, the grid lines line up with the characteristics <span class="math inline">\(x \pm ct = \text{const}\)</span>, and the method becomes exact.</p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Theorem — Two exact rows give an exact grid
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Assume that the two rows <span class="math inline">\(u_{i,1} = u(x_i, 0)\)</span> and <span class="math inline">\(u_{i,2} = u(x_i, k)\)</span>, <span class="math inline">\(i = 1, 2, \ldots, n\)</span>, are exact values of the solution of (1). If the step <span class="math inline">\(k = h/c\)</span> is chosen, then <span class="math inline">\(r = 1\)</span> and formula (6) becomes</p>
+<p><span class="math display">\[
+u_{i,j+1} = u_{i+1,j} + u_{i-1,j} - u_{i,j-1},
+\tag{12}
+\]</span></p>
+<p>and the values it produces throughout the grid are exact values of the solution (apart from computer rounding).</p>
+</div>
+</div>
+<p><strong>Proof.</strong> With <span class="math inline">\(ck = h\)</span>, <span class="math inline">\(x_i - ct_j = (i - 1)h - (j - 1)h = (i - j)h\)</span> and <span class="math inline">\(x_i + ct_j = (i + j - 2)h\)</span>, so by (10) every exact grid value has the form <span class="math inline">\(u_{i,j} = F((i - j)h) + G((i + j - 2)h)\)</span>. Substituting this into the right side of (12),</p>
+<p><span class="math display">\[
+\begin{aligned}
+u_{i+1,j} + u_{i-1,j} - u_{i,j-1}
+&amp;= F((i + 1 - j)h) + F((i - 1 - j)h) - F((i - j + 1)h) \\
+&amp;\quad + G((i + j - 1)h) + G((i + j - 3)h) - G((i + j - 3)h) \\
+&amp;= F((i - (j + 1))h) + G((i + (j + 1) - 2)h) = u_{i,j+1}. \qquad \blacksquare
+\end{aligned}
+\]</span></p>
+<p>The theorem needs an exact second row, and formulas (7) and (8) generally do not give one. There is one common case where they do. When <span class="math inline">\(g = 0\)</span> and <span class="math inline">\(r = 1\)</span>, formula (8) reduces to</p>
+<p><span class="math display">\[
+u_{i,2} = \frac{f_{i-1} + f_{i+1}}{2}, \qquad i = 2, 3, \ldots, n - 1,
+\tag{13}
+\]</span></p>
+<p>and by (11) the exact value is <span class="math inline">\(u(x_i, k) = \tfrac12\bigl(\tilde f(x_i + h) + \tilde f(x_i - h)\bigr)\)</span>, which is the same thing, because <span class="math inline">\(ck = h\)</span> and the points <span class="math inline">\(x_i \pm h\)</span> are grid points in <span class="math inline">\([0, a]\)</span>, where <span class="math inline">\(\tilde f = f\)</span>. So with <span class="math inline">\(g = 0\)</span> and <span class="math inline">\(r = 1\)</span> the method reproduces the exact solution at every grid point. Examples 1 and 2 are of this kind.</p>
+</section>
+<section id="algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="algorithm">Algorithm</h2>
+<p>Mathews’ program has two parts.</p>
+<ol type="1">
+<li><strong>Starting rows.</strong> Set <span class="math inline">\(h = a/(n - 1)\)</span>, <span class="math inline">\(k = b/(m - 1)\)</span> and <span class="math inline">\(r = ck/h\)</span>. Fill row 1 with <span class="math inline">\(u_{i,1} = f(x_i)\)</span> for <span class="math inline">\(i = 1, \ldots, n\)</span>, and fill row 2 by formula (8) for <span class="math inline">\(i = 2, \ldots, n - 1\)</span>. All other entries start at <span class="math inline">\(0\)</span>, so the end columns <span class="math inline">\(u_{1,j}\)</span> and <span class="math inline">\(u_{n,j}\)</span> stay <span class="math inline">\(0\)</span> for <span class="math inline">\(j \ge 2\)</span>.</li>
+<li><strong>Later rows.</strong> For <span class="math inline">\(j = 3, 4, \ldots, m\)</span> and <span class="math inline">\(i = 2, \ldots, n - 1\)</span>, compute <span class="math display">\[
+u_{i,j} = (2 - 2r^2)\,u_{i,j-1} + r^2\,(u_{i+1,j-1} + u_{i-1,j-1}) - u_{i,j-2}.
+\]</span></li>
+</ol>
+<p>The result is an <span class="math inline">\(n \times m\)</span> array whose column <span class="math inline">\(j\)</span> is the shape of the string at time <span class="math inline">\(t_j\)</span>. Mathews plots this array as a surface over the index grid (the axes are labelled <span class="math inline">\(x(i)\)</span> and <span class="math inline">\(t(j)\)</span> and carry the indices <span class="math inline">\(i = 1, \ldots, 11\)</span> and <span class="math inline">\(j = 1, \ldots, 21\)</span>, not the values of <span class="math inline">\(x\)</span> and <span class="math inline">\(t\)</span>), seen from the viewpoint <span class="math inline">\((4, 2, 3)\)</span> and coloured by height.</p>
+<p>In all three examples below <span class="math inline">\(c = 2\)</span> (so <span class="math inline">\(c^2 = 4\)</span>), the string has length <span class="math inline">\(a = 1\)</span>, <span class="math inline">\(g(x) = 0\)</span>, and the grid has <span class="math inline">\(n = 11\)</span> columns and <span class="math inline">\(m = 21\)</span> rows. The examples differ in the initial position <span class="math inline">\(f\)</span> and the time interval <span class="math inline">\([0, b]\)</span>.</p>
+</section>
+<section id="example-1-fx-sinpi-x-sin2pi-x-r-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-fx-sinpi-x-sin2pi-x-r-1">Example 1 — <span class="math inline">\(f(x) = \sin(\pi x) + \sin(2\pi x)\)</span>, <span class="math inline">\(r = 1\)</span></h2>
+<p>Solve</p>
+<p><span class="math display">\[
+u_{tt}(x, t) = 4\,u_{xx}(x, t), \qquad 0 &lt; x &lt; 1, \quad 0 &lt; t &lt; 1,
+\]</span></p>
+<p>with <span class="math inline">\(u(0, t) = u(1, t) = 0\)</span>, <span class="math inline">\(u(x, 0) = f(x) = \sin(\pi x) + \sin(2\pi x)\)</span> and <span class="math inline">\(u_t(x, 0) = g(x) = 0\)</span>, over the rectangle <span class="math inline">\(R = \{(x, t) : 0 \le x \le 1,\ 0 \le t \le 1\}\)</span>, and compare with the exact solution</p>
+<p><span class="math display">\[
+u(x, t) = \sin(\pi x)\cos(2\pi t) + \sin(2\pi x)\cos(4\pi t).
+\tag{14}
+\]</span></p>
+<p><strong>Step 1 — grid.</strong> With <span class="math inline">\(n = 11\)</span> and <span class="math inline">\(m = 21\)</span>,</p>
+<p><span class="math display">\[
+h = \frac{1}{10} = 0.1, \qquad k = \frac{1}{20} = 0.05, \qquad r = \frac{ck}{h} = \frac{2(0.05)}{0.1} = 1.
+\]</span></p>
+<p><strong>Step 2 — first row.</strong> <span class="math inline">\(u_{i,1} = f(x_i)\)</span>; for example <span class="math inline">\(u_{2,1} = \sin(0.1\pi) + \sin(0.2\pi) = 0.309017 + 0.587785 = 0.896802\)</span>.</p>
+<p><strong>Step 3 — second row.</strong> Since <span class="math inline">\(g = 0\)</span> and <span class="math inline">\(r = 1\)</span>, formula (13) applies: <span class="math inline">\(u_{i,2} = (f_{i-1} + f_{i+1})/2\)</span>. For example</p>
+<p><span class="math display">\[
+u_{2,2} = \frac{f(0) + f(0.2)}{2} = \frac{0 + 1.538842}{2} = 0.769421.
+\]</span></p>
+<p><strong>Step 4 — later rows.</strong> With <span class="math inline">\(r = 1\)</span>, formula (12) gives each new value from three old ones. For example, at <span class="math inline">\(x_2 = 0.1\)</span>, <span class="math inline">\(t_3 = 0.1\)</span>,</p>
+<p><span class="math display">\[
+u_{2,3} = u_{3,2} + u_{1,2} - u_{2,1} = 1.328438 + 0 - 0.896802 = 0.431636.
+\]</span></p>
+<p>Continuing row by row gives the table below for <span class="math inline">\(0 \le t_j \le 0.5\)</span> (columns are the interior points <span class="math inline">\(x_i = 0.1, \ldots, 0.9\)</span>; the end values are <span class="math inline">\(0\)</span>).</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t_j\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.5\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.6\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.7\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.8\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.9\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.896802</td>
+<td style="text-align: right;">1.538842</td>
+<td style="text-align: right;">1.760074</td>
+<td style="text-align: right;">1.538842</td>
+<td style="text-align: right;">1.000000</td>
+<td style="text-align: right;">0.363271</td>
+<td style="text-align: right;">−0.142040</td>
+<td style="text-align: right;">−0.363271</td>
+<td style="text-align: right;">−0.278768</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.769421</td>
+<td style="text-align: right;">1.328438</td>
+<td style="text-align: right;">1.538842</td>
+<td style="text-align: right;">1.380037</td>
+<td style="text-align: right;">0.951057</td>
+<td style="text-align: right;">0.428980</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">−0.210404</td>
+<td style="text-align: right;">−0.181636</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.431636</td>
+<td style="text-align: right;">0.769421</td>
+<td style="text-align: right;">0.948401</td>
+<td style="text-align: right;">0.951057</td>
+<td style="text-align: right;">0.809017</td>
+<td style="text-align: right;">0.587785</td>
+<td style="text-align: right;">0.360616</td>
+<td style="text-align: right;">0.181636</td>
+<td style="text-align: right;">0.068364</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.051599</td>
+<td style="text-align: right;">0.181636</td>
+<td style="text-align: right;">0.377381</td>
+<td style="text-align: right;">0.587785</td>
+<td style="text-align: right;">0.740653</td>
+<td style="text-align: right;">0.769421</td>
+<td style="text-align: right;">0.639384</td>
+<td style="text-align: right;">0.363271</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">−0.380037</td>
+<td style="text-align: right;">−0.587785</td>
+<td style="text-align: right;">−0.519421</td>
+<td style="text-align: right;">−0.181636</td>
+<td style="text-align: right;">0.309017</td>
+<td style="text-align: right;">0.769421</td>
+<td style="text-align: right;">1.019421</td>
+<td style="text-align: right;">0.951057</td>
+<td style="text-align: right;">0.571020</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">−0.587785</td>
+<td style="text-align: right;">−0.951057</td>
+<td style="text-align: right;">−0.951057</td>
+<td style="text-align: right;">−0.587785</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">0.587785</td>
+<td style="text-align: right;">0.951057</td>
+<td style="text-align: right;">0.951057</td>
+<td style="text-align: right;">0.587785</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">−0.571020</td>
+<td style="text-align: right;">−0.951057</td>
+<td style="text-align: right;">−1.019421</td>
+<td style="text-align: right;">−0.769421</td>
+<td style="text-align: right;">−0.309017</td>
+<td style="text-align: right;">0.181636</td>
+<td style="text-align: right;">0.519421</td>
+<td style="text-align: right;">0.587785</td>
+<td style="text-align: right;">0.380037</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">−0.363271</td>
+<td style="text-align: right;">−0.639384</td>
+<td style="text-align: right;">−0.769421</td>
+<td style="text-align: right;">−0.740653</td>
+<td style="text-align: right;">−0.587785</td>
+<td style="text-align: right;">−0.377381</td>
+<td style="text-align: right;">−0.181636</td>
+<td style="text-align: right;">−0.051599</td>
+<td style="text-align: right;">0.000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">−0.068364</td>
+<td style="text-align: right;">−0.181636</td>
+<td style="text-align: right;">−0.360616</td>
+<td style="text-align: right;">−0.587785</td>
+<td style="text-align: right;">−0.809017</td>
+<td style="text-align: right;">−0.951057</td>
+<td style="text-align: right;">−0.948401</td>
+<td style="text-align: right;">−0.769421</td>
+<td style="text-align: right;">−0.431636</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">0.181636</td>
+<td style="text-align: right;">0.210404</td>
+<td style="text-align: right;">0.000000</td>
+<td style="text-align: right;">−0.428980</td>
+<td style="text-align: right;">−0.951057</td>
+<td style="text-align: right;">−1.380037</td>
+<td style="text-align: right;">−1.538842</td>
+<td style="text-align: right;">−1.328438</td>
+<td style="text-align: right;">−0.769421</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">0.278768</td>
+<td style="text-align: right;">0.363271</td>
+<td style="text-align: right;">0.142040</td>
+<td style="text-align: right;">−0.363271</td>
+<td style="text-align: right;">−1.000000</td>
+<td style="text-align: right;">−1.538842</td>
+<td style="text-align: right;">−1.760074</td>
+<td style="text-align: right;">−1.538842</td>
+<td style="text-align: right;">−0.896802</td>
+</tr>
+</tbody>
+</table>
+<p>The rows for <span class="math inline">\(0.55 \le t_j \le 1\)</span> repeat these in reverse order: row <span class="math inline">\(t_j\)</span> equals row <span class="math inline">\(1 - t_j\)</span>, as the exact solution requires, since <span class="math inline">\(\cos(2\pi(1 - t)) = \cos(2\pi t)\)</span> and <span class="math inline">\(\cos(4\pi(1 - t)) = \cos(4\pi t)\)</span>. At <span class="math inline">\(t = 1\)</span> the string is back in its initial position.</p>
+<p><strong>Verification.</strong> The function (14) satisfies <span class="math inline">\(u_{tt} - 4u_{xx} = 0\)</span>, <span class="math inline">\(u(x, 0) = f(x)\)</span> and <span class="math inline">\(u_t(x, 0) = 0\)</span>. Over all <span class="math inline">\(11 \times 21\)</span> grid points the computed values differ from (14) by at most <span class="math inline">\(1.5 \times 10^{-15}\)</span>, which is rounding error: by the theorem above the method is exact here. For example, at <span class="math inline">\(x = 0.3\)</span>, <span class="math inline">\(t = 0.2\)</span> the table gives <span class="math inline">\(-0.519421\)</span>, and (14) gives <span class="math inline">\(\sin(0.3\pi)\cos(0.4\pi) + \sin(0.6\pi)\cos(0.8\pi) = 0.809017(0.309017) + 0.951057(-0.809017) = -0.519421\)</span>.</p>
+<p>Mathews prints the whole <span class="math inline">\(21\)</span>-row table rounded to three significant digits, and every entry agrees with the computed values. His surface plot of the grid values is followed by a surface plot of the exact solution (14) over <span class="math inline">\(0 \le t \le 1\)</span>, <span class="math inline">\(0 \le x \le 1\)</span> from the same viewpoint, and the two look alike. Three slips in the module are corrected here. The example statement gives the exact solution as <span class="math inline">\(\sin(\pi x)\cos(\pi t) + \sin(2\pi x)\cos(4\pi t)\)</span>, which does not satisfy <span class="math inline">\(u_{tt} = 4u_{xx}\)</span> (its residual is <span class="math inline">\(3\pi^2 \sin(\pi x)\cos(\pi t)\)</span>); the notebook itself compares with (14). The remark before the solution says “<span class="math inline">\(c = 2\)</span>, <span class="math inline">\(h = 0.2\)</span>, <span class="math inline">\(k = 0.04\)</span>” but then computes <span class="math inline">\(r = 2(0.05)/0.1 = 1\)</span>, and the notebook uses <span class="math inline">\(h = 0.1\)</span> and <span class="math inline">\(k = 0.05\)</span>. And the textbook version of this table (Mathews’ linked proof, Table 10.1) prints <span class="math inline">\(\pm 0.951056\)</span> where the value <span class="math inline">\(\sin(0.4\pi) = 0.9510565\)</span> rounds to <span class="math inline">\(\pm 0.951057\)</span>.</p>
+<section id="what-the-exact-second-row-is-worth" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-exact-second-row-is-worth">What the exact second row is worth</h3>
+<p>The theorem depends on the second row being exact. If the first-order formula (7), <span class="math inline">\(u_{i,2} = f_i\)</span>, is used instead of (13) on the same grid, the second row is already off by up to <span class="math inline">\(0.2212\)</span>, and the error over the whole grid reaches <span class="math inline">\(0.3976\)</span>, since formula (6) carries it forward without damping it.</p>
+<p>With <span class="math inline">\(r &lt; 1\)</span> the method is no longer exact, but it converges at second order. Running Example 1 with <span class="math inline">\(r = 0.5\)</span> (so <span class="math inline">\(k = h/4\)</span>) over <span class="math inline">\(0 \le t \le 1\)</span>, with the second row from (8):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(h\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(k\)</span></th>
+<th style="text-align: right;">max error over the grid</th>
+<th style="text-align: right;">ratio to the previous error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(0.1\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.025\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.392 \times 10^{-1}\)</span></td>
+<td style="text-align: right;">—</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(0.05\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.0125\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.609 \times 10^{-2}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.857\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(0.025\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.00625\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(9.031 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(3.996\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(0.0125\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0.003125\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(2.257 \times 10^{-3}\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.002\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Halving <span class="math inline">\(h\)</span> and <span class="math inline">\(k\)</span> together divides the error by about <span class="math inline">\(4\)</span>, the behaviour expected from the <span class="math inline">\(O(h^2)\)</span> and <span class="math inline">\(O(k^2)\)</span> terms dropped in (3) and (4).</p>
+</section>
+</section>
+<section id="example-2-a-plucked-string-r-1" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-a-plucked-string-r-1">Example 2 — a plucked string, <span class="math inline">\(r = 1\)</span></h2>
+<p>Solve <span class="math inline">\(u_{tt}(x, t) = 4\,u_{xx}(x, t)\)</span> for <span class="math inline">\(0 &lt; x &lt; 1\)</span>, <span class="math inline">\(0 &lt; t &lt; 1\)</span>, with <span class="math inline">\(u(0, t) = u(1, t) = 0\)</span>, <span class="math inline">\(u_t(x, 0) = g(x) = 0\)</span> and the initial position</p>
+<p><span class="math display">\[
+u(x, 0) = f(x) =
+\begin{cases}
+x &amp; \text{for } 0 \le x \le \tfrac35, \\[1mm]
+\tfrac32 - \tfrac32 x &amp; \text{for } \tfrac35 \le x \le 1,
+\end{cases}
+\]</span></p>
+<p>over the rectangle <span class="math inline">\(R = \{(x, t) : 0 \le x \le 1,\ 0 \le t \le 1\}\)</span>. The string is pulled up to height <span class="math inline">\(0.6\)</span> at <span class="math inline">\(x = 0.6\)</span> and released from rest; Mathews first plots <span class="math inline">\(f\)</span> on <span class="math inline">\([0, 1]\)</span>.</p>
+<p><strong>Step 1 — grid.</strong> As in Example 1, <span class="math inline">\(n = 11\)</span>, <span class="math inline">\(m = 21\)</span>, <span class="math inline">\(h = 0.1\)</span>, <span class="math inline">\(k = 0.05\)</span> and <span class="math inline">\(r = 2(0.05)/0.1 = 1\)</span>, so <span class="math inline">\(r \le 1\)</span> holds.</p>
+<p><strong>Step 2 — first and second rows.</strong> <span class="math inline">\(u_{i,1} = f(x_i)\)</span>, and by (13), <span class="math inline">\(u_{i,2} = (f_{i-1} + f_{i+1})/2\)</span>. Only the point at the peak changes: <span class="math inline">\(u_{7,2} = (f(0.5) + f(0.7))/2 = (0.5 + 0.45)/2 = 0.475\)</span>, while for instance <span class="math inline">\(u_{6,2} = (0.4 + 0.6)/2 = 0.5 = f(0.5)\)</span>, because <span class="math inline">\(f\)</span> is linear on each side of the peak.</p>
+<p><strong>Step 3 — later rows.</strong> Formula (12) gives, for example, <span class="math inline">\(u_{6,3} = u_{7,2} + u_{5,2} - u_{6,1} = 0.475 + 0.4 - 0.5 = 0.375\)</span>. The rows for <span class="math inline">\(0 \le t_j \le 0.5\)</span> are</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(t_j\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.5\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.6\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.7\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.8\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.9\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.400</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.600</td>
+<td style="text-align: right;">0.450</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.150</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.400</td>
+<td style="text-align: right;">0.500</td>
+<td style="text-align: right;">0.475</td>
+<td style="text-align: right;">0.450</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.150</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.400</td>
+<td style="text-align: right;">0.375</td>
+<td style="text-align: right;">0.350</td>
+<td style="text-align: right;">0.325</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.150</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">0.300</td>
+<td style="text-align: right;">0.275</td>
+<td style="text-align: right;">0.250</td>
+<td style="text-align: right;">0.225</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">0.175</td>
+<td style="text-align: right;">0.150</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.200</td>
+<td style="text-align: right;">0.175</td>
+<td style="text-align: right;">0.150</td>
+<td style="text-align: right;">0.125</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.075</td>
+<td style="text-align: right;">0.050</td>
+<td style="text-align: right;">0.025</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0.100</td>
+<td style="text-align: right;">0.075</td>
+<td style="text-align: right;">0.050</td>
+<td style="text-align: right;">0.025</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">−0.025</td>
+<td style="text-align: right;">−0.050</td>
+<td style="text-align: right;">−0.075</td>
+<td style="text-align: right;">−0.100</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">−0.025</td>
+<td style="text-align: right;">−0.050</td>
+<td style="text-align: right;">−0.075</td>
+<td style="text-align: right;">−0.100</td>
+<td style="text-align: right;">−0.125</td>
+<td style="text-align: right;">−0.150</td>
+<td style="text-align: right;">−0.175</td>
+<td style="text-align: right;">−0.200</td>
+<td style="text-align: right;">−0.100</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">−0.150</td>
+<td style="text-align: right;">−0.175</td>
+<td style="text-align: right;">−0.200</td>
+<td style="text-align: right;">−0.225</td>
+<td style="text-align: right;">−0.250</td>
+<td style="text-align: right;">−0.275</td>
+<td style="text-align: right;">−0.300</td>
+<td style="text-align: right;">−0.200</td>
+<td style="text-align: right;">−0.100</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">−0.150</td>
+<td style="text-align: right;">−0.300</td>
+<td style="text-align: right;">−0.325</td>
+<td style="text-align: right;">−0.350</td>
+<td style="text-align: right;">−0.375</td>
+<td style="text-align: right;">−0.400</td>
+<td style="text-align: right;">−0.300</td>
+<td style="text-align: right;">−0.200</td>
+<td style="text-align: right;">−0.100</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">−0.150</td>
+<td style="text-align: right;">−0.300</td>
+<td style="text-align: right;">−0.450</td>
+<td style="text-align: right;">−0.475</td>
+<td style="text-align: right;">−0.500</td>
+<td style="text-align: right;">−0.400</td>
+<td style="text-align: right;">−0.300</td>
+<td style="text-align: right;">−0.200</td>
+<td style="text-align: right;">−0.100</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">−0.150</td>
+<td style="text-align: right;">−0.300</td>
+<td style="text-align: right;">−0.450</td>
+<td style="text-align: right;">−0.600</td>
+<td style="text-align: right;">−0.500</td>
+<td style="text-align: right;">−0.400</td>
+<td style="text-align: right;">−0.300</td>
+<td style="text-align: right;">−0.200</td>
+<td style="text-align: right;">−0.100</td>
+</tr>
+</tbody>
+</table>
+<p>and, as in Example 1, the rows for <span class="math inline">\(0.55 \le t_j \le 1\)</span> repeat these in reverse order, ending at <span class="math inline">\(t = 1\)</span> with the initial shape. Every value on the grid is a multiple of <span class="math inline">\(0.025\)</span>.</p>
+<p><strong>What the table shows.</strong> The corner of the plucked string at <span class="math inline">\(x = 0.6\)</span> splits into two corners, one moving left and one moving right, each one grid step <span class="math inline">\(h = 0.1\)</span> per time step <span class="math inline">\(k = 0.05\)</span>, which is the wave speed <span class="math inline">\(c = 2\)</span>. In the row <span class="math inline">\(t = 0.05\)</span> they are at <span class="math inline">\(x = 0.5\)</span> and <span class="math inline">\(x = 0.7\)</span>, and in the row <span class="math inline">\(t = 0.10\)</span> at <span class="math inline">\(x = 0.4\)</span> and <span class="math inline">\(x = 0.8\)</span>. Between them the string is a straight segment of slope <span class="math inline">\(-0.25\)</span>, the average of the two slopes <span class="math inline">\(1\)</span> and <span class="math inline">\(-1.5\)</span> of <span class="math inline">\(f\)</span>. Each corner is reflected at a fixed end and comes back with the displacement turned upside down. At <span class="math inline">\(t = 0.5\)</span> the string has the shape <span class="math inline">\(u(x, 0.5) = -f(1 - x)\)</span>, the initial shape mirrored and inverted, with its lowest point <span class="math inline">\(-0.6\)</span> at <span class="math inline">\(x = 0.4\)</span>; it then retraces its motion and returns to <span class="math inline">\(f\)</span> at <span class="math inline">\(t = 1\)</span>.</p>
+<p><strong>Verification.</strong> Here <span class="math inline">\(f\)</span> has a corner, so the solution is d’Alembert’s formula (11) with <span class="math inline">\(\tilde f\)</span> the odd, period-2 extension of <span class="math inline">\(f\)</span>. The computed values agree with (11) at all <span class="math inline">\(11 \times 21\)</span> grid points to within <span class="math inline">\(4.5 \times 10^{-16}\)</span>. For example, at <span class="math inline">\(x = 0.4\)</span>, <span class="math inline">\(t = 0.5\)</span>: <span class="math inline">\(\tfrac12(\tilde f(1.4) + \tilde f(-0.6)) = \tfrac12(-f(0.6) - f(0.6)) = -0.6\)</span>, the entry in the table. Mathews prints the full <span class="math inline">\(21\)</span>-row table, and every entry agrees with the values computed here; the textbook’s Table 10.2 gives the same rows for <span class="math inline">\(0 \le t \le 0.5\)</span>.</p>
+</section>
+<section id="example-3-the-same-string-with-r-1.02-instability" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-the-same-string-with-r-1.02-instability">Example 3 — the same string with <span class="math inline">\(r = 1.02\)</span>: instability</h2>
+<p>Mathews repeats Example 2 with the same <span class="math inline">\(f\)</span>, <span class="math inline">\(g = 0\)</span> and <span class="math inline">\(c = 2\)</span>, but over the slightly longer rectangle <span class="math inline">\(R = \{(x, t) : 0 \le x \le 1,\ 0 \le t \le 1.02\}\)</span>, and asks the reader to notice the instability this produces, as predicted by the analysis above. The archive has lost the lines of the notebook that state his grid, and the plot of his result. Keeping Example 2’s grid, <span class="math inline">\(n = 11\)</span> and <span class="math inline">\(m = 21\)</span>, the new interval gives</p>
+<p><span class="math display">\[
+h = 0.1, \qquad k = \frac{1.02}{20} = 0.051, \qquad r = \frac{2(0.051)}{0.1} = 1.02 &gt; 1.
+\]</span></p>
+<p><strong>Steps.</strong> Row 1 is <span class="math inline">\(f\)</span>, row 2 comes from formula (8) with <span class="math inline">\(r^2 = 1.0404\)</span>, and rows 3 to 21 from formula (6) with <span class="math inline">\(2 - 2r^2 = -0.0808\)</span>. The second row is no longer exact (formula (13) no longer applies), but the larger problem is stability: by (9) the mode <span class="math inline">\(p = 9\)</span>, which on this grid is the sawtooth <span class="math inline">\(\sin(9\pi x_i) = (-1)^{i}\sin(\pi x_i)\)</span>, has <span class="math inline">\(r^2 s_9 &gt; 1\)</span> and the roots <span class="math inline">\(\lambda = -1.2762\)</span> and <span class="math inline">\(\lambda = -0.7836\)</span>. That mode changes sign at every step and grows. In the table, its size is the absolute value of the <span class="math inline">\(p = 9\)</span> coefficient <span class="math inline">\(\tfrac{2}{10}\sum_{i} u_{i,j}\sin(9\pi x_i)\)</span> in the discrete sine expansion of row <span class="math inline">\(j\)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;"><span class="math inline">\(j\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(t_j\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\max_i \lvert u_{i,j}\rvert\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(\max_i \lvert u_{i,j} - u(x_i, t_j)\rvert\)</span></th>
+<th style="text-align: right;">size of the sawtooth mode <span class="math inline">\(p = 9\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: right;">0.6000</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">0.0122</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.204</td>
+<td style="text-align: right;">0.2000</td>
+<td style="text-align: right;">0.0135</td>
+<td style="text-align: right;">0.0185</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">0.408</td>
+<td style="text-align: right;">0.4530</td>
+<td style="text-align: right;">0.0580</td>
+<td style="text-align: right;">0.0437</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">0.612</td>
+<td style="text-align: right;">0.4595</td>
+<td style="text-align: right;">0.1145</td>
+<td style="text-align: right;">0.114</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">0.816</td>
+<td style="text-align: right;">0.4744</td>
+<td style="text-align: right;">0.3079</td>
+<td style="text-align: right;">0.302</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">1.020</td>
+<td style="text-align: right;">1.3118</td>
+<td style="text-align: right;">0.7845</td>
+<td style="text-align: right;">0.800</td>
+</tr>
+</tbody>
+</table>
+<p>Here <span class="math inline">\(u(x, t)\)</span> is the exact d’Alembert solution (11), whose values never exceed <span class="math inline">\(0.6\)</span> in absolute value. The error grows at every step, from <span class="math inline">\(0.0026\)</span> at <span class="math inline">\(j = 2\)</span> to <span class="math inline">\(0.7845\)</span> at <span class="math inline">\(j = 21\)</span>. The sawtooth mode, which is already present in <span class="math inline">\(f\)</span> with amplitude <span class="math inline">\(0.0122\)</span>, grows by a factor of about <span class="math inline">\(66\)</span> over the <span class="math inline">\(20\)</span> steps, and its step-to-step growth ratio settles at <span class="math inline">\(1.276\)</span>, the size of the unstable root. On the last row the computed string and the exact one are</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: right;"><span class="math inline">\(0.1\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.2\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.3\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.4\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.5\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.6\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.7\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.8\)</span></th>
+<th style="text-align: right;"><span class="math inline">\(0.9\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(u_{i,21}\)</span></td>
+<td style="text-align: right;">−0.1535</td>
+<td style="text-align: right;">0.6807</td>
+<td style="text-align: right;">−0.3575</td>
+<td style="text-align: right;">1.1637</td>
+<td style="text-align: right;">−0.2845</td>
+<td style="text-align: right;">1.3118</td>
+<td style="text-align: right;">−0.1773</td>
+<td style="text-align: right;">0.7648</td>
+<td style="text-align: right;">−0.0969</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(u(x_i, 1.02)\)</span></td>
+<td style="text-align: right;">0.1000</td>
+<td style="text-align: right;">0.2000</td>
+<td style="text-align: right;">0.3000</td>
+<td style="text-align: right;">0.4000</td>
+<td style="text-align: right;">0.5000</td>
+<td style="text-align: right;">0.5500</td>
+<td style="text-align: right;">0.4500</td>
+<td style="text-align: right;">0.3000</td>
+<td style="text-align: right;">0.1500</td>
+</tr>
+</tbody>
+</table>
+<p>The computed values alternate in sign from point to point and reach more than twice the largest displacement the true string ever has. A two-percent increase in <span class="math inline">\(k\)</span> over Example 2 is enough to break the method, as the stability condition <span class="math inline">\(r \le 1\)</span> predicts.</p>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mathewsSite" class="csl-entry" role="listitem">
+Mathew, John H. 2000-2019. <em>Numerical Analysis - Numerical Methods Modules</em>. <a href="https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html">https://web.archive.org/web/20190808102217/http://mathfaculty.fullerton.edu/mathews/n2003/NumericalUndergradMod.html</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/jasonhnicholson\.com");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
