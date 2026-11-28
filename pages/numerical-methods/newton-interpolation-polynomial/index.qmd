@@ -9,15 +9,40 @@ Source inspiration: [@mathewsSite].
 
 ## Description
 
-Newton interpolation represents the interpolating polynomial in divided-difference form,
+Given $n+1$ points $(x_k, y_k)$ with distinct nodes $x_0, \ldots, x_n$, interpolation asks for the polynomial of degree at most $n$ that passes through all of them; with $y_k = f(x_k)$, it approximates $f$.
+That polynomial is unique, and Newton interpolation represents it in divided-difference form,
 
 $$
 P_n(x)=a_0 + a_1(x-x_0)+a_2(x-x_0)(x-x_1)+\cdots+a_n\prod_{j=0}^{n-1}(x-x_j),
 $$
 
-where $a_k=f[x_0,\ldots,x_k]$ are divided differences. For the same nodes and data, Newton and Lagrange forms produce the same polynomial; they differ only in representation and numerical workflow.
+where $a_k=f[x_0,\ldots,x_k]$ are divided differences, built column by column from $f[x_k] = f(x_k)$:
 
-Cases 01–29 below intentionally reuse the same interpolation cases as the [Lagrange page](../lagrange-polynomial-interpolation-and-approximation/index.qmd), matching the legacy Mathews case ordering; each case heading gives the function and the node interval $[a, b]$.
+$$
+f[x_i,\ldots,x_{i+j}]=\frac{f[x_{i+1},\ldots,x_{i+j}]-f[x_i,\ldots,x_{i+j-1}]}{x_{i+j}-x_i}.
+$$
+
+For the same nodes and data, Newton and Lagrange forms produce the same polynomial; they differ only in representation and numerical workflow.
+Newton's form suits nodes that arrive one at a time: $P_n(x) = P_{n-1}(x) + a_n\prod_{j=0}^{n-1}(x-x_j)$, so a new node adds one term and leaves $a_0, \ldots, a_{n-1}$ unchanged, as the [divided-differences case](#case-dd) shows frame by frame.
+The divided-difference table takes $n(n+1)/2$ divisions, and nested multiplication then evaluates $P_n(x)$ with $n$ multiplications.
+
+The nodes must be distinct, since each divided difference divides by $x_{i+j}-x_i$; building $P_n$ needs nothing else.
+The error formula needs more.
+In general, as Mathews states it, if $f \in C^{n+1}[a, b]$ and $x, x_0, \ldots, x_n$ lie in $[a, b]$, then for some $c$ in $[a, b]$
+
+$$
+f(x) - P_n(x) = \frac{f^{(n+1)}(c)}{(n+1)!}\,(x-x_0)(x-x_1)\cdots(x-x_n).
+$$
+
+For equally spaced nodes with spacing $h$ and $|f^{(n+1)}| \le M_{n+1}$ on $[x_0, x_n]$, Mathews bounds the error on $[x_0, x_n]$ for $n = 1$ to $5$, from $M_2h^2/8$ to $\frac{10+7\sqrt7}{1215}M_6h^6$, so for a fixed degree the error is $O(h^{n+1})$.
+In the [divided-differences case](#case-dd), with $h = 0.2$, the largest error is $4.97\times10^{-3}$ at degree 1 against the bound $5.00\times10^{-3}$, and $1.35\times10^{-6}$ at degree 5 against $1.50\times10^{-6}$.
+
+Raising the degree on equally spaced nodes does not always help.
+For $e^x$ on $[-2, 3]$ the largest error on the node interval falls to $3.05\times10^{-10}$ at degree 15 ([Case 15](#case-15)), but for $1/(1+10x^2)$ on $[-1, 1]$ it falls to $0.135$ at degree 7 and then grows to $0.485$ with 16 nodes, in oscillations next to the end nodes ([Case 08](#case-08), Runge's phenomenon).
+Outside $[x_0, x_n]$ the product $(x-x_0)\cdots(x-x_n)$ grows quickly, so extrapolation is unreliable: for $\sqrt{x}$ with nodes on $[0, 2]$, the degree-15 interpolant is $64.5$ at $x = 2.5$, where $\sqrt{2.5} \approx 1.58$ ([Case 04](#case-04)).
+
+Cases 01–29 below intentionally reuse the same interpolation cases as the [Lagrange page](../lagrange-polynomial-interpolation-and-approximation/), matching the legacy Mathews case ordering; each case heading gives the function and the node interval $[a, b]$.
+[Aitken's and Neville's Interpolation](../aitkens-and-nevilles-interpolation/) evaluate the same polynomial at one point with a similar recursive tableau, [Chebyshev Approximation Polynomial](../chebyshev-approximation-polynomial/) clusters the nodes near the ends to tame the oscillations of Case 08, [Hermite Polynomial Interpolation](../hermite-polynomial-interpolation/) also matches derivative values, and [Cubic Splines](../cubic-splines/) join low-degree pieces instead of raising the degree.
 
 ## Animations
 
@@ -39,7 +64,7 @@ The shared script draws this same polynomial but evaluates it in the first baryc
 
 ![Newton interpolating polynomials of f(x) = 1/(1−x)² through equally spaced nodes on [−1.5, 0.9], degree rising from 1 to 15, in the window [−1.6, 1.5], which includes the pole of f at x = 1.](lagnewt03.gif)
 
-### Case 04: $f(x)=\sqrt{x}$, nodes on $[0, 2]$
+### Case 04: $f(x)=\sqrt{x}$, nodes on $[0, 2]$ {#case-04}
 
 ![Newton interpolating polynomials of f(x) = √x through equally spaced nodes on [0, 2], degree rising from 1 to 15, drawn with f on [0, 10.5].](lagnewt04.gif)
 
@@ -55,7 +80,7 @@ The shared script draws this same polynomial but evaluates it in the first baryc
 
 ![Newton interpolating polynomials of f(x) = 1/√(1−x) through equally spaced nodes on [−1.5, 0.95], degree rising from 1 to 15, in the window [−1.6, 1.5], with f drawn for x < 1, where it is defined.](lagnewt07.gif)
 
-### Case 08: $f(x)=1/(1+10x^2)$, nodes on $[-1, 1]$
+### Case 08: $f(x)=1/(1+10x^2)$, nodes on $[-1, 1]$ {#case-08}
 
 ![Newton interpolating polynomials of f(x) = 1/(1+10x²) through equally spaced nodes on [−1, 1], degree rising from 1 to 15, drawn with f on [−1.5, 1.5].](lagnewt08.gif)
 
@@ -89,7 +114,7 @@ $\tan x$ is odd and the nodes are symmetric about 0, so the middle of three node
 
 ![Newton interpolating polynomials of f(x) = tan x through equally spaced nodes on [−1.45, 1.45], between the poles of f at x = ±π/2, degree rising from 1 to 15, drawn with f on [−π, π] and broken at its poles; the frames at degrees 1 and 2 show the same straight line.](lagnewt14.gif)
 
-### Case 15: $f(x)=e^x$, nodes on $[-2, 3]$
+### Case 15: $f(x)=e^x$, nodes on $[-2, 3]$ {#case-15}
 
 ![Newton interpolating polynomials of f(x) = eˣ through equally spaced nodes on [−2, 3], degree rising from 1 to 15, drawn with f on the same interval.](lagnewt15.gif)
 
@@ -157,7 +182,7 @@ $f(x)-\tfrac12$ is odd and the nodes are symmetric about 0, so the middle of thr
 
 ![Newton interpolating polynomials of the Bessel function f(x) = Y₀(x) through equally spaced nodes on [0.5, 4], degree rising from 1 to 15, drawn with f on [0, 22].](lagnewt29.gif)
 
-### Divided differences: $f(x)=\cos x$, nodes $x_k = k/5$ on $[0, 1]$
+### Divided differences: $f(x)=\cos x$, nodes $x_k = k/5$ on $[0, 1]$ {#case-dd}
 
 **Behavior:** This is Mathews' Example 1. Each frame adds the next node $x_n = n/5$ and one more Newton term $a_n\prod_{j<n}(x-x_j)$; the coefficients already found do not change. The divided differences are $a_0,\ldots,a_5 = 1,\ -0.0996671,\ -0.488402,\ 0.0490076,\ 0.0381225,\ -0.00396205$. Between the first and last node (shaded) the largest error is $4.97\times10^{-3}$ at degree 1, $1.16\times10^{-4}$ at degree 2 and $1.35\times10^{-6}$ at degree 5, so there the curves coincide in the frames. The frames are drawn on $[-0.5, 2.1]$, as in Mathews' graphs, so each added term shows to the right of the nodes: the error at $x = 2.1$ falls from 1.30 at degree 1 to 0.65, 0.32, 0.067 and 0.015, and the degree-2 and degree-3 polynomials leave the bottom of the plot near $x = 1.81$ and $x = 1.95$.
 
